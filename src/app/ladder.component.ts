@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { PlayerAchievement } from './models/achievement.model';
 import { LadderService } from './ladder.service';
 import { DataSyncService } from './services/data-sync.service';
@@ -12,7 +13,7 @@ import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
   templateUrl: './ladder.component.html',
   styleUrls: ['./ladder.component.scss'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, HttpClientModule]
 })
 export class AchievementLadderComponent implements OnInit {
   players: PlayerAchievement[] = [];
@@ -30,7 +31,7 @@ export class AchievementLadderComponent implements OnInit {
   selectedFactionLabel = 'All Factions';
   selectedClassLabel = 'All Classes';
   selectedClassIcon?: string;
-  lastEdited = new Date('2026-01-30T19:37:00');
+  lastEdited?: Date;
   getClassIconPath = getClassIconPath;
   openArmory = openArmory;
   getArmoryUrl = getArmoryUrl;
@@ -71,13 +72,15 @@ export class AchievementLadderComponent implements OnInit {
   constructor(
     private ladderService: LadderService,
     private dataSyncService: DataSyncService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
     // Subscribe immediately so the view updates when data arrives
     this.applyFilters();
     this.syncData();
+    this.loadLastUpdated();
   }
 
   /**
@@ -187,6 +190,23 @@ export class AchievementLadderComponent implements OnInit {
       faction: item.faction
     }));
     this.cdr.markForCheck();
+  }
+
+  private loadLastUpdated() {
+    this.http.get('lastUpdated.txt', { responseType: 'text' }).subscribe({
+      next: (value) => {
+        const parsed = new Date(value.trim());
+        if (isNaN(parsed.getTime())) {
+          console.warn('Invalid lastUpdated.txt date:', value);
+          return;
+        }
+        this.lastEdited = parsed;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('Failed to load lastUpdated.txt:', error);
+      }
+    });
   }
 
   onImageError(event: any) {
