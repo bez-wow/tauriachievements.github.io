@@ -1,0 +1,158 @@
+<div class="update-bar">
+  <span class="update-bar-text">
+    <span class="update-label gold-text">Last updated:</span>
+    {{ lastEdited | date:'dd.MMM.yyyy HH:mm' }} CET
+  </span>
+</div>
+
+<div class="ladder-container">
+  <div class="ladder-header">
+    <div class="filter-group">
+      <label for="sortSelect" class="filter-label">Sort by:</label>
+      <div class="dropdown" [class.open]="sortMenuOpen">
+        <button type="button" class="filter-select dropdown-trigger" (click)="toggleSortMenu()" (focus)="closeAllDropdowns('sort')">
+          <span class="option-label">{{ selectedSortLabel }}</span>
+        </button>
+        <div class="dropdown-menu">
+          <button
+            type="button"
+            class="dropdown-option"
+            *ngFor="let opt of sortOptions"
+            (click)="selectSort(opt)">
+            <span class="option-label">{{ opt.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <label for="realmSelect" class="filter-label">Realm:</label>
+      <div class="dropdown" [class.open]="realmMenuOpen">
+        <button type="button" class="filter-select dropdown-trigger" (click)="toggleRealmMenu()" (focus)="closeAllDropdowns('realm')">
+          <span class="option-label">{{ selectedRealmLabel }}</span>
+        </button>
+        <div class="dropdown-menu">
+          <button
+            type="button"
+            class="dropdown-option"
+            *ngFor="let opt of realmOptions"
+            (click)="selectRealm(opt)">
+            <span class="option-label">{{ opt.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label for="classSelect" class="filter-label">Class:</label>
+      <div class="dropdown has-icons" [class.open]="classMenuOpen">
+        <button type="button" class="filter-select dropdown-trigger" (click)="toggleClassMenu()" (focus)="closeAllDropdowns('class')">
+          <img *ngIf="selectedClassIcon" [src]="selectedClassIcon" alt="Selected class icon" class="option-icon" />
+          <span *ngIf="!selectedClassIcon" class="option-icon placeholder"></span>
+          <span class="option-label">{{ selectedClassLabel }}</span>
+        </button>
+        <div class="dropdown-menu">
+          <button type="button" class="dropdown-option" (click)="selectClass()">
+            <span class="option-icon placeholder"></span>
+            <span class="option-label">All Classes</span>
+          </button>
+          <button
+            type="button"
+            class="dropdown-option"
+            *ngFor="let cls of classOptions"
+            (click)="selectClass(cls)">
+            <img [src]="cls.icon" [alt]="cls.name + ' icon'" class="option-icon" />
+            <span class="option-label">{{ cls.name }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <label for="factionSelect" class="filter-label">Faction:</label>
+      <div class="dropdown" [class.open]="factionMenuOpen">
+        <button type="button" class="filter-select dropdown-trigger" (click)="toggleFactionMenu()" (focus)="closeAllDropdowns('faction')">
+          <span class="option-label">{{ selectedFactionLabel }}</span>
+        </button>
+        <div class="dropdown-menu">
+          <button
+            type="button"
+            class="dropdown-option"
+            *ngFor="let opt of factionOptions"
+            (click)="selectFaction(opt)">
+            <span class="option-label">{{ opt.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Show:</label>
+      <div class="page-size">
+        <button type="button" class="page-size-button" [class.active]="pageSize === 100" (click)="setPageSize(100)">100</button>
+        <button type="button" class="page-size-button" [class.active]="pageSize === 500" (click)="setPageSize(500)">500</button>
+        <button type="button" class="page-size-button" [class.active]="pageSize === 1000" (click)="setPageSize(1000)">1000</button>
+      </div>
+    </div>
+  </div>
+
+  <table class="wow-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Race / Class</th>
+        <th>Realm</th>
+        <th>Guild</th>
+        <th>Achievement points</th>
+        <th>Honorable kills</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let player of players" [ngClass]="player.faction">
+        <td>{{ player.rank }}</td>
+        <td>
+          <a 
+            class="player-name clickable" 
+            [href]="getArmoryUrl(player.name, player.realm)"
+            target="_blank"
+            rel="noopener noreferrer"
+            [title]="'Open ' + player.name + ' on Tauri armory'">
+            {{ player.name }}
+          </a>
+        </td>
+        <td>
+          <img 
+            [src]="player.raceIcon"
+            [alt]="'Race ' + player.race + '-' + player.gender"
+            class="icon race-icon"
+            loading="lazy"
+            (error)="onImageError($event)"
+          />
+          <img 
+            [src]="getClassIconPath(player.classIcon)" 
+            [alt]="'Class ' + player.classIcon"
+            class="icon class-icon"
+            loading="lazy"
+            (error)="onImageError($event)"
+          />
+        </td>
+        <td>{{ player.realm }}</td>
+        <td>
+          <a 
+            *ngIf="player.guild"
+            class="guild-name clickable" 
+            [href]="getGuildArmoryUrl(player.guild, player.realm)"
+            target="_blank"
+            rel="noopener noreferrer"
+            [title]="'Open ' + player.guild + ' guild page'">
+            {{ player.guild }}
+          </a>
+        </td>
+        <td class="gold-text">{{ player.achievementPoints | number }}</td>
+        <td>{{ player.honorableKills | number }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
