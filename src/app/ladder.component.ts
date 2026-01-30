@@ -30,7 +30,7 @@ export class AchievementLadderComponent implements OnInit {
   selectedFactionLabel = 'All Factions';
   selectedClassLabel = 'All Classes';
   selectedClassIcon?: string;
-  lastEdited = new Date('2026-01-29T22:23:00');
+  lastEdited = new Date('2026-01-30T19:37:00');
   getClassIconPath = getClassIconPath;
   openArmory = openArmory;
   getArmoryUrl = getArmoryUrl;
