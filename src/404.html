@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Tauri Achievements</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      // GitHub Pages SPA fallback: redirect to root with original path in query.
+      (function () {
+        var loc = window.location;
+        var path = loc.pathname + (loc.search || "");
+        if (loc.pathname.indexOf(".") !== -1) {
+          return;
+        }
+        loc.replace(loc.origin + "/?p=" + encodeURIComponent(path));
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
