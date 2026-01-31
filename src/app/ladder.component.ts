@@ -179,7 +179,6 @@ export class AchievementLadderComponent implements OnInit {
     this.selectedClassLabel = 'All Classes';
     this.selectedClassIcon = undefined;
 
-    this.pageSize = 100;
     this.closeAllDropdowns();
     this.applyFilters();
   }
