@@ -8,6 +8,10 @@
 <div class="ladder-container">
   <div class="ladder-header">
     <div class="filter-group">
+      <button type="button" class="reset-button" (click)="resetFilters()">Reset</button>
+    </div>
+
+    <div class="filter-group">
       <label for="sortSelect" class="filter-label">Sort by:</label>
       <div class="dropdown" [class.open]="sortMenuOpen">
         <button type="button" class="filter-select dropdown-trigger" (click)="toggleSortMenu()" (focus)="closeAllDropdowns('sort')">
@@ -93,11 +97,6 @@
         <button type="button" class="page-size-button" [class.active]="pageSize === 500" (click)="setPageSize(500)">500</button>
         <button type="button" class="page-size-button" [class.active]="pageSize === 1000" (click)="setPageSize(1000)">1000</button>
       </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="filter-label">Reset:</label>
-      <button type="button" class="reset-button" (click)="resetFilters()">Reset filters</button>
     </div>
   </div>
 
