@@ -48,7 +48,7 @@
   z-index: 200;
   
   @media (min-width: 768px) {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: auto repeat(5, minmax(0, 1fr));
     align-items: end;
   }
 }
@@ -58,6 +58,11 @@
   flex-direction: column;
   gap: 6px;
   width: 100%;
+}
+
+.filter-group.reset-group {
+  padding-top: 22px;
+  width: auto;
 }
 
 .filter-label {
@@ -169,8 +174,9 @@
 }
 
 .reset-button {
-  width: 100%;
-  padding: 10px 0;
+  width: fit-content;
+  align-self: flex-start;
+  padding: 10px 16px;
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.15);
   background: linear-gradient(135deg, rgba(40,40,50,0.9), rgba(25,25,32,0.95));
