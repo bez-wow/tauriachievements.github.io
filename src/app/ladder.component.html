@@ -94,6 +94,11 @@
         <button type="button" class="page-size-button" [class.active]="pageSize === 1000" (click)="setPageSize(1000)">1000</button>
       </div>
     </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Reset:</label>
+      <button type="button" class="reset-button" (click)="resetFilters()">Reset filters</button>
+    </div>
   </div>
 
   <table class="wow-table">
