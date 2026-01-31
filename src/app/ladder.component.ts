@@ -165,6 +165,24 @@ export class AchievementLadderComponent implements OnInit {
     this.applyFilters();
   }
 
+  resetFilters() {
+    this.currentSort = 'achievementPoints';
+    this.selectedSortLabel = 'Achievement Points';
+
+    this.currentRealm = undefined;
+    this.selectedRealmLabel = 'All Realms';
+
+    this.currentFaction = undefined;
+    this.selectedFactionLabel = 'All Factions';
+
+    this.currentClass = undefined;
+    this.selectedClassLabel = 'All Classes';
+    this.selectedClassIcon = undefined;
+
+    this.closeAllDropdowns();
+    this.applyFilters();
+  }
+
   private loadPlayers() {
     const observable = this.currentSort === 'achievementPoints'
       ? this.ladderService.getAchievements(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize)

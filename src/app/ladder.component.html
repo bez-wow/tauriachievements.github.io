@@ -7,6 +7,10 @@
 
 <div class="ladder-container">
   <div class="ladder-header">
+    <div class="filter-group reset-group">
+      <button type="button" class="reset-button" (click)="resetFilters()">Reset</button>
+    </div>
+
     <div class="filter-group">
       <label for="sortSelect" class="filter-label">Sort by:</label>
       <div class="dropdown" [class.open]="sortMenuOpen">
