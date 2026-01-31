@@ -193,7 +193,8 @@ export class AchievementLadderComponent implements OnInit {
   }
 
   private loadLastUpdated() {
-    this.http.get('lastUpdated.txt', { responseType: 'text' }).subscribe({
+    const cacheBustedUrl = `lastUpdated.txt?v=${Date.now()}`;
+    this.http.get(cacheBustedUrl, { responseType: 'text' }).subscribe({
       next: (value) => {
         const parsed = new Date(value.trim());
         if (isNaN(parsed.getTime())) {
