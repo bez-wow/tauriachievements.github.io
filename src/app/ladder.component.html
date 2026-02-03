@@ -50,13 +50,13 @@
     <div class="filter-group">
       <label for="classSelect" class="filter-label">Class:</label>
       <div class="dropdown has-icons" [class.open]="classMenuOpen">
-        <button type="button" class="filter-select dropdown-trigger" (click)="toggleClassMenu()" (focus)="closeAllDropdowns('class')">
+        <button type="button" class="filter-select dropdown-trigger" [class.no-icon]="!selectedClassIcon" (click)="toggleClassMenu()" (focus)="closeAllDropdowns('class')">
           <img *ngIf="selectedClassIcon" [src]="selectedClassIcon" alt="Selected class icon" class="option-icon" />
           <span *ngIf="!selectedClassIcon" class="option-icon placeholder"></span>
           <span class="option-label">{{ selectedClassLabel }}</span>
         </button>
         <div class="dropdown-menu">
-          <button type="button" class="dropdown-option" (click)="selectClass()">
+          <button type="button" class="dropdown-option no-icon" (click)="selectClass()">
             <span class="option-icon placeholder"></span>
             <span class="option-label">All Classes</span>
           </button>

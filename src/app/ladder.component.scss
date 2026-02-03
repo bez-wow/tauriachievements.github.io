@@ -146,6 +146,14 @@
   justify-content: flex-start;
 }
 
+.dropdown-trigger.no-icon {
+  gap: 0;
+}
+
+.dropdown-trigger.no-icon .option-icon.placeholder {
+  display: none;
+}
+
 .page-size {
   display: inline-flex;
   gap: 10px;
@@ -247,6 +255,14 @@
     border-color: rgba(247,181,0,0.35);
     color: #fff;
   }
+}
+
+.dropdown-option.no-icon {
+  gap: 0;
+}
+
+.dropdown-option.no-icon .option-icon.placeholder {
+  display: none;
 }
 
 .option-icon {
