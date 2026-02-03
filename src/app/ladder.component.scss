@@ -369,6 +369,12 @@
   }
 }
 
+.wow-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .player-name {
   font-weight: 600;
   color: #fff;
@@ -464,6 +470,14 @@
   fill: currentColor;
 }
 
+@media (max-width: 768px) {
+  .ladder-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .ladder-container {
     padding: 16px 12px 20px;
@@ -494,9 +508,7 @@
   }
 
   .wow-table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    min-width: 100%;
   }
 
   .wow-table th,
@@ -505,9 +517,27 @@
     font-size: 0.78rem;
   }
 
+  .wow-table th:nth-child(1),
+  .wow-table td:nth-child(1),
+  .wow-table th:nth-child(4),
+  .wow-table td:nth-child(4) {
+    display: none;
+  }
+
   .wow-table th:nth-child(5),
   .wow-table td:nth-child(5) {
     display: none;
+  }
+
+  .wow-table th:nth-child(7),
+  .wow-table td:nth-child(7) {
+    display: none;
+  }
+
+  .wow-table td:nth-child(2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .back-to-top {

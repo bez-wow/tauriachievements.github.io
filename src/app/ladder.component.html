@@ -100,64 +100,66 @@
     </div>
   </div>
 
-  <table class="wow-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Race / Class</th>
-        <th>Realm</th>
-        <th>Guild</th>
-        <th>Achievement points</th>
-        <th>Honorable kills</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let player of players" [ngClass]="player.faction">
-        <td>{{ player.rank }}</td>
-        <td>
-          <a 
-            class="player-name clickable" 
-            [href]="getArmoryUrl(player.name, player.realm)"
-            target="_blank"
-            rel="noopener noreferrer"
-            [title]="'Open ' + player.name + ' on Tauri armory'">
-            {{ player.name }}
-          </a>
-        </td>
-        <td>
-          <img 
-            [src]="player.raceIcon"
-            [alt]="'Race ' + player.race + '-' + player.gender"
-            class="icon race-icon"
-            loading="lazy"
-            (error)="onImageError($event)"
-          />
-          <img 
-            [src]="getClassIconPath(player.classIcon)" 
-            [alt]="'Class ' + player.classIcon"
-            class="icon class-icon"
-            loading="lazy"
-            (error)="onImageError($event)"
-          />
-        </td>
-        <td>{{ player.realm }}</td>
-        <td>
-          <a 
-            *ngIf="player.guild"
-            class="guild-name clickable" 
-            [href]="getGuildArmoryUrl(player.guild, player.realm)"
-            target="_blank"
-            rel="noopener noreferrer"
-            [title]="'Open ' + player.guild + ' guild page'">
-            {{ player.guild }}
-          </a>
-        </td>
-        <td class="gold-text">{{ player.achievementPoints | number }}</td>
-        <td>{{ player.honorableKills | number }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="wow-table-scroll">
+    <table class="wow-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Race / Class</th>
+          <th>Realm</th>
+          <th>Guild</th>
+          <th>Achievement points</th>
+          <th>Honorable kills</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let player of players" [ngClass]="player.faction">
+          <td>{{ player.rank }}</td>
+          <td>
+            <a 
+              class="player-name clickable" 
+              [href]="getArmoryUrl(player.name, player.realm)"
+              target="_blank"
+              rel="noopener noreferrer"
+              [title]="'Open ' + player.name + ' on Tauri armory'">
+              {{ player.name }}
+            </a>
+          </td>
+          <td>
+            <img 
+              [src]="player.raceIcon"
+              [alt]="'Race ' + player.race + '-' + player.gender"
+              class="icon race-icon"
+              loading="lazy"
+              (error)="onImageError($event)"
+            />
+            <img 
+              [src]="getClassIconPath(player.classIcon)" 
+              [alt]="'Class ' + player.classIcon"
+              class="icon class-icon"
+              loading="lazy"
+              (error)="onImageError($event)"
+            />
+          </td>
+          <td>{{ player.realm }}</td>
+          <td>
+            <a 
+              *ngIf="player.guild"
+              class="guild-name clickable" 
+              [href]="getGuildArmoryUrl(player.guild, player.realm)"
+              target="_blank"
+              rel="noopener noreferrer"
+              [title]="'Open ' + player.guild + ' guild page'">
+              {{ player.guild }}
+            </a>
+          </td>
+          <td class="gold-text">{{ player.achievementPoints | number }}</td>
+          <td>{{ player.honorableKills | number }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <button
