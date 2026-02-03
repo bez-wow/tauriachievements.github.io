@@ -160,3 +160,14 @@
   </table>
 </div>
 
+<button
+  type="button"
+  class="back-to-top"
+  [class.visible]="showBackToTop"
+  (click)="scrollToTop()"
+  aria-label="Back to top">
+  <svg class="back-to-top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 5l-7 7h4v7h6v-7h4z" />
+  </svg>
+</button>
+

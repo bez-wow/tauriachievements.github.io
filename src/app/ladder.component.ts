@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { PlayerAchievement } from './models/achievement.model';
@@ -18,7 +18,7 @@ import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 export class AchievementLadderComponent implements OnInit {
   players: PlayerAchievement[] = [];
   currentSort: string = 'achievementPoints';
-  currentRealm?: string = undefined; // Changed to show all realms by default
+  currentRealm?: string = undefined;
   currentFaction?: string;
   currentClass?: number;
   pageSize = 100;
@@ -32,6 +32,7 @@ export class AchievementLadderComponent implements OnInit {
   selectedClassLabel = 'All Classes';
   selectedClassIcon?: string;
   lastEdited?: Date;
+  showBackToTop = false;
   getClassIconPath = getClassIconPath;
   openArmory = openArmory;
   getArmoryUrl = getArmoryUrl;
@@ -77,19 +78,25 @@ export class AchievementLadderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Subscribe immediately so the view updates when data arrives
     this.applyFilters();
     this.syncData();
     this.loadLastUpdated();
   }
 
-  /**
-   * Trigger data sync from Tauri API (auto only)
-   */
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+    this.showBackToTop = scrollTop > 400;
+  }
+
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   async syncData() {
     try {
       await this.dataSyncService.syncData();
-      this.applyFilters(); // Refresh the view with new data
+      this.applyFilters();
       this.cdr.markForCheck();
     } catch (error) {
       console.error('Failed to sync data:', error);
