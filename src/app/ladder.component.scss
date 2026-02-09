@@ -185,6 +185,13 @@
   }
 }
 
+.page-size-reset-inline {
+  display: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
 .reset-button {
   width: fit-content;
   align-self: flex-start;
@@ -525,6 +532,25 @@
 
   .filter-select {
     font-size: 0.9rem;
+  }
+
+  .filter-group.reset-group {
+    display: none;
+  }
+
+  .page-size {
+    gap: 8px;
+  }
+
+  .page-size-button {
+    font-size: 0.82rem;
+    padding: 8px 0;
+  }
+
+  .page-size-reset-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .dropdown-menu {

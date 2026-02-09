@@ -93,6 +93,7 @@
     <div class="filter-group">
       <label class="filter-label dropdown-label">Show:</label>
       <div class="page-size">
+        <button type="button" class="page-size-button page-size-reset-inline" (click)="resetFilters()">Reset</button>
         <button type="button" class="page-size-button" [class.active]="pageSize === 100" (click)="setPageSize(100)">100</button>
         <button type="button" class="page-size-button" [class.active]="pageSize === 500" (click)="setPageSize(500)">500</button>
         <button type="button" class="page-size-button" [class.active]="pageSize === 1000" (click)="setPageSize(1000)">1000</button>
