@@ -561,9 +561,24 @@
     display: none;
   }
 
+  .wow-table th:nth-child(6),
+  .wow-table td:nth-child(6) {
+    display: table-cell;
+  }
+
   .wow-table th:nth-child(7),
   .wow-table td:nth-child(7) {
     display: none;
+  }
+
+  .wow-table.sort-honorable-kills th:nth-child(6),
+  .wow-table.sort-honorable-kills td:nth-child(6) {
+    display: none;
+  }
+
+  .wow-table.sort-honorable-kills th:nth-child(7),
+  .wow-table.sort-honorable-kills td:nth-child(7) {
+    display: table-cell;
   }
 
   .wow-table td:nth-child(2) {
