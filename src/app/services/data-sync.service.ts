@@ -20,6 +20,8 @@ interface CsvPlayerRow {
   Guild?: string;
   AchievementPoints?: string;
   HonorableKills?: string;
+  MountCount?: string;
+  Mounts?: string;
   LastUpdated?: string;
   Faction?: string;
 }
@@ -107,6 +109,8 @@ export class DataSyncService {
         Guild: this.getField(row, index, 'Guild'),
         AchievementPoints: this.getField(row, index, 'AchievementPoints'),
         HonorableKills: this.getField(row, index, 'HonorableKills'),
+        MountCount: this.getField(row, index, 'MountCount'),
+        Mounts: this.getField(row, index, 'Mounts'),
         LastUpdated: this.getField(row, index, 'LastUpdated'),
         Faction: this.getField(row, index, 'Faction')
       };
@@ -126,6 +130,7 @@ export class DataSyncService {
         guild: csvRow.Guild || '',
         achievementPoints: this.toNumber(csvRow.AchievementPoints),
         honorableKills: this.toNumber(csvRow.HonorableKills),
+        mounts: this.toNumber(csvRow.MountCount || csvRow.Mounts),
         faction: csvRow.Faction || '',
         lastUpdated: lastUpdated ?? new Date()
       });
@@ -275,6 +280,7 @@ export class DataSyncService {
         // Convert date strings back to Date objects
         const players = data.map((p: any) => ({
           ...p,
+          mounts: this.toNumber(String(p.mounts ?? '0')),
           lastUpdated: new Date(p.lastUpdated)
         }));
         this.players$.next(players);

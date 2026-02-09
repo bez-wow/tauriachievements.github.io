@@ -17,7 +17,7 @@ import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 })
 export class AchievementLadderComponent implements OnInit {
   players: PlayerAchievement[] = [];
-  currentSort: string = 'achievementPoints';
+  currentSort: 'achievementPoints' | 'honorableKills' | 'mounts' = 'achievementPoints';
   currentRealm?: string = undefined;
   currentFaction?: string;
   currentClass?: number;
@@ -37,9 +37,10 @@ export class AchievementLadderComponent implements OnInit {
   openArmory = openArmory;
   getArmoryUrl = getArmoryUrl;
   getGuildArmoryUrl = getGuildArmoryUrl;
-  sortOptions = [
+  sortOptions: Array<{ value: 'achievementPoints' | 'honorableKills' | 'mounts'; label: string }> = [
     { value: 'achievementPoints', label: 'Achievement Points' },
-    { value: 'honorableKills', label: 'Honorable Kills' }
+    { value: 'honorableKills', label: 'Honorable Kills' },
+    { value: 'mounts', label: 'Mounts' }
   ];
 
   realmOptions = [
@@ -138,7 +139,7 @@ export class AchievementLadderComponent implements OnInit {
     this.factionMenuOpen = nextState;
   }
 
-  selectSort(option: { value: string; label: string }) {
+  selectSort(option: { value: 'achievementPoints' | 'honorableKills' | 'mounts'; label: string }) {
     this.currentSort = option.value;
     this.selectedSortLabel = option.label;
     this.sortMenuOpen = false;
@@ -191,9 +192,14 @@ export class AchievementLadderComponent implements OnInit {
   }
 
   private loadPlayers() {
-    const observable = this.currentSort === 'achievementPoints'
-      ? this.ladderService.getAchievements(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize)
-      : this.ladderService.getHonorableKills(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize);
+    let observable;
+    if (this.currentSort === 'achievementPoints') {
+      observable = this.ladderService.getAchievements(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize);
+    } else if (this.currentSort === 'honorableKills') {
+      observable = this.ladderService.getHonorableKills(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize);
+    } else {
+      observable = this.ladderService.getMounts(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize);
+    }
     
     observable.subscribe(data => {
       this.updatePlayers(data);
@@ -212,6 +218,7 @@ export class AchievementLadderComponent implements OnInit {
       guild: item.guild,
       achievementPoints: item.achievementPoints,
       honorableKills: item.honorableKills,
+      mounts: item.mounts ?? 0,
       faction: item.faction
     }));
     this.cdr.markForCheck();

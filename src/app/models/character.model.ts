@@ -44,6 +44,7 @@ export interface Player {
   guild: string;
   achievementPoints: number;
   honorableKills: number;
+  mounts: number;
   faction: string;
   lastUpdated: Date;
 }

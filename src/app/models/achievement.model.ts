@@ -9,5 +9,6 @@ export interface PlayerAchievement {
   guild: string;
   achievementPoints: number;
   honorableKills: number;
+  mounts: number;
   faction: 'Horde' | 'Alliance'; 
 }

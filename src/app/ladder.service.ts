@@ -12,6 +12,7 @@ export interface LadderAchievement {
   guild: string;
   achievementPoints: number;
   honorableKills: number;
+  mounts: number;
   faction: 'Horde' | 'Alliance';
 }
 
@@ -76,6 +77,34 @@ export class LadderService {
   }
 
   /**
+   * Get players sorted by mounts with optional filters
+   */
+  getMounts(
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): Observable<LadderAchievement[]> {
+    return this.dataSyncService.getPlayers().pipe(
+      map(players => {
+        // Apply filters
+        let filtered = this.applyFilters(players, realm, faction, playerClass);
+        
+        // Sort by mounts descending
+        filtered.sort((a, b) => (b.mounts ?? 0) - (a.mounts ?? 0));
+        
+        // Apply pagination
+        const start = (pageNumber - 1) * pageSize;
+        const end = start + pageSize;
+        const paginated = filtered.slice(start, end);
+        
+        return this.mapToLadderAchievement(paginated);
+      })
+    );
+  }
+
+  /**
    * Apply filters to player list
    */
   private applyFilters(
@@ -114,6 +143,7 @@ export class LadderService {
       guild: p.guild,
       achievementPoints: p.achievementPoints,
       honorableKills: p.honorableKills,
+      mounts: p.mounts ?? 0,
       faction: (p.faction || 'Horde') as 'Horde' | 'Alliance'
     }));
   }
