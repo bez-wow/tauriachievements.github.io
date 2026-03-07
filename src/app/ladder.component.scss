@@ -414,8 +414,7 @@
     z-index: 10;
 
     &:nth-child(6),
-    &:nth-child(7),
-    &:nth-child(8) {
+    &:nth-child(7) {
       text-align: center;
     }
   }
@@ -440,8 +439,7 @@
     }
 
     &:nth-child(6),
-    &:nth-child(7),
-    &:nth-child(8) {
+    &:nth-child(7) {
       text-align: center;
       font-weight: 500;
     }
@@ -681,11 +679,6 @@
     display: none;
   }
 
-  .wow-table th:nth-child(8),
-  .wow-table td:nth-child(8) {
-    display: none;
-  }
-
   .wow-table.sort-honorable-kills th:nth-child(6),
   .wow-table.sort-honorable-kills td:nth-child(6) {
     display: none;
@@ -693,18 +686,6 @@
 
   .wow-table.sort-honorable-kills th:nth-child(7),
   .wow-table.sort-honorable-kills td:nth-child(7) {
-    display: table-cell;
-  }
-
-  .wow-table.sort-mounts th:nth-child(6),
-  .wow-table.sort-mounts td:nth-child(6),
-  .wow-table.sort-mounts th:nth-child(7),
-  .wow-table.sort-mounts td:nth-child(7) {
-    display: none;
-  }
-
-  .wow-table.sort-mounts th:nth-child(8),
-  .wow-table.sort-mounts td:nth-child(8) {
     display: table-cell;
   }
 

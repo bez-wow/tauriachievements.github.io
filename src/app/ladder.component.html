@@ -119,7 +119,7 @@
   <div class="wow-table-scroll">
     <table
       class="wow-table"
-      [ngClass]="{ 'sort-honorable-kills': currentSort === 'honorableKills', 'sort-mounts': currentSort === 'mounts' }">
+      [ngClass]="{ 'sort-honorable-kills': currentSort === 'honorableKills' }">
       <thead>
         <tr>
           <th>#</th>
@@ -129,7 +129,6 @@
           <th>Guild</th>
           <th>Achievement points</th>
           <th>Honorable kills</th>
-          <th>Mounts</th>
         </tr>
       </thead>
       <tbody>
@@ -175,7 +174,6 @@
           </td>
           <td class="gold-text">{{ player.achievementPoints | number }}</td>
           <td>{{ player.honorableKills | number }}</td>
-          <td>{{ player.mounts | number }}</td>
         </tr>
       </tbody>
     </table>
