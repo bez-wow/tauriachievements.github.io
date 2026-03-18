@@ -10,10 +10,7 @@ jobs:
       - name: Send message to Discord
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          MESSAGE="🚀 New push to **${GITHUB_REPOSITORY}**
-          Branch: **${BRANCH_NAME}**
-          Author: **${GITHUB_ACTOR}**
-          Commit: **${GITHUB_EVENT_HEAD_COMMIT_MESSAGE}**"
+          MESSAGE="🚀 New update on https://tauriachievements.github.io/**
 
           curl -H "Content-Type: application/json" \
                -X POST \
