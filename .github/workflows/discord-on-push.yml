@@ -9,12 +9,9 @@ jobs:
     steps:
       - name: Send message to Discord
         run: |
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          MESSAGE="🚀 New update on https://tauriachievements.github.io/**
-
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d "$(jq -n --arg content "$MESSAGE" '{content: $content}')" \
+               -d '{"content": "🚀 New update is available on Tauri Achievements"}' \
                "$DISCORD_WEBHOOK_URL"
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
