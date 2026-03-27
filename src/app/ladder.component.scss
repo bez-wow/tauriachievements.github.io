@@ -411,6 +411,7 @@
   min-width: 200px;
   z-index: 800;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   transform: translateY(-4px);
   transition: opacity 0.15s ease, transform 0.15s ease;
@@ -418,6 +419,7 @@
 
 .dropdown.open .dropdown-menu {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
 }
@@ -441,6 +443,18 @@
     background: linear-gradient(135deg, #32323f, #24242c);
     border-color: rgba(247,181,0,0.35);
     color: #fff;
+  }
+
+  &[aria-selected='true'] {
+    background: linear-gradient(135deg, rgba(247,181,0,0.18), rgba(247,181,0,0.08));
+    border-color: rgba(247,181,0,0.3);
+    color: #fff6d3;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: rgba(247,181,0,0.5);
+    box-shadow: 0 0 0 3px rgba(247,181,0,0.16), 0 4px 12px rgba(0,0,0,0.35);
   }
 }
 

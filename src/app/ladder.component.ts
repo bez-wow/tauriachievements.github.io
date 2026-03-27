@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, HostListener, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -12,6 +12,7 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 
 type LadderSort = 'achievementPoints' | 'honorableKills';
+type DropdownKey = 'class' | 'sort' | 'realm' | 'faction';
 
 interface LadderFilterState {
   sort: LadderSort;
@@ -103,6 +104,14 @@ export class AchievementLadderComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly searchInput$ = new Subject<string>();
+  @ViewChild('sortTrigger') private sortTriggerRef?: ElementRef<HTMLButtonElement>;
+  @ViewChild('realmTrigger') private realmTriggerRef?: ElementRef<HTMLButtonElement>;
+  @ViewChild('classTrigger') private classTriggerRef?: ElementRef<HTMLButtonElement>;
+  @ViewChild('factionTrigger') private factionTriggerRef?: ElementRef<HTMLButtonElement>;
+  @ViewChildren('sortOption') private sortOptionRefs?: QueryList<ElementRef<HTMLButtonElement>>;
+  @ViewChildren('realmOption') private realmOptionRefs?: QueryList<ElementRef<HTMLButtonElement>>;
+  @ViewChildren('classOption') private classOptionRefs?: QueryList<ElementRef<HTMLButtonElement>>;
+  @ViewChildren('factionOption') private factionOptionRefs?: QueryList<ElementRef<HTMLButtonElement>>;
   private hasStartedSync = false;
 
   constructor(
@@ -162,6 +171,26 @@ export class AchievementLadderComponent implements OnInit {
     this.showBackToTop = scrollTop > 400;
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest('.dropdown')) {
+      this.closeAllDropdowns();
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: Event) {
+    const openDropdown = this.getOpenDropdown();
+    if (!openDropdown) {
+      return;
+    }
+
+    event.preventDefault();
+    this.closeAllDropdowns();
+    this.focusDropdownTrigger(openDropdown);
+  }
+
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -188,7 +217,7 @@ export class AchievementLadderComponent implements OnInit {
     }
   }
 
-  closeAllDropdowns(except?: 'class' | 'sort' | 'realm' | 'faction') {
+  closeAllDropdowns(except?: DropdownKey) {
     if (except !== 'class') this.classMenuOpen = false;
     if (except !== 'sort') this.sortMenuOpen = false;
     if (except !== 'realm') this.realmMenuOpen = false;
@@ -196,27 +225,58 @@ export class AchievementLadderComponent implements OnInit {
   }
 
   toggleClassMenu() {
-    const nextState = !this.classMenuOpen;
-    this.closeAllDropdowns('class');
-    this.classMenuOpen = nextState;
+    this.toggleDropdown('class');
   }
 
   toggleSortMenu() {
-    const nextState = !this.sortMenuOpen;
-    this.closeAllDropdowns('sort');
-    this.sortMenuOpen = nextState;
+    this.toggleDropdown('sort');
   }
 
   toggleRealmMenu() {
-    const nextState = !this.realmMenuOpen;
-    this.closeAllDropdowns('realm');
-    this.realmMenuOpen = nextState;
+    this.toggleDropdown('realm');
   }
 
   toggleFactionMenu() {
-    const nextState = !this.factionMenuOpen;
-    this.closeAllDropdowns('faction');
-    this.factionMenuOpen = nextState;
+    this.toggleDropdown('faction');
+  }
+
+  onDropdownTriggerKeydown(event: KeyboardEvent, dropdown: DropdownKey) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+      return;
+    }
+
+    event.preventDefault();
+    this.openDropdown(dropdown);
+    this.focusSelectedDropdownOption(dropdown);
+  }
+
+  onDropdownOptionKeydown(event: KeyboardEvent, dropdown: DropdownKey, currentIndex: number) {
+    const options = this.getDropdownOptionElements(dropdown);
+    if (options.length === 0) {
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.focusDropdownOption(dropdown, currentIndex + 1);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.focusDropdownOption(dropdown, currentIndex - 1);
+        break;
+      case 'Home':
+        event.preventDefault();
+        this.focusDropdownOption(dropdown, 0);
+        break;
+      case 'End':
+        event.preventDefault();
+        this.focusDropdownOption(dropdown, options.length - 1);
+        break;
+      case 'Tab':
+        this.closeAllDropdowns();
+        break;
+    }
   }
 
   selectSort(option: { value: LadderSort; label: string }) {
@@ -432,6 +492,116 @@ export class AchievementLadderComponent implements OnInit {
       return parts.find(part => part.type === 'timeZoneName')?.value ?? 'Local time';
     } catch {
       return 'Local time';
+    }
+  }
+
+  private toggleDropdown(dropdown: DropdownKey) {
+    const nextState = !this.isDropdownOpen(dropdown);
+    this.closeAllDropdowns(dropdown);
+    this.setDropdownOpen(dropdown, nextState);
+  }
+
+  private openDropdown(dropdown: DropdownKey) {
+    this.closeAllDropdowns(dropdown);
+    this.setDropdownOpen(dropdown, true);
+  }
+
+  private isDropdownOpen(dropdown: DropdownKey): boolean {
+    switch (dropdown) {
+      case 'sort':
+        return this.sortMenuOpen;
+      case 'realm':
+        return this.realmMenuOpen;
+      case 'class':
+        return this.classMenuOpen;
+      case 'faction':
+        return this.factionMenuOpen;
+    }
+  }
+
+  private setDropdownOpen(dropdown: DropdownKey, isOpen: boolean) {
+    switch (dropdown) {
+      case 'sort':
+        this.sortMenuOpen = isOpen;
+        break;
+      case 'realm':
+        this.realmMenuOpen = isOpen;
+        break;
+      case 'class':
+        this.classMenuOpen = isOpen;
+        break;
+      case 'faction':
+        this.factionMenuOpen = isOpen;
+        break;
+    }
+  }
+
+  private getOpenDropdown(): DropdownKey | null {
+    if (this.sortMenuOpen) return 'sort';
+    if (this.realmMenuOpen) return 'realm';
+    if (this.classMenuOpen) return 'class';
+    if (this.factionMenuOpen) return 'faction';
+    return null;
+  }
+
+  private focusSelectedDropdownOption(dropdown: DropdownKey) {
+    this.focusDropdownOption(dropdown, this.getSelectedDropdownOptionIndex(dropdown));
+  }
+
+  private focusDropdownOption(dropdown: DropdownKey, index: number) {
+    const options = this.getDropdownOptionElements(dropdown);
+    if (options.length === 0) {
+      return;
+    }
+
+    const safeIndex = Math.max(0, Math.min(index, options.length - 1));
+    setTimeout(() => {
+      options[safeIndex]?.focus();
+    });
+  }
+
+  private focusDropdownTrigger(dropdown: DropdownKey) {
+    this.getDropdownTriggerElement(dropdown)?.focus();
+  }
+
+  private getDropdownTriggerElement(dropdown: DropdownKey): HTMLButtonElement | undefined {
+    switch (dropdown) {
+      case 'sort':
+        return this.sortTriggerRef?.nativeElement;
+      case 'realm':
+        return this.realmTriggerRef?.nativeElement;
+      case 'class':
+        return this.classTriggerRef?.nativeElement;
+      case 'faction':
+        return this.factionTriggerRef?.nativeElement;
+    }
+  }
+
+  private getDropdownOptionElements(dropdown: DropdownKey): HTMLButtonElement[] {
+    switch (dropdown) {
+      case 'sort':
+        return this.sortOptionRefs?.toArray().map(option => option.nativeElement) ?? [];
+      case 'realm':
+        return this.realmOptionRefs?.toArray().map(option => option.nativeElement) ?? [];
+      case 'class':
+        return this.classOptionRefs?.toArray().map(option => option.nativeElement) ?? [];
+      case 'faction':
+        return this.factionOptionRefs?.toArray().map(option => option.nativeElement) ?? [];
+    }
+  }
+
+  private getSelectedDropdownOptionIndex(dropdown: DropdownKey): number {
+    switch (dropdown) {
+      case 'sort':
+        return this.sortOptions.findIndex(option => option.value === this.currentSort);
+      case 'realm':
+        return this.realmOptions.findIndex(option => option.value === this.currentRealm);
+      case 'faction':
+        return this.factionOptions.findIndex(option => option.value === this.currentFaction);
+      case 'class':
+        return this.currentClass === undefined
+          ? 0
+          : Math.max(0, this.classOptions.findIndex(option => option.id === this.currentClass) + 1);
     }
   }
 
