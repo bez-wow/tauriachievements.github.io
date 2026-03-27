@@ -58,7 +58,7 @@ export class DataSyncService {
    */
   async syncData(): Promise<void> {
     try {
-      this.updateProgress(true, 0, 1, 'Loading players.csv...');
+      this.updateProgress(true, 0, 1, 'Loading ladder data...');
       const players = await this.loadPlayersFromCsv();
 
       console.log(`Loaded ${players.length} players from CSV`);

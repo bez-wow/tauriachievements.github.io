@@ -126,7 +126,34 @@
     </div>
   </div>
 
-  <div class="wow-table-scroll">
+  <div class="ladder-status-banner info" *ngIf="showRefreshingBanner">
+    <span>{{ syncMessage || 'Refreshing ladder data...' }}</span>
+  </div>
+
+  <div class="ladder-status-banner warning" *ngIf="showErrorBanner">
+    <span>{{ loadError }}</span>
+    <button type="button" class="status-action" (click)="syncData()">Try again</button>
+  </div>
+
+  <div class="ladder-feedback loading" *ngIf="showLoadingState">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading ladder...</h2>
+  </div>
+
+  <div class="ladder-feedback error" *ngIf="showErrorState">
+    <h2>Could not load ladder data</h2>
+    <p>{{ loadError }}</p>
+    <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+  </div>
+
+  <div class="ladder-feedback empty" *ngIf="showEmptyState">
+    <h2>{{ emptyStateTitle }}</h2>
+    <p>{{ emptyStateMessage }}</p>
+    <p *ngIf="emptyStateHint">{{ emptyStateHint }}</p>
+    <button type="button" class="feedback-action" *ngIf="hasNarrowingFilters" (click)="resetFilters()">Reset filters</button>
+  </div>
+
+  <div class="wow-table-scroll" *ngIf="players.length > 0">
     <table
       class="wow-table"
       [ngClass]="{ 'sort-honorable-kills': currentSort === 'honorableKills' }">

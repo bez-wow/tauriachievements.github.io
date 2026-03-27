@@ -37,6 +37,9 @@ export class AchievementLadderComponent implements OnInit {
   currentClass?: number;
   pageSize = 100;
   searchTerm = '';
+  isLoading = true;
+  syncMessage = 'Loading ladder data...';
+  loadError?: string;
   sortMenuOpen = false;
   realmMenuOpen = false;
   factionMenuOpen = false;
@@ -88,15 +91,36 @@ export class AchievementLadderComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private hasStartedSync = false;
 
   constructor(
     private ladderService: LadderService,
     private dataSyncService: DataSyncService,
     private cdr: ChangeDetectorRef,
     private http: HttpClient
-  ) {}
+  ) {
+    this.isLoading = this.dataSyncService.getCurrentPlayers().length === 0;
+    this.syncMessage = this.isLoading ? 'Loading ladder data...' : '';
+  }
 
   ngOnInit() {
+    this.dataSyncService.getSyncProgress().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(progress => {
+      if (!this.hasStartedSync && !progress.isLoading && !this.hasSourcePlayers) {
+        return;
+      }
+
+      this.isLoading = progress.isLoading;
+      this.syncMessage = progress.message;
+
+      if (progress.isLoading) {
+        this.loadError = undefined;
+      }
+
+      this.cdr.markForCheck();
+    });
+
     this.route.queryParamMap.pipe(
       map(params => this.parseFilterState(params)),
       distinctUntilChanged((previous, current) => this.areFilterStatesEqual(previous, current)),
@@ -122,10 +146,24 @@ export class AchievementLadderComponent implements OnInit {
   }
 
   async syncData() {
+    this.hasStartedSync = true;
+    this.loadError = undefined;
+
+    if (!this.hasSourcePlayers) {
+      this.isLoading = true;
+      this.syncMessage = 'Loading ladder data...';
+    }
+
     try {
       await this.dataSyncService.syncData();
+      this.loadError = undefined;
     } catch (error) {
       console.error('Failed to sync data:', error);
+      this.loadError = 'We could not load the ladder right now. Please try again in a moment.';
+      this.isLoading = false;
+      this.syncMessage = '';
+    } finally {
+      this.cdr.markForCheck();
     }
   }
 
@@ -360,5 +398,75 @@ export class AchievementLadderComponent implements OnInit {
 
   onImageError(event: any) {
     console.error('Failed to load image:', event.target.src);
+  }
+
+  get hasSourcePlayers(): boolean {
+    return this.dataSyncService.getCurrentPlayers().length > 0;
+  }
+
+  get showLoadingState(): boolean {
+    return this.isLoading && !this.hasSourcePlayers;
+  }
+
+  get showErrorState(): boolean {
+    return !this.isLoading && !!this.loadError && !this.hasSourcePlayers;
+  }
+
+  get showEmptyState(): boolean {
+    return !this.showLoadingState && !this.showErrorState && this.players.length === 0;
+  }
+
+  get showRefreshingBanner(): boolean {
+    return this.isLoading && this.hasSourcePlayers;
+  }
+
+  get showErrorBanner(): boolean {
+    return !!this.loadError && this.hasSourcePlayers;
+  }
+
+  get hasSearchQuery(): boolean {
+    return this.searchTerm.trim().length > 0;
+  }
+
+  get hasActiveFilters(): boolean {
+    return !!this.currentRealm
+      || !!this.currentFaction
+      || this.currentClass !== undefined;
+  }
+
+  get emptyStateTitle(): string {
+    return this.hasSearchQuery ? 'No matches found' : 'No players found';
+  }
+
+  get emptyStateMessage(): string {
+    if (this.hasSearchQuery && this.hasActiveFilters) {
+      return 'No players or guilds match your search with the current filters.';
+    }
+
+    if (this.hasSearchQuery) {
+      return 'No players or guilds match your search.';
+    }
+
+    if (this.hasActiveFilters) {
+      return 'No players match the current filters. Try broadening them or resetting the filters.';
+    }
+
+    return 'No ladder data is available right now.';
+  }
+
+  get emptyStateHint(): string {
+    if (this.hasSearchQuery && this.hasActiveFilters) {
+      return 'Try a different name, guild, or reset the filters.';
+    }
+
+    if (this.hasSearchQuery) {
+      return 'Try a different character name or guild.';
+    }
+
+    return '';
+  }
+
+  get hasNarrowingFilters(): boolean {
+    return this.hasActiveFilters || this.hasSearchQuery;
   }
 }
