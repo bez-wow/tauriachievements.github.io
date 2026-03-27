@@ -3,7 +3,7 @@
     <span class="update-bar-spacer" aria-hidden="true"></span>
     <span class="update-bar-text">
       <span class="update-label gold-text">Last updated:</span>
-      {{ lastEdited | date:'dd.MMM.yyyy HH:mm' }} CET
+      {{ lastEdited | date:'dd.MMM.yyyy HH:mm' }} {{ lastEditedTimeZoneLabel }}
     </span>
     <div class="update-bar-actions">
       <a

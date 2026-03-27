@@ -50,6 +50,7 @@ export class AchievementLadderComponent implements OnInit {
   selectedClassLabel = 'All Classes';
   selectedClassIcon?: string;
   lastEdited?: Date;
+  lastEditedTimeZoneLabel = 'Local time';
   showBackToTop = false;
   readonly pageSizeOptions = [100, 500, 1000];
   getClassIconPath = getClassIconPath;
@@ -398,6 +399,7 @@ export class AchievementLadderComponent implements OnInit {
           return;
         }
         this.lastEdited = parsed;
+        this.lastEditedTimeZoneLabel = this.getTimeZoneLabel(parsed);
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -408,6 +410,15 @@ export class AchievementLadderComponent implements OnInit {
 
   onImageError(event: any) {
     console.error('Failed to load image:', event.target.src);
+  }
+
+  private getTimeZoneLabel(date: Date): string {
+    try {
+      const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(date);
+      return parts.find(part => part.type === 'timeZoneName')?.value ?? 'Local time';
+    } catch {
+      return 'Local time';
+    }
   }
 
   get hasSourcePlayers(): boolean {
