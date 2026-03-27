@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 import { PlayerAchievement } from './models/achievement.model';
 import { LadderService } from './ladder.service';
 import { DataSyncService } from './services/data-sync.service';
@@ -91,6 +91,7 @@ export class AchievementLadderComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly searchInput$ = new Subject<string>();
   private hasStartedSync = false;
 
   constructor(
@@ -119,6 +120,15 @@ export class AchievementLadderComponent implements OnInit {
       }
 
       this.cdr.markForCheck();
+    });
+
+    this.searchInput$.pipe(
+      map(value => value.trim()),
+      debounceTime(250),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.syncFiltersToQueryParams(true);
     });
 
     this.route.queryParamMap.pipe(
@@ -235,7 +245,7 @@ export class AchievementLadderComponent implements OnInit {
   onSearchInput(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchTerm = input.value;
-    this.syncFiltersToQueryParams(true);
+    this.searchInput$.next(input.value);
   }
 
   resetFilters() {
