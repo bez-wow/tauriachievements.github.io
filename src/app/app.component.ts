@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { AchievementLadderComponent } from './ladder.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-    selector: 'app-root',
-    template: '<app-achievement-ladder></app-achievement-ladder>',
-    imports: [AchievementLadderComponent],
-    standalone: true
+  selector: 'app-root',
+  template: '<router-outlet></router-outlet>',
+  imports: [RouterOutlet],
+  standalone: true
 })
 export class AppComponent {
 }

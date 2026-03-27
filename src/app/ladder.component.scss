@@ -80,7 +80,7 @@
   z-index: 200;
   
   @media (min-width: 768px) {
-    grid-template-columns: auto repeat(5, minmax(0, 1fr));
+    grid-template-columns: auto repeat(6, minmax(0, 1fr));
     align-items: end;
   }
 }
@@ -184,6 +184,16 @@
 
 .dropdown-trigger.no-icon .option-icon.placeholder {
   display: none;
+}
+
+.search-input {
+  cursor: text;
+  background-image: none;
+  padding-right: 14px;
+
+  &::placeholder {
+    color: #8d8d95;
+  }
 }
 
 .page-size {

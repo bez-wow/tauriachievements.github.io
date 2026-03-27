@@ -1,12 +1,26 @@
-import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 import { PlayerAchievement } from './models/achievement.model';
 import { LadderService } from './ladder.service';
 import { DataSyncService } from './services/data-sync.service';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
+
+type LadderSort = 'achievementPoints' | 'honorableKills';
+
+interface LadderFilterState {
+  sort: LadderSort;
+  realm?: string;
+  faction?: string;
+  playerClass?: number;
+  pageSize: number;
+  search: string;
+}
 
 @Component({
   selector: 'app-achievement-ladder',
@@ -17,28 +31,30 @@ import { openArmory, getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 })
 export class AchievementLadderComponent implements OnInit {
   players: PlayerAchievement[] = [];
-  currentSort: 'achievementPoints' | 'honorableKills' = 'achievementPoints';
+  currentSort: LadderSort = 'achievementPoints';
   currentRealm?: string = undefined;
   currentFaction?: string;
   currentClass?: number;
   pageSize = 100;
+  searchTerm = '';
   sortMenuOpen = false;
   realmMenuOpen = false;
   factionMenuOpen = false;
   classMenuOpen = false;
-  selectedSortLabel = 'Achievement Points';
+  selectedSortLabel = 'Achievements';
   selectedRealmLabel = 'All Realms';
   selectedFactionLabel = 'All Factions';
   selectedClassLabel = 'All Classes';
   selectedClassIcon?: string;
   lastEdited?: Date;
   showBackToTop = false;
+  readonly pageSizeOptions = [100, 500, 1000];
   getClassIconPath = getClassIconPath;
   openArmory = openArmory;
   getArmoryUrl = getArmoryUrl;
   getGuildArmoryUrl = getGuildArmoryUrl;
-  sortOptions: Array<{ value: 'achievementPoints' | 'honorableKills'; label: string }> = [
-    { value: 'achievementPoints', label: 'Achievement Points' },
+  sortOptions: Array<{ value: LadderSort; label: string }> = [
+    { value: 'achievementPoints', label: 'Achievements' },
     { value: 'honorableKills', label: 'Honorable Kills' }
   ];
 
@@ -69,6 +85,9 @@ export class AchievementLadderComponent implements OnInit {
     { id: 9, name: 'Warlock', icon: getClassIconPath(9) },
     { id: 1, name: 'Warrior', icon: getClassIconPath(1) },
   ];
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private ladderService: LadderService,
@@ -78,7 +97,16 @@ export class AchievementLadderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.applyFilters();
+    this.route.queryParamMap.pipe(
+      map(params => this.parseFilterState(params)),
+      distinctUntilChanged((previous, current) => this.areFilterStatesEqual(previous, current)),
+      tap(state => this.applyFilterState(state)),
+      switchMap(state => this.getFilteredPlayers(state)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(data => {
+      this.updatePlayers(data);
+    });
+
     this.syncData();
     this.loadLastUpdated();
   }
@@ -96,15 +124,9 @@ export class AchievementLadderComponent implements OnInit {
   async syncData() {
     try {
       await this.dataSyncService.syncData();
-      this.applyFilters();
-      this.cdr.markForCheck();
     } catch (error) {
       console.error('Failed to sync data:', error);
     }
-  }
-
-  applyFilters() {
-    this.loadPlayers();
   }
 
   closeAllDropdowns(except?: 'class' | 'sort' | 'realm' | 'faction') {
@@ -138,25 +160,25 @@ export class AchievementLadderComponent implements OnInit {
     this.factionMenuOpen = nextState;
   }
 
-  selectSort(option: { value: 'achievementPoints' | 'honorableKills'; label: string }) {
+  selectSort(option: { value: LadderSort; label: string }) {
     this.currentSort = option.value;
     this.selectedSortLabel = option.label;
     this.sortMenuOpen = false;
-    this.applyFilters();
+    this.syncFiltersToQueryParams();
   }
 
   selectRealm(option: { value: string | undefined; label: string }) {
     this.currentRealm = option.value;
     this.selectedRealmLabel = option.label;
     this.realmMenuOpen = false;
-    this.applyFilters();
+    this.syncFiltersToQueryParams();
   }
 
   selectFaction(option: { value: string | undefined; label: string }) {
     this.currentFaction = option.value;
     this.selectedFactionLabel = option.label;
     this.factionMenuOpen = false;
-    this.applyFilters();
+    this.syncFiltersToQueryParams();
   }
 
   selectClass(option?: { id: number; name: string; icon: string }) {
@@ -164,17 +186,23 @@ export class AchievementLadderComponent implements OnInit {
     this.selectedClassLabel = option ? option.name : 'All Classes';
     this.selectedClassIcon = option?.icon;
     this.classMenuOpen = false;
-    this.applyFilters();
+    this.syncFiltersToQueryParams();
   }
 
   setPageSize(size: number) {
     this.pageSize = size;
-    this.applyFilters();
+    this.syncFiltersToQueryParams();
+  }
+
+  onSearchInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm = input.value;
+    this.syncFiltersToQueryParams(true);
   }
 
   resetFilters() {
     this.currentSort = 'achievementPoints';
-    this.selectedSortLabel = 'Achievement Points';
+    this.selectedSortLabel = 'Achievements';
 
     this.currentRealm = undefined;
     this.selectedRealmLabel = 'All Realms';
@@ -185,18 +213,113 @@ export class AchievementLadderComponent implements OnInit {
     this.currentClass = undefined;
     this.selectedClassLabel = 'All Classes';
     this.selectedClassIcon = undefined;
+    this.pageSize = 100;
+    this.searchTerm = '';
 
     this.closeAllDropdowns();
-    this.applyFilters();
+    this.syncFiltersToQueryParams();
   }
 
-  private loadPlayers() {
-    const observable = this.currentSort === 'achievementPoints'
-      ? this.ladderService.getAchievements(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize)
-      : this.ladderService.getHonorableKills(this.currentRealm, this.currentFaction, this.currentClass, 1, this.pageSize);
-    
-    observable.subscribe(data => {
-      this.updatePlayers(data);
+  private parseFilterState(params: ParamMap): LadderFilterState {
+    const sortParam = params.get('sort');
+    const realmParam = params.get('realm');
+    const factionParam = params.get('faction');
+    const classParam = params.get('class');
+    const pageSizeParam = Number(params.get('pageSize'));
+
+    const sort = this.sortOptions.some(option => option.value === sortParam)
+      ? (sortParam as LadderSort)
+      : 'achievementPoints';
+
+    const realm = this.realmOptions.some(option => option.value === realmParam)
+      ? realmParam ?? undefined
+      : undefined;
+
+    const faction = this.factionOptions.some(option => option.value === factionParam)
+      ? factionParam ?? undefined
+      : undefined;
+
+    const parsedClass = classParam ? Number(classParam) : undefined;
+    const playerClass = Number.isFinite(parsedClass) && this.classOptions.some(option => option.id === parsedClass)
+      ? parsedClass
+      : undefined;
+
+    const pageSize = this.pageSizeOptions.includes(pageSizeParam)
+      ? pageSizeParam
+      : 100;
+
+    return {
+      sort,
+      realm,
+      faction,
+      playerClass,
+      pageSize,
+      search: params.get('search') ?? ''
+    };
+  }
+
+  private applyFilterState(state: LadderFilterState) {
+    this.currentSort = state.sort;
+    this.currentRealm = state.realm;
+    this.currentFaction = state.faction;
+    this.currentClass = state.playerClass;
+    this.pageSize = state.pageSize;
+    this.searchTerm = state.search;
+
+    this.selectedSortLabel = this.sortOptions.find(option => option.value === state.sort)?.label ?? 'Achievements';
+    this.selectedRealmLabel = this.realmOptions.find(option => option.value === state.realm)?.label ?? 'All Realms';
+    this.selectedFactionLabel = this.factionOptions.find(option => option.value === state.faction)?.label ?? 'All Factions';
+
+    const selectedClass = this.classOptions.find(option => option.id === state.playerClass);
+    this.selectedClassLabel = selectedClass?.name ?? 'All Classes';
+    this.selectedClassIcon = selectedClass?.icon;
+
+    this.cdr.markForCheck();
+  }
+
+  private areFilterStatesEqual(previous: LadderFilterState, current: LadderFilterState): boolean {
+    return previous.sort === current.sort
+      && previous.realm === current.realm
+      && previous.faction === current.faction
+      && previous.playerClass === current.playerClass
+      && previous.pageSize === current.pageSize
+      && previous.search === current.search;
+  }
+
+  private getFilteredPlayers(state: LadderFilterState) {
+    return state.sort === 'achievementPoints'
+      ? this.ladderService.getAchievements(
+          state.realm,
+          state.faction,
+          state.playerClass,
+          state.search,
+          1,
+          state.pageSize
+        )
+      : this.ladderService.getHonorableKills(
+          state.realm,
+          state.faction,
+          state.playerClass,
+          state.search,
+          1,
+          state.pageSize
+        );
+  }
+
+  private syncFiltersToQueryParams(replaceUrl: boolean = false) {
+    const normalizedSearch = this.searchTerm.trim();
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        sort: this.currentSort === 'achievementPoints' ? null : this.currentSort,
+        realm: this.currentRealm ?? null,
+        faction: this.currentFaction ?? null,
+        class: this.currentClass ?? null,
+        pageSize: this.pageSize === 100 ? null : this.pageSize,
+        search: normalizedSearch || null
+      },
+      replaceUrl
     });
   }
 

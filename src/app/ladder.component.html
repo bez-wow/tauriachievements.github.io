@@ -106,12 +106,22 @@
     </div>
 
     <div class="filter-group">
+      <label for="nameGuildSearch" class="filter-label dropdown-label">Search:</label>
+      <input
+        id="nameGuildSearch"
+        type="search"
+        class="filter-select search-input"
+        [value]="searchTerm"
+        placeholder="Name or guild"
+        aria-label="Search by character name or guild"
+        (input)="onSearchInput($event)" />
+    </div>
+
+    <div class="filter-group">
       <label class="filter-label dropdown-label">Show:</label>
       <div class="page-size">
         <button type="button" class="page-size-button page-size-reset-inline" (click)="resetFilters()">Reset</button>
-        <button type="button" class="page-size-button" [class.active]="pageSize === 100" (click)="setPageSize(100)">100</button>
-        <button type="button" class="page-size-button" [class.active]="pageSize === 500" (click)="setPageSize(500)">500</button>
-        <button type="button" class="page-size-button" [class.active]="pageSize === 1000" (click)="setPageSize(1000)">1000</button>
+        <button type="button" class="page-size-button" *ngFor="let size of pageSizeOptions" [class.active]="pageSize === size" (click)="setPageSize(size)">{{ size }}</button>
       </div>
     </div>
   </div>
@@ -127,7 +137,7 @@
           <th>Race / Class</th>
           <th>Realm</th>
           <th>Guild</th>
-          <th>Achievement points</th>
+          <th>Achievements</th>
           <th>Honorable kills</th>
         </tr>
       </thead>

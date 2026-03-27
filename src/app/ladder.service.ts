@@ -26,13 +26,14 @@ export class LadderService {
     realm?: string,
     faction?: string,
     playerClass?: number,
+    searchTerm?: string,
     pageNumber: number = 1,
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
     return this.dataSyncService.getPlayers().pipe(
       map(players => {
         // Apply filters
-        let filtered = this.applyFilters(players, realm, faction, playerClass);
+        let filtered = this.applyFilters(players, realm, faction, playerClass, searchTerm);
         
         // Sort by achievement points descending
         filtered.sort((a, b) => b.achievementPoints - a.achievementPoints);
@@ -54,13 +55,14 @@ export class LadderService {
     realm?: string,
     faction?: string,
     playerClass?: number,
+    searchTerm?: string,
     pageNumber: number = 1,
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
     return this.dataSyncService.getPlayers().pipe(
       map(players => {
         // Apply filters
-        let filtered = this.applyFilters(players, realm, faction, playerClass);
+        let filtered = this.applyFilters(players, realm, faction, playerClass, searchTerm);
         
         // Sort by honorable kills descending
         filtered.sort((a, b) => b.honorableKills - a.honorableKills);
@@ -82,8 +84,11 @@ export class LadderService {
     players: Player[],
     realm?: string,
     faction?: string,
-    playerClass?: number
+    playerClass?: number,
+    searchTerm?: string
   ): Player[] {
+    const normalizedSearchTerm = searchTerm?.trim().toLowerCase();
+
     return players.filter(player => {
       // Treat 'All Realms', '', undefined, or null as no filter
       if (realm && realm !== 'All Realms' && player.realm !== realm) {
@@ -97,6 +102,15 @@ export class LadderService {
       if (playerClass !== undefined && playerClass !== null && !isNaN(playerClass) && player.class !== playerClass) {
         return false;
       }
+
+      if (normalizedSearchTerm) {
+        const playerName = player.name.toLowerCase();
+        const guildName = player.guild.toLowerCase();
+        if (!playerName.includes(normalizedSearchTerm) && !guildName.includes(normalizedSearchTerm)) {
+          return false;
+        }
+      }
+
       return true;
     });
   }
