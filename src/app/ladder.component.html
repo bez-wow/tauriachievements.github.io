@@ -178,7 +178,9 @@
               target="_blank"
               rel="noopener noreferrer"
               [title]="'Open ' + player.name + ' on Tauri armory'">
-              {{ player.name }}
+              <ng-container *ngFor="let part of player.nameParts">
+                <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
+              </ng-container>
             </a>
           </td>
           <td>
@@ -206,7 +208,9 @@
               target="_blank"
               rel="noopener noreferrer"
               [title]="'Open ' + player.guild + ' guild page'">
-              {{ player.guild }}
+              <ng-container *ngFor="let part of player.guildParts">
+                <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
+              </ng-container>
             </a>
           </td>
           <td class="gold-text">{{ player.achievementPoints | number }}</td>

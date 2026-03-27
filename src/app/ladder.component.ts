@@ -5,7 +5,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 import { PlayerAchievement } from './models/achievement.model';
-import { LadderService } from './ladder.service';
+import { LadderAchievement, LadderService } from './ladder.service';
 import { DataSyncService } from './services/data-sync.service';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -22,6 +22,16 @@ interface LadderFilterState {
   search: string;
 }
 
+interface HighlightPart {
+  text: string;
+  isMatch: boolean;
+}
+
+interface LadderPlayerView extends PlayerAchievement {
+  nameParts: HighlightPart[];
+  guildParts: HighlightPart[];
+}
+
 @Component({
   selector: 'app-achievement-ladder',
   templateUrl: './ladder.component.html',
@@ -30,7 +40,7 @@ interface LadderFilterState {
   imports: [CommonModule, HttpClientModule]
 })
 export class AchievementLadderComponent implements OnInit {
-  players: PlayerAchievement[] = [];
+  players: LadderPlayerView[] = [];
   currentSort: LadderSort = 'achievementPoints';
   currentRealm?: string = undefined;
   currentFaction?: string;
@@ -372,7 +382,9 @@ export class AchievementLadderComponent implements OnInit {
     });
   }
 
-  private updatePlayers(data: any[]) {
+  private updatePlayers(data: LadderAchievement[]) {
+    const searchQuery = this.searchTerm.trim();
+
     this.players = data.map((item, idx) => ({
       rank: idx + 1,
       name: item.name,
@@ -384,7 +396,9 @@ export class AchievementLadderComponent implements OnInit {
       guild: item.guild,
       achievementPoints: item.achievementPoints,
       honorableKills: item.honorableKills,
-      faction: item.faction
+      faction: item.faction,
+      nameParts: this.buildHighlightParts(item.name, searchQuery),
+      guildParts: this.buildHighlightParts(item.guild, searchQuery)
     }));
     this.cdr.markForCheck();
   }
@@ -419,6 +433,42 @@ export class AchievementLadderComponent implements OnInit {
     } catch {
       return 'Local time';
     }
+  }
+
+  private buildHighlightParts(value: string, query: string): HighlightPart[] {
+    if (!value) {
+      return [];
+    }
+
+    if (!query) {
+      return [{ text: value, isMatch: false }];
+    }
+
+    const normalizedValue = value.toLowerCase();
+    const normalizedQuery = query.toLowerCase();
+    const parts: HighlightPart[] = [];
+    let cursor = 0;
+
+    while (cursor < value.length) {
+      const matchIndex = normalizedValue.indexOf(normalizedQuery, cursor);
+      if (matchIndex === -1) {
+        parts.push({ text: value.slice(cursor), isMatch: false });
+        break;
+      }
+
+      if (matchIndex > cursor) {
+        parts.push({ text: value.slice(cursor, matchIndex), isMatch: false });
+      }
+
+      parts.push({
+        text: value.slice(matchIndex, matchIndex + query.length),
+        isMatch: true
+      });
+
+      cursor = matchIndex + query.length;
+    }
+
+    return parts;
   }
 
   get hasSourcePlayers(): boolean {
