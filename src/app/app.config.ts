@@ -1,5 +1,4 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import {
   provideRouter,
   withEnabledBlockingInitialNavigation,
@@ -7,7 +6,6 @@ import {
   withRouterConfig,
   withViewTransitions
 } from '@angular/router';
-import { IconSetService } from '@coreui/icons-angular';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 
@@ -24,8 +22,6 @@ export const appConfig: ApplicationConfig = {
       withEnabledBlockingInitialNavigation(),
       withViewTransitions()
     ),
-    IconSetService,
-    provideAnimationsAsync(),
     provideHttpClient()
   ]
 };
