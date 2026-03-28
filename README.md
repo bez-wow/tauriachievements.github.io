@@ -77,12 +77,6 @@ The app will usually be available at `http://localhost:4200/`.
 npm run build
 ```
 
-### Run tests
-
-```bash
-npm test
-```
-
 ## Environment configuration
 
 Template files live in [`src/environments/`](./src/environments/).
