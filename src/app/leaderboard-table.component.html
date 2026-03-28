@@ -14,7 +14,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let player of players" [ngClass]="player.faction">
+      <tr *ngFor="let player of players; trackBy: trackPlayer" [ngClass]="player.faction">
         <td>{{ player.rank }}</td>
         <td>
           <a
@@ -23,7 +23,7 @@
             target="_blank"
             rel="noopener noreferrer"
             [title]="'Open ' + player.name + ' on Tauri armory'">
-            <ng-container *ngFor="let part of player.nameParts">
+            <ng-container *ngFor="let part of player.nameParts; trackBy: trackHighlightPart">
               <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
             </ng-container>
           </a>
@@ -51,7 +51,7 @@
             target="_blank"
             rel="noopener noreferrer"
             [title]="'Open ' + player.guild + ' guild page'">
-            <ng-container *ngFor="let part of player.guildParts">
+            <ng-container *ngFor="let part of player.guildParts; trackBy: trackHighlightPart">
               <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
             </ng-container>
           </a>

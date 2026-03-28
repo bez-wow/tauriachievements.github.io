@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
-import { LadderPlayerView, LadderSort } from './ladder.types';
+import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 
 @Component({
   selector: 'app-leaderboard-table',
@@ -19,6 +19,14 @@ export class LeaderboardTableComponent {
   readonly getClassIconPath = getClassIconPath;
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
+
+  trackPlayer(_index: number, player: LadderPlayerView): string {
+    return `${player.realm}::${player.name}`;
+  }
+
+  trackHighlightPart(index: number, _part: HighlightPart): number {
+    return index;
+  }
 
   onImageError(event: Event) {
     const image = event.target as HTMLImageElement | null;
