@@ -81,19 +81,19 @@
   
   @media (min-width: 768px) {
     grid-template-columns: auto repeat(6, minmax(0, 1fr));
-    align-items: end;
+    align-items: center;
   }
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   width: 100%;
 }
 
 .filter-group.reset-group {
-  padding-top: 22px;
+  padding-top: 0;
   width: auto;
 }
 

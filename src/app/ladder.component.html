@@ -28,7 +28,6 @@
     </div>
 
     <div class="filter-group">
-      <label id="sortLabel" for="sortSelect" class="filter-label dropdown-label">Sort by:</label>
       <div class="dropdown" [class.open]="sortMenuOpen">
         <button
           #sortTrigger
@@ -36,9 +35,9 @@
           type="button"
           class="filter-select dropdown-trigger"
           aria-haspopup="listbox"
+          aria-label="Sort by"
           [attr.aria-controls]="'sortMenu'"
           [attr.aria-expanded]="sortMenuOpen"
-          [attr.aria-labelledby]="'sortLabel sortSelect'"
           (click)="toggleSortMenu()"
           (focus)="closeAllDropdowns('sort')"
           (keydown)="onDropdownTriggerKeydown($event, 'sort')">
@@ -48,7 +47,7 @@
           id="sortMenu"
           class="dropdown-menu"
           role="listbox"
-          [attr.aria-labelledby]="'sortLabel'"
+          aria-label="Sort by"
           [attr.aria-hidden]="!sortMenuOpen">
           <button
             #sortOption
@@ -67,7 +66,6 @@
     </div>
     
     <div class="filter-group">
-      <label id="realmLabel" for="realmSelect" class="filter-label dropdown-label">Realm:</label>
       <div class="dropdown" [class.open]="realmMenuOpen">
         <button
           #realmTrigger
@@ -75,9 +73,9 @@
           type="button"
           class="filter-select dropdown-trigger"
           aria-haspopup="listbox"
+          aria-label="Realm"
           [attr.aria-controls]="'realmMenu'"
           [attr.aria-expanded]="realmMenuOpen"
-          [attr.aria-labelledby]="'realmLabel realmSelect'"
           (click)="toggleRealmMenu()"
           (focus)="closeAllDropdowns('realm')"
           (keydown)="onDropdownTriggerKeydown($event, 'realm')">
@@ -87,7 +85,7 @@
           id="realmMenu"
           class="dropdown-menu"
           role="listbox"
-          [attr.aria-labelledby]="'realmLabel'"
+          aria-label="Realm"
           [attr.aria-hidden]="!realmMenuOpen">
           <button
             #realmOption
@@ -106,7 +104,6 @@
     </div>
 
     <div class="filter-group">
-      <label id="classLabel" for="classSelect" class="filter-label dropdown-label">Class:</label>
       <div class="dropdown has-icons" [class.open]="classMenuOpen">
         <button
           #classTrigger
@@ -115,9 +112,9 @@
           class="filter-select dropdown-trigger"
           [class.no-icon]="!selectedClassIcon"
           aria-haspopup="listbox"
+          aria-label="Class"
           [attr.aria-controls]="'classMenu'"
           [attr.aria-expanded]="classMenuOpen"
-          [attr.aria-labelledby]="'classLabel classSelect'"
           (click)="toggleClassMenu()"
           (focus)="closeAllDropdowns('class')"
           (keydown)="onDropdownTriggerKeydown($event, 'class')">
@@ -129,7 +126,7 @@
           id="classMenu"
           class="dropdown-menu"
           role="listbox"
-          [attr.aria-labelledby]="'classLabel'"
+          aria-label="Class"
           [attr.aria-hidden]="!classMenuOpen">
           <button
             #classOption
@@ -161,7 +158,6 @@
     </div>
     
     <div class="filter-group">
-      <label id="factionLabel" for="factionSelect" class="filter-label dropdown-label">Faction:</label>
       <div class="dropdown" [class.open]="factionMenuOpen">
         <button
           #factionTrigger
@@ -169,9 +165,9 @@
           type="button"
           class="filter-select dropdown-trigger"
           aria-haspopup="listbox"
+          aria-label="Faction"
           [attr.aria-controls]="'factionMenu'"
           [attr.aria-expanded]="factionMenuOpen"
-          [attr.aria-labelledby]="'factionLabel factionSelect'"
           (click)="toggleFactionMenu()"
           (focus)="closeAllDropdowns('faction')"
           (keydown)="onDropdownTriggerKeydown($event, 'faction')">
@@ -181,7 +177,7 @@
           id="factionMenu"
           class="dropdown-menu"
           role="listbox"
-          [attr.aria-labelledby]="'factionLabel'"
+          aria-label="Faction"
           [attr.aria-hidden]="!factionMenuOpen">
           <button
             #factionOption
@@ -200,7 +196,6 @@
     </div>
 
     <div class="filter-group">
-      <label for="nameGuildSearch" class="filter-label dropdown-label">Search:</label>
       <input
         id="nameGuildSearch"
         type="search"
@@ -212,10 +207,15 @@
     </div>
 
     <div class="filter-group">
-      <label class="filter-label dropdown-label">Show:</label>
       <div class="page-size">
         <button type="button" class="page-size-button page-size-reset-inline" (click)="resetFilters()">Reset</button>
-        <button type="button" class="page-size-button" *ngFor="let size of pageSizeOptions" [class.active]="pageSize === size" (click)="setPageSize(size)">{{ size }}</button>
+        <button
+          type="button"
+          class="page-size-button"
+          *ngFor="let size of pageSizeOptions"
+          [class.active]="pageSize === size"
+          [attr.aria-label]="'Show ' + size + ' entries'"
+          (click)="setPageSize(size)">{{ size }}</button>
       </div>
     </div>
   </div>
