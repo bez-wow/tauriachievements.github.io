@@ -1,9 +1,14 @@
 <div class="update-bar">
   <div class="update-bar-content">
     <span class="update-bar-spacer" aria-hidden="true"></span>
-    <span class="update-bar-text">
+    <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
       <span class="update-label gold-text">Last updated:</span>
-      {{ lastEdited | date:'dd.MMM.yyyy HH:mm' }} {{ lastEditedTimeZoneLabel }}
+      <span class="update-gap" aria-hidden="true"></span>
+      <span class="update-date">{{ lastEdited | date:'MMM d, y' }}</span>
+      <span class="update-separator" aria-hidden="true">&bull;</span>
+      <span class="update-time">{{ lastEdited | date:'HH:mm' }}</span>
+      <span class="update-gap" aria-hidden="true"></span>
+      <span class="update-zone">{{ lastEditedTimeZoneLabel }}</span>
     </span>
     <div class="update-bar-actions">
       <a
@@ -20,3 +25,11 @@
     </div>
   </div>
 </div>
+
+<ng-template #updateUnavailable>
+  <span class="update-bar-text">
+    <span class="update-label gold-text">Last updated:</span>
+    <span class="update-gap" aria-hidden="true"></span>
+    <span class="update-date unavailable">Unavailable</span>
+  </span>
+</ng-template>

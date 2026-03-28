@@ -43,6 +43,33 @@
   text-overflow: ellipsis;
 }
 
+.update-date,
+.update-time {
+  color: #f2f2f2;
+  font-weight: 400;
+}
+
+.update-separator {
+  color: rgba(255, 255, 255, 0.38);
+  padding: 0 4px;
+}
+
+.update-gap {
+  display: inline-block;
+  width: 6px;
+  flex: 0 0 6px;
+}
+
+.update-zone {
+  color: #c9ced8;
+  font-weight: 600;
+}
+
+.update-date.unavailable {
+  color: #a8adb8;
+  font-weight: 500;
+}
+
 .update-bar-actions {
   width: var(--actions-width);
   padding-right: 6px;
