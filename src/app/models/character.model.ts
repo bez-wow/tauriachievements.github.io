@@ -5,6 +5,25 @@ export interface Character {
   realmDisplay: string;
 }
 
+export type SerializedPlayerRecord = [
+  name: string,
+  race: number,
+  gender: number,
+  playerClass: number,
+  realmIndex: number,
+  guild: string,
+  achievementPoints: number,
+  honorableKills: number,
+  factionIndex: number
+];
+
+export interface PlayerSnapshot {
+  v: 1;
+  r: string[];
+  f: string[];
+  p: SerializedPlayerRecord[];
+}
+
 export interface TauriApiRequest {
   secret: string;
   url: string;
@@ -44,9 +63,7 @@ export interface Player {
   guild: string;
   achievementPoints: number;
   honorableKills: number;
-  mounts: number;
   faction: string;
-  lastUpdated: Date;
 }
 
 export interface Guild {

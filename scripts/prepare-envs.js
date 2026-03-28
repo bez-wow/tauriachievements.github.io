@@ -8,16 +8,26 @@ const pairs = [
   ["environment.dev-proxy.template.ts", "environment.dev-proxy.ts"],
 ];
 
-for (const [templateName, targetName] of pairs) {
-  const templatePath = path.join(envDir, templateName);
-  const targetPath = path.join(envDir, targetName);
+function ensureEnvFiles() {
+  for (const [templateName, targetName] of pairs) {
+    const templatePath = path.join(envDir, templateName);
+    const targetPath = path.join(envDir, targetName);
 
-  if (!fs.existsSync(templatePath)) {
-    // Skip if the template isn't present (keeps script safe for partial setups).
-    continue;
-  }
+    if (!fs.existsSync(templatePath)) {
+      // Skip if the template isn't present (keeps script safe for partial setups).
+      continue;
+    }
 
-  if (!fs.existsSync(targetPath)) {
-    fs.copyFileSync(templatePath, targetPath);
+    if (!fs.existsSync(targetPath)) {
+      fs.copyFileSync(templatePath, targetPath);
+    }
   }
 }
+
+if (require.main === module) {
+  ensureEnvFiles();
+}
+
+module.exports = {
+  ensureEnvFiles,
+};

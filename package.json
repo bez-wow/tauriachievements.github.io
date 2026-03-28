@@ -4,9 +4,12 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
+    "prepare:app": "node ./scripts/prepare-app.js",
+    "prestart": "npm run prepare:app",
     "start": "ng serve -o",
-    "prebuild": "node ./scripts/prepare-envs.js",
+    "prebuild": "npm run prepare:app",
     "build": "ng build",
+    "prewatch": "npm run prepare:app",
     "watch": "ng build --watch --configuration development"
   },
   "private": true,

@@ -29,9 +29,9 @@ This project is an effort to bring that experience back in a modern form and mak
 
 ## How it works
 
-The frontend currently reads leaderboard data from `src/Players.csv` and the displayed timestamp from `src/lastUpdated.txt`.
+`src/Players.csv` remains the source dataset in the repository, but the app itself reads a build-generated JSON snapshot derived from it. The displayed timestamp still comes from `src/lastUpdated.txt`.
 
-That approach keeps the app easy to host as a static site while still allowing the ranking data to be refreshed independently. The repository also includes environment templates and API service scaffolding for future or private Tauri API-based workflows.
+That keeps the site easy to host statically while avoiding CSV parsing work in the browser on every load. The repository also includes environment templates and API service scaffolding for future or private Tauri API-based workflows.
 
 ## Tech stack
 
@@ -65,6 +65,8 @@ If you plan to use the Tauri API integration, fill in the generated files under 
 
 ### Start the development server
 
+The snapshot is generated automatically before the dev server starts.
+
 ```bash
 npm start
 ```
@@ -72,6 +74,8 @@ npm start
 The app will usually be available at `http://localhost:4200/`.
 
 ### Build for production
+
+The production build also regenerates the snapshot automatically.
 
 ```bash
 npm run build

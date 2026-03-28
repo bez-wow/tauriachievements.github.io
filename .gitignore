@@ -49,3 +49,6 @@ Thumbs.db
 src/environments/environment.ts
 src/environments/environment.prod.ts
 src/environments/environment.dev-proxy.ts
+
+# Generated data snapshot
+src/assets/data/players.snapshot.json

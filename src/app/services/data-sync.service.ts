@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Player } from '../models/character.model';
+import { Player, PlayerSnapshot, SerializedPlayerRecord } from '../models/character.model';
 
 export interface SyncProgress {
   isLoading: boolean;
@@ -10,20 +10,16 @@ export interface SyncProgress {
   message: string;
 }
 
-interface CsvPlayerRow {
-  Id?: string;
-  Name?: string;
-  Race?: string;
-  Gender?: string;
-  Class?: string;
-  Realm?: string;
-  Guild?: string;
-  AchievementPoints?: string;
-  HonorableKills?: string;
-  MountCount?: string;
-  Mounts?: string;
-  LastUpdated?: string;
-  Faction?: string;
+interface CachedPlayerRecord {
+  name?: string;
+  race?: number;
+  gender?: number;
+  class?: number;
+  realm?: string;
+  guild?: string;
+  achievementPoints?: number;
+  honorableKills?: number;
+  faction?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -59,9 +55,9 @@ export class DataSyncService {
   async syncData(): Promise<void> {
     try {
       this.updateProgress(true, 0, 1, 'Loading ladder data...');
-      const players = await this.loadPlayersFromCsv();
+      const players = await this.loadPlayersFromSnapshot();
 
-      console.log(`Loaded ${players.length} players from CSV`);
+      console.log(`Loaded ${players.length} players from snapshot`);
 
       // Update state and cache
       this.players$.next(players);
@@ -76,193 +72,17 @@ export class DataSyncService {
   }
 
   /**
-   * Load players from Players.csv
+   * Load players from the generated JSON snapshot
    */
-  private async loadPlayersFromCsv(): Promise<Player[]> {
-    const csvText = await this.http.get('Players.csv', { responseType: 'text' }).toPromise();
-    if (!csvText) {
+  private async loadPlayersFromSnapshot(): Promise<Player[]> {
+    const snapshot = await firstValueFrom(this.http.get<PlayerSnapshot>('assets/data/players.snapshot.json'));
+    if (!snapshot || !Array.isArray(snapshot.p) || !Array.isArray(snapshot.r) || !Array.isArray(snapshot.f)) {
       return [];
     }
 
-    const rows = this.parseCsv(csvText);
-    if (rows.length < 2) {
-      return [];
-    }
-
-    const header = rows[0];
-    const index = this.buildHeaderIndex(header);
-    const players: Player[] = [];
-
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row || row.length === 0 || row.every(value => value.trim() === '')) {
-        continue;
-      }
-
-      const csvRow: CsvPlayerRow = {
-        Id: this.getField(row, index, 'Id'),
-        Name: this.getField(row, index, 'Name'),
-        Race: this.getField(row, index, 'Race'),
-        Gender: this.getField(row, index, 'Gender'),
-        Class: this.getField(row, index, 'Class'),
-        Realm: this.getField(row, index, 'Realm'),
-        Guild: this.getField(row, index, 'Guild'),
-        AchievementPoints: this.getField(row, index, 'AchievementPoints'),
-        HonorableKills: this.getField(row, index, 'HonorableKills'),
-        MountCount: this.getField(row, index, 'MountCount'),
-        Mounts: this.getField(row, index, 'Mounts'),
-        LastUpdated: this.getField(row, index, 'LastUpdated'),
-        Faction: this.getField(row, index, 'Faction')
-      };
-
-      if (!csvRow.Name || !csvRow.Realm) {
-        continue;
-      }
-
-      const lastUpdated = this.parseCsvDate(csvRow.LastUpdated);
-
-      players.push({
-        name: csvRow.Name,
-        race: this.toNumber(csvRow.Race),
-        gender: this.toNumber(csvRow.Gender),
-        class: this.toNumber(csvRow.Class),
-        realm: csvRow.Realm,
-        guild: csvRow.Guild || '',
-        achievementPoints: this.toNumber(csvRow.AchievementPoints),
-        honorableKills: this.toNumber(csvRow.HonorableKills),
-        mounts: this.toNumber(csvRow.MountCount || csvRow.Mounts),
-        faction: csvRow.Faction || '',
-        lastUpdated: lastUpdated ?? new Date()
-      });
-    }
-
-    return players;
-  }
-
-  /**
-   * Basic CSV parser with quoted field support
-   */
-  private parseCsv(input: string): string[][] {
-    const rows: string[][] = [];
-    let currentField = '';
-    let currentRow: string[] = [];
-    let inQuotes = false;
-
-    for (let i = 0; i < input.length; i++) {
-      const char = input[i];
-      const next = input[i + 1];
-
-      if (char === '"') {
-        if (inQuotes && next === '"') {
-          currentField += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-        continue;
-      }
-
-      if (char === ',' && !inQuotes) {
-        currentRow.push(currentField);
-        currentField = '';
-        continue;
-      }
-
-      if ((char === '\n' || char === '\r') && !inQuotes) {
-        if (char === '\r' && next === '\n') {
-          i++;
-        }
-        currentRow.push(currentField);
-        rows.push(currentRow);
-        currentRow = [];
-        currentField = '';
-        continue;
-      }
-
-      currentField += char;
-    }
-
-    if (currentField.length > 0 || currentRow.length > 0) {
-      currentRow.push(currentField);
-      rows.push(currentRow);
-    }
-
-    return rows.map(row => row.map(value => value.trim()));
-  }
-
-  /**
-   * Build map of header names to indexes
-   */
-  private buildHeaderIndex(header: string[]): Record<string, number> {
-    const index: Record<string, number> = {};
-    header.forEach((name, idx) => {
-      if (name) {
-        const normalized = name.replace(/^\uFEFF/, '').trim();
-        index[normalized] = idx;
-      }
-    });
-    return index;
-  }
-
-  /**
-   * Get a field from a CSV row
-   */
-  private getField(row: string[], index: Record<string, number>, field: keyof CsvPlayerRow): string {
-    const idx = index[field];
-    if (idx === undefined) {
-      return '';
-    }
-    return row[idx] ?? '';
-  }
-
-  /**
-   * Convert CSV number strings safely
-   */
-  private toNumber(value?: string): number {
-    if (!value) {
-      return 0;
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  /**
-   * Parse timestamp in "YYYY-MM-DD HH:mm:ss.ssssss+00" format
-   */
-  private parseCsvDate(value?: string): Date | null {
-    if (!value) {
-      return null;
-    }
-
-    const match = value.match(
-      /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(?:\.(\d+))?(Z|[+-]\d{2}(?::?\d{2})?)?$/
-    );
-    if (!match) {
-      const fallback = new Date(value);
-      return Number.isNaN(fallback.getTime()) ? null : fallback;
-    }
-
-    const datePart = match[1];
-    const timePart = match[2];
-    const fractional = match[3] ?? '';
-    const tz = match[4] ?? 'Z';
-
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute, second] = timePart.split(':').map(Number);
-    const ms = fractional ? Number(fractional.slice(0, 3).padEnd(3, '0')) : 0;
-
-    let utc = Date.UTC(year, month - 1, day, hour, minute, second, ms);
-
-    if (tz !== 'Z') {
-      const sign = tz.startsWith('-') ? -1 : 1;
-      const tzValue = tz.replace(':', '');
-      const tzHours = Number(tzValue.slice(1, 3)) || 0;
-      const tzMinutes = Number(tzValue.slice(3, 5)) || 0;
-      const offsetMinutes = sign * (tzHours * 60 + tzMinutes);
-      utc -= offsetMinutes * 60 * 1000;
-    }
-
-    return new Date(utc);
+    return snapshot.p
+      .map((row) => this.deserializePlayer(row, snapshot))
+      .filter((player): player is Player => player !== null);
   }
 
   /**
@@ -276,13 +96,10 @@ export class DataSyncService {
         cached = localStorage.getItem('ladder_players_cache');
       }
       if (cached) {
-        const data = JSON.parse(cached);
-        // Convert date strings back to Date objects
-        const players = data.map((p: any) => ({
-          ...p,
-          mounts: this.toNumber(String(p.mounts ?? '0')),
-          lastUpdated: new Date(p.lastUpdated)
-        }));
+        const data = JSON.parse(cached) as CachedPlayerRecord[];
+        const players = data
+          .map((player) => this.normalizeCachedPlayer(player))
+          .filter((player): player is Player => player !== null);
         this.players$.next(players);
       }
     } catch (error) {
@@ -336,5 +153,58 @@ export class DataSyncService {
     localStorage.removeItem('ladder_players_cache');
     localStorage.removeItem('ladder_last_sync');
     this.players$.next([]);
+  }
+
+  private deserializePlayer(row: SerializedPlayerRecord, snapshot: PlayerSnapshot): Player | null {
+    const [
+      name,
+      race,
+      gender,
+      playerClass,
+      realmIndex,
+      guild,
+      achievementPoints,
+      honorableKills,
+      factionIndex
+    ] = row;
+
+    const realm = snapshot.r[realmIndex];
+    if (!name || !realm) {
+      return null;
+    }
+
+    return {
+      name,
+      race,
+      gender,
+      class: playerClass,
+      realm,
+      guild: guild ?? '',
+      achievementPoints,
+      honorableKills,
+      faction: snapshot.f[factionIndex] ?? 'Horde'
+    };
+  }
+
+  private normalizeCachedPlayer(player?: CachedPlayerRecord): Player | null {
+    if (!player?.name || !player.realm) {
+      return null;
+    }
+
+    return {
+      name: player.name,
+      race: this.toNumber(player.race),
+      gender: this.toNumber(player.gender),
+      class: this.toNumber(player.class),
+      realm: player.realm,
+      guild: player.guild ?? '',
+      achievementPoints: this.toNumber(player.achievementPoints),
+      honorableKills: this.toNumber(player.honorableKills),
+      faction: player.faction ?? 'Horde'
+    };
+  }
+
+  private toNumber(value?: number): number {
+    return typeof value === 'number' && Number.isFinite(value) ? value : 0;
   }
 }
