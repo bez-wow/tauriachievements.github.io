@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { DataSyncService } from './services/data-sync.service';
 import { Player } from './models/character.model';
+import { LadderSort } from './ladder.types';
 
 export interface LadderAchievement {
   name: string;
@@ -15,8 +16,22 @@ export interface LadderAchievement {
   faction: 'Horde' | 'Alliance';
 }
 
+interface IndexedLadderPlayer {
+  view: LadderAchievement;
+  nameLower: string;
+  guildLower: string;
+}
+
+interface LadderIndexes {
+  achievementPoints: IndexedLadderPlayer[];
+  honorableKills: IndexedLadderPlayer[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class LadderService {
+  private indexedSource?: Player[];
+  private indexes?: LadderIndexes;
+
   constructor(private dataSyncService: DataSyncService) {}
 
   /**
@@ -30,22 +45,7 @@ export class LadderService {
     pageNumber: number = 1,
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
-    return this.dataSyncService.getPlayers().pipe(
-      map(players => {
-        // Apply filters
-        let filtered = this.applyFilters(players, realm, faction, playerClass, searchTerm);
-        
-        // Sort by achievement points descending
-        filtered.sort((a, b) => b.achievementPoints - a.achievementPoints);
-        
-        // Apply pagination
-        const start = (pageNumber - 1) * pageSize;
-        const end = start + pageSize;
-        const paginated = filtered.slice(start, end);
-        
-        return this.mapToLadderAchievement(paginated);
-      })
-    );
+    return this.getRankedPlayers('achievementPoints', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
   }
 
   /**
@@ -59,76 +59,136 @@ export class LadderService {
     pageNumber: number = 1,
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
+    return this.getRankedPlayers('honorableKills', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
+  }
+
+  private getRankedPlayers(
+    sort: LadderSort,
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    searchTerm?: string,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): Observable<LadderAchievement[]> {
     return this.dataSyncService.getPlayers().pipe(
       map(players => {
-        // Apply filters
-        let filtered = this.applyFilters(players, realm, faction, playerClass, searchTerm);
-        
-        // Sort by honorable kills descending
-        filtered.sort((a, b) => b.honorableKills - a.honorableKills);
-        
-        // Apply pagination
-        const start = (pageNumber - 1) * pageSize;
-        const end = start + pageSize;
-        const paginated = filtered.slice(start, end);
-        
-        return this.mapToLadderAchievement(paginated);
+        const indexes = this.getOrBuildIndexes(players);
+        const sortedPlayers = sort === 'achievementPoints'
+          ? indexes.achievementPoints
+          : indexes.honorableKills;
+
+        return this.collectPage(sortedPlayers, realm, faction, playerClass, searchTerm, pageNumber, pageSize);
       })
     );
   }
 
-  /**
-   * Apply filters to player list
-   */
-  private applyFilters(
-    players: Player[],
+  private getOrBuildIndexes(players: Player[]): LadderIndexes {
+    if (this.indexedSource === players && this.indexes) {
+      return this.indexes;
+    }
+
+    const indexedPlayers = players.map(player => this.toIndexedLadderPlayer(player));
+    const indexes: LadderIndexes = {
+      achievementPoints: [...indexedPlayers].sort((a, b) => b.view.achievementPoints - a.view.achievementPoints),
+      honorableKills: [...indexedPlayers].sort((a, b) => b.view.honorableKills - a.view.honorableKills)
+    };
+
+    this.indexedSource = players;
+    this.indexes = indexes;
+
+    return indexes;
+  }
+
+  private collectPage(
+    players: IndexedLadderPlayer[],
     realm?: string,
     faction?: string,
     playerClass?: number,
-    searchTerm?: string
-  ): Player[] {
+    searchTerm?: string,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): LadderAchievement[] {
     const normalizedSearchTerm = searchTerm?.trim().toLowerCase();
+    const safePageNumber = Number.isFinite(pageNumber) && pageNumber > 0
+      ? Math.floor(pageNumber)
+      : 1;
+    const safePageSize = Number.isFinite(pageSize) && pageSize > 0
+      ? Math.floor(pageSize)
+      : 0;
 
-    return players.filter(player => {
-      // Treat 'All Realms', '', undefined, or null as no filter
-      if (realm && realm !== 'All Realms' && player.realm !== realm) {
-        return false;
-      }
-      // Treat 'All Factions', '', undefined, or null as no filter
-      if (faction && faction !== 'All Factions' && player.faction !== faction) {
-        return false;
-      }
-      // Treat undefined, null, or NaN as no filter for class
-      if (playerClass !== undefined && playerClass !== null && !isNaN(playerClass) && player.class !== playerClass) {
-        return false;
+    if (safePageSize === 0) {
+      return [];
+    }
+
+    const start = (safePageNumber - 1) * safePageSize;
+    const end = start + safePageSize;
+    const results: LadderAchievement[] = [];
+    let matchIndex = 0;
+
+    // Walk the chosen sorted list once and stop as soon as the requested page is filled.
+    for (const player of players) {
+      if (!this.matchesFilters(player, realm, faction, playerClass, normalizedSearchTerm)) {
+        continue;
       }
 
-      if (normalizedSearchTerm) {
-        const playerName = player.name.toLowerCase();
-        const guildName = player.guild.toLowerCase();
-        if (!playerName.includes(normalizedSearchTerm) && !guildName.includes(normalizedSearchTerm)) {
-          return false;
-        }
+      if (matchIndex >= start) {
+        results.push(player.view);
       }
 
-      return true;
-    });
+      matchIndex++;
+
+      if (matchIndex >= end) {
+        break;
+      }
+    }
+
+    return results;
   }
 
-  /**
-   * Map Player to LadderAchievement interface
-   */
-  private mapToLadderAchievement(players: Player[]): LadderAchievement[] {
-    return players.map(p => ({
-      name: p.name,
-      race: p.race,
-      gender: p.gender,
-      class: p.class,
-      realm: p.realm,
-      guild: p.guild,
-      achievementPoints: p.achievementPoints,
-      honorableKills: p.honorableKills,
-      faction: (p.faction || 'Horde') as 'Horde' | 'Alliance'
-    }));
+  private matchesFilters(
+    player: IndexedLadderPlayer,
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    normalizedSearchTerm?: string
+  ): boolean {
+    if (realm && realm !== 'All Realms' && player.view.realm !== realm) {
+      return false;
+    }
+
+    if (faction && faction !== 'All Factions' && player.view.faction !== faction) {
+      return false;
+    }
+
+    if (playerClass !== undefined && playerClass !== null && !Number.isNaN(playerClass) && player.view.class !== playerClass) {
+      return false;
+    }
+
+    if (normalizedSearchTerm
+      && !player.nameLower.includes(normalizedSearchTerm)
+      && !player.guildLower.includes(normalizedSearchTerm)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private toIndexedLadderPlayer(player: Player): IndexedLadderPlayer {
+    return {
+      nameLower: player.name.toLowerCase(),
+      guildLower: player.guild.toLowerCase(),
+      view: {
+        name: player.name,
+        race: player.race,
+        gender: player.gender,
+        class: player.class,
+        realm: player.realm,
+        guild: player.guild,
+        achievementPoints: player.achievementPoints,
+        honorableKills: player.honorableKills,
+        faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
+      }
+    };
   }
 }
