@@ -4,7 +4,7 @@
 
 Tauri Achievements is an Angular single-page application that recreates the spirit of the original Tauri Ladder with a cleaner UI, better filtering, and a more maintainable frontend. It lets players browse rankings by achievement points or honorable kills, compare characters across realms, and quickly jump to relevant armory pages.
 
-![Tauri Achievements screenshot](./src/assets/tauriAchievements.png)
+<img width="1168" height="679" alt="image" src="https://github.com/user-attachments/assets/07c98e5d-e364-4888-afec-300ece092b80" />
 
 ## Why this project exists
 
