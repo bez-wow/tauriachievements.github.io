@@ -33,7 +33,6 @@
             "inlineStyleLanguage": "scss",
             "preserveSymlinks": true,
             "assets": [
-              "src/favicon.ico",
               "src/404.html",
               "src/assets",
               "src/characterCollection",
@@ -55,13 +54,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "7mb",
-                  "maximumError": "8mb"
+                  "maximumWarning": "400kb",
+                  "maximumError": "550kb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "10kb",
-                  "maximumError": "20kb"
+                  "maximumWarning": "12kb",
+                  "maximumError": "16kb"
                 }
               ],
               "outputHashing": "all",
