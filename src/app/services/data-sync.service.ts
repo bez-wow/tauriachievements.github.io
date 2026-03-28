@@ -22,8 +22,19 @@ interface CachedPlayerRecord {
   faction?: string;
 }
 
+interface LadderCachePayload {
+  version: number;
+  syncedAt: string;
+  players: CachedPlayerRecord[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class DataSyncService {
+  private static readonly CACHE_KEY = 'ladder_cache';
+  private static readonly CACHE_VERSION = 1;
+  private static readonly LEGACY_PLAYERS_KEY = 'ladder_players_cache';
+  private static readonly LEGACY_SYNC_KEY = 'ladder_last_sync';
+
   private players$ = new BehaviorSubject<Player[]>([]);
   private syncProgress$ = new BehaviorSubject<SyncProgress>({
     isLoading: false,
@@ -90,20 +101,19 @@ export class DataSyncService {
    */
   private loadCachedData(): void {
     try {
-      // Try sessionStorage first, fallback to localStorage
-      let cached = sessionStorage.getItem('ladder_players_cache');
-      if (!cached) {
-        cached = localStorage.getItem('ladder_players_cache');
+      const cache = this.readCachePayload() ?? this.migrateLegacyCache();
+      if (!cache) {
+        return;
       }
-      if (cached) {
-        const data = JSON.parse(cached) as CachedPlayerRecord[];
-        const players = data
-          .map((player) => this.normalizeCachedPlayer(player))
-          .filter((player): player is Player => player !== null);
-        this.players$.next(players);
-      }
+
+      const players = cache.players
+        .map((player) => this.normalizeCachedPlayer(player))
+        .filter((player): player is Player => player !== null);
+
+      this.players$.next(players);
     } catch (error) {
       console.error('Failed to load cached data:', error);
+      this.clearCacheStorage();
     }
   }
 
@@ -112,12 +122,14 @@ export class DataSyncService {
    */
   private cacheData(players: Player[]): void {
     try {
-      // Save to both sessionStorage and localStorage for compatibility
-      const data = JSON.stringify(players);
-      sessionStorage.setItem('ladder_players_cache', data);
-      sessionStorage.setItem('ladder_last_sync', new Date().toISOString());
-      localStorage.setItem('ladder_players_cache', data);
-      localStorage.setItem('ladder_last_sync', new Date().toISOString());
+      const payload: LadderCachePayload = {
+        version: DataSyncService.CACHE_VERSION,
+        syncedAt: new Date().toISOString(),
+        players: players.map((player) => this.toCachedPlayerRecord(player))
+      };
+
+      localStorage.setItem(DataSyncService.CACHE_KEY, JSON.stringify(payload));
+      this.clearLegacyCacheStorage();
     } catch (error) {
       console.error('Failed to cache data:', error);
     }
@@ -128,12 +140,13 @@ export class DataSyncService {
    */
   getLastSyncTime(): Date | null {
     try {
-      // Try sessionStorage first, fallback to localStorage
-      let lastSync = sessionStorage.getItem('ladder_last_sync');
-      if (!lastSync) {
-        lastSync = localStorage.getItem('ladder_last_sync');
+      const cache = this.readCachePayload();
+      if (!cache?.syncedAt) {
+        return null;
       }
-      return lastSync ? new Date(lastSync) : null;
+
+      const parsed = new Date(cache.syncedAt);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
     } catch {
       return null;
     }
@@ -150,8 +163,7 @@ export class DataSyncService {
    * Clear all cached data
    */
   clearCache(): void {
-    localStorage.removeItem('ladder_players_cache');
-    localStorage.removeItem('ladder_last_sync');
+    this.clearCacheStorage();
     this.players$.next([]);
   }
 
@@ -202,6 +214,82 @@ export class DataSyncService {
       honorableKills: this.toNumber(player.honorableKills),
       faction: player.faction ?? 'Horde'
     };
+  }
+
+  private readCachePayload(): LadderCachePayload | null {
+    const cached = localStorage.getItem(DataSyncService.CACHE_KEY);
+    if (!cached) {
+      return null;
+    }
+
+    const parsed = JSON.parse(cached) as Partial<LadderCachePayload>;
+    if (parsed.version !== DataSyncService.CACHE_VERSION || !Array.isArray(parsed.players)) {
+      this.clearCacheStorage();
+      return null;
+    }
+
+    return {
+      version: parsed.version,
+      syncedAt: typeof parsed.syncedAt === 'string' ? parsed.syncedAt : '',
+      players: parsed.players
+    };
+  }
+
+  private migrateLegacyCache(): LadderCachePayload | null {
+    const cachedPlayers = sessionStorage.getItem(DataSyncService.LEGACY_PLAYERS_KEY)
+      ?? localStorage.getItem(DataSyncService.LEGACY_PLAYERS_KEY);
+
+    if (!cachedPlayers) {
+      this.clearLegacyCacheStorage();
+      return null;
+    }
+
+    const parsedPlayers = JSON.parse(cachedPlayers);
+    if (!Array.isArray(parsedPlayers)) {
+      this.clearLegacyCacheStorage();
+      return null;
+    }
+
+    const syncedAt = sessionStorage.getItem(DataSyncService.LEGACY_SYNC_KEY)
+      ?? localStorage.getItem(DataSyncService.LEGACY_SYNC_KEY)
+      ?? new Date().toISOString();
+
+    const payload: LadderCachePayload = {
+      version: DataSyncService.CACHE_VERSION,
+      syncedAt,
+      players: parsedPlayers as CachedPlayerRecord[]
+    };
+
+    localStorage.setItem(DataSyncService.CACHE_KEY, JSON.stringify(payload));
+    this.clearLegacyCacheStorage();
+
+    return payload;
+  }
+
+  private toCachedPlayerRecord(player: Player): CachedPlayerRecord {
+    return {
+      name: player.name,
+      race: player.race,
+      gender: player.gender,
+      class: player.class,
+      realm: player.realm,
+      guild: player.guild,
+      achievementPoints: player.achievementPoints,
+      honorableKills: player.honorableKills,
+      faction: player.faction
+    };
+  }
+
+  private clearCacheStorage(): void {
+    localStorage.removeItem(DataSyncService.CACHE_KEY);
+    this.clearLegacyCacheStorage();
+  }
+
+  private clearLegacyCacheStorage(): void {
+    sessionStorage.removeItem(DataSyncService.LEGACY_PLAYERS_KEY);
+    sessionStorage.removeItem(DataSyncService.LEGACY_SYNC_KEY);
+    localStorage.removeItem(DataSyncService.LEGACY_PLAYERS_KEY);
+    localStorage.removeItem(DataSyncService.LEGACY_SYNC_KEY);
   }
 
   private toNumber(value?: number): number {
