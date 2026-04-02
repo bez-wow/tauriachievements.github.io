@@ -1,15 +1,15 @@
 <app-update-bar
-  [lastEdited]="lastEdited"
-  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel" />
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <div class="ladder-container">
   <app-filter-bar
-    [sort]="currentSort"
-    [realm]="currentRealm"
-    [faction]="currentFaction"
-    [playerClass]="currentClass"
-    [pageSize]="pageSize"
-    [searchTerm]="searchTerm"
+    [sort]="currentSort()"
+    [realm]="currentRealm()"
+    [faction]="currentFaction()"
+    [playerClass]="currentClass()"
+    [pageSize]="pageSize()"
+    [searchTerm]="searchTerm()"
     [sortOptions]="sortOptions"
     [realmOptions]="realmOptions"
     [factionOptions]="factionOptions"
@@ -23,46 +23,37 @@
     (searchChange)="onSearchChange($event)"
     (reset)="resetFilters()" />
 
-  <div class="ladder-status-banner info" *ngIf="showRefreshingBanner">
-    <span>{{ syncMessage || 'Refreshing ladder data...' }}</span>
+  <div class="ladder-status-banner info" *ngIf="showRefreshingBanner()">
+    <span>{{ syncMessage() || 'Refreshing ladder data...' }}</span>
   </div>
 
-  <div class="ladder-status-banner warning" *ngIf="showErrorBanner">
-    <span>{{ loadError }}</span>
+  <div class="ladder-status-banner warning" *ngIf="showErrorBanner()">
+    <span>{{ loadError() }}</span>
     <button type="button" class="status-action" (click)="syncData()">Try again</button>
   </div>
 
-  <div class="ladder-feedback loading" *ngIf="showLoadingState">
+  <div class="ladder-feedback loading" *ngIf="showLoadingState()">
     <div class="feedback-spinner" aria-hidden="true"></div>
     <h2>Loading ladder...</h2>
   </div>
 
-  <div class="ladder-feedback error" *ngIf="showErrorState">
+  <div class="ladder-feedback error" *ngIf="showErrorState()">
     <h2>Could not load ladder data</h2>
-    <p>{{ loadError }}</p>
+    <p>{{ loadError() }}</p>
     <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
   </div>
 
-  <div class="ladder-feedback empty" *ngIf="showEmptyState">
-    <h2>{{ emptyStateTitle }}</h2>
-    <p>{{ emptyStateMessage }}</p>
-    <p *ngIf="emptyStateHint">{{ emptyStateHint }}</p>
-    <button type="button" class="feedback-action" *ngIf="hasNarrowingFilters" (click)="resetFilters()">Reset filters</button>
+  <div class="ladder-feedback empty" *ngIf="showEmptyState()">
+    <h2>{{ emptyStateTitle() }}</h2>
+    <p>{{ emptyStateMessage() }}</p>
+    <p *ngIf="emptyStateHint()">{{ emptyStateHint() }}</p>
+    <button type="button" class="feedback-action" *ngIf="hasNarrowingFilters()" (click)="resetFilters()">Reset filters</button>
   </div>
 
   <app-leaderboard-table
-    *ngIf="players.length > 0"
-    [players]="players"
-    [currentSort]="currentSort" />
+    *ngIf="players().length > 0"
+    [players]="players()"
+    [currentSort]="currentSort()" />
 </div>
 
-<button
-  type="button"
-  class="back-to-top"
-  [class.visible]="showBackToTop"
-  (click)="scrollToTop()"
-  aria-label="Back to top">
-  <svg class="back-to-top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d="M12 5l-7 7h4v7h6v-7h4z" />
-  </svg>
-</button>
+<app-back-to-top-button />

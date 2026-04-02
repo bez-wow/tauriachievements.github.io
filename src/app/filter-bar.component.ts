@@ -3,25 +3,14 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
+import { LadderClassOption, LadderSelectOption } from './ladder-options';
 import { LadderSort } from './ladder.types';
 
 type DropdownKey = 'class' | 'sort' | 'realm' | 'faction';
 
-interface SortOption {
-  value: LadderSort;
-  label: string;
-}
-
-interface TextOption {
-  value: string | undefined;
-  label: string;
-}
-
-interface ClassOption {
-  id: number;
-  name: string;
-  icon: string;
-}
+type SortOption = LadderSelectOption<LadderSort>;
+type TextOption = LadderSelectOption<string | undefined>;
+type ClassOption = LadderClassOption;
 
 interface DropdownConfig {
   key: DropdownKey;
