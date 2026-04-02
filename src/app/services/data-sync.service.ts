@@ -77,13 +77,6 @@ export class DataSyncService {
     this.syncProgress$.next({ isLoading, current, total, message });
   }
 
-  /**
-   * Clear in-memory ladder data
-   */
-  clearCache(): void {
-    this.players$.next([]);
-  }
-
   private deserializePlayer(row: SerializedPlayerRecord, snapshot: PlayerSnapshot): Player | null {
     const [
       name,

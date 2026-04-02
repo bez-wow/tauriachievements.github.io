@@ -24,36 +24,6 @@ export interface PlayerSnapshot {
   p: SerializedPlayerRecord[];
 }
 
-export interface TauriApiRequest {
-  secret: string;
-  url: string;
-  params: {
-    r: string;
-    n: string;
-  };
-}
-
-export interface TauriCharacterSheetResponse {
-  response?: {
-    race?: number;
-    gender?: number;
-    class?: number;
-    pts?: number;
-    playerHonorKills?: number;
-    faction_string_class?: string;
-    guildName?: string;
-  };
-}
-
-export interface TauriGuildRosterResponse {
-  response?: {
-    members?: Array<{
-      name?: string;
-      level?: number;
-    }>;
-  };
-}
-
 export interface Player {
   name: string;
   race: number;
