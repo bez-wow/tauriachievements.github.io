@@ -1,0 +1,54 @@
+<div class="dropdown" [class.open]="isOpen" [class.has-icons]="showIcons">
+  <button
+    #trigger
+    [id]="triggerId"
+    type="button"
+    class="filter-select dropdown-trigger"
+    [class.no-icon]="showIcons && !hasSelectedIcon"
+    aria-haspopup="listbox"
+    [attr.aria-label]="ariaLabel"
+    [attr.aria-controls]="dropdownId + 'Menu'"
+    [attr.aria-expanded]="isOpen"
+    (click)="toggleMenu()"
+    (focus)="onTriggerFocus()"
+    (keydown)="onTriggerKeydown($event)">
+    <ng-container *ngIf="showIcons">
+      <img
+        *ngIf="hasSelectedIcon"
+        [src]="displaySelectedIcon"
+        [alt]="displaySelectedLabel + ' icon'"
+        class="option-icon" />
+      <span *ngIf="!hasSelectedIcon" class="option-icon placeholder"></span>
+    </ng-container>
+    <span class="option-label">{{ displaySelectedLabel }}</span>
+  </button>
+
+  <div
+    [id]="dropdownId + 'Menu'"
+    class="dropdown-menu"
+    role="listbox"
+    [attr.aria-label]="ariaLabel"
+    [attr.aria-hidden]="!isOpen">
+    <button
+      #optionButton
+      type="button"
+      class="dropdown-option"
+      [class.no-icon]="showIcons && !option.icon"
+      *ngFor="let option of options; let i = index; trackBy: trackOption"
+      role="option"
+      [attr.aria-selected]="isOptionSelected(option)"
+      [attr.tabindex]="isOpen ? 0 : -1"
+      (click)="selectOption(option)"
+      (keydown)="onOptionKeydown($event, i)">
+      <ng-container *ngIf="showIcons">
+        <img
+          *ngIf="option.icon"
+          [src]="option.icon"
+          [alt]="option.label + ' icon'"
+          class="option-icon" />
+        <span *ngIf="!option.icon" class="option-icon placeholder"></span>
+      </ng-container>
+      <span class="option-label">{{ option.label }}</span>
+    </button>
+  </div>
+</div>

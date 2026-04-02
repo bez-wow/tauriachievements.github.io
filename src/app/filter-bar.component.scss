@@ -71,34 +71,6 @@
   }
 }
 
-.dropdown {
-  position: relative;
-  width: 100%;
-  z-index: 300;
-}
-
-.dropdown.open {
-  z-index: 900;
-}
-
-.dropdown-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding-right: 42px;
-  min-width: 0;
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.dropdown-trigger.no-icon {
-  gap: 0;
-}
-
-.dropdown-trigger.no-icon .option-icon.placeholder {
-  display: none;
-}
-
 .search-input {
   cursor: text;
   background-image: none;
@@ -193,89 +165,6 @@
   }
 }
 
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  display: grid;
-  gap: 4px;
-  padding: 8px;
-  background: linear-gradient(135deg, #1f1f27, #14141a);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-  min-width: 200px;
-  z-index: 800;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(-4px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.dropdown.open .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.dropdown-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  width: 100%;
-  background: #1a1a22;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  color: #e0e0e0;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.15s ease;
-  font-weight: 500;
-
-  &:hover {
-    background: linear-gradient(135deg, #32323f, #24242c);
-    border-color: rgba(247, 181, 0, 0.35);
-    color: #fff;
-  }
-
-  &[aria-selected='true'] {
-    background: linear-gradient(135deg, rgba(247, 181, 0, 0.18), rgba(247, 181, 0, 0.08));
-    border-color: rgba(247, 181, 0, 0.3);
-    color: #fff6d3;
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-color: rgba(247, 181, 0, 0.5);
-    box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.35);
-  }
-}
-
-.dropdown-option.no-icon {
-  gap: 0;
-}
-
-.dropdown-option.no-icon .option-icon.placeholder {
-  display: none;
-}
-
-.option-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.option-icon.placeholder {
-  border: 1px solid transparent;
-  background: transparent;
-}
-
 @media (max-width: 640px) {
   .ladder-header {
     grid-template-columns: 1fr;
@@ -304,9 +193,5 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .dropdown-menu {
-    min-width: 100%;
   }
 }
