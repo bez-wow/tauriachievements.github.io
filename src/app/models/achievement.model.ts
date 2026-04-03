@@ -8,6 +8,10 @@ export interface PlayerAchievement {
   classIcon: string;
   guild: string;
   achievementPoints: number;
+  achievementPointsDelta: number;
+  achievementRankDelta: number;
   honorableKills: number;
+  honorableKillsDelta: number;
+  honorableKillsRankDelta: number;
   faction: 'Horde' | 'Alliance'; 
 }

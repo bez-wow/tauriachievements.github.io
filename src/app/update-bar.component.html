@@ -1,6 +1,16 @@
 <div class="update-bar">
   <div class="update-bar-content">
-    <span class="update-bar-spacer" aria-hidden="true"></span>
+    <nav class="update-bar-nav" aria-label="Primary">
+      <a
+        class="update-nav-link"
+        routerLink="/"
+        [routerLinkActiveOptions]="{ exact: true }"
+        routerLinkActive="active">Ladder</a>
+      <a
+        class="update-nav-link"
+        routerLink="/top-gainers"
+        routerLinkActive="active">Top Gainers</a>
+    </nav>
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
       <span class="update-label gold-text">Last updated:</span>
       <span class="update-gap" aria-hidden="true"></span>

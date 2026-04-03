@@ -12,7 +12,11 @@ export interface LadderAchievement {
   realm: string;
   guild: string;
   achievementPoints: number;
+  achievementPointsDelta: number;
+  achievementRankDelta: number;
   honorableKills: number;
+  honorableKillsDelta: number;
+  honorableKillsRankDelta: number;
   faction: 'Horde' | 'Alliance';
 }
 
@@ -90,8 +94,8 @@ export class LadderService {
 
     const indexedPlayers = players.map(player => this.toIndexedLadderPlayer(player));
     const indexes: LadderIndexes = {
-      achievementPoints: [...indexedPlayers].sort((a, b) => b.view.achievementPoints - a.view.achievementPoints),
-      honorableKills: [...indexedPlayers].sort((a, b) => b.view.honorableKills - a.view.honorableKills)
+      achievementPoints: [...indexedPlayers].sort((a, b) => this.compareAchievementPlayers(a.view, b.view)),
+      honorableKills: [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view))
     };
 
     this.indexedSource = players;
@@ -186,9 +190,41 @@ export class LadderService {
         realm: player.realm,
         guild: player.guild,
         achievementPoints: player.achievementPoints,
+        achievementPointsDelta: player.achievementPointsDelta,
+        achievementRankDelta: player.achievementRankDelta,
         honorableKills: player.honorableKills,
+        honorableKillsDelta: player.honorableKillsDelta,
+        honorableKillsRankDelta: player.honorableKillsRankDelta,
         faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
       }
     };
+  }
+
+  private compareAchievementPlayers(left: LadderAchievement, right: LadderAchievement): number {
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
+    }
+
+    if (right.honorableKills !== left.honorableKills) {
+      return right.honorableKills - left.honorableKills;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private compareHonorableKillPlayers(left: LadderAchievement, right: LadderAchievement): number {
+    if (right.honorableKills !== left.honorableKills) {
+      return right.honorableKills - left.honorableKills;
+    }
+
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private getPlayerKey(player: LadderAchievement): string {
+    return `${player.realm}::${player.name}`;
   }
 }

@@ -56,8 +56,50 @@
             </ng-container>
           </a>
         </td>
-        <td class="gold-text">{{ player.achievementPoints | number }}</td>
-        <td>{{ player.honorableKills | number }}</td>
+        <td>
+          <span class="metric-inline">
+            <span class="metric-side metric-side-start">
+              <span
+                *ngIf="showAchievementDelta(player)"
+                class="metric-delta"
+                [ngClass]="getAchievementDeltaClass(player)">
+                {{ formatSignedValue(player.achievementPointsDelta) }}
+              </span>
+            </span>
+            <span class="metric-value gold-text">{{ player.achievementPoints | number }}</span>
+            <span class="metric-side metric-side-end">
+              <span
+                *ngIf="showAchievementRank(player)"
+                class="metric-rank-pill"
+                [ngClass]="getAchievementRankClass(player)"
+                [title]="getAchievementRankTitle(player)">
+                {{ getAchievementRankLabel(player) }}
+              </span>
+            </span>
+          </span>
+        </td>
+        <td>
+          <span class="metric-inline">
+            <span class="metric-side metric-side-start">
+              <span
+                *ngIf="showHonorableKillDelta(player)"
+                class="metric-delta"
+                [ngClass]="getHonorableKillDeltaClass(player)">
+                {{ formatSignedValue(player.honorableKillsDelta) }}
+              </span>
+            </span>
+            <span class="metric-value">{{ player.honorableKills | number }}</span>
+            <span class="metric-side metric-side-end">
+              <span
+                *ngIf="showHonorableKillRank(player)"
+                class="metric-rank-pill"
+                [ngClass]="getHonorableKillRankClass(player)"
+                [title]="getHonorableKillRankTitle(player)">
+                {{ getHonorableKillRankLabel(player) }}
+              </span>
+            </span>
+          </span>
+        </td>
       </tr>
     </tbody>
   </table>

@@ -87,7 +87,11 @@ export class DataSyncService {
       guild,
       achievementPoints,
       honorableKills,
-      factionIndex
+      factionIndex,
+      achievementPointsDelta = 0,
+      achievementRankDelta = 0,
+      honorableKillsDelta = 0,
+      honorableKillsRankDelta = 0
     ] = row;
 
     const realm = snapshot.r[realmIndex];
@@ -103,7 +107,11 @@ export class DataSyncService {
       realm,
       guild: guild ?? '',
       achievementPoints,
+      achievementPointsDelta,
+      achievementRankDelta,
       honorableKills,
+      honorableKillsDelta,
+      honorableKillsRankDelta,
       faction: snapshot.f[factionIndex] ?? 'Horde'
     };
   }

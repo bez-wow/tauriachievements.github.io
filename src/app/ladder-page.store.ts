@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, distinctUntilChanged, map, switchMap } from 'rxjs';
 import { DEFAULT_LADDER_FILTER_STATE, areLadderFilterStatesEqual } from './ladder-filter-state';
 import { mapLadderPlayersToView } from './ladder-player-view.mapper';
-import { LadderService } from './ladder.service';
+import { LadderAchievement, LadderService } from './ladder.service';
 import { LadderFilterState, LadderPlayerView } from './ladder.types';
 import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
@@ -98,7 +98,7 @@ export class LadderPageStore {
       switchMap((state) => this.getFilteredPlayers(state)),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((players) => {
-      this.players.set(players);
+      this.players.set(this.mapPlayersForView(players));
     });
   }
 
@@ -122,8 +122,12 @@ export class LadderPageStore {
         );
 
     return players$.pipe(
-      map((players) => mapLadderPlayersToView(players, state.search))
+      map((players) => players)
     );
+  }
+
+  private mapPlayersForView(players: LadderAchievement[]): LadderPlayerView[] {
+    return mapLadderPlayersToView(players, this.filterState$.value.search);
   }
 
   private loadLastUpdated(): void {

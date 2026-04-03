@@ -28,8 +28,102 @@ export class LeaderboardTableComponent {
     return index;
   }
 
+  showAchievementProgress(player: LadderPlayerView): boolean {
+    return this.currentSort === 'achievementPoints'
+      && (player.achievementPointsDelta !== 0 || player.achievementRankDelta !== 0);
+  }
+
+  showAchievementDelta(player: LadderPlayerView): boolean {
+    return this.currentSort === 'achievementPoints' && player.achievementPointsDelta !== 0;
+  }
+
+  showAchievementRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'achievementPoints' && player.achievementRankDelta !== 0;
+  }
+
+  showHonorableKillProgress(player: LadderPlayerView): boolean {
+    return this.currentSort === 'honorableKills'
+      && (player.honorableKillsDelta !== 0 || player.honorableKillsRankDelta !== 0);
+  }
+
+  showHonorableKillDelta(player: LadderPlayerView): boolean {
+    return this.currentSort === 'honorableKills' && player.honorableKillsDelta !== 0;
+  }
+
+  showHonorableKillRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'honorableKills' && player.honorableKillsRankDelta !== 0;
+  }
+
+  formatSignedValue(value: number): string {
+    if (value > 0) {
+      return `+${value.toLocaleString()}`;
+    }
+
+    if (value < 0) {
+      return value.toLocaleString();
+    }
+
+    return '0';
+  }
+
+  getAchievementDeltaClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.achievementPointsDelta);
+  }
+
+  getHonorableKillDeltaClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.honorableKillsDelta);
+  }
+
+  getAchievementRankClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.achievementRankDelta);
+  }
+
+  getHonorableKillRankClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.honorableKillsRankDelta);
+  }
+
+  getAchievementRankLabel(player: LadderPlayerView): string {
+    return this.formatSignedValue(player.achievementRankDelta);
+  }
+
+  getHonorableKillRankLabel(player: LadderPlayerView): string {
+    return this.formatSignedValue(player.honorableKillsRankDelta);
+  }
+
+  getAchievementRankTitle(player: LadderPlayerView): string {
+    return this.buildRankTitle(player.achievementRankDelta);
+  }
+
+  getHonorableKillRankTitle(player: LadderPlayerView): string {
+    return this.buildRankTitle(player.honorableKillsRankDelta);
+  }
+
+  private getDeltaClass(value: number): string {
+    if (value > 0) {
+      return 'positive';
+    }
+
+    if (value < 0) {
+      return 'negative';
+    }
+
+    return 'neutral';
+  }
+
   onImageError(event: Event) {
     const image = event.target as HTMLImageElement | null;
     console.error('Failed to load image:', image?.src ?? 'unknown image');
+  }
+
+  private buildRankTitle(rankDelta: number): string {
+    if (rankDelta > 0) {
+      return `Climbed ${rankDelta.toLocaleString()} ranks`;
+    }
+
+    if (rankDelta < 0) {
+      return `Dropped ${Math.abs(rankDelta).toLocaleString()} ranks`;
+    }
+
+    return 'No rank change';
   }
 }

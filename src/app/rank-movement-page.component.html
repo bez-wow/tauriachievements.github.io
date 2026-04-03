@@ -1,0 +1,20 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="movement-page-container">
+  <app-history-summary
+    *ngIf="historyAvailable(); else historyUnavailable"
+    [comparisonLabel]="comparisonLabel()"
+    [achievementMovers]="achievementMovers()"
+    [honorableKillMovers]="honorableKillMovers()" />
+</div>
+
+<ng-template #historyUnavailable>
+  <div class="movement-page-container">
+    <div class="movement-feedback">
+      <h2>Historical movement is not available yet</h2>
+      <p>Generate at least two snapshots and reload the page to compare changes over time.</p>
+    </div>
+  </div>
+</ng-template>

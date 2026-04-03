@@ -14,7 +14,11 @@ export type SerializedPlayerRecord = [
   guild: string,
   achievementPoints: number,
   honorableKills: number,
-  factionIndex: number
+  factionIndex: number,
+  achievementPointsDelta?: number,
+  achievementRankDelta?: number,
+  honorableKillsDelta?: number,
+  honorableKillsRankDelta?: number
 ];
 
 export interface PlayerSnapshot {
@@ -32,7 +36,11 @@ export interface Player {
   realm: string;
   guild: string;
   achievementPoints: number;
+  achievementPointsDelta: number;
+  achievementRankDelta: number;
   honorableKills: number;
+  honorableKillsDelta: number;
+  honorableKillsRankDelta: number;
   faction: string;
 }
 

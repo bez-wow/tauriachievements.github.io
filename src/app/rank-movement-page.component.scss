@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.movement-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 46px 20px 24px;
+  color: #e0e0e0;
+}
+
+.movement-feedback {
+  margin-bottom: 12px;
+  padding: 22px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.86), rgba(15, 15, 20, 0.94));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+.movement-feedback h2 {
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 1.7rem;
+}
+
+.movement-feedback p {
+  max-width: 760px;
+  color: #bdc3cf;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .movement-page-container {
+    padding: 46px 12px 20px;
+  }
+
+  .movement-feedback {
+    padding: 18px 14px;
+  }
+
+  .movement-feedback h2 {
+    font-size: 1.35rem;
+  }
+}

@@ -20,27 +20,53 @@
 }
 
 .update-bar-content {
-  --actions-width: 136px;
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
 }
 
-.update-bar-spacer {
-  width: var(--actions-width);
-  flex-shrink: 0;
+.update-bar-nav {
+  justify-self: start;
+  padding-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.update-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd0d8;
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+
+  &:hover,
+  &.active {
+    border-color: rgba(247, 181, 0, 0.35);
+    background: rgba(247, 181, 0, 0.09);
+    color: #ffe28a;
+  }
 }
 
 .update-bar-text {
-  flex: 1;
-  min-width: 0;
+  justify-self: center;
   padding: 0 8px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: min(100%, 520px);
 }
 
 .update-date,
@@ -71,13 +97,12 @@
 }
 
 .update-bar-actions {
-  width: var(--actions-width);
+  justify-self: end;
   padding-right: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .discord-link {
@@ -156,8 +181,28 @@
   }
 
   .update-bar-content {
-    --actions-width: 34px;
     gap: 6px;
+  }
+
+  .update-bar-nav {
+    padding-left: 4px;
+  }
+
+  .update-nav-link {
+    width: 28px;
+    min-height: 28px;
+    padding: 0;
+    font-size: 0;
+
+    &:first-child::before {
+      content: 'L';
+      font-size: 0.7rem;
+    }
+
+    &:last-child::before {
+      content: 'T';
+      font-size: 0.7rem;
+    }
   }
 
   .update-bar-text {
@@ -165,7 +210,6 @@
   }
 
   .update-bar-actions {
-    width: var(--actions-width);
     padding-right: 4px;
     gap: 8px;
   }

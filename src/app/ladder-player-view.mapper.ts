@@ -15,7 +15,11 @@ export function mapLadderPlayersToView(players: LadderAchievement[], searchQuery
     classIcon: String(player.class),
     guild: player.guild,
     achievementPoints: player.achievementPoints,
+    achievementPointsDelta: player.achievementPointsDelta,
+    achievementRankDelta: player.achievementRankDelta,
     honorableKills: player.honorableKills,
+    honorableKillsDelta: player.honorableKillsDelta,
+    honorableKillsRankDelta: player.honorableKillsRankDelta,
     faction: player.faction,
     nameParts: buildHighlightParts(player.name, normalizedSearchQuery),
     guildParts: buildHighlightParts(player.guild, normalizedSearchQuery)

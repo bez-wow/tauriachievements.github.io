@@ -1,0 +1,115 @@
+<section class="history-summary">
+  <div class="history-summary-header" *ngIf="comparisonLabel">
+    <span class="history-summary-label" *ngIf="comparisonLabel">Compared with {{ comparisonLabel }}</span>
+  </div>
+
+  <div class="history-summary-grid">
+    <article class="history-panel">
+      <h3>Achievement Climbers</h3>
+      <div class="history-table-wrap" *ngIf="achievementMovers.length > 0; else emptyAchievementMovers">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Achievements Gained</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mover of achievementMovers; trackBy: trackMover">
+              <td>
+                <a
+                  class="history-player-link"
+                  [href]="getArmoryUrl(mover.name, mover.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <span class="history-player-topline">
+                    <img
+                      *ngIf="hasRaceIcon(mover)"
+                      [src]="getRaceIconPath(mover.race, mover.gender)"
+                      [alt]="'Race ' + mover.race + '-' + mover.gender"
+                      class="history-icon race-icon"
+                      loading="lazy"
+                      (error)="onImageError($event)" />
+                    <img
+                      *ngIf="hasClassIcon(mover)"
+                      [src]="getClassIconPath(mover.classId)"
+                      [alt]="'Class ' + mover.classId"
+                      class="history-icon class-icon"
+                      loading="lazy"
+                      (error)="onImageError($event)" />
+                    <span class="history-player-name">{{ mover.name }}</span>
+                  </span>
+                  <span class="history-player-realm">{{ mover.realm }}</span>
+                </a>
+              </td>
+              <td>
+                <span class="history-primary" [ngClass]="getDeltaClass(mover.achievementPointsDelta)">
+                  {{ formatSignedValue(mover.achievementPointsDelta) }}
+                </span>
+                <span class="history-secondary">{{ mover.currentAchievementPoints | number }} now</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="history-panel">
+      <h3>Honorable Kill Climbers</h3>
+      <div class="history-table-wrap" *ngIf="honorableKillMovers.length > 0; else emptyHonorableKillMovers">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Honorable Kills Gained</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mover of honorableKillMovers; trackBy: trackMover">
+              <td>
+                <a
+                  class="history-player-link"
+                  [href]="getArmoryUrl(mover.name, mover.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <span class="history-player-topline">
+                    <img
+                      *ngIf="hasRaceIcon(mover)"
+                      [src]="getRaceIconPath(mover.race, mover.gender)"
+                      [alt]="'Race ' + mover.race + '-' + mover.gender"
+                      class="history-icon race-icon"
+                      loading="lazy"
+                      (error)="onImageError($event)" />
+                    <img
+                      *ngIf="hasClassIcon(mover)"
+                      [src]="getClassIconPath(mover.classId)"
+                      [alt]="'Class ' + mover.classId"
+                      class="history-icon class-icon"
+                      loading="lazy"
+                      (error)="onImageError($event)" />
+                    <span class="history-player-name">{{ mover.name }}</span>
+                  </span>
+                  <span class="history-player-realm">{{ mover.realm }}</span>
+                </a>
+              </td>
+              <td>
+                <span class="history-primary" [ngClass]="getDeltaClass(mover.honorableKillsDelta)">
+                  {{ formatSignedValue(mover.honorableKillsDelta) }}
+                </span>
+                <span class="history-secondary">{{ mover.currentHonorableKills | number }} now</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+</section>
+
+<ng-template #emptyAchievementMovers>
+  <p class="history-empty">No achievement climbers available yet.</p>
+</ng-template>
+
+<ng-template #emptyHonorableKillMovers>
+  <p class="history-empty">No honorable kill climbers available yet.</p>
+</ng-template>

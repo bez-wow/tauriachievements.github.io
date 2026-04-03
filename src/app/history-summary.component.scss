@@ -1,0 +1,156 @@
+:host {
+  display: block;
+}
+
+.history-summary {
+  margin-bottom: 12px;
+  padding: 18px 18px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.86), rgba(15, 15, 20, 0.94));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+.history-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.history-summary-label {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(247, 181, 0, 0.28);
+  background: rgba(247, 181, 0, 0.08);
+  color: #ffe28a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.history-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.history-panel {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(17, 20, 29, 0.82), rgba(11, 13, 18, 0.92));
+
+  h3 {
+    color: #f4f4f7;
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+}
+
+.history-table-wrap {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  min-width: 460px;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 11px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    vertical-align: top;
+  }
+
+  th {
+    color: #aab0bc;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.65px;
+    text-transform: uppercase;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.history-player-link {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .history-player-name {
+    color: #ffd566;
+  }
+}
+
+.history-player-topline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.history-player-name,
+.history-primary {
+  color: #f3f3f6;
+  font-weight: 700;
+}
+
+.history-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.history-player-realm,
+.history-secondary {
+  color: #aeb4c2;
+  font-size: 0.8rem;
+}
+
+.history-primary {
+  display: block;
+  font-size: 0.95rem;
+
+  &.positive {
+    color: #8ce89b;
+  }
+
+  &.negative {
+    color: #ff9a9a;
+  }
+
+  &.neutral {
+    color: #d4d8e2;
+  }
+}
+
+.history-empty {
+  color: #9fa6b4;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 768px) {
+  .history-summary-header {
+    flex-direction: column;
+  }
+
+  .history-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-summary {
+    padding: 16px 14px;
+  }
+}
