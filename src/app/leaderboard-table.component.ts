@@ -91,11 +91,11 @@ export class LeaderboardTableComponent {
   }
 
   getAchievementRankTitle(player: LadderPlayerView): string {
-    return this.buildRankTitle(player.achievementRankDelta);
+    return this.buildRankTitle(player.name, player.achievementRankDelta);
   }
 
   getHonorableKillRankTitle(player: LadderPlayerView): string {
-    return this.buildRankTitle(player.honorableKillsRankDelta);
+    return this.buildRankTitle(player.name, player.honorableKillsRankDelta);
   }
 
   private getDeltaClass(value: number): string {
@@ -115,15 +115,17 @@ export class LeaderboardTableComponent {
     console.error('Failed to load image:', image?.src ?? 'unknown image');
   }
 
-  private buildRankTitle(rankDelta: number): string {
+  private buildRankTitle(playerName: string, rankDelta: number): string {
+    const rankLabel = Math.abs(rankDelta) === 1 ? 'rank' : 'ranks';
+
     if (rankDelta > 0) {
-      return `Climbed ${rankDelta.toLocaleString()} ranks`;
+      return `${playerName} climbed ${rankDelta.toLocaleString()} ${rankLabel}`;
     }
 
     if (rankDelta < 0) {
-      return `Dropped ${Math.abs(rankDelta).toLocaleString()} ranks`;
+      return `${playerName} dropped ${Math.abs(rankDelta).toLocaleString()} ${rankLabel}`;
     }
 
-    return 'No rank change';
+    return `${playerName} had no rank change`;
   }
 }
