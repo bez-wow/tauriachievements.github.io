@@ -34,7 +34,7 @@ export class LeaderboardTableComponent {
   }
 
   showAchievementDelta(player: LadderPlayerView): boolean {
-    return this.currentSort === 'achievementPoints' && player.achievementPointsDelta !== 0;
+    return player.achievementPointsDelta !== 0;
   }
 
   showAchievementRank(player: LadderPlayerView): boolean {
@@ -47,7 +47,7 @@ export class LeaderboardTableComponent {
   }
 
   showHonorableKillDelta(player: LadderPlayerView): boolean {
-    return this.currentSort === 'honorableKills' && player.honorableKillsDelta !== 0;
+    return player.honorableKillsDelta !== 0;
   }
 
   showHonorableKillRank(player: LadderPlayerView): boolean {
