@@ -1,0 +1,246 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="player-profile-page">
+  <div class="page-actions">
+    <a class="page-link" routerLink="/">Back to Ladder</a>
+    <a class="page-link secondary" routerLink="/top-gainers">Top Gainers</a>
+  </div>
+
+  <div class="profile-feedback loading" *ngIf="isLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h1>Loading player profile...</h1>
+    <p>Pulling the latest character snapshot and tracked history.</p>
+  </div>
+
+  <div class="profile-feedback error" *ngIf="!isLoading() && loadError()">
+    <h1>{{ title() }}</h1>
+    <p>{{ loadError() }}</p>
+    <a class="feedback-link" routerLink="/">Return to ladder</a>
+  </div>
+
+  <ng-container *ngIf="!isLoading() && profile() as profile">
+    <section class="profile-hero">
+      <div class="identity-block">
+        <div class="identity-icons">
+          <img
+            [src]="getRaceIconPath(profile.race, profile.gender)"
+            [alt]="'Race ' + profile.race + '-' + profile.gender"
+            class="identity-icon race-icon"
+            loading="lazy"
+            (error)="onImageError($event)" />
+          <img
+            [src]="getClassIconPath(profile.classId)"
+            [alt]="'Class ' + profile.classId"
+            class="identity-icon class-icon"
+            loading="lazy"
+            (error)="onImageError($event)" />
+        </div>
+
+        <div class="identity-copy">
+          <p class="profile-kicker">{{ subtitle() }}</p>
+          <h1 class="profile-title">{{ profile.name }}</h1>
+          <p class="profile-description" *ngIf="profile.guild; else unguildedCharacter">
+            Guild:
+            <a
+              class="inline-link"
+              [href]="guildArmoryUrl()"
+              target="_blank"
+              rel="noopener noreferrer">{{ profile.guild }}</a>
+          </p>
+          <p class="profile-description">
+            Current ladder snapshot with tracked progression from recent history snapshots.
+          </p>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a
+          class="hero-button primary"
+          [href]="armoryUrl()"
+          target="_blank"
+          rel="noopener noreferrer">Open Armory</a>
+        <a class="hero-button" routerLink="/">Browse More Players</a>
+      </div>
+    </section>
+
+    <section class="profile-summary-grid">
+      <article class="summary-card accent-gold">
+        <span class="summary-label">Achievement Points</span>
+        <strong class="summary-value gold-text">{{ profile.achievementPoints | number }}</strong>
+        <div class="summary-meta">
+          <span>Current rank {{ formatRankLabel(profile.achievementRank) }}</span>
+          <span class="delta-pill" [ngClass]="getDeltaClass(profile.achievementPointsDelta)">
+            {{ formatSignedValue(profile.achievementPointsDelta) }} today
+          </span>
+        </div>
+        <div class="summary-meta">
+          <span class="rank-copy" [ngClass]="getDeltaClass(profile.achievementRankDelta)">
+            {{ getRankMovementCopy(profile.achievementRankDelta) }}
+          </span>
+          <span *ngIf="history()?.bestAchievementRank as bestRank">Best tracked {{ formatRankLabel(bestRank) }}</span>
+        </div>
+      </article>
+
+      <article class="summary-card accent-red">
+        <span class="summary-label">Honorable Kills</span>
+        <strong class="summary-value">{{ profile.honorableKills | number }}</strong>
+        <div class="summary-meta">
+          <span>Current rank {{ formatRankLabel(profile.honorableKillRank) }}</span>
+          <span class="delta-pill" [ngClass]="getDeltaClass(profile.honorableKillsDelta)">
+            {{ formatSignedValue(profile.honorableKillsDelta) }} today
+          </span>
+        </div>
+        <div class="summary-meta">
+          <span class="rank-copy" [ngClass]="getDeltaClass(profile.honorableKillRankDelta)">
+            {{ getRankMovementCopy(profile.honorableKillRankDelta) }}
+          </span>
+          <span *ngIf="history()?.bestHonorableKillRank as bestRank">Best tracked {{ formatRankLabel(bestRank) }}</span>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-label">Tracking Window</span>
+        <strong class="summary-value small">
+          {{ history()?.trackedSnapshotCount || 0 }} snapshots
+        </strong>
+        <div class="summary-meta">
+          <span>First seen</span>
+          <span>{{ history()?.firstSeen ? (history()?.firstSeen | date:'MMM d, y') : 'Unavailable' }}</span>
+        </div>
+        <div class="summary-meta">
+          <span>Last seen</span>
+          <span>{{ history()?.lastSeen ? (history()?.lastSeen | date:'MMM d, y') : 'Unavailable' }}</span>
+        </div>
+      </article>
+
+      <article class="summary-card">
+        <span class="summary-label">Profile Details</span>
+        <strong class="summary-value small">{{ profile.realm }}</strong>
+        <div class="summary-meta">
+          <span>Faction</span>
+          <span>{{ profile.faction }}</span>
+        </div>
+        <div class="summary-meta">
+          <span>Guild</span>
+          <span>{{ profile.guild || 'Guildless' }}</span>
+        </div>
+      </article>
+    </section>
+
+    <div class="history-banner" *ngIf="historyError()">
+      <p>{{ historyError() }}</p>
+    </div>
+
+    <section class="trend-grid" *ngIf="history()">
+      <article class="trend-card">
+        <div class="trend-card-header">
+          <div>
+            <span class="summary-label">Achievement Trend</span>
+            <h2>{{ (achievementTrend().latestValue ?? profile.achievementPoints) | number }}</h2>
+          </div>
+          <div class="trend-delta" [ngClass]="getDeltaClass(trackedWindowGainAchievement())">
+            {{ formatOptionalSignedValue(trackedWindowGainAchievement()) }}
+          </div>
+        </div>
+
+        <div class="trend-chart-shell" *ngIf="achievementTrend().hasData; else noAchievementTrend">
+          <svg class="trend-chart" viewBox="0 0 100 44" preserveAspectRatio="none" aria-hidden="true">
+            <path class="trend-area achievement" [attr.d]="achievementTrend().areaPath"></path>
+            <path class="trend-line achievement" [attr.d]="achievementTrend().path"></path>
+            <circle
+              *ngFor="let point of achievementTrend().points; let pointIndex = index"
+              class="trend-point achievement"
+              [attr.cx]="point.x"
+              [attr.cy]="point.y"
+              [attr.r]="pointIndex === achievementTrend().points.length - 1 ? 1.75 : 1.1">
+            </circle>
+          </svg>
+
+          <div class="trend-axis">
+            <span>{{ achievementTrend().startLabel }}</span>
+            <span>{{ achievementTrend().endLabel }}</span>
+          </div>
+        </div>
+
+        <div class="trend-metrics">
+          <div class="metric-box">
+            <span class="metric-label">7 day gain</span>
+            <strong [ngClass]="getDeltaClass(achievementSevenDayGain())">{{ formatOptionalSignedValue(achievementSevenDayGain()) }}</strong>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Tracked window</span>
+            <strong [ngClass]="getDeltaClass(trackedWindowGainAchievement())">{{ formatOptionalSignedValue(trackedWindowGainAchievement()) }}</strong>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Best tracked rank</span>
+            <strong>{{ formatRankLabel(history()?.bestAchievementRank) }}</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="trend-card">
+        <div class="trend-card-header">
+          <div>
+            <span class="summary-label">Honorable Kill Trend</span>
+            <h2>{{ (honorableKillTrend().latestValue ?? profile.honorableKills) | number }}</h2>
+          </div>
+          <div class="trend-delta" [ngClass]="getDeltaClass(trackedWindowGainHonorableKills())">
+            {{ formatOptionalSignedValue(trackedWindowGainHonorableKills()) }}
+          </div>
+        </div>
+
+        <div class="trend-chart-shell" *ngIf="honorableKillTrend().hasData; else noHonorableKillTrend">
+          <svg class="trend-chart" viewBox="0 0 100 44" preserveAspectRatio="none" aria-hidden="true">
+            <path class="trend-area honorable-kills" [attr.d]="honorableKillTrend().areaPath"></path>
+            <path class="trend-line honorable-kills" [attr.d]="honorableKillTrend().path"></path>
+            <circle
+              *ngFor="let point of honorableKillTrend().points; let pointIndex = index"
+              class="trend-point honorable-kills"
+              [attr.cx]="point.x"
+              [attr.cy]="point.y"
+              [attr.r]="pointIndex === honorableKillTrend().points.length - 1 ? 1.75 : 1.1">
+            </circle>
+          </svg>
+
+          <div class="trend-axis">
+            <span>{{ honorableKillTrend().startLabel }}</span>
+            <span>{{ honorableKillTrend().endLabel }}</span>
+          </div>
+        </div>
+
+        <div class="trend-metrics">
+          <div class="metric-box">
+            <span class="metric-label">7 day gain</span>
+            <strong [ngClass]="getDeltaClass(honorableKillSevenDayGain())">{{ formatOptionalSignedValue(honorableKillSevenDayGain()) }}</strong>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Tracked window</span>
+            <strong [ngClass]="getDeltaClass(trackedWindowGainHonorableKills())">{{ formatOptionalSignedValue(trackedWindowGainHonorableKills()) }}</strong>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Best tracked rank</span>
+            <strong>{{ formatRankLabel(history()?.bestHonorableKillRank) }}</strong>
+          </div>
+        </div>
+      </article>
+    </section>
+  </ng-container>
+</div>
+
+<ng-template #unguildedCharacter>
+  <p class="profile-description">Guildless in the current ladder snapshot.</p>
+</ng-template>
+
+<ng-template #noAchievementTrend>
+  <div class="trend-empty">
+    <p>Achievement history is not available yet.</p>
+  </div>
+</ng-template>
+
+<ng-template #noHonorableKillTrend>
+  <div class="trend-empty">
+    <p>Honorable kill history is not available yet.</p>
+  </div>
+</ng-template>
