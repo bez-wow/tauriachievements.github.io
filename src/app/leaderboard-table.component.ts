@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
+import { RouterLink } from '@angular/router';
+import { getGuildArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 
@@ -9,7 +10,7 @@ import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
   templateUrl: './leaderboard-table.component.html',
   styleUrls: ['./leaderboard-table.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LeaderboardTableComponent {
@@ -17,8 +18,11 @@ export class LeaderboardTableComponent {
   @Input() currentSort: LadderSort = 'achievementPoints';
 
   readonly getClassIconPath = getClassIconPath;
-  readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
+
+  getPlayerRoute(player: LadderPlayerView): string[] {
+    return ['/player', player.realm, player.name];
+  }
 
   trackPlayer(_index: number, player: LadderPlayerView): string {
     return `${player.realm}::${player.name}`;

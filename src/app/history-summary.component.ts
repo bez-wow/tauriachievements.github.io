@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { getArmoryUrl } from '../utils/armory';
+import { RouterLink } from '@angular/router';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { LadderHistoryMoverView } from './ladder-history.types';
@@ -10,7 +10,7 @@ import { LadderHistoryMoverView } from './ladder-history.types';
   templateUrl: './history-summary.component.html',
   styleUrls: ['./history-summary.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HistorySummaryComponent {
@@ -18,9 +18,12 @@ export class HistorySummaryComponent {
   @Input() achievementMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() honorableKillMovers: ReadonlyArray<LadderHistoryMoverView> = [];
 
-  readonly getArmoryUrl = getArmoryUrl;
   readonly getClassIconPath = getClassIconPath;
   readonly getRaceIconPath = getRaceIconPath;
+
+  getPlayerRoute(mover: LadderHistoryMoverView): string[] {
+    return ['/player', mover.realm, mover.name];
+  }
 
   hasRaceIcon(mover: LadderHistoryMoverView): boolean {
     return mover.race > 0;

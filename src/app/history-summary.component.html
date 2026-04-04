@@ -19,9 +19,7 @@
               <td>
                 <a
                   class="history-player-link"
-                  [href]="getArmoryUrl(mover.name, mover.realm)"
-                  target="_blank"
-                  rel="noopener noreferrer">
+                  [routerLink]="getPlayerRoute(mover)">
                   <span class="history-player-topline">
                     <img
                       *ngIf="hasRaceIcon(mover)"
@@ -69,9 +67,7 @@
               <td>
                 <a
                   class="history-player-link"
-                  [href]="getArmoryUrl(mover.name, mover.realm)"
-                  target="_blank"
-                  rel="noopener noreferrer">
+                  [routerLink]="getPlayerRoute(mover)">
                   <span class="history-player-topline">
                     <img
                       *ngIf="hasRaceIcon(mover)"
