@@ -19,8 +19,10 @@
         <td>
           <a
             class="player-name clickable"
-            [routerLink]="getPlayerRoute(player)"
-            [title]="'View profile for ' + player.name">
+            [href]="getArmoryUrl(player.name, player.realm)"
+            target="_blank"
+            rel="noopener noreferrer"
+            [title]="'Open ' + player.name + ' on Tauri armory'">
             <ng-container *ngFor="let part of player.nameParts; trackBy: trackHighlightPart">
               <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
             </ng-container>

@@ -20,27 +20,7 @@ export interface LadderAchievement {
   faction: 'Horde' | 'Alliance';
 }
 
-export interface LadderPlayerProfileSummary {
-  playerKey: string;
-  name: string;
-  race: number;
-  gender: number;
-  classId: number;
-  realm: string;
-  guild: string;
-  achievementPoints: number;
-  achievementPointsDelta: number;
-  achievementRank: number;
-  achievementRankDelta: number;
-  honorableKills: number;
-  honorableKillsDelta: number;
-  honorableKillRank: number;
-  honorableKillRankDelta: number;
-  faction: string;
-}
-
 interface IndexedLadderPlayer {
-  key: string;
   view: LadderAchievement;
   nameLower: string;
   guildLower: string;
@@ -49,9 +29,6 @@ interface IndexedLadderPlayer {
 interface LadderIndexes {
   achievementPoints: IndexedLadderPlayer[];
   honorableKills: IndexedLadderPlayer[];
-  achievementRanks: Map<string, number>;
-  honorableKillRanks: Map<string, number>;
-  byKey: Map<string, IndexedLadderPlayer>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -89,41 +66,6 @@ export class LadderService {
     return this.getRankedPlayers('honorableKills', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
   }
 
-  getPlayerProfileSummary(realm: string, name: string): Observable<LadderPlayerProfileSummary | null> {
-    return this.dataSyncService.getPlayers().pipe(
-      map((players) => {
-        const indexes = this.getOrBuildIndexes(players);
-        const playerKey = this.getPlayerKeyFromValues(realm, name);
-        const indexedPlayer = indexes.byKey.get(playerKey);
-
-        if (!indexedPlayer) {
-          return null;
-        }
-
-        const player = indexedPlayer.view;
-
-        return {
-          playerKey,
-          name: player.name,
-          race: player.race,
-          gender: player.gender,
-          classId: player.class,
-          realm: player.realm,
-          guild: player.guild,
-          achievementPoints: player.achievementPoints,
-          achievementPointsDelta: player.achievementPointsDelta,
-          achievementRank: indexes.achievementRanks.get(playerKey) ?? 0,
-          achievementRankDelta: player.achievementRankDelta,
-          honorableKills: player.honorableKills,
-          honorableKillsDelta: player.honorableKillsDelta,
-          honorableKillRank: indexes.honorableKillRanks.get(playerKey) ?? 0,
-          honorableKillRankDelta: player.honorableKillsRankDelta,
-          faction: player.faction
-        };
-      })
-    );
-  }
-
   private getRankedPlayers(
     sort: LadderSort,
     realm?: string,
@@ -151,14 +93,9 @@ export class LadderService {
     }
 
     const indexedPlayers = players.map(player => this.toIndexedLadderPlayer(player));
-    const achievementPoints = [...indexedPlayers].sort((a, b) => this.compareAchievementPlayers(a.view, b.view));
-    const honorableKills = [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view));
     const indexes: LadderIndexes = {
-      achievementPoints,
-      honorableKills,
-      achievementRanks: this.buildRankMap(achievementPoints),
-      honorableKillRanks: this.buildRankMap(honorableKills),
-      byKey: new Map(indexedPlayers.map((player) => [player.key, player]))
+      achievementPoints: [...indexedPlayers].sort((a, b) => this.compareAchievementPlayers(a.view, b.view)),
+      honorableKills: [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view))
     };
 
     this.indexedSource = players;
@@ -243,7 +180,6 @@ export class LadderService {
 
   private toIndexedLadderPlayer(player: Player): IndexedLadderPlayer {
     return {
-      key: this.getPlayerKeyFromValues(player.realm, player.name),
       nameLower: player.name.toLowerCase(),
       guildLower: player.guild.toLowerCase(),
       view: {
@@ -289,20 +225,6 @@ export class LadderService {
   }
 
   private getPlayerKey(player: LadderAchievement): string {
-    return this.getPlayerKeyFromValues(player.realm, player.name);
-  }
-
-  private getPlayerKeyFromValues(realm: string, name: string): string {
-    return `${realm}::${name}`;
-  }
-
-  private buildRankMap(players: IndexedLadderPlayer[]): Map<string, number> {
-    const ranks = new Map<string, number>();
-
-    for (let index = 0; index < players.length; index++) {
-      ranks.set(players[index].key, index + 1);
-    }
-
-    return ranks;
+    return `${player.realm}::${player.name}`;
   }
 }

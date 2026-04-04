@@ -7,19 +7,15 @@ const sourcePath = path.join(__dirname, "..", "src", "Players.csv");
 const lastUpdatedPath = path.join(__dirname, "..", "src", "lastUpdated.txt");
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.history.snapshot.json");
-const playerProfileMetaOutputPath = path.join(outputDir, "player-profile.meta.json");
-const playerProfileBucketDir = path.join(outputDir, "player-profile-buckets");
 
 const SNAPSHOT_DAY_LIMIT = 21;
 const MOVERS_LIMIT = 20;
-const PLAYER_PROFILE_BUCKET_COUNT = 128;
 const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 
 function generatePlayerHistorySnapshot() {
   const snapshotSources = collectSnapshotSources();
   const trackedKeys = collectTrackedPlayerKeys(snapshotSources);
   const { playerHistories, movers } = buildPlayerHistories(snapshotSources, trackedKeys);
-  const currentPlayers = parsePlayersCsv(snapshotSources[snapshotSources.length - 1]?.loadCsvText?.() ?? "");
 
   const payload = {
     v: 1,
@@ -34,7 +30,6 @@ function generatePlayerHistorySnapshot() {
 
   fs.mkdirSync(outputDir, { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(payload));
-  generatePlayerProfileBuckets(snapshotSources, currentPlayers, playerHistories);
 
   const sizeKb = (fs.statSync(outputPath).size / 1024).toFixed(1);
   console.log(
@@ -277,126 +272,6 @@ function computeTopMovers(playerHistories, field, sortMetric) {
       return left[0].localeCompare(right[0]);
     })
     .slice(0, MOVERS_LIMIT);
-}
-
-function generatePlayerProfileBuckets(snapshotSources, currentPlayers, playerHistories) {
-  const buckets = Array.from({ length: PLAYER_PROFILE_BUCKET_COUNT }, () => []);
-  const snapshots = snapshotSources.map((source) => source.timestamp);
-
-  for (const player of currentPlayers) {
-    const playerKey = getPlayerKey(player);
-    const history = playerHistories.get(playerKey);
-    if (!history) {
-      continue;
-    }
-
-    const bucketId = getPlayerProfileBucketId(playerKey);
-    buckets[bucketId].push(serializePlayerProfileRecord(playerKey, history));
-  }
-
-  fs.mkdirSync(playerProfileBucketDir, { recursive: true });
-  fs.writeFileSync(playerProfileMetaOutputPath, JSON.stringify({
-    v: 1,
-    g: new Date().toISOString(),
-    b: PLAYER_PROFILE_BUCKET_COUNT,
-    s: snapshots,
-  }));
-
-  for (let index = 0; index < PLAYER_PROFILE_BUCKET_COUNT; index++) {
-    const bucketLabel = formatBucketLabel(index);
-    const bucketPath = path.join(playerProfileBucketDir, `${bucketLabel}.json`);
-    const bucketPayload = {
-      v: 1,
-      p: buckets[index].sort((left, right) => left[0].localeCompare(right[0])),
-    };
-
-    fs.writeFileSync(bucketPath, JSON.stringify(bucketPayload));
-  }
-
-  console.log(
-    `Generated ${path.relative(process.cwd(), playerProfileMetaOutputPath)} and ${PLAYER_PROFILE_BUCKET_COUNT} player profile buckets (${currentPlayers.length} current players)`
-  );
-}
-
-function serializePlayerProfileRecord(playerKey, history) {
-  const firstSeenIndex = findFirstDefinedIndex(history.achievementPoints);
-  const lastSeenIndex = findLastDefinedIndex(history.achievementPoints);
-
-  return [
-    playerKey,
-    firstSeenIndex,
-    lastSeenIndex,
-    getBestRank(history.achievementRanks),
-    getBestRank(history.honorableRanks),
-    serializeHistorySeries(history.achievementPoints),
-    serializeHistorySeries(history.honorableKills),
-  ];
-}
-
-function serializeHistorySeries(values) {
-  const serialized = [];
-
-  for (let index = 0; index < values.length; index++) {
-    const value = values[index];
-    if (!Number.isFinite(value)) {
-      continue;
-    }
-
-    serialized.push(index, value);
-  }
-
-  return serialized;
-}
-
-function getBestRank(ranks) {
-  let bestRank = 0;
-
-  for (const rank of ranks) {
-    if (!Number.isFinite(rank) || rank <= 0) {
-      continue;
-    }
-
-    if (bestRank === 0 || rank < bestRank) {
-      bestRank = rank;
-    }
-  }
-
-  return bestRank;
-}
-
-function findFirstDefinedIndex(values) {
-  for (let index = 0; index < values.length; index++) {
-    if (Number.isFinite(values[index])) {
-      return index;
-    }
-  }
-
-  return -1;
-}
-
-function findLastDefinedIndex(values) {
-  for (let index = values.length - 1; index >= 0; index--) {
-    if (Number.isFinite(values[index])) {
-      return index;
-    }
-  }
-
-  return -1;
-}
-
-function getPlayerProfileBucketId(playerKey) {
-  let hash = 2166136261;
-
-  for (let index = 0; index < playerKey.length; index++) {
-    hash ^= playerKey.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return (hash >>> 0) % PLAYER_PROFILE_BUCKET_COUNT;
-}
-
-function formatBucketLabel(index) {
-  return index.toString(16).padStart(2, "0");
 }
 
 function compareAchievementPoints(left, right) {
