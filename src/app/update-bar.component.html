@@ -3,13 +3,20 @@
     <nav class="update-bar-nav" aria-label="Primary">
       <a
         class="update-nav-link"
+        data-short-label="L"
         routerLink="/"
         [routerLinkActiveOptions]="{ exact: true }"
         routerLinkActive="active">Ladder</a>
       <a
         class="update-nav-link"
+        data-short-label="T"
         routerLink="/top-gainers"
         routerLinkActive="active">Top Gainers</a>
+      <a
+        class="update-nav-link"
+        data-short-label="G"
+        routerLink="/guilds"
+        routerLinkActive="active">Guilds</a>
     </nav>
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
       <span class="update-label gold-text">Last updated:</span>
