@@ -1,28 +1,47 @@
 <div class="update-bar">
   <div class="update-bar-content">
-    <nav class="update-bar-nav" aria-label="Primary">
-      <a
-        class="update-nav-link"
-        data-short-label="L"
-        routerLink="/"
-        [routerLinkActiveOptions]="{ exact: true }"
-        routerLinkActive="active">Ladder</a>
-      <a
-        class="update-nav-link"
-        data-short-label="T"
-        routerLink="/top-gainers"
-        routerLinkActive="active">Top Gainers</a>
-      <a
-        class="update-nav-link"
-        data-short-label="G"
-        routerLink="/guilds"
-        routerLinkActive="active">Guilds</a>
-      <a
-        class="update-nav-link"
-        data-short-label="R"
-        routerLink="/rare-achievements"
-        routerLinkActive="active">Rare Achievements</a>
-    </nav>
+    <div class="update-bar-nav-shell">
+      <button
+        type="button"
+        class="mobile-nav-toggle"
+        [class.is-open]="isMobileMenuOpen()"
+        [attr.aria-expanded]="isMobileMenuOpen()"
+        aria-controls="primary-navigation"
+        aria-label="Toggle navigation menu"
+        (click)="toggleMobileMenu()">
+        <span class="mobile-nav-toggle-bar" aria-hidden="true"></span>
+        <span class="mobile-nav-toggle-bar" aria-hidden="true"></span>
+        <span class="mobile-nav-toggle-bar" aria-hidden="true"></span>
+      </button>
+
+      <nav
+        id="primary-navigation"
+        class="update-bar-nav"
+        [class.is-open]="isMobileMenuOpen()"
+        aria-label="Primary">
+        <a
+          class="update-nav-link"
+          routerLink="/"
+          [routerLinkActiveOptions]="{ exact: true }"
+          routerLinkActive="active"
+          (click)="closeMobileMenu()">Ladder</a>
+        <a
+          class="update-nav-link"
+          routerLink="/top-gainers"
+          routerLinkActive="active"
+          (click)="closeMobileMenu()">Top Gainers</a>
+        <a
+          class="update-nav-link"
+          routerLink="/guilds"
+          routerLinkActive="active"
+          (click)="closeMobileMenu()">Guilds</a>
+        <a
+          class="update-nav-link"
+          routerLink="/rare-achievements"
+          routerLinkActive="active"
+          (click)="closeMobileMenu()">Rare Achievements</a>
+      </nav>
+    </div>
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
       <span class="update-label gold-text">Last updated:</span>
       <span class="update-gap" aria-hidden="true"></span>
