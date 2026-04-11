@@ -10,14 +10,21 @@ import {
 } from './rare-achievement-groups';
 import {
   RareAchievementCharacter,
+  RareAchievementDefinition,
   RareAchievementSummary,
   RareAchievementsDataset
 } from './rare-achievements.types';
 
-const GLADIATOR_TITLE_IDS = new Set<number>(R1_GLADIATOR_OPTIONS.map((option) => option.value));
-const GLADIATOR_MOUNT_IDS = new Set<number>(GLADIATOR_MOUNT_OPTIONS.map((option) => option.value));
-const RATED_BATTLEGROUND_HERO_IDS = new Set<number>(RATED_BATTLEGROUND_OPTIONS.map((option) => option.value));
-const REALM_FIRST_IDS = new Set<number>(REALM_FIRST_OPTIONS.map((option) => option.value));
+const GLADIATOR_TITLE_ID_ORDER = R1_GLADIATOR_OPTIONS.map((option) => option.value);
+const GLADIATOR_MOUNT_ID_ORDER = GLADIATOR_MOUNT_OPTIONS.map((option) => option.value);
+const RATED_BATTLEGROUND_HERO_ID_ORDER = RATED_BATTLEGROUND_OPTIONS.map((option) => option.value);
+const REALM_FIRST_ID_ORDER = REALM_FIRST_OPTIONS.map((option) => option.value);
+const TRACKED_ACHIEVEMENT_FALLBACK_LABELS = new Map<number, string>([
+  ...R1_GLADIATOR_OPTIONS.map((option) => [option.value, option.label] as const),
+  ...GLADIATOR_MOUNT_OPTIONS.map((option) => [option.value, option.label] as const),
+  ...RATED_BATTLEGROUND_OPTIONS.map((option) => [option.value, option.label] as const),
+  ...REALM_FIRST_OPTIONS.map((option) => [option.value, option.label] as const)
+]);
 
 @Injectable({ providedIn: 'root' })
 export class RareAchievementsService {
@@ -45,9 +52,10 @@ export class RareAchievementsService {
 
   private buildRareAchievementIndicators(dataset: RareAchievementsDataset): Map<string, RareAchievementSummary> {
     const indicators = new Map<string, RareAchievementSummary>();
+    const achievementNamesById = this.buildAchievementNamesById(dataset.achievements ?? []);
 
     for (const character of dataset.characters ?? []) {
-      const summary = this.toRareAchievementSummary(character);
+      const summary = this.toRareAchievementSummary(character, achievementNamesById);
 
       if (!summary) {
         continue;
@@ -59,34 +67,77 @@ export class RareAchievementsService {
     return indicators;
   }
 
-  private toRareAchievementSummary(character: RareAchievementCharacter): RareAchievementSummary | undefined {
+  private toRareAchievementSummary(
+    character: RareAchievementCharacter,
+    achievementNamesById: ReadonlyMap<number, string>
+  ): RareAchievementSummary | undefined {
     const ownedAchievementIds = new Set(character.achievements.map((achievement) => achievement.id));
-    const gladiatorTitleCount = this.countOwnedAchievements(ownedAchievementIds, GLADIATOR_TITLE_IDS);
-    const gladiatorMountCount = this.countOwnedAchievements(ownedAchievementIds, GLADIATOR_MOUNT_IDS);
-    const ratedBattlegroundHeroCount = this.countOwnedAchievements(ownedAchievementIds, RATED_BATTLEGROUND_HERO_IDS);
-    const realmFirstCount = this.countOwnedAchievements(ownedAchievementIds, REALM_FIRST_IDS);
+    const gladiatorTitles = this.collectOwnedAchievementNames(
+      ownedAchievementIds,
+      GLADIATOR_TITLE_ID_ORDER,
+      achievementNamesById
+    );
+    const gladiatorMounts = this.collectOwnedAchievementNames(
+      ownedAchievementIds,
+      GLADIATOR_MOUNT_ID_ORDER,
+      achievementNamesById
+    );
+    const ratedBattlegroundHeroTitles = this.collectOwnedAchievementNames(
+      ownedAchievementIds,
+      RATED_BATTLEGROUND_HERO_ID_ORDER,
+      achievementNamesById
+    );
+    const realmFirstAchievements = this.collectOwnedAchievementNames(
+      ownedAchievementIds,
+      REALM_FIRST_ID_ORDER,
+      achievementNamesById
+    );
+    const achievementNames = [
+      ...gladiatorTitles,
+      ...gladiatorMounts,
+      ...ratedBattlegroundHeroTitles,
+      ...realmFirstAchievements
+    ];
 
-    if (gladiatorTitleCount === 0 && gladiatorMountCount === 0 && ratedBattlegroundHeroCount === 0 && realmFirstCount === 0) {
+    if (achievementNames.length === 0) {
       return undefined;
     }
 
     return {
-      gladiatorTitleCount,
-      gladiatorMountCount,
-      ratedBattlegroundHeroCount,
-      realmFirstCount
+      gladiatorTitleCount: gladiatorTitles.length,
+      gladiatorMountCount: gladiatorMounts.length,
+      ratedBattlegroundHeroCount: ratedBattlegroundHeroTitles.length,
+      realmFirstCount: realmFirstAchievements.length,
+      achievementNames
     };
   }
 
-  private countOwnedAchievements(ownedAchievementIds: ReadonlySet<number>, trackedAchievementIds: ReadonlySet<number>): number {
-    let count = 0;
+  private buildAchievementNamesById(
+    achievements: ReadonlyArray<RareAchievementDefinition>
+  ): Map<number, string> {
+    return new Map(achievements.map((achievement) => [achievement.id, achievement.name] as const));
+  }
+
+  private collectOwnedAchievementNames(
+    ownedAchievementIds: ReadonlySet<number>,
+    trackedAchievementIds: ReadonlyArray<number>,
+    achievementNamesById: ReadonlyMap<number, string>
+  ): string[] {
+    const names: string[] = [];
 
     for (const achievementId of trackedAchievementIds) {
-      if (ownedAchievementIds.has(achievementId)) {
-        count++;
+      if (!ownedAchievementIds.has(achievementId)) {
+        continue;
+      }
+
+      const achievementName = achievementNamesById.get(achievementId)
+        ?? TRACKED_ACHIEVEMENT_FALLBACK_LABELS.get(achievementId);
+
+      if (achievementName) {
+        names.push(achievementName);
       }
     }
 
-    return count;
+    return names;
   }
 }

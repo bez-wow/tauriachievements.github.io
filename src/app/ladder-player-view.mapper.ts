@@ -84,6 +84,10 @@ function buildRareAchievementSummaryLabel(summary: RareAchievementSummary | unde
     return undefined;
   }
 
+  if (summary.achievementNames.length > 0) {
+    return summary.achievementNames.join(', ');
+  }
+
   const parts: string[] = [];
 
   if (summary.gladiatorTitleCount > 0) {

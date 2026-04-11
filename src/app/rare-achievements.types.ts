@@ -13,6 +13,7 @@ export interface RareAchievementSummary {
   gladiatorMountCount: number;
   ratedBattlegroundHeroCount: number;
   realmFirstCount: number;
+  achievementNames: ReadonlyArray<string>;
 }
 
 export interface RareAchievementCharacter {
