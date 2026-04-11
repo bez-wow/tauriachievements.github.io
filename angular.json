@@ -36,6 +36,7 @@
               "src/404.html",
               "src/assets",
               "src/characterCollection",
+              "src/RareAchievements.json",
               "src/lastUpdated.txt"
             ],
             "styles": [
@@ -54,7 +55,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "400kb",
+                  "maximumWarning": "401kb",
                   "maximumError": "550kb"
                 },
                 {

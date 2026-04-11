@@ -1,0 +1,110 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="ladder-container rare-achievements-container">
+  <section class="ladder-header rare-achievements-header" aria-label="Rare achievement filters">
+    <div class="filter-group reset-group">
+      <button type="button" class="reset-button" (click)="resetFilter()">Reset</button>
+    </div>
+
+    <div
+      class="filter-group filter-group--achievement"
+      *ngFor="let dropdown of achievementDropdowns(); trackBy: trackAchievementDropdown">
+      <app-filter-dropdown
+        [dropdownId]="dropdown.dropdownId"
+        [triggerId]="dropdown.triggerId"
+        [ariaLabel]="dropdown.ariaLabel"
+        [options]="dropdown.options"
+        [selectedValue]="dropdown.selectedValue"
+        [selectedLabel]="dropdown.selectedLabel"
+        [highlightWhenSelected]="true"
+        (selectionChange)="onAchievementSelection($event)" />
+    </div>
+  </section>
+
+  <div class="ladder-feedback loading" *ngIf="isLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading rare achievement data...</h2>
+  </div>
+
+  <div class="ladder-feedback error" *ngIf="!isLoading() && loadError()">
+    <h2>Could not load rare achievement data</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+  </div>
+
+  <div class="ladder-feedback empty" *ngIf="showSelectionPrompt()">
+    <h2>Select a rare achievement</h2>
+    <p>Choose one from the PvP dropdowns above to list every tracked character who owns it, along with the date it was obtained.</p>
+  </div>
+
+  <div class="ladder-feedback empty" *ngIf="showEmptyState()">
+    <h2>No characters found</h2>
+    <p>{{ emptyStateMessage() }}</p>
+  </div>
+
+  <div class="wow-table-scroll" *ngIf="hasMatches()">
+    <table class="wow-table wow-table-rare-achievements">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Race / Class</th>
+            <th>Realm</th>
+            <th>Guild</th>
+            <th>Obtained</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let character of matchingCharacters(); trackBy: trackCharacter" [ngClass]="character.faction">
+            <td>{{ character.rank }}</td>
+            <td>
+              <a
+                class="player-name clickable"
+                [href]="getArmoryUrl(character.name, character.realm)"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ character.name }}
+              </a>
+            </td>
+            <td>
+              <img
+                [src]="character.raceIcon"
+                [alt]="'Race ' + character.race + '-' + character.gender"
+                class="icon race-icon"
+                loading="lazy"
+                (error)="onImageError($event)" />
+              <img
+                [src]="character.classIcon"
+                [alt]="'Class ' + character.classId"
+                class="icon class-icon"
+                loading="lazy"
+                (error)="onImageError($event)" />
+            </td>
+            <td>{{ character.realm }}</td>
+            <td>
+              <a
+                *ngIf="character.guild"
+                class="guild-name clickable"
+                [href]="getGuildArmoryUrl(character.guild, character.realm)"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ character.guild }}
+              </a>
+            </td>
+            <td>
+              <span
+                class="rare-achievement-date"
+                [class.is-unknown]="!character.obtainedAt"
+                [attr.title]="character.obtainedAt ?? 'Unknown obtain date'">
+                {{ character.obtainedAtLabel }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  </div>
+</div>
+
+<app-back-to-top-button />

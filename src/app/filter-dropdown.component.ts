@@ -32,6 +32,7 @@ export class FilterDropdownComponent {
   @Input() selectedLabel = '';
   @Input() selectedIcon?: string;
   @Input() showIcons = false;
+  @Input() highlightWhenSelected = false;
 
   @Output() readonly selectionChange = new EventEmitter<FilterDropdownValue>();
 
@@ -55,6 +56,10 @@ export class FilterDropdownComponent {
 
   get hasSelectedIcon(): boolean {
     return !!this.displaySelectedIcon;
+  }
+
+  get hasSelectedValue(): boolean {
+    return this.selectedValue !== undefined;
   }
 
   @HostListener('document:click', ['$event'])

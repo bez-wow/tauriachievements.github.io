@@ -19,4 +19,9 @@ export interface HighlightPart {
 export interface LadderPlayerView extends PlayerAchievement {
   nameParts: HighlightPart[];
   guildParts: HighlightPart[];
+  gladiatorTitleCount: number;
+  gladiatorMountCount: number;
+  ratedBattlegroundHeroCount: number;
+  realmFirstCount: number;
+  rareAchievementSummaryLabel?: string;
 }

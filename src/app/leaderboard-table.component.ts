@@ -98,6 +98,12 @@ export class LeaderboardTableComponent {
     return this.buildRankTitle(player.name, player.honorableKillsRankDelta);
   }
 
+  getPlayerLinkTitle(player: LadderPlayerView): string {
+    return player.rareAchievementSummaryLabel
+      ? player.rareAchievementSummaryLabel
+      : `Open ${player.name} on Tauri armory`;
+  }
+
   private getDeltaClass(value: number): string {
     if (value > 0) {
       return 'positive';

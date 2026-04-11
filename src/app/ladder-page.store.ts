@@ -1,10 +1,12 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, distinctUntilChanged, map, switchMap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
 import { DEFAULT_LADDER_FILTER_STATE, areLadderFilterStatesEqual } from './ladder-filter-state';
 import { mapLadderPlayersToView } from './ladder-player-view.mapper';
 import { LadderAchievement, LadderService } from './ladder.service';
 import { LadderFilterState, LadderPlayerView } from './ladder.types';
+import { RareAchievementSummary } from './rare-achievements.types';
+import { RareAchievementsService } from './rare-achievements.service';
 import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
 
@@ -13,11 +15,19 @@ export class LadderPageStore {
   private readonly ladderService = inject(LadderService);
   private readonly dataSyncService = inject(DataSyncService);
   private readonly ladderLastUpdatedService = inject(LadderLastUpdatedService);
+  private readonly rareAchievementsService = inject(RareAchievementsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly filterState$ = new BehaviorSubject<LadderFilterState>(DEFAULT_LADDER_FILTER_STATE);
   private readonly sourcePlayerCount = signal(this.dataSyncService.getCurrentPlayers().length);
   private hasStartedSync = false;
   private initialized = false;
+  private readonly rareAchievementIndicators$ = this.rareAchievementsService.getRareAchievementIndicators().pipe(
+    catchError((error: unknown) => {
+      console.error('Failed to load rare achievement indicators:', error);
+      return of(new Map<string, RareAchievementSummary>());
+    }),
+    startWith(new Map<string, RareAchievementSummary>())
+  );
 
   readonly players = signal<LadderPlayerView[]>([]);
   readonly isLoading = signal(this.sourcePlayerCount() === 0);
@@ -93,12 +103,23 @@ export class LadderPageStore {
   }
 
   private bindFilteredPlayers(): void {
-    this.filterState$.pipe(
-      distinctUntilChanged(areLadderFilterStatesEqual),
-      switchMap((state) => this.getFilteredPlayers(state)),
+    combineLatest([
+      this.filterState$.pipe(
+        distinctUntilChanged(areLadderFilterStatesEqual),
+        switchMap((state) =>
+          this.getFilteredPlayers(state).pipe(
+            map((players) => ({
+              players,
+              search: state.search
+            }))
+          )
+        )
+      ),
+      this.rareAchievementIndicators$
+    ]).pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((players) => {
-      this.players.set(this.mapPlayersForView(players));
+    ).subscribe(([result, rareAchievementIndicators]) => {
+      this.players.set(this.mapPlayersForView(result.players, result.search, rareAchievementIndicators));
     });
   }
 
@@ -126,8 +147,12 @@ export class LadderPageStore {
     );
   }
 
-  private mapPlayersForView(players: LadderAchievement[]): LadderPlayerView[] {
-    return mapLadderPlayersToView(players, this.filterState$.value.search);
+  private mapPlayersForView(
+    players: LadderAchievement[],
+    search: string,
+    rareAchievementIndicators: ReadonlyMap<string, RareAchievementSummary>
+  ): LadderPlayerView[] {
+    return mapLadderPlayersToView(players, search, rareAchievementIndicators);
   }
 
   private loadLastUpdated(): void {

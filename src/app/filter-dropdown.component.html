@@ -1,4 +1,8 @@
-<div class="dropdown" [class.open]="isOpen" [class.has-icons]="showIcons">
+<div
+  class="dropdown"
+  [class.open]="isOpen"
+  [class.has-icons]="showIcons"
+  [class.has-selection]="highlightWhenSelected && hasSelectedValue">
   <button
     #trigger
     [id]="triggerId"

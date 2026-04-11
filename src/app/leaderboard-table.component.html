@@ -17,16 +17,30 @@
       <tr *ngFor="let player of players; trackBy: trackPlayer" [ngClass]="player.faction">
         <td>{{ player.rank }}</td>
         <td>
-          <a
-            class="player-name clickable"
-            [href]="getArmoryUrl(player.name, player.realm)"
-            target="_blank"
-            rel="noopener noreferrer"
-            [title]="'Open ' + player.name + ' on Tauri armory'">
-            <ng-container *ngFor="let part of player.nameParts; trackBy: trackHighlightPart">
-              <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
-            </ng-container>
-          </a>
+          <div class="player-identity">
+            <a
+              class="player-name clickable"
+              [class.player-name--gladiator-title]="player.gladiatorTitleCount > 0"
+              [class.player-name--gladiator-mount]="player.gladiatorMountCount > 0"
+              [class.player-name--rbg-hero-alliance]="player.ratedBattlegroundHeroCount > 0 && player.faction === 'Alliance'"
+              [class.player-name--rbg-hero-horde]="player.ratedBattlegroundHeroCount > 0 && player.faction === 'Horde'"
+              [class.player-name--realm-first]="player.realmFirstCount > 0"
+              [href]="getArmoryUrl(player.name, player.realm)"
+              target="_blank"
+              rel="noopener noreferrer"
+              [title]="getPlayerLinkTitle(player)">
+              <span
+                *ngIf="player.ratedBattlegroundHeroCount > 0"
+                class="player-name-rbg-sigil"
+                [ngClass]="player.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
+                aria-hidden="true">
+                ✦
+              </span>
+              <ng-container *ngFor="let part of player.nameParts; trackBy: trackHighlightPart">
+                <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
+              </ng-container>
+            </a>
+          </div>
         </td>
         <td>
           <img
