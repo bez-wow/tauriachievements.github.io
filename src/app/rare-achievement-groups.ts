@@ -12,9 +12,9 @@ export const R1_GLADIATOR_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> =
   { value: 3758, label: 'S7 - Relentless Gladiator' },
   { value: 3436, label: 'S6 - Furious Gladiator' },
   { value: 3336, label: 'S5 - Deadly Gladiator' },
-  { value: 420, label: 'S3 - Brutal Gladiator' },
-  { value: 419, label: 'S2 - Vengeful Gladiator' },
-  { value: 418, label: 'S1 - Merciless Gladiator' }
+  { value: 420, label: 'S4 - Brutal Gladiator' },
+  { value: 419, label: 'S3 - Vengeful Gladiator' },
+  { value: 418, label: 'S2 - Merciless Gladiator' }
 ];
 
 export const GLADIATOR_MOUNT_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
