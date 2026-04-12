@@ -5,6 +5,7 @@ import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption } from './filter-dropdown.types';
+import { CLASS_OPTIONS, REALM_OPTIONS } from './ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
   R1_GLADIATOR_OPTIONS,
@@ -23,6 +24,7 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 
 type CharacterFaction = 'Alliance' | 'Horde';
 type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes';
+type AdditionalFilterDropdownKey = 'realm' | 'class';
 type AggregateAchievementFilterValue = 'allGladiatorTitles' | 'allGladiatorMounts';
 type AchievementFilterValue = number | AggregateAchievementFilterValue;
 
@@ -63,6 +65,16 @@ const DEFAULT_SELECTED_ACHIEVEMENT_ID = ALL_GLADIATOR_TITLES_FILTER_VALUE;
 const ALLIANCE_RACE_IDS = new Set<number>([1, 3, 4, 7, 11, 22, 25]);
 const GLADIATOR_TITLE_IDS = new Set<number>(R1_GLADIATOR_OPTIONS.map((option) => option.value));
 const GLADIATOR_MOUNT_IDS = new Set<number>(GLADIATOR_MOUNT_OPTIONS.map((option) => option.value));
+const REALM_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption<string | undefined>> =
+  REALM_OPTIONS.map((option) => ({ value: option.value, label: option.label }));
+const CLASS_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
+  { value: undefined, label: 'All Classes' },
+  ...CLASS_OPTIONS.map((option) => ({
+    value: option.id,
+    label: option.name,
+    icon: option.icon
+  }))
+];
 const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinition> = [
   {
     key: 'r1Gladiators',
@@ -126,8 +138,13 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedAchievementId = signal<AchievementFilterValue | undefined>(DEFAULT_SELECTED_ACHIEVEMENT_ID);
+  readonly selectedRealm = signal<string | undefined>(undefined);
+  readonly selectedClassId = signal<number | undefined>(undefined);
+  readonly searchQuery = signal('');
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
+  readonly realmFilterOptions = REALM_FILTER_OPTIONS;
+  readonly classFilterOptions = CLASS_FILTER_OPTIONS;
   readonly achievementDropdowns = computed<ReadonlyArray<AchievementDropdownView>>(() => {
     const selectedAchievementId = this.selectedAchievementId();
 
@@ -147,15 +164,29 @@ export class RareAchievementsPageComponent implements OnInit {
       ? 'Select rare achievement'
       : GROUPED_ACHIEVEMENT_LABELS.get(achievementId) ?? 'Select rare achievement';
   });
+  readonly selectedRealmLabel = computed(() =>
+    REALM_FILTER_OPTIONS.find((option) => option.value === this.selectedRealm())?.label ?? 'All Realms'
+  );
+  readonly selectedClassLabel = computed(() =>
+    CLASS_FILTER_OPTIONS.find((option) => option.value === this.selectedClassId())?.label ?? 'All Classes'
+  );
+  readonly selectedClassIcon = computed(() =>
+    CLASS_OPTIONS.find((option) => option.id === this.selectedClassId())?.icon
+  );
   readonly matchingCharacters = computed<ReadonlyArray<RareAchievementMatchView>>(() => {
     const achievementId = this.selectedAchievementId();
     if (achievementId === undefined) {
       return [];
     }
 
+    const selectedRealm = this.selectedRealm();
+    const selectedClassId = this.selectedClassId();
+    const normalizedSearchQuery = this.searchQuery().trim().toLowerCase();
+
     return (this.dataset()?.characters ?? [])
       .map((character) => this.toMatchingCharacterView(character, achievementId))
       .filter((character): character is RareAchievementMatchView => character !== undefined)
+      .filter((character) => this.matchesAdditionalFilters(character, selectedRealm, selectedClassId, normalizedSearchQuery))
       .sort((left, right) => this.compareCharacters(left, right))
       .map((character, index) => ({
         ...character,
@@ -181,9 +212,27 @@ export class RareAchievementsPageComponent implements OnInit {
     this.selectedAchievementId.set(this.toAchievementId(value));
   }
 
+  onRealmSelection(value: string | number | undefined): void {
+    this.dropdownCoordinator.closeAll();
+    this.selectedRealm.set(typeof value === 'string' ? value : undefined);
+  }
+
+  onClassSelection(value: string | number | undefined): void {
+    this.dropdownCoordinator.closeAll();
+    this.selectedClassId.set(typeof value === 'number' && Number.isFinite(value) ? value : undefined);
+  }
+
+  onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value);
+  }
+
   resetFilter(): void {
     this.dropdownCoordinator.closeAll();
     this.selectedAchievementId.set(DEFAULT_SELECTED_ACHIEVEMENT_ID);
+    this.selectedRealm.set(undefined);
+    this.selectedClassId.set(undefined);
+    this.searchQuery.set('');
   }
 
   retryLoad(): void {
@@ -192,6 +241,10 @@ export class RareAchievementsPageComponent implements OnInit {
 
   trackAchievementDropdown(_index: number, dropdown: AchievementDropdownView): AchievementDropdownKey {
     return dropdown.key;
+  }
+
+  trackAdditionalFilterDropdown(_index: number, dropdownKey: AdditionalFilterDropdownKey): AdditionalFilterDropdownKey {
+    return dropdownKey;
   }
 
   trackCharacter(_index: number, character: RareAchievementMatchView): string {
@@ -302,6 +355,28 @@ export class RareAchievementsPageComponent implements OnInit {
     }
 
     return latestAchievement;
+  }
+
+  private matchesAdditionalFilters(
+    character: RareAchievementMatchView,
+    selectedRealm: string | undefined,
+    selectedClassId: number | undefined,
+    normalizedSearchQuery: string
+  ): boolean {
+    if (selectedRealm && character.realm !== selectedRealm) {
+      return false;
+    }
+
+    if (selectedClassId !== undefined && character.classId !== selectedClassId) {
+      return false;
+    }
+
+    if (!normalizedSearchQuery) {
+      return true;
+    }
+
+    return character.name.toLowerCase().includes(normalizedSearchQuery)
+      || character.guild.toLowerCase().includes(normalizedSearchQuery);
   }
 
   private compareCharacters(left: RareAchievementMatchView, right: RareAchievementMatchView): number {

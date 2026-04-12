@@ -4,22 +4,61 @@
 
 <div class="ladder-container rare-achievements-container">
   <section class="ladder-header rare-achievements-header" aria-label="Rare achievement filters">
-    <div class="filter-group reset-group">
-      <button type="button" class="reset-button" (click)="resetFilter()">Reset</button>
+    <div class="rare-achievements-filter-row rare-achievements-filter-row--primary">
+      <div class="filter-group reset-group">
+        <button type="button" class="reset-button" (click)="resetFilter()">Reset</button>
+      </div>
+
+      <div
+        class="filter-group filter-group--achievement"
+        *ngFor="let dropdown of achievementDropdowns(); trackBy: trackAchievementDropdown">
+        <app-filter-dropdown
+          [dropdownId]="dropdown.dropdownId"
+          [triggerId]="dropdown.triggerId"
+          [ariaLabel]="dropdown.ariaLabel"
+          [options]="dropdown.options"
+          [selectedValue]="dropdown.selectedValue"
+          [selectedLabel]="dropdown.selectedLabel"
+          [highlightWhenSelected]="true"
+          (selectionChange)="onAchievementSelection($event)" />
+      </div>
     </div>
 
-    <div
-      class="filter-group filter-group--achievement"
-      *ngFor="let dropdown of achievementDropdowns(); trackBy: trackAchievementDropdown">
-      <app-filter-dropdown
-        [dropdownId]="dropdown.dropdownId"
-        [triggerId]="dropdown.triggerId"
-        [ariaLabel]="dropdown.ariaLabel"
-        [options]="dropdown.options"
-        [selectedValue]="dropdown.selectedValue"
-        [selectedLabel]="dropdown.selectedLabel"
-        [highlightWhenSelected]="true"
-        (selectionChange)="onAchievementSelection($event)" />
+    <div class="rare-achievements-filter-row rare-achievements-filter-row--secondary">
+      <div class="filter-group filter-group--secondary">
+        <app-filter-dropdown
+          dropdownId="rareAchievementRealm"
+          triggerId="rareAchievementRealmTrigger"
+          ariaLabel="Filter by realm"
+          [options]="realmFilterOptions"
+          [selectedValue]="selectedRealm()"
+          [selectedLabel]="selectedRealmLabel()"
+          (selectionChange)="onRealmSelection($event)" />
+      </div>
+
+      <div class="filter-group filter-group--secondary">
+        <app-filter-dropdown
+          dropdownId="rareAchievementClass"
+          triggerId="rareAchievementClassTrigger"
+          ariaLabel="Filter by class"
+          [options]="classFilterOptions"
+          [selectedValue]="selectedClassId()"
+          [selectedLabel]="selectedClassLabel()"
+          [selectedIcon]="selectedClassIcon()"
+          [showIcons]="true"
+          (selectionChange)="onClassSelection($event)" />
+      </div>
+
+      <div class="filter-group filter-group--search">
+        <input
+          id="rareAchievementNameGuildSearch"
+          type="search"
+          class="filter-select search-input"
+          [value]="searchQuery()"
+          placeholder="Name or guild"
+          aria-label="Search rare achievement characters by name or guild"
+          (input)="onSearchInput($event)" />
+      </div>
     </div>
   </section>
 
