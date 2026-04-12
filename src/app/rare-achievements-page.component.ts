@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
@@ -19,6 +21,16 @@ import {
   GLADIATOR_TITLE_IDS,
   summarizeRareAchievements
 } from './rare-achievement-summary';
+import {
+  AchievementFilterValue,
+  ALL_GLADIATOR_MOUNTS_FILTER_VALUE,
+  ALL_GLADIATOR_TITLES_FILTER_VALUE,
+  areRareAchievementsFilterStatesEqual,
+  DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE,
+  parseRareAchievementsFilterState,
+  RareAchievementsFilterState,
+  toRareAchievementsQueryParams
+} from './rare-achievements-filter-state';
 import { RareAchievementsService } from './rare-achievements.service';
 import {
   RareAchievementCharacter,
@@ -34,8 +46,6 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 type CharacterFaction = 'Alliance' | 'Horde';
 type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes';
 type AdditionalFilterDropdownKey = 'realm' | 'class';
-type AggregateAchievementFilterValue = 'allGladiatorTitles' | 'allGladiatorMounts';
-type AchievementFilterValue = number | AggregateAchievementFilterValue;
 
 interface RareAchievementMatchView {
   rank: number;
@@ -72,9 +82,6 @@ interface AchievementDropdownView extends AchievementDropdownDefinition {
   selectedLabel: string;
 }
 
-const ALL_GLADIATOR_TITLES_FILTER_VALUE = 'allGladiatorTitles';
-const ALL_GLADIATOR_MOUNTS_FILTER_VALUE = 'allGladiatorMounts';
-const DEFAULT_SELECTED_ACHIEVEMENT_ID = ALL_GLADIATOR_TITLES_FILTER_VALUE;
 const ALLIANCE_RACE_IDS = new Set<number>([1, 3, 4, 7, 11, 22, 25]);
 const REALM_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption<string | undefined>> =
   REALM_OPTIONS.map((option) => ({ value: option.value, label: option.label }));
@@ -136,9 +143,12 @@ const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
   providers: [FilterDropdownCoordinatorService]
 })
 export class RareAchievementsPageComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly rareAchievementsService = inject(RareAchievementsService);
   private readonly dropdownCoordinator = inject(FilterDropdownCoordinatorService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly searchInput$ = new Subject<string>();
   private readonly obtainedAtFormatter = new Intl.DateTimeFormat(undefined, {
     year: 'numeric',
     month: 'short',
@@ -148,7 +158,9 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly dataset = signal<RareAchievementsDataset | null>(null);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  readonly selectedAchievementId = signal<AchievementFilterValue | undefined>(DEFAULT_SELECTED_ACHIEVEMENT_ID);
+  readonly selectedAchievementId = signal<AchievementFilterValue | undefined>(
+    DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE.achievementId
+  );
   readonly selectedRealm = signal<string | undefined>(undefined);
   readonly selectedClassId = signal<number | undefined>(undefined);
   readonly searchQuery = signal('');
@@ -219,35 +231,66 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
 
   ngOnInit(): void {
+    const initialFilterState = parseRareAchievementsFilterState(this.route.snapshot.queryParamMap);
+    this.applyFilterState(initialFilterState);
+
+    this.searchInput$.pipe(
+      map((value) => value.trim()),
+      debounceTime(250),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      const nextState = {
+        ...this.getFilterState(),
+        search: this.searchQuery().trim()
+      };
+
+      this.applyFilterState(nextState);
+      this.navigateToFilterState(nextState, true);
+    });
+
+    this.route.queryParamMap.pipe(
+      map((params) => parseRareAchievementsFilterState(params)),
+      distinctUntilChanged(areRareAchievementsFilterStatesEqual),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((state) => {
+      this.applyFilterState(state);
+    });
+
     this.loadRareAchievements();
   }
 
   onAchievementSelection(value: string | number | undefined): void {
     this.dropdownCoordinator.closeAll();
-    this.selectedAchievementId.set(this.toAchievementId(value));
+    this.updateFilterState({
+      achievementId: this.toAchievementId(value) ?? DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE.achievementId
+    });
   }
 
   onRealmSelection(value: string | number | undefined): void {
     this.dropdownCoordinator.closeAll();
-    this.selectedRealm.set(typeof value === 'string' ? value : undefined);
+    this.updateFilterState({
+      realm: typeof value === 'string' ? value : undefined
+    });
   }
 
   onClassSelection(value: string | number | undefined): void {
     this.dropdownCoordinator.closeAll();
-    this.selectedClassId.set(typeof value === 'number' && Number.isFinite(value) ? value : undefined);
+    this.updateFilterState({
+      classId: typeof value === 'number' && Number.isFinite(value) ? value : undefined
+    });
   }
 
   onSearchInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.searchQuery.set(input.value);
+    const search = input.value;
+    this.searchQuery.set(search);
+    this.searchInput$.next(search);
   }
 
   resetFilter(): void {
     this.dropdownCoordinator.closeAll();
-    this.selectedAchievementId.set(DEFAULT_SELECTED_ACHIEVEMENT_ID);
-    this.selectedRealm.set(undefined);
-    this.selectedClassId.set(undefined);
-    this.searchQuery.set('');
+    this.updateFilterState(DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE);
   }
 
   retryLoad(): void {
@@ -309,6 +352,43 @@ export class RareAchievementsPageComponent implements OnInit {
     return value === ALL_GLADIATOR_TITLES_FILTER_VALUE || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
       ? value
       : undefined;
+  }
+
+  private getFilterState(): RareAchievementsFilterState {
+    return {
+      achievementId: this.selectedAchievementId() ?? DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE.achievementId,
+      realm: this.selectedRealm(),
+      classId: this.selectedClassId(),
+      search: this.searchQuery()
+    };
+  }
+
+  private updateFilterState(
+    patch: Partial<RareAchievementsFilterState>,
+    replaceUrl: boolean = false
+  ): void {
+    const nextState = {
+      ...this.getFilterState(),
+      ...patch
+    };
+
+    this.applyFilterState(nextState);
+    this.navigateToFilterState(nextState, replaceUrl);
+  }
+
+  private applyFilterState(state: RareAchievementsFilterState): void {
+    this.selectedAchievementId.set(state.achievementId);
+    this.selectedRealm.set(state.realm);
+    this.selectedClassId.set(state.classId);
+    this.searchQuery.set(state.search);
+  }
+
+  private navigateToFilterState(state: RareAchievementsFilterState, replaceUrl: boolean): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: toRareAchievementsQueryParams(state),
+      replaceUrl
+    });
   }
 
   private toMatchingCharacterView(
