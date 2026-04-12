@@ -23,6 +23,8 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 
 type CharacterFaction = 'Alliance' | 'Horde';
 type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes';
+type AggregateAchievementFilterValue = 'allGladiatorTitles' | 'allGladiatorMounts';
+type AchievementFilterValue = number | AggregateAchievementFilterValue;
 
 interface RareAchievementMatchView {
   rank: number;
@@ -46,17 +48,21 @@ interface AchievementDropdownDefinition {
   dropdownId: string;
   triggerId: string;
   ariaLabel: string;
-  options: ReadonlyArray<FilterDropdownOption<number>>;
+  options: ReadonlyArray<FilterDropdownOption<AchievementFilterValue>>;
 }
 
 interface AchievementDropdownView extends AchievementDropdownDefinition {
-  selectedValue: number | undefined;
+  selectedValue: AchievementFilterValue | undefined;
   selectedLabel: string;
 }
 
 const DEFAULT_RACE_ICON_GENDER = 0;
-const DEFAULT_SELECTED_ACHIEVEMENT_ID = 8666;
+const ALL_GLADIATOR_TITLES_FILTER_VALUE = 'allGladiatorTitles';
+const ALL_GLADIATOR_MOUNTS_FILTER_VALUE = 'allGladiatorMounts';
+const DEFAULT_SELECTED_ACHIEVEMENT_ID = ALL_GLADIATOR_TITLES_FILTER_VALUE;
 const ALLIANCE_RACE_IDS = new Set<number>([1, 3, 4, 7, 11, 22, 25]);
+const GLADIATOR_TITLE_IDS = new Set<number>(R1_GLADIATOR_OPTIONS.map((option) => option.value));
+const GLADIATOR_MOUNT_IDS = new Set<number>(GLADIATOR_MOUNT_OPTIONS.map((option) => option.value));
 const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinition> = [
   {
     key: 'r1Gladiators',
@@ -64,7 +70,10 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
     dropdownId: 'rareAchievementR1Gladiators',
     triggerId: 'rareAchievementR1GladiatorsTrigger',
     ariaLabel: 'Choose a Season Gladiator title',
-    options: R1_GLADIATOR_OPTIONS
+    options: [
+      { value: ALL_GLADIATOR_TITLES_FILTER_VALUE, label: 'All Gladiator Titles' },
+      ...R1_GLADIATOR_OPTIONS
+    ]
   },
   {
     key: 'gladiatorMounts',
@@ -72,7 +81,10 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
     dropdownId: 'rareAchievementGladiatorMounts',
     triggerId: 'rareAchievementGladiatorMountsTrigger',
     ariaLabel: 'Choose a Gladiator mount',
-    options: GLADIATOR_MOUNT_OPTIONS
+    options: [
+      { value: ALL_GLADIATOR_MOUNTS_FILTER_VALUE, label: 'All Gladiator Mounts' },
+      ...GLADIATOR_MOUNT_OPTIONS
+    ]
   },
   {
     key: 'ratedBattlegroundHeroes',
@@ -83,11 +95,13 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
     options: RATED_BATTLEGROUND_OPTIONS
   }
 ];
-const GROUPED_ACHIEVEMENT_LABELS = new Map<number, string>(
-  ACHIEVEMENT_DROPDOWN_DEFINITIONS.flatMap((dropdown) =>
+const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
+  [ALL_GLADIATOR_TITLES_FILTER_VALUE, 'All Gladiator Titles'],
+  [ALL_GLADIATOR_MOUNTS_FILTER_VALUE, 'All Gladiator Mounts'],
+  ...ACHIEVEMENT_DROPDOWN_DEFINITIONS.flatMap((dropdown) =>
     dropdown.options.map((option) => [option.value, option.label] as const)
   )
-);
+]);
 
 @Component({
   selector: 'app-rare-achievements-page',
@@ -111,7 +125,7 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly dataset = signal<RareAchievementsDataset | null>(null);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  readonly selectedAchievementId = signal<number | undefined>(DEFAULT_SELECTED_ACHIEVEMENT_ID);
+  readonly selectedAchievementId = signal<AchievementFilterValue | undefined>(DEFAULT_SELECTED_ACHIEVEMENT_ID);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly achievementDropdowns = computed<ReadonlyArray<AchievementDropdownView>>(() => {
@@ -169,7 +183,7 @@ export class RareAchievementsPageComponent implements OnInit {
 
   resetFilter(): void {
     this.dropdownCoordinator.closeAll();
-    this.selectedAchievementId.set(undefined);
+    this.selectedAchievementId.set(DEFAULT_SELECTED_ACHIEVEMENT_ID);
   }
 
   retryLoad(): void {
@@ -213,15 +227,19 @@ export class RareAchievementsPageComponent implements OnInit {
     });
   }
 
-  private toAchievementId(value: string | number | undefined): number | undefined {
-    return typeof value === 'number' && Number.isFinite(value)
+  private toAchievementId(value: string | number | undefined): AchievementFilterValue | undefined {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    return value === ALL_GLADIATOR_TITLES_FILTER_VALUE || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
       ? value
       : undefined;
   }
 
   private toMatchingCharacterView(
     character: RareAchievementCharacter,
-    achievementId: number
+    achievementId: AchievementFilterValue
   ): RareAchievementMatchView | undefined {
     const achievement = this.findCharacterAchievement(character, achievementId);
     if (!achievement) {
@@ -251,9 +269,39 @@ export class RareAchievementsPageComponent implements OnInit {
 
   private findCharacterAchievement(
     character: RareAchievementCharacter,
-    achievementId: number
+    achievementId: AchievementFilterValue
   ): RareAchievementOwnership | undefined {
+    if (achievementId === ALL_GLADIATOR_TITLES_FILTER_VALUE) {
+      return this.findMostRecentAchievement(character, GLADIATOR_TITLE_IDS);
+    }
+
+    if (achievementId === ALL_GLADIATOR_MOUNTS_FILTER_VALUE) {
+      return this.findMostRecentAchievement(character, GLADIATOR_MOUNT_IDS);
+    }
+
     return character.achievements.find((achievement) => achievement.id === achievementId);
+  }
+
+  private findMostRecentAchievement(
+    character: RareAchievementCharacter,
+    trackedAchievementIds: ReadonlySet<number>
+  ): RareAchievementOwnership | undefined {
+    let latestAchievement: RareAchievementOwnership | undefined;
+    let latestTimestamp = Number.NEGATIVE_INFINITY;
+
+    for (const achievement of character.achievements) {
+      if (!trackedAchievementIds.has(achievement.id)) {
+        continue;
+      }
+
+      const timestamp = this.toTimestamp(achievement.obtainedAt) ?? Number.NEGATIVE_INFINITY;
+      if (!latestAchievement || timestamp > latestTimestamp) {
+        latestAchievement = achievement;
+        latestTimestamp = timestamp;
+      }
+    }
+
+    return latestAchievement;
   }
 
   private compareCharacters(left: RareAchievementMatchView, right: RareAchievementMatchView): number {
