@@ -20,6 +20,7 @@ export interface RareAchievementCharacter {
   name: string;
   realm: string;
   race: number;
+  gender: number;
   class: number;
   guild: string;
   achievements: RareAchievementOwnership[];

@@ -72,7 +72,6 @@ interface AchievementDropdownView extends AchievementDropdownDefinition {
   selectedLabel: string;
 }
 
-const DEFAULT_RACE_ICON_GENDER = 0;
 const ALL_GLADIATOR_TITLES_FILTER_VALUE = 'allGladiatorTitles';
 const ALL_GLADIATOR_MOUNTS_FILTER_VALUE = 'allGladiatorMounts';
 const DEFAULT_SELECTED_ACHIEVEMENT_ID = ALL_GLADIATOR_TITLES_FILTER_VALUE;
@@ -335,8 +334,8 @@ export class RareAchievementsPageComponent implements OnInit {
       classId: character.class,
       guild: character.guild,
       faction,
-      gender: DEFAULT_RACE_ICON_GENDER,
-      raceIcon: getRaceIconPath(character.race, DEFAULT_RACE_ICON_GENDER),
+      gender: character.gender,
+      raceIcon: getRaceIconPath(character.race, character.gender),
       classIcon: getClassIconPath(character.class),
       obtainedAt,
       obtainedAtLabel: this.formatObtainedAt(obtainedAt),
