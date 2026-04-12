@@ -1,5 +1,6 @@
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { buildRareAchievementCharacterKey } from './rare-achievement-groups';
+import { buildRareAchievementSummaryLabel } from './rare-achievement-summary';
 import { LadderAchievement } from './ladder.service';
 import { HighlightPart, LadderPlayerView } from './ladder.types';
 import { RareAchievementSummary } from './rare-achievements.types';
@@ -77,38 +78,4 @@ export function buildHighlightParts(value: string, query: string): HighlightPart
   }
 
   return parts;
-}
-
-function buildRareAchievementSummaryLabel(summary: RareAchievementSummary | undefined): string | undefined {
-  if (!summary) {
-    return undefined;
-  }
-
-  if (summary.achievementNames.length > 0) {
-    return summary.achievementNames.join(', ');
-  }
-
-  const parts: string[] = [];
-
-  if (summary.gladiatorTitleCount > 0) {
-    parts.push(pluralize(summary.gladiatorTitleCount, 'Gladiator title'));
-  }
-
-  if (summary.gladiatorMountCount > 0) {
-    parts.push(pluralize(summary.gladiatorMountCount, 'Gladiator mount'));
-  }
-
-  if (summary.ratedBattlegroundHeroCount > 0) {
-    parts.push(pluralize(summary.ratedBattlegroundHeroCount, 'Rated battleground hero title'));
-  }
-
-  if (summary.realmFirstCount > 0) {
-    parts.push(pluralize(summary.realmFirstCount, 'Realm first achievement'));
-  }
-
-  return parts.join(' & ');
-}
-
-function pluralize(count: number, singularLabel: string): string {
-  return `${count.toLocaleString()} ${singularLabel}${count === 1 ? '' : 's'}`;
 }

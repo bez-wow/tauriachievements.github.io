@@ -8,14 +8,23 @@ import { FilterDropdownOption } from './filter-dropdown.types';
 import { CLASS_OPTIONS, REALM_OPTIONS } from './ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
+  REALM_FIRST_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS
 } from './rare-achievement-groups';
+import {
+  buildRareAchievementNamesById,
+  buildRareAchievementSummaryLabel,
+  GLADIATOR_MOUNT_IDS,
+  GLADIATOR_TITLE_IDS,
+  summarizeRareAchievements
+} from './rare-achievement-summary';
 import { RareAchievementsService } from './rare-achievements.service';
 import {
   RareAchievementCharacter,
   RareAchievementOwnership,
-  RareAchievementsDataset
+  RareAchievementsDataset,
+  RareAchievementSummary
 } from './rare-achievements.types';
 import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
@@ -42,6 +51,11 @@ interface RareAchievementMatchView {
   obtainedAt: string | null | undefined;
   obtainedAtLabel: string;
   obtainedAtSortValue: number | undefined;
+  gladiatorTitleCount: number;
+  gladiatorMountCount: number;
+  ratedBattlegroundHeroCount: number;
+  realmFirstCount: number;
+  rareAchievementSummaryLabel?: string;
 }
 
 interface AchievementDropdownDefinition {
@@ -63,8 +77,6 @@ const ALL_GLADIATOR_TITLES_FILTER_VALUE = 'allGladiatorTitles';
 const ALL_GLADIATOR_MOUNTS_FILTER_VALUE = 'allGladiatorMounts';
 const DEFAULT_SELECTED_ACHIEVEMENT_ID = ALL_GLADIATOR_TITLES_FILTER_VALUE;
 const ALLIANCE_RACE_IDS = new Set<number>([1, 3, 4, 7, 11, 22, 25]);
-const GLADIATOR_TITLE_IDS = new Set<number>(R1_GLADIATOR_OPTIONS.map((option) => option.value));
-const GLADIATOR_MOUNT_IDS = new Set<number>(GLADIATOR_MOUNT_OPTIONS.map((option) => option.value));
 const REALM_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption<string | undefined>> =
   REALM_OPTIONS.map((option) => ({ value: option.value, label: option.label }));
 const CLASS_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
@@ -173,6 +185,9 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly selectedClassIcon = computed(() =>
     CLASS_OPTIONS.find((option) => option.id === this.selectedClassId())?.icon
   );
+  readonly achievementNamesById = computed(() =>
+    buildRareAchievementNamesById(this.dataset()?.achievements ?? [])
+  );
   readonly matchingCharacters = computed<ReadonlyArray<RareAchievementMatchView>>(() => {
     const achievementId = this.selectedAchievementId();
     if (achievementId === undefined) {
@@ -182,9 +197,10 @@ export class RareAchievementsPageComponent implements OnInit {
     const selectedRealm = this.selectedRealm();
     const selectedClassId = this.selectedClassId();
     const normalizedSearchQuery = this.searchQuery().trim().toLowerCase();
+    const achievementNamesById = this.achievementNamesById();
 
     return (this.dataset()?.characters ?? [])
-      .map((character) => this.toMatchingCharacterView(character, achievementId))
+      .map((character) => this.toMatchingCharacterView(character, achievementId, achievementNamesById))
       .filter((character): character is RareAchievementMatchView => character !== undefined)
       .filter((character) => this.matchesAdditionalFilters(character, selectedRealm, selectedClassId, normalizedSearchQuery))
       .sort((left, right) => this.compareCharacters(left, right))
@@ -251,6 +267,12 @@ export class RareAchievementsPageComponent implements OnInit {
     return `${character.realm}::${character.name}`;
   }
 
+  getCharacterLinkTitle(character: RareAchievementMatchView): string {
+    return character.rareAchievementSummaryLabel
+      ? character.rareAchievementSummaryLabel
+      : `Open ${character.name} on Tauri armory`;
+  }
+
   onImageError(event: Event): void {
     const image = event.target as HTMLImageElement | null;
     console.error('Failed to load image:', image?.src ?? 'unknown image');
@@ -292,13 +314,15 @@ export class RareAchievementsPageComponent implements OnInit {
 
   private toMatchingCharacterView(
     character: RareAchievementCharacter,
-    achievementId: AchievementFilterValue
+    achievementId: AchievementFilterValue,
+    achievementNamesById: ReadonlyMap<number, string>
   ): RareAchievementMatchView | undefined {
     const achievement = this.findCharacterAchievement(character, achievementId);
     if (!achievement) {
       return undefined;
     }
 
+    const rareAchievementSummary = summarizeRareAchievements(character, achievementNamesById);
     const obtainedAt = achievement?.obtainedAt;
     const obtainedAtSortValue = this.toTimestamp(obtainedAt);
     const faction = this.getFactionForRace(character.race);
@@ -316,7 +340,12 @@ export class RareAchievementsPageComponent implements OnInit {
       classIcon: getClassIconPath(character.class),
       obtainedAt,
       obtainedAtLabel: this.formatObtainedAt(obtainedAt),
-      obtainedAtSortValue
+      obtainedAtSortValue,
+      gladiatorTitleCount: rareAchievementSummary?.gladiatorTitleCount ?? 0,
+      gladiatorMountCount: rareAchievementSummary?.gladiatorMountCount ?? 0,
+      ratedBattlegroundHeroCount: rareAchievementSummary?.ratedBattlegroundHeroCount ?? 0,
+      realmFirstCount: rareAchievementSummary?.realmFirstCount ?? 0,
+      rareAchievementSummaryLabel: buildRareAchievementSummaryLabel(rareAchievementSummary)
     };
   }
 

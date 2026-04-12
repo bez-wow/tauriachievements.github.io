@@ -350,10 +350,14 @@
   font-weight: 600;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 1px;
+  isolation: isolate;
 
   &.clickable {
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, text-shadow 0.2s ease, filter 0.2s ease;
     text-decoration: none;
     display: inline-block;
 
@@ -366,6 +370,272 @@
     &:active {
       transform: scale(0.98);
     }
+  }
+}
+
+.player-identity {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  min-width: 0;
+}
+
+.player-name-rbg-sigil {
+  position: absolute;
+  left: calc(100% + 4px);
+  top: 50%;
+  font-size: 0.78em;
+  line-height: 1;
+  transform: translateY(-52%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.player-name-rbg-sigil--alliance {
+  color: #92dcff;
+  text-shadow:
+    0 0 7px rgba(111, 214, 255, 0.78),
+    0 0 14px rgba(52, 152, 255, 0.32);
+}
+
+.player-name-rbg-sigil--horde {
+  color: #ff9b96;
+  text-shadow:
+    0 0 7px rgba(255, 129, 129, 0.78),
+    0 0 14px rgba(255, 66, 66, 0.32);
+}
+
+.player-name--rbg-hero-alliance,
+.player-name--rbg-hero-horde {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    right: -5px;
+    top: 58%;
+    height: 78%;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.92;
+  }
+}
+
+.player-name--rbg-hero-alliance {
+  &::before {
+    background: radial-gradient(circle at 50% 52%, rgba(79, 192, 255, 0.28), rgba(44, 122, 224, 0.12) 48%, rgba(26, 72, 163, 0) 78%);
+  }
+
+  &:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #dff5ff;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.56),
+      0 0 9px rgba(108, 207, 255, 0.62),
+      0 0 18px rgba(67, 156, 255, 0.28);
+  }
+
+  &.clickable:hover:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #f3fbff;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.58),
+      0 0 10px rgba(129, 219, 255, 0.68),
+      0 0 20px rgba(74, 172, 255, 0.34);
+    text-decoration: none;
+  }
+}
+
+.player-name--rbg-hero-horde {
+  &::before {
+    background: radial-gradient(circle at 50% 52%, rgba(255, 112, 112, 0.28), rgba(219, 63, 63, 0.12) 48%, rgba(150, 22, 22, 0) 78%);
+  }
+
+  &:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #ffd4cf;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.56),
+      0 0 9px rgba(255, 124, 124, 0.58),
+      0 0 18px rgba(255, 74, 74, 0.24);
+  }
+
+  &.clickable:hover:not(.player-name--gladiator-title):not(.player-name--gladiator-mount) {
+    color: #ffe7e3;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.58),
+      0 0 10px rgba(255, 145, 145, 0.64),
+      0 0 20px rgba(255, 84, 84, 0.32);
+    text-decoration: none;
+  }
+}
+
+.player-name--realm-first {
+  font-weight: 800;
+  color: #f3d8ff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.62),
+    0 0 10px rgba(222, 141, 255, 0.8),
+    0 0 20px rgba(143, 57, 255, 0.38),
+    0 0 12px rgba(255, 138, 92, 0.2);
+
+  &:not(.player-name--gladiator-title):not(.player-name--gladiator-mount)::after {
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    bottom: -2px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 184, 132, 0.18), rgba(210, 112, 255, 0.96), rgba(132, 54, 255, 0.42));
+    box-shadow: 0 0 10px rgba(205, 108, 255, 0.42);
+    pointer-events: none;
+  }
+
+  &.clickable:hover {
+    color: #fae6ff;
+    text-decoration: none;
+  }
+}
+
+.player-name--gladiator-title {
+  font-weight: 800;
+  color: #ffe0b5;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 8px rgba(255, 177, 92, 0.72),
+    0 0 16px rgba(255, 122, 38, 0.54),
+    0 0 24px rgba(255, 78, 18, 0.28);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 220, 145, 0.2), rgba(255, 156, 42, 0.96), rgba(255, 88, 15, 0.5));
+    box-shadow:
+      0 0 10px rgba(255, 126, 18, 0.5),
+      0 0 18px rgba(255, 80, 12, 0.22);
+    pointer-events: none;
+  }
+
+  &.clickable:hover {
+    color: #ffedc9;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.62),
+      0 0 10px rgba(255, 186, 96, 0.78),
+      0 0 20px rgba(255, 130, 44, 0.5);
+    text-decoration: none;
+  }
+}
+
+.player-name--gladiator-mount {
+  font-weight: 800;
+  color: #dff5ff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 8px rgba(137, 223, 255, 0.76),
+    0 0 16px rgba(72, 176, 255, 0.52),
+    0 0 24px rgba(43, 108, 255, 0.24);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(198, 244, 255, 0.18), rgba(101, 212, 255, 0.94), rgba(56, 128, 255, 0.42));
+    box-shadow:
+      0 0 10px rgba(93, 204, 255, 0.34),
+      0 0 16px rgba(56, 128, 255, 0.2);
+    pointer-events: none;
+  }
+
+  &.clickable:hover {
+    color: #eefbff;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.62),
+      0 0 10px rgba(155, 229, 255, 0.8),
+      0 0 20px rgba(88, 187, 255, 0.5);
+    text-decoration: none;
+  }
+}
+
+.wow-table tr.Horde .player-name--gladiator-mount:not(.player-name--gladiator-title) {
+  color: #ffc0b8;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 8px rgba(255, 142, 142, 0.76),
+    0 0 16px rgba(255, 82, 82, 0.52),
+    0 0 24px rgba(255, 46, 46, 0.22);
+
+  &::after {
+    background: linear-gradient(90deg, rgba(255, 206, 206, 0.18), rgba(255, 124, 124, 0.94), rgba(255, 52, 52, 0.42));
+    box-shadow:
+      0 0 10px rgba(255, 102, 102, 0.34),
+      0 0 16px rgba(255, 52, 52, 0.2);
+  }
+
+  &.clickable:hover {
+    color: #ffe1dc;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.62),
+      0 0 10px rgba(255, 165, 165, 0.82),
+      0 0 20px rgba(255, 96, 96, 0.5);
+    text-decoration: none;
+  }
+}
+
+.player-name--gladiator-title.player-name--gladiator-mount {
+  color: #ffebc7;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.62),
+    0 0 8px rgba(255, 176, 78, 0.74),
+    0 0 16px rgba(255, 114, 34, 0.56),
+    0 0 20px rgba(103, 212, 255, 0.24),
+    0 0 28px rgba(255, 84, 24, 0.26);
+
+  &::after {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 214, 136, 0.24) 0%,
+      rgba(255, 148, 34, 0.96) 28%,
+      rgba(255, 110, 24, 0.98) 62%,
+      rgba(255, 82, 20, 0.58) 100%
+    );
+    box-shadow:
+      0 0 10px rgba(255, 126, 18, 0.44),
+      0 0 18px rgba(255, 78, 22, 0.24);
+  }
+
+  &.clickable:hover {
+    color: #fff4db;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.64),
+      0 0 10px rgba(255, 188, 88, 0.82),
+      0 0 20px rgba(255, 122, 38, 0.52),
+      0 0 24px rgba(116, 218, 255, 0.18);
+  }
+}
+
+.player-name--realm-first.player-name--gladiator-title,
+.player-name--realm-first.player-name--gladiator-mount,
+.player-name--realm-first.player-name--gladiator-title.player-name--gladiator-mount {
+  color: #f4d8ff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.62),
+    0 0 10px rgba(220, 136, 255, 0.78),
+    0 0 18px rgba(255, 136, 88, 0.26),
+    0 0 24px rgba(170, 86, 255, 0.24);
+
+  &.clickable:hover {
+    color: #fcedff;
   }
 }
 
@@ -448,6 +718,19 @@
 
   .filter-group--search {
     grid-column: auto;
+  }
+
+  .player-identity {
+    min-height: 22px;
+  }
+
+  .player-name {
+    padding-bottom: 0;
+  }
+
+  .player-name-rbg-sigil {
+    left: calc(100% + 3px);
+    font-size: 0.72em;
   }
 
   .reset-button,

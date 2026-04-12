@@ -99,13 +99,28 @@
           <tr *ngFor="let character of matchingCharacters(); trackBy: trackCharacter" [ngClass]="character.faction">
             <td>{{ character.rank }}</td>
             <td>
-              <a
-                class="player-name clickable"
-                [href]="getArmoryUrl(character.name, character.realm)"
-                target="_blank"
-                rel="noopener noreferrer">
-                {{ character.name }}
-              </a>
+              <div class="player-identity">
+                <a
+                  class="player-name clickable"
+                  [class.player-name--gladiator-title]="character.gladiatorTitleCount > 0"
+                  [class.player-name--gladiator-mount]="character.gladiatorMountCount > 0"
+                  [class.player-name--rbg-hero-alliance]="character.ratedBattlegroundHeroCount > 0 && character.faction === 'Alliance'"
+                  [class.player-name--rbg-hero-horde]="character.ratedBattlegroundHeroCount > 0 && character.faction === 'Horde'"
+                  [class.player-name--realm-first]="character.realmFirstCount > 0"
+                  [href]="getArmoryUrl(character.name, character.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [title]="getCharacterLinkTitle(character)">
+                  <span
+                    *ngIf="character.ratedBattlegroundHeroCount > 0"
+                    class="player-name-rbg-sigil"
+                    [ngClass]="character.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
+                    aria-hidden="true">
+                    &#10022;
+                  </span>
+                  {{ character.name }}
+                </a>
+              </div>
             </td>
             <td>
               <img
