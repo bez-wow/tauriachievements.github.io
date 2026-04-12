@@ -84,7 +84,7 @@ export function buildRareAchievementSummaryLabel(summary: RareAchievementSummary
   }
 
   if (summary.achievementNames.length > 0) {
-    return summary.achievementNames.join(', ');
+    return summary.achievementNames.join('\n');
   }
 
   const parts: string[] = [];
@@ -105,7 +105,7 @@ export function buildRareAchievementSummaryLabel(summary: RareAchievementSummary
     parts.push(pluralize(summary.realmFirstCount, 'Realm first achievement'));
   }
 
-  return parts.join(' & ');
+  return parts.join('\n');
 }
 
 function collectOwnedAchievementNames(
