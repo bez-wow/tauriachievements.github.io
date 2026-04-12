@@ -15,12 +15,19 @@ const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 function generatePlayerHistorySnapshot() {
   const snapshotSources = collectSnapshotSources();
   const trackedKeys = collectTrackedPlayerKeys(snapshotSources);
-  const { playerHistories, movers } = buildPlayerHistories(snapshotSources, trackedKeys);
+  const latestSnapshotSource = snapshotSources[snapshotSources.length - 1];
+  const previousSnapshotSource = snapshotSources[snapshotSources.length - 2];
+  const latestPlayers = latestSnapshotSource ? parsePlayersCsv(latestSnapshotSource.loadCsvText()) : [];
+  const previousPlayers = previousSnapshotSource ? parsePlayersCsv(previousSnapshotSource.loadCsvText()) : [];
+  const movers = {
+    achievementPoints: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "achievementPoints"),
+    honorableKills: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "honorableKills"),
+  };
 
   const payload = {
     v: 1,
     g: new Date().toISOString(),
-    c: playerHistories.size,
+    c: trackedKeys.size,
     s: snapshotSources.map((source) => source.timestamp),
     m: {
       a: movers.achievementPoints,
@@ -33,13 +40,13 @@ function generatePlayerHistorySnapshot() {
 
   const sizeKb = (fs.statSync(outputPath).size / 1024).toFixed(1);
   console.log(
-    `Generated ${path.relative(process.cwd(), outputPath)} (${sizeKb} kB, ${snapshotSources.length} snapshots, ${playerHistories.size} tracked players)`
+    `Generated ${path.relative(process.cwd(), outputPath)} (${sizeKb} kB, ${snapshotSources.length} snapshots, ${trackedKeys.size} tracked players)`
   );
 }
 
 function collectSnapshotSources() {
   const sources = [];
-  const currentTimestamp = normalizeTimestamp(readTextIfExists(lastUpdatedPath)) ?? new Date().toISOString();
+  const currentTimestamp = getCurrentSnapshotTimestamp();
   const currentDayKey = toDayKey(currentTimestamp);
 
   if (!fs.existsSync(sourcePath)) {
@@ -143,97 +150,44 @@ function collectAllKeys(players, trackedKeys) {
   }
 }
 
-function buildPlayerHistories(snapshotSources, trackedKeys) {
-  const playerHistories = new Map();
-  const snapshotCount = snapshotSources.length;
-
-  for (let snapshotIndex = 0; snapshotIndex < snapshotCount; snapshotIndex++) {
-    const players = parsePlayersCsv(snapshotSources[snapshotIndex].loadCsvText());
-    const achievementSorted = [...players].sort(compareAchievementPoints);
-    const honorableKillsSorted = [...players].sort(compareHonorableKills);
-
-    assignRanks(playerHistories, trackedKeys, snapshotIndex, achievementSorted, "achievement");
-    assignRanks(playerHistories, trackedKeys, snapshotIndex, honorableKillsSorted, "honorableKills");
-  }
-
-  return {
-    playerHistories,
-    movers: {
-      achievementPoints: computeTopMovers(playerHistories, "achievementRanks", "achievementPoints"),
-      honorableKills: computeTopMovers(playerHistories, "honorableRanks", "honorableKills"),
-    },
-  };
-}
-
-function assignRanks(playerHistories, trackedKeys, snapshotIndex, sortedPlayers, field) {
-  for (let index = 0; index < sortedPlayers.length; index++) {
-    const player = sortedPlayers[index];
-    const playerKey = getPlayerKey(player);
-
-    if (!trackedKeys.has(playerKey)) {
-      continue;
-    }
-
-    const existing = playerHistories.get(playerKey) ?? {
-      achievementRanks: [],
-      honorableRanks: [],
-      achievementPoints: [],
-      honorableKills: [],
-      race: 0,
-      gender: 0,
-      classId: 0,
-    };
-
-    if (field === "achievement") {
-      existing.achievementRanks[snapshotIndex] = index + 1;
-    } else {
-      existing.honorableRanks[snapshotIndex] = index + 1;
-    }
-
-    existing.achievementPoints[snapshotIndex] = player.achievementPoints;
-    existing.honorableKills[snapshotIndex] = player.honorableKills;
-    existing.race = player.race;
-    existing.gender = player.gender;
-    existing.classId = player.playerClass;
-
-    playerHistories.set(playerKey, existing);
-  }
-}
-
-function computeTopMovers(playerHistories, field, sortMetric) {
-  let snapshotCount = 0;
-  for (const history of playerHistories.values()) {
-    snapshotCount = Math.max(snapshotCount, history[field]?.length ?? 0);
-  }
-
-  if (snapshotCount < 2) {
+function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetric) {
+  if (currentPlayers.length === 0 || previousPlayers.length === 0) {
     return [];
   }
 
-  const currentSnapshotIndex = snapshotCount - 1;
-  const previousSnapshotIndex = currentSnapshotIndex - 1;
+  const compareFn = sortMetric === "achievementPoints" ? compareAchievementPoints : compareHonorableKills;
+  const currentRanks = buildRankMap(currentPlayers, compareFn);
+  const previousRanks = buildRankMap(previousPlayers, compareFn);
+  const previousPlayersByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
   const movers = [];
 
-  for (const [playerKey, history] of playerHistories.entries()) {
-    const ranks = history[field];
-    const currentRank = ranks[currentSnapshotIndex] ?? 0;
-    const previousRank = ranks[previousSnapshotIndex] ?? 0;
+  for (const player of currentPlayers) {
+    const playerKey = getPlayerKey(player);
+    const previousPlayer = previousPlayersByKey.get(playerKey);
+    if (!previousPlayer) {
+      continue;
+    }
 
+    const currentRank = currentRanks.get(playerKey) ?? 0;
+    const previousRank = previousRanks.get(playerKey) ?? 0;
     if (!currentRank || !previousRank) {
       continue;
     }
 
     const delta = previousRank - currentRank;
-    if (delta <= 0) {
-      continue;
-    }
-
-    const previousAchievementPoints = history.achievementPoints[previousSnapshotIndex] ?? 0;
-    const currentAchievementPoints = history.achievementPoints[currentSnapshotIndex] ?? 0;
-    const previousHonorableKills = history.honorableKills[previousSnapshotIndex] ?? 0;
-    const currentHonorableKills = history.honorableKills[currentSnapshotIndex] ?? 0;
+    const previousAchievementPoints = previousPlayer.achievementPoints;
+    const currentAchievementPoints = player.achievementPoints;
+    const previousHonorableKills = previousPlayer.honorableKills;
+    const currentHonorableKills = player.honorableKills;
     const achievementPointsDelta = currentAchievementPoints - previousAchievementPoints;
     const honorableKillsDelta = currentHonorableKills - previousHonorableKills;
+    const metricDelta = sortMetric === "achievementPoints"
+      ? achievementPointsDelta
+      : honorableKillsDelta;
+
+    if (metricDelta <= 0) {
+      continue;
+    }
 
     movers.push([
       playerKey,
@@ -246,9 +200,9 @@ function computeTopMovers(playerHistories, field, sortMetric) {
       currentAchievementPoints,
       previousHonorableKills,
       currentHonorableKills,
-      history.race ?? 0,
-      history.gender ?? 0,
-      history.classId ?? 0,
+      player.race ?? 0,
+      player.gender ?? 0,
+      player.playerClass ?? 0,
     ]);
   }
 
@@ -272,6 +226,17 @@ function computeTopMovers(playerHistories, field, sortMetric) {
       return left[0].localeCompare(right[0]);
     })
     .slice(0, MOVERS_LIMIT);
+}
+
+function buildRankMap(players, compareFn) {
+  const ranks = new Map();
+  const sortedPlayers = [...players].sort(compareFn);
+
+  for (let index = 0; index < sortedPlayers.length; index++) {
+    ranks.set(getPlayerKey(sortedPlayers[index]), index + 1);
+  }
+
+  return ranks;
 }
 
 function compareAchievementPoints(left, right) {
@@ -300,6 +265,35 @@ function compareHonorableKills(left, right) {
 
 function getPlayerKey(player) {
   return `${player.realm}::${player.name}`;
+}
+
+function getCurrentSnapshotTimestamp() {
+  const candidates = [];
+  const lastUpdatedTimestamp = normalizeTimestamp(readTextIfExists(lastUpdatedPath));
+  const latestGitTimestamp = normalizeTimestamp(readGitHistoryEntries()[0]?.commitTimestamp);
+
+  if (lastUpdatedTimestamp) {
+    candidates.push(lastUpdatedTimestamp);
+  }
+
+  if (latestGitTimestamp) {
+    candidates.push(latestGitTimestamp);
+  }
+
+  try {
+    const modifiedAt = fs.statSync(sourcePath).mtime;
+    if (!Number.isNaN(modifiedAt.getTime())) {
+      candidates.push(modifiedAt.toISOString());
+    }
+  } catch {
+    // Ignore stat failures and fall back to the lastUpdated value or the current time.
+  }
+
+  if (candidates.length === 0) {
+    return new Date().toISOString();
+  }
+
+  return candidates.sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[candidates.length - 1];
 }
 
 function normalizeTimestamp(value) {

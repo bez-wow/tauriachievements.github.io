@@ -16,7 +16,7 @@ function generatePlayerSnapshot() {
 
   const csvText = fs.readFileSync(sourcePath, "utf8");
   const normalizedRows = parsePlayersCsv(csvText);
-  const currentTimestamp = normalizeTimestamp(readTextIfExists(lastUpdatedPath)) ?? new Date().toISOString();
+  const currentTimestamp = getCurrentSnapshotTimestamp();
   const previousRows = loadPreviousSnapshotPlayers(toDayKey(currentTimestamp));
 
   if (normalizedRows.length === 0) {
@@ -178,6 +178,35 @@ function compareHonorableKills(left, right) {
 
 function getPlayerKey(player) {
   return `${player.realm}::${player.name}`;
+}
+
+function getCurrentSnapshotTimestamp() {
+  const candidates = [];
+  const lastUpdatedTimestamp = normalizeTimestamp(readTextIfExists(lastUpdatedPath));
+  const latestGitTimestamp = normalizeTimestamp(readGitHistoryEntries()[0]?.commitTimestamp);
+
+  if (lastUpdatedTimestamp) {
+    candidates.push(lastUpdatedTimestamp);
+  }
+
+  if (latestGitTimestamp) {
+    candidates.push(latestGitTimestamp);
+  }
+
+  try {
+    const modifiedAt = fs.statSync(sourcePath).mtime;
+    if (!Number.isNaN(modifiedAt.getTime())) {
+      candidates.push(modifiedAt.toISOString());
+    }
+  } catch {
+    // Ignore stat failures and fall back to the lastUpdated value or the current time.
+  }
+
+  if (candidates.length === 0) {
+    return new Date().toISOString();
+  }
+
+  return candidates.sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[candidates.length - 1];
 }
 
 function normalizeTimestamp(value) {
