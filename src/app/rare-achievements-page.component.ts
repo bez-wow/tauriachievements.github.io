@@ -19,12 +19,14 @@ import {
   buildRareAchievementSummaryLabel,
   GLADIATOR_MOUNT_IDS,
   GLADIATOR_TITLE_IDS,
+  RATED_BATTLEGROUND_HERO_IDS,
   summarizeRareAchievements
 } from './rare-achievement-summary';
 import {
   AchievementFilterValue,
   ALL_GLADIATOR_MOUNTS_FILTER_VALUE,
   ALL_GLADIATOR_TITLES_FILTER_VALUE,
+  ALL_RATED_BATTLEGROUND_TITLES_FILTER_VALUE,
   areRareAchievementsFilterStatesEqual,
   DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE,
   GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE,
@@ -127,12 +129,16 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
     dropdownId: 'rareAchievementRatedBattlegroundHeroes',
     triggerId: 'rareAchievementRatedBattlegroundHeroesTrigger',
     ariaLabel: 'Choose a Rated Battleground title',
-    options: RATED_BATTLEGROUND_OPTIONS
+    options: [
+      { value: ALL_RATED_BATTLEGROUND_TITLES_FILTER_VALUE, label: 'All Rated Battleground Titles' },
+      ...RATED_BATTLEGROUND_OPTIONS
+    ]
   }
 ];
 const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
   [ALL_GLADIATOR_TITLES_FILTER_VALUE, 'All Gladiator Titles'],
   [ALL_GLADIATOR_MOUNTS_FILTER_VALUE, 'All Gladiator Mounts'],
+  [ALL_RATED_BATTLEGROUND_TITLES_FILTER_VALUE, 'All Rated Battleground Titles'],
   [GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE, 'Most Rank 1 Gladiator Titles'],
   [GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE, 'Most Gladiator Mounts'],
   ...ACHIEVEMENT_DROPDOWN_DEFINITIONS.flatMap((dropdown) =>
@@ -372,6 +378,7 @@ export class RareAchievementsPageComponent implements OnInit {
 
     return value === ALL_GLADIATOR_TITLES_FILTER_VALUE
       || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
+      || value === ALL_RATED_BATTLEGROUND_TITLES_FILTER_VALUE
       || value === GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE
       || value === GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE
       ? value
@@ -476,6 +483,10 @@ export class RareAchievementsPageComponent implements OnInit {
       || achievementId === GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE
     ) {
       return this.findMostRecentAchievement(character, GLADIATOR_MOUNT_IDS);
+    }
+
+    if (achievementId === ALL_RATED_BATTLEGROUND_TITLES_FILTER_VALUE) {
+      return this.findMostRecentAchievement(character, RATED_BATTLEGROUND_HERO_IDS);
     }
 
     return character.achievements.find((achievement) => achievement.id === achievementId);
