@@ -27,6 +27,8 @@ import {
   ALL_GLADIATOR_TITLES_FILTER_VALUE,
   areRareAchievementsFilterStatesEqual,
   DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE,
+  GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE,
+  GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE,
   parseRareAchievementsFilterState,
   RareAchievementsFilterState,
   toRareAchievementsQueryParams
@@ -44,6 +46,7 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 
 type CharacterFaction = 'Alliance' | 'Horde';
+type CountRankingMetric = 'gladiatorTitleCount' | 'gladiatorMountCount';
 type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes';
 type AdditionalFilterDropdownKey = 'realm' | 'class';
 
@@ -102,6 +105,7 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
     ariaLabel: 'Choose a Season Gladiator title',
     options: [
       { value: ALL_GLADIATOR_TITLES_FILTER_VALUE, label: 'All Gladiator Titles' },
+      { value: GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE, label: 'Most Rank 1 Gladiator Titles' },
       ...R1_GLADIATOR_OPTIONS
     ]
   },
@@ -113,6 +117,7 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
     ariaLabel: 'Choose a Gladiator mount',
     options: [
       { value: ALL_GLADIATOR_MOUNTS_FILTER_VALUE, label: 'All Gladiator Mounts' },
+      { value: GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE, label: 'Most Gladiator Mounts' },
       ...GLADIATOR_MOUNT_OPTIONS
     ]
   },
@@ -128,6 +133,8 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
 const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
   [ALL_GLADIATOR_TITLES_FILTER_VALUE, 'All Gladiator Titles'],
   [ALL_GLADIATOR_MOUNTS_FILTER_VALUE, 'All Gladiator Mounts'],
+  [GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE, 'Most Rank 1 Gladiator Titles'],
+  [GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE, 'Most Gladiator Mounts'],
   ...ACHIEVEMENT_DROPDOWN_DEFINITIONS.flatMap((dropdown) =>
     dropdown.options.map((option) => [option.value, option.label] as const)
   )
@@ -196,6 +203,20 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly selectedClassIcon = computed(() =>
     CLASS_OPTIONS.find((option) => option.id === this.selectedClassId())?.icon
   );
+  readonly countRankingMetric = computed<CountRankingMetric | undefined>(() =>
+    this.getCountRankingMetric(this.selectedAchievementId())
+  );
+  readonly isCountRanking = computed(() => this.countRankingMetric() !== undefined);
+  readonly metricColumnLabel = computed(() => {
+    switch (this.countRankingMetric()) {
+      case 'gladiatorTitleCount':
+        return 'R1 Titles';
+      case 'gladiatorMountCount':
+        return 'Mounts';
+      default:
+        return 'Obtained';
+    }
+  });
   readonly achievementNamesById = computed(() =>
     buildRareAchievementNamesById(this.dataset()?.achievements ?? [])
   );
@@ -214,7 +235,7 @@ export class RareAchievementsPageComponent implements OnInit {
       .map((character) => this.toMatchingCharacterView(character, achievementId, achievementNamesById))
       .filter((character): character is RareAchievementMatchView => character !== undefined)
       .filter((character) => this.matchesAdditionalFilters(character, selectedRealm, selectedClassId, normalizedSearchQuery))
-      .sort((left, right) => this.compareCharacters(left, right))
+      .sort((left, right) => this.compareCharacters(left, right, achievementId))
       .map((character, index) => ({
         ...character,
         rank: index + 1
@@ -225,7 +246,7 @@ export class RareAchievementsPageComponent implements OnInit {
   readonly hasMatches = computed(() => this.matchCount() > 0);
   readonly showSelectionPrompt = computed(() => !this.isLoading() && !this.loadError() && !this.hasSelection());
   readonly showEmptyState = computed(() => !this.isLoading() && !this.loadError() && this.hasSelection() && !this.hasMatches());
-  readonly emptyStateMessage = computed(() => `No tracked characters currently have ${this.selectedAchievementLabel()}.`);
+  readonly emptyStateMessage = computed(() => `No tracked characters currently match ${this.selectedAchievementLabel()}.`);
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getGuildArmoryUrl = getGuildArmoryUrl;
@@ -349,7 +370,10 @@ export class RareAchievementsPageComponent implements OnInit {
       return value;
     }
 
-    return value === ALL_GLADIATOR_TITLES_FILTER_VALUE || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
+    return value === ALL_GLADIATOR_TITLES_FILTER_VALUE
+      || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
+      || value === GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE
+      || value === GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE
       ? value
       : undefined;
   }
@@ -402,6 +426,14 @@ export class RareAchievementsPageComponent implements OnInit {
     }
 
     const rareAchievementSummary = summarizeRareAchievements(character, achievementNamesById);
+    const countRankingValue = rareAchievementSummary
+      ? this.getCountRankingValue(rareAchievementSummary, achievementId)
+      : undefined;
+
+    if (this.getCountRankingMetric(achievementId) && (!countRankingValue || countRankingValue < 1)) {
+      return undefined;
+    }
+
     const obtainedAt = achievement?.obtainedAt;
     const obtainedAtSortValue = this.toTimestamp(obtainedAt);
     const faction = this.getFactionForRace(character.race);
@@ -432,11 +464,17 @@ export class RareAchievementsPageComponent implements OnInit {
     character: RareAchievementCharacter,
     achievementId: AchievementFilterValue
   ): RareAchievementOwnership | undefined {
-    if (achievementId === ALL_GLADIATOR_TITLES_FILTER_VALUE) {
+    if (
+      achievementId === ALL_GLADIATOR_TITLES_FILTER_VALUE
+      || achievementId === GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE
+    ) {
       return this.findMostRecentAchievement(character, GLADIATOR_TITLE_IDS);
     }
 
-    if (achievementId === ALL_GLADIATOR_MOUNTS_FILTER_VALUE) {
+    if (
+      achievementId === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
+      || achievementId === GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE
+    ) {
       return this.findMostRecentAchievement(character, GLADIATOR_MOUNT_IDS);
     }
 
@@ -487,7 +525,28 @@ export class RareAchievementsPageComponent implements OnInit {
       || character.guild.toLowerCase().includes(normalizedSearchQuery);
   }
 
-  private compareCharacters(left: RareAchievementMatchView, right: RareAchievementMatchView): number {
+  private compareCharacters(
+    left: RareAchievementMatchView,
+    right: RareAchievementMatchView,
+    achievementId: AchievementFilterValue
+  ): number {
+    const leftCountRankingValue = this.getCountRankingValue(left, achievementId);
+    const rightCountRankingValue = this.getCountRankingValue(right, achievementId);
+
+    if (leftCountRankingValue !== undefined || rightCountRankingValue !== undefined) {
+      if (leftCountRankingValue === undefined) {
+        return 1;
+      }
+
+      if (rightCountRankingValue === undefined) {
+        return -1;
+      }
+
+      if (leftCountRankingValue !== rightCountRankingValue) {
+        return rightCountRankingValue - leftCountRankingValue;
+      }
+    }
+
     if (left.obtainedAtSortValue !== undefined || right.obtainedAtSortValue !== undefined) {
       if (left.obtainedAtSortValue === undefined) {
         return 1;
@@ -508,6 +567,37 @@ export class RareAchievementsPageComponent implements OnInit {
     }
 
     return left.name.localeCompare(right.name);
+  }
+
+  private getCountRankingMetric(
+    achievementId: AchievementFilterValue | undefined
+  ): CountRankingMetric | undefined {
+    if (achievementId === GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE) {
+      return 'gladiatorTitleCount';
+    }
+
+    if (achievementId === GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE) {
+      return 'gladiatorMountCount';
+    }
+
+    return undefined;
+  }
+
+  private getCountRankingValue(
+    source: Pick<RareAchievementSummary, 'gladiatorTitleCount' | 'gladiatorMountCount'>,
+    achievementId: AchievementFilterValue
+  ): number | undefined {
+    const countRankingMetric = this.getCountRankingMetric(achievementId);
+
+    if (countRankingMetric === 'gladiatorTitleCount') {
+      return source.gladiatorTitleCount;
+    }
+
+    if (countRankingMetric === 'gladiatorMountCount') {
+      return source.gladiatorMountCount;
+    }
+
+    return undefined;
   }
 
   private parseDate(value: string | undefined): Date | undefined {

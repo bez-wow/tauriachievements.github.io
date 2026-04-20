@@ -75,7 +75,7 @@
 
   <div class="ladder-feedback empty" *ngIf="showSelectionPrompt()">
     <h2>Select a rare achievement</h2>
-    <p>Choose one from the PvP dropdowns above to list every tracked character who owns it, along with the date it was obtained.</p>
+    <p>Choose one from the PvP dropdowns above to list every tracked character who owns it, or switch to one of the count rankings for mounts and rank 1 titles.</p>
   </div>
 
   <div class="ladder-feedback empty" *ngIf="showEmptyState()">
@@ -92,7 +92,7 @@
             <th>Race / Class</th>
             <th>Realm</th>
             <th>Guild</th>
-            <th>Obtained</th>
+            <th>{{ metricColumnLabel() }}</th>
           </tr>
         </thead>
         <tbody>
@@ -148,12 +148,19 @@
               </a>
             </td>
             <td>
-              <span
-                class="rare-achievement-date"
-                [class.is-unknown]="!character.obtainedAt"
-                [attr.title]="character.obtainedAt ?? 'Unknown obtain date'">
-                {{ character.obtainedAtLabel }}
-              </span>
+              <ng-container *ngIf="isCountRanking(); else obtainedDateCell">
+                <span class="rare-achievement-count">
+                  {{ countRankingMetric() === 'gladiatorTitleCount' ? character.gladiatorTitleCount : character.gladiatorMountCount }}
+                </span>
+              </ng-container>
+              <ng-template #obtainedDateCell>
+                <span
+                  class="rare-achievement-date"
+                  [class.is-unknown]="!character.obtainedAt"
+                  [attr.title]="character.obtainedAt ?? 'Unknown obtain date'">
+                  {{ character.obtainedAtLabel }}
+                </span>
+              </ng-template>
             </td>
           </tr>
         </tbody>

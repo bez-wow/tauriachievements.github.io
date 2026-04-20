@@ -8,10 +8,14 @@ import {
 
 export const ALL_GLADIATOR_TITLES_FILTER_VALUE = 'allGladiatorTitles';
 export const ALL_GLADIATOR_MOUNTS_FILTER_VALUE = 'allGladiatorMounts';
+export const GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE = 'gladiatorTitleCountRanking';
+export const GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE = 'gladiatorMountCountRanking';
 
 export type AggregateAchievementFilterValue =
   | typeof ALL_GLADIATOR_TITLES_FILTER_VALUE
-  | typeof ALL_GLADIATOR_MOUNTS_FILTER_VALUE;
+  | typeof ALL_GLADIATOR_MOUNTS_FILTER_VALUE
+  | typeof GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE
+  | typeof GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE;
 export type AchievementFilterValue = number | AggregateAchievementFilterValue;
 
 export interface RareAchievementsFilterState {
@@ -82,7 +86,12 @@ export function toRareAchievementsQueryParams(state: RareAchievementsFilterState
 }
 
 function parseAchievementFilterValue(value: string | null): AchievementFilterValue {
-  if (value === ALL_GLADIATOR_TITLES_FILTER_VALUE || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE) {
+  if (
+    value === ALL_GLADIATOR_TITLES_FILTER_VALUE
+    || value === ALL_GLADIATOR_MOUNTS_FILTER_VALUE
+    || value === GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE
+    || value === GLADIATOR_MOUNT_COUNT_RANKING_FILTER_VALUE
+  ) {
     return value;
   }
 
