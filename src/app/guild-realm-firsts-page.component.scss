@@ -1,0 +1,258 @@
+:host {
+  display: block;
+}
+
+.realm-firsts-page {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 42px 16px 20px;
+  color: #e0e0e0;
+}
+
+.realm-firsts-feedback,
+.realm-firsts-table-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(30, 30, 35, 0.88), rgba(15, 15, 20, 0.96)),
+    radial-gradient(circle at top left, rgba(247, 181, 0, 0.1), transparent 38%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+.realm-firsts-feedback {
+  min-height: 240px;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.realm-firsts-feedback h2 {
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.realm-firsts-feedback p {
+  max-width: 520px;
+  color: #bdbdc6;
+  line-height: 1.6;
+}
+
+.realm-firsts-feedback.error {
+  border-color: rgba(255, 120, 120, 0.24);
+}
+
+.realm-firsts-feedback.error h2 {
+  color: #ffd2d2;
+}
+
+.feedback-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #f7b500;
+  animation: realm-firsts-spin 0.9s linear infinite;
+}
+
+@keyframes realm-firsts-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.feedback-action {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, rgba(40, 40, 50, 0.95), rgba(25, 25, 32, 0.98));
+  color: #f0f0f0;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.feedback-action:hover {
+  border-color: rgba(247, 181, 0, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.feedback-action:active {
+  transform: translateY(1px);
+}
+
+.realm-firsts-table-panel {
+  overflow: hidden;
+}
+
+.realm-firsts-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.realm-firsts-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Arial', sans-serif;
+  font-size: 0.9rem;
+}
+
+.realm-firsts-table thead {
+  background: linear-gradient(135deg, rgba(40, 40, 50, 0.95), rgba(25, 25, 35, 0.98));
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.55);
+}
+
+.realm-firsts-table th,
+.realm-firsts-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.realm-firsts-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  color: #d0b46b;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.realm-firsts-table thead th:not(:first-child),
+.realm-firsts-table tbody td {
+  text-align: center;
+  min-width: 158px;
+}
+
+.realm-firsts-table tbody tr {
+  background: linear-gradient(90deg, rgba(24, 28, 37, 0.82), rgba(13, 15, 20, 0.9));
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.realm-firsts-table tbody tr:nth-child(even) {
+  background: linear-gradient(90deg, rgba(31, 24, 18, 0.78), rgba(15, 13, 11, 0.92));
+}
+
+.realm-firsts-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(43, 42, 48, 0.9), rgba(22, 22, 28, 0.96));
+  box-shadow: inset 0 0 22px rgba(247, 181, 0, 0.08);
+}
+
+.realm-firsts-table tbody tr:last-child th,
+.realm-firsts-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.realm-firsts-table tbody th {
+  width: 32%;
+  min-width: 360px;
+  color: #e0e0e0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.achievement-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.achievement-icon {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.38);
+  flex: 0 0 auto;
+  object-fit: cover;
+}
+
+.achievement-name {
+  display: inline-block;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.guild-name,
+.guild-video-link {
+  display: inline-block;
+  color: #eeeeef;
+  font-weight: 400;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.guild-video-link {
+  color: #ffdd79;
+  text-shadow: 0 0 10px rgba(247, 181, 0, 0.26);
+  transition: color 0.18s ease, text-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.guild-video-link:hover {
+  color: #fff1bd;
+  text-decoration: underline;
+  text-shadow: 0 0 14px rgba(247, 181, 0, 0.46);
+}
+
+.guild-video-link:active {
+  transform: scale(0.98);
+}
+
+.realm-firsts-table td.has-video {
+  background: linear-gradient(135deg, rgba(247, 181, 0, 0.1), rgba(38, 74, 64, 0.16));
+}
+
+.realm-firsts-table td.is-empty {
+  color: #6f7582;
+}
+
+.missing-winner {
+  color: #727987;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .realm-firsts-page {
+    padding: 40px 10px 18px;
+  }
+
+  .realm-firsts-table {
+    font-size: 0.78rem;
+  }
+
+  .realm-firsts-table th,
+  .realm-firsts-table td {
+    padding: 9px 10px;
+  }
+
+  .realm-firsts-table tbody th {
+    min-width: 315px;
+  }
+
+  .achievement-label {
+    gap: 6px;
+  }
+
+  .achievement-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .guild-name,
+  .guild-video-link {
+    font-size: 0.78rem;
+  }
+}

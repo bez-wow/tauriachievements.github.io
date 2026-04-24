@@ -20,9 +20,10 @@
 }
 
 .update-bar-content {
+  position: relative;
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
   gap: 10px;
 }
@@ -107,13 +108,18 @@
 }
 
 .update-bar-text {
-  justify-self: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
   padding: 0 8px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(100%, 520px);
+  max-width: min(42vw, 520px);
+  pointer-events: none;
 }
 
 .update-date,
@@ -271,6 +277,7 @@
 
   .update-bar-text {
     padding: 0 4px;
+    max-width: calc(100vw - 88px);
   }
 
   .update-bar-actions {

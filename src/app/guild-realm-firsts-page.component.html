@@ -1,0 +1,76 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="realm-firsts-page">
+  <div class="realm-firsts-feedback loading" *ngIf="isLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading guild realm firsts...</h2>
+  </div>
+
+  <div class="realm-firsts-feedback error" *ngIf="!isLoading() && loadError()">
+    <h2>Could not load guild realm firsts</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+  </div>
+
+  <div class="realm-firsts-feedback empty" *ngIf="!isLoading() && !loadError() && !hasRows()">
+    <h2>No guild realm firsts available</h2>
+    <p>The realm first data file is empty.</p>
+  </div>
+
+  <section class="realm-firsts-table-panel" *ngIf="hasRows()" aria-label="Guild realm first table">
+    <div class="realm-firsts-table-scroll">
+      <table class="realm-firsts-table">
+        <thead>
+          <tr>
+            <th scope="col">Achievement</th>
+            <th scope="col" *ngFor="let realm of realms()">{{ realm }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows(); trackBy: trackRow">
+            <th scope="row">
+              <span class="achievement-label">
+                <img
+                  *ngIf="row.iconUrl"
+                  class="achievement-icon"
+                  [src]="row.iconUrl"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy" />
+                <span class="achievement-name">{{ row.name }}</span>
+              </span>
+            </th>
+            <td
+              *ngFor="let cell of row.cells; trackBy: trackCell"
+              [class.is-empty]="!cell.guild"
+              [class.has-video]="cell.hasVideo">
+              <a
+                *ngIf="cell.guild && cell.hasVideo; else guildNameCell"
+                class="guild-video-link"
+                [href]="cell.youtubeVideoUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                [title]="getVideoTitle(row, cell)">
+                {{ cell.guild }}
+              </a>
+
+              <ng-template #guildNameCell>
+                <span *ngIf="cell.guild; else missingWinner" class="guild-name">
+                  {{ cell.guild }}
+                </span>
+              </ng-template>
+
+              <ng-template #missingWinner>
+                <span class="missing-winner">-</span>
+              </ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<app-back-to-top-button />
