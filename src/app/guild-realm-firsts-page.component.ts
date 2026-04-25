@@ -32,8 +32,15 @@ interface GuildRealmFirstCellView {
 interface GuildRealmFirstAchievementView {
   name: string;
   iconUrl: string;
+  startsExpansionGroup: boolean;
   cells: GuildRealmFirstCellView[];
 }
+
+const EXPANSION_START_ACHIEVEMENTS = new Set([
+  'Realm First! Garrosh Hellscream (25 player)',
+  'Realm First! Deathwing',
+  'Realm First! Fall of the Lich King'
+]);
 
 @Component({
   selector: 'app-guild-realm-firsts-page',
@@ -77,6 +84,7 @@ export class GuildRealmFirstsPageComponent implements OnInit {
       return {
         name: achievement.name,
         iconUrl: this.normalizeIconUrl(achievement.iconUrl),
+        startsExpansionGroup: EXPANSION_START_ACHIEVEMENTS.has(achievement.name),
         cells
       };
     });

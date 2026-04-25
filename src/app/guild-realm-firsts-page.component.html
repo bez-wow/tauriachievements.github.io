@@ -29,44 +29,50 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of rows(); trackBy: trackRow">
-            <th scope="row">
-              <span class="achievement-label">
-                <img
-                  *ngIf="row.iconUrl"
-                  class="achievement-icon"
-                  [src]="row.iconUrl"
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy" />
-                <span class="achievement-name">{{ row.name }}</span>
-              </span>
-            </th>
-            <td
-              *ngFor="let cell of row.cells; trackBy: trackCell"
-              [class.is-empty]="!cell.guild"
-              [class.has-video]="cell.hasVideo">
-              <a
-                *ngIf="cell.guild && cell.hasVideo; else guildNameCell"
-                class="guild-video-link"
-                [href]="cell.youtubeVideoUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                [title]="getVideoTitle(row, cell)">
-                {{ cell.guild }}
-              </a>
+          <ng-container *ngFor="let row of rows(); let rowIndex = index; trackBy: trackRow">
+            <tr *ngIf="row.startsExpansionGroup" class="expansion-separator-row" aria-hidden="true">
+              <td [attr.colspan]="realms().length + 1"></td>
+            </tr>
 
-              <ng-template #guildNameCell>
-                <span *ngIf="cell.guild; else missingWinner" class="guild-name">
-                  {{ cell.guild }}
+            <tr [class.is-even-achievement-row]="rowIndex % 2 === 1">
+              <th scope="row">
+                <span class="achievement-label">
+                  <img
+                    *ngIf="row.iconUrl"
+                    class="achievement-icon"
+                    [src]="row.iconUrl"
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy" />
+                  <span class="achievement-name">{{ row.name }}</span>
                 </span>
-              </ng-template>
+              </th>
+              <td
+                *ngFor="let cell of row.cells; trackBy: trackCell"
+                [class.is-empty]="!cell.guild"
+                [class.has-video]="cell.hasVideo">
+                <a
+                  *ngIf="cell.guild && cell.hasVideo; else guildNameCell"
+                  class="guild-video-link"
+                  [href]="cell.youtubeVideoUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [title]="getVideoTitle(row, cell)">
+                  {{ cell.guild }}
+                </a>
 
-              <ng-template #missingWinner>
-                <span class="missing-winner">-</span>
-              </ng-template>
-            </td>
-          </tr>
+                <ng-template #guildNameCell>
+                  <span *ngIf="cell.guild; else missingWinner" class="guild-name">
+                    {{ cell.guild }}
+                  </span>
+                </ng-template>
+
+                <ng-template #missingWinner>
+                  <span class="missing-winner">-</span>
+                </ng-template>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
     </div>
