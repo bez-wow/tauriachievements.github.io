@@ -163,12 +163,19 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
   const candidatePlayers = sortMetric === "achievementPoints"
     ? [...currentPlayers].sort(compareFn).slice(0, ACHIEVEMENT_MOVERS_PLAYER_LIMIT)
     : currentPlayers;
+  const previousEligiblePlayerKeys = sortMetric === "achievementPoints"
+    ? new Set([...previousPlayers].sort(compareFn).slice(0, ACHIEVEMENT_MOVERS_PLAYER_LIMIT).map(getPlayerKey))
+    : undefined;
   const movers = [];
 
   for (const player of candidatePlayers) {
     const playerKey = getPlayerKey(player);
     const previousPlayer = previousPlayersByKey.get(playerKey);
     if (!previousPlayer) {
+      continue;
+    }
+
+    if (previousEligiblePlayerKeys && !previousEligiblePlayerKeys.has(playerKey)) {
       continue;
     }
 
