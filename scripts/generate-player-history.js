@@ -10,6 +10,7 @@ const outputPath = path.join(outputDir, "players.history.snapshot.json");
 
 const SNAPSHOT_DAY_LIMIT = 21;
 const MOVERS_LIMIT = 20;
+const ACHIEVEMENT_MOVERS_PLAYER_LIMIT = 1000;
 const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 
 function generatePlayerHistorySnapshot() {
@@ -159,9 +160,12 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
   const currentRanks = buildRankMap(currentPlayers, compareFn);
   const previousRanks = buildRankMap(previousPlayers, compareFn);
   const previousPlayersByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
+  const candidatePlayers = sortMetric === "achievementPoints"
+    ? [...currentPlayers].sort(compareFn).slice(0, ACHIEVEMENT_MOVERS_PLAYER_LIMIT)
+    : currentPlayers;
   const movers = [];
 
-  for (const player of currentPlayers) {
+  for (const player of candidatePlayers) {
     const playerKey = getPlayerKey(player);
     const previousPlayer = previousPlayersByKey.get(playerKey);
     if (!previousPlayer) {
