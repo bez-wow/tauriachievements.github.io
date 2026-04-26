@@ -1,5 +1,7 @@
 import { FilterDropdownOption } from './filter-dropdown.types';
 
+export const SCARAB_LORD_ACHIEVEMENT_ID = 416;
+
 export const R1_GLADIATOR_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
   { value: 8666, label: 'S15 - Prideful Gladiator' },
   { value: 8643, label: 'S14 - Grievous Gladiator' },
@@ -18,6 +20,7 @@ export const R1_GLADIATOR_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> =
 ];
 
 export const GLADIATOR_MOUNT_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
+  { value: SCARAB_LORD_ACHIEVEMENT_ID, label: 'Scarab Lord' },
   { value: 8707, label: "S15 - Prideful Gladiator's Cloud Serpent" },
   { value: 8705, label: "S14 - Grievous Gladiator's Cloud Serpent" },
   { value: 8678, label: "S13 - Tyrannical Gladiator's Cloud Serpent" },

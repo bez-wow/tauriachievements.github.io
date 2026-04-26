@@ -107,6 +107,7 @@
                   [class.player-name--rbg-hero-alliance]="character.ratedBattlegroundHeroCount > 0 && character.faction === 'Alliance'"
                   [class.player-name--rbg-hero-horde]="character.ratedBattlegroundHeroCount > 0 && character.faction === 'Horde'"
                   [class.player-name--realm-first]="character.realmFirstCount > 0"
+                  [class.player-name--scarab-lord]="character.hasScarabLord"
                   [href]="getArmoryUrl(character.name, character.realm)"
                   target="_blank"
                   rel="noopener noreferrer"

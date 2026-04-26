@@ -12,7 +12,8 @@ import {
   GLADIATOR_MOUNT_OPTIONS,
   REALM_FIRST_OPTIONS,
   R1_GLADIATOR_OPTIONS,
-  RATED_BATTLEGROUND_OPTIONS
+  RATED_BATTLEGROUND_OPTIONS,
+  SCARAB_LORD_ACHIEVEMENT_ID
 } from './rare-achievement-groups';
 import {
   buildRareAchievementNamesById,
@@ -70,6 +71,7 @@ interface RareAchievementMatchView {
   gladiatorMountCount: number;
   ratedBattlegroundHeroCount: number;
   realmFirstCount: number;
+  hasScarabLord: boolean;
   rareAchievementSummaryLabel?: string;
 }
 
@@ -463,6 +465,9 @@ export class RareAchievementsPageComponent implements OnInit {
       gladiatorMountCount: rareAchievementSummary?.gladiatorMountCount ?? 0,
       ratedBattlegroundHeroCount: rareAchievementSummary?.ratedBattlegroundHeroCount ?? 0,
       realmFirstCount: rareAchievementSummary?.realmFirstCount ?? 0,
+      hasScarabLord: character.achievements.some((ownedAchievement) =>
+        ownedAchievement.id === SCARAB_LORD_ACHIEVEMENT_ID
+      ),
       rareAchievementSummaryLabel: buildRareAchievementSummaryLabel(rareAchievementSummary)
     };
   }

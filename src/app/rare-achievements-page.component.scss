@@ -639,6 +639,45 @@
   }
 }
 
+.player-name--scarab-lord,
+.player-name--realm-first.player-name--scarab-lord,
+.player-name--gladiator-title.player-name--scarab-lord,
+.player-name--gladiator-mount.player-name--scarab-lord,
+.wow-table tr.Horde .player-name--gladiator-mount.player-name--scarab-lord:not(.player-name--gladiator-title) {
+  font-weight: 800;
+  color: #b8ffcf;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.62),
+    0 0 9px rgba(78, 255, 150, 0.68),
+    0 0 18px rgba(34, 194, 105, 0.38),
+    0 0 24px rgba(246, 211, 105, 0.28);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(70, 255, 154, 0.18), rgba(85, 236, 145, 0.9), rgba(255, 205, 92, 0.52));
+    box-shadow:
+      0 0 10px rgba(80, 235, 144, 0.36),
+      0 0 18px rgba(255, 198, 82, 0.22);
+    pointer-events: none;
+  }
+
+  &.clickable:hover {
+    color: #ddffe8;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.64),
+      0 0 11px rgba(112, 255, 172, 0.78),
+      0 0 21px rgba(54, 211, 121, 0.46),
+      0 0 26px rgba(255, 214, 103, 0.3);
+    text-decoration: none;
+  }
+}
+
 .guild-name {
   color: #e0e0e0;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
