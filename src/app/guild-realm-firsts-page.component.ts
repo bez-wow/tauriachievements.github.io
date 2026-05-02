@@ -25,7 +25,7 @@ interface GuildRealmFirstDataset {
 interface GuildRealmFirstCellView {
   realm: string;
   guild: string | null;
-  youtubeVideoUrl: string;
+  videoUrl: string;
   hasVideo: boolean;
 }
 
@@ -71,13 +71,13 @@ export class GuildRealmFirstsPageComponent implements OnInit {
       const cells = dataset.realms.map((realm) => {
         const result = achievement.results?.[realm];
         const guild = this.normalizeGuild(result?.guild);
-        const youtubeVideoUrl = this.normalizeYoutubeUrl(result?.youtubeVideoUrl);
+        const videoUrl = this.normalizeVideoUrl(result?.youtubeVideoUrl);
 
         return {
           realm,
           guild,
-          youtubeVideoUrl,
-          hasVideo: guild !== null && youtubeVideoUrl.length > 0
+          videoUrl,
+          hasVideo: guild !== null && videoUrl.length > 0
         };
       });
 
@@ -153,13 +153,13 @@ export class GuildRealmFirstsPageComponent implements OnInit {
     return value?.trim() ?? '';
   }
 
-  private normalizeYoutubeUrl(value: string | null | undefined): string {
+  private normalizeVideoUrl(value: string | null | undefined): string {
     const trimmedValue = value?.trim() ?? '';
     if (!trimmedValue) {
       return '';
     }
 
-    return /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(trimmedValue)
+    return /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|twitch\.tv)\//i.test(trimmedValue)
       ? trimmedValue
       : '';
   }

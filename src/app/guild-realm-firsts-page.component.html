@@ -54,7 +54,7 @@
                 <a
                   *ngIf="cell.guild && cell.hasVideo; else guildNameCell"
                   class="guild-video-link"
-                  [href]="cell.youtubeVideoUrl"
+                  [href]="cell.videoUrl"
                   target="_blank"
                   rel="noopener noreferrer"
                   [title]="getVideoTitle(row, cell)">
