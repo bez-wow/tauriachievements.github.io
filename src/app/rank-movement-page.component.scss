@@ -23,7 +23,7 @@
   backdrop-filter: blur(10px);
   justify-content: flex-start;
   position: relative;
-  z-index: 200;
+  z-index: 1000;
 }
 
 .movement-filter-bar ::ng-deep .dropdown-menu {
