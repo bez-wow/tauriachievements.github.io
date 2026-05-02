@@ -17,6 +17,8 @@ export class HistorySummaryComponent {
   @Input() comparisonLabel = '';
   @Input() achievementMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() honorableKillMovers: ReadonlyArray<LadderHistoryMoverView> = [];
+  @Input() achievementEmptyMessage = 'No achievement climbers available yet.';
+  @Input() honorableKillEmptyMessage = 'No honorable kill climbers available yet.';
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getClassIconPath = getClassIconPath;

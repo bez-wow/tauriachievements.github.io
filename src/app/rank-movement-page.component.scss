@@ -9,6 +9,49 @@
   color: #e0e0e0;
 }
 
+.movement-filter-bar {
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.86), rgba(15, 15, 20, 0.94));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  position: relative;
+  z-index: 200;
+}
+
+.movement-filter-group {
+  min-width: 0;
+}
+
+.movement-reset-button {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(40, 40, 50, 0.9), rgba(25, 25, 32, 0.95));
+  color: #e0e0e0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+
+  &:hover {
+    border-color: rgba(247, 181, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
 .movement-feedback {
   margin-bottom: 12px;
   padding: 22px 20px;
@@ -33,6 +76,11 @@
 @media (max-width: 640px) {
   .movement-page-container {
     padding: 46px 12px 20px;
+  }
+
+  .movement-filter-bar {
+    grid-template-columns: 1fr;
+    padding: 16px;
   }
 
   .movement-feedback {

@@ -9,7 +9,7 @@ const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.history.snapshot.json");
 
 const SNAPSHOT_DAY_LIMIT = 21;
-const MOVERS_LIMIT = 20;
+const MOVERS_LIMIT = 1000;
 const ACHIEVEMENT_MOVERS_PLAYER_LIMIT = 1000;
 const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 

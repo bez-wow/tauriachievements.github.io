@@ -3,11 +3,32 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <div class="movement-page-container">
+  <div class="movement-filter-bar" *ngIf="historyAvailable()">
+    <div class="movement-filter-group reset-group">
+      <button type="button" class="movement-reset-button" (click)="resetFilters()">Reset</button>
+    </div>
+
+    <div class="movement-filter-group" *ngFor="let dropdown of dropdowns; trackBy: trackDropdown">
+      <app-filter-dropdown
+        [dropdownId]="dropdown.key"
+        [triggerId]="dropdown.triggerId"
+        [ariaLabel]="dropdown.ariaLabel"
+        [options]="dropdown.options"
+        [selectedValue]="dropdown.selectedValue"
+        [selectedLabel]="dropdown.selectedLabel"
+        [selectedIcon]="dropdown.selectedIcon"
+        [showIcons]="dropdown.showIcons ?? false"
+        (selectionChange)="onDropdownSelection(dropdown.key, $event)" />
+    </div>
+  </div>
+
   <app-history-summary
     *ngIf="historyAvailable(); else historyUnavailable"
     [comparisonLabel]="comparisonLabel()"
     [achievementMovers]="achievementMovers()"
-    [honorableKillMovers]="honorableKillMovers()" />
+    [honorableKillMovers]="honorableKillMovers()"
+    [achievementEmptyMessage]="achievementEmptyMessage()"
+    [honorableKillEmptyMessage]="honorableKillEmptyMessage()" />
 </div>
 
 <ng-template #historyUnavailable>
