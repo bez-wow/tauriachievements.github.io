@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -46,7 +47,7 @@ const HONORABLE_KILL_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<nu
   templateUrl: './rank-movement-page.component.html',
   styleUrls: ['./rank-movement-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, FilterDropdownComponent, HistorySummaryComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
