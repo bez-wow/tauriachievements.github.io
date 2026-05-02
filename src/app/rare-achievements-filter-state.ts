@@ -40,7 +40,7 @@ const VALID_NUMERIC_ACHIEVEMENT_IDS = new Set<number>([
 ]);
 
 export const DEFAULT_RARE_ACHIEVEMENTS_FILTER_STATE: RareAchievementsFilterState = {
-  achievementId: ALL_GLADIATOR_TITLES_FILTER_VALUE,
+  achievementId: GLADIATOR_TITLE_COUNT_RANKING_FILTER_VALUE,
   realm: undefined,
   classId: undefined,
   search: ''
