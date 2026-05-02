@@ -20,15 +20,26 @@
         [showIcons]="dropdown.showIcons ?? false"
         (selectionChange)="onDropdownSelection(dropdown.key, $event)" />
     </div>
+
+    <div class="movement-comparison-group" *ngIf="comparisonLabel()">
+      <span class="movement-comparison-label">Compared with {{ comparisonLabel() }}</span>
+    </div>
   </div>
 
   <app-history-summary
     *ngIf="historyAvailable(); else historyUnavailable"
-    [comparisonLabel]="comparisonLabel()"
+    [achievementSourceLimitOptions]="achievementSourceLimitOptions"
+    [achievementSourceLimit]="achievementSourceLimit()"
+    [achievementSourceLimitLabel]="selectedAchievementSourceLimitLabel"
+    [honorableKillSourceLimitOptions]="honorableKillSourceLimitOptions"
+    [honorableKillSourceLimit]="honorableKillSourceLimit()"
+    [honorableKillSourceLimitLabel]="selectedHonorableKillSourceLimitLabel"
     [achievementMovers]="achievementMovers()"
     [honorableKillMovers]="honorableKillMovers()"
     [achievementEmptyMessage]="achievementEmptyMessage()"
-    [honorableKillEmptyMessage]="honorableKillEmptyMessage()" />
+    [honorableKillEmptyMessage]="honorableKillEmptyMessage()"
+    (achievementSourceLimitChange)="onAchievementSourceLimitSelection($event)"
+    (honorableKillSourceLimitChange)="onHonorableKillSourceLimitSelection($event)" />
 </div>
 
 <ng-template #historyUnavailable>

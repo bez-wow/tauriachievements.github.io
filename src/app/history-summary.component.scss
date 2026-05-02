@@ -11,24 +11,6 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-.history-summary-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.history-summary-label {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(247, 181, 0, 0.28);
-  background: rgba(247, 181, 0, 0.08);
-  color: #ffe28a;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
 .history-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -44,10 +26,18 @@
   h3 {
     color: #f4f4f7;
     font-size: 0.92rem;
-    margin-bottom: 10px;
+    margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.8px;
   }
+}
+
+.history-panel-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 240px);
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .history-table-wrap {
@@ -113,7 +103,7 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-.history-player-realm,
+.history-player-guild,
 .history-secondary {
   color: #aeb4c2;
   font-size: 0.8rem;
@@ -141,11 +131,13 @@
   font-size: 0.88rem;
 }
 
-@media (max-width: 768px) {
-  .history-summary-header {
-    flex-direction: column;
+@media (max-width: 960px) {
+  .history-panel-header {
+    grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 768px) {
   .history-summary-grid {
     grid-template-columns: 1fr;
   }

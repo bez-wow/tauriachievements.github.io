@@ -11,21 +11,46 @@
 
 .movement-filter-bar {
   display: grid;
-  grid-template-columns: auto repeat(3, minmax(180px, 1fr));
+  grid-template-columns: auto repeat(3, minmax(180px, 1fr)) auto;
   gap: 12px;
   align-items: center;
   margin-bottom: 12px;
   padding: 16px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, rgba(30, 30, 35, 0.86), rgba(15, 15, 20, 0.94));
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.8), rgba(15, 15, 20, 0.9));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  justify-content: flex-start;
   position: relative;
   z-index: 200;
 }
 
+.movement-filter-bar ::ng-deep .dropdown-menu {
+  background: linear-gradient(135deg, #1f1f27, #14141a);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.72);
+}
+
 .movement-filter-group {
   min-width: 0;
+}
+
+.movement-comparison-group {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.movement-comparison-label {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(247, 181, 0, 0.28);
+  background: rgba(247, 181, 0, 0.08);
+  color: #ffe28a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 .movement-reset-button {
@@ -81,6 +106,10 @@
   .movement-filter-bar {
     grid-template-columns: 1fr;
     padding: 16px;
+  }
+
+  .movement-comparison-group {
+    justify-content: flex-start;
   }
 
   .movement-feedback {

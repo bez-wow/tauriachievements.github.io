@@ -11,7 +11,8 @@ export type SerializedLadderHistoryMover = [
   currentHonorableKills: number,
   race: number,
   gender: number,
-  classId: number
+  classId: number,
+  guild?: string
 ];
 
 export interface SerializedLadderHistorySnapshot {
@@ -29,6 +30,7 @@ export interface LadderHistoryMoverView {
   playerKey: string;
   name: string;
   realm: string;
+  guild: string;
   race: number;
   gender: number;
   classId: number;

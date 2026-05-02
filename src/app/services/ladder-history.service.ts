@@ -59,7 +59,8 @@ export class LadderHistoryService {
       currentHonorableKills,
       race,
       gender,
-      classId
+      classId,
+      guild
     ] = mover;
     const { name, realm } = splitLadderHistoryPlayerKey(playerKey);
 
@@ -67,6 +68,7 @@ export class LadderHistoryService {
       playerKey,
       name,
       realm,
+      guild: guild ?? '',
       race,
       gender,
       classId,

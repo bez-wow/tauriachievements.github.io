@@ -26,6 +26,20 @@ interface TopGainersDropdownConfig {
 }
 
 const DEFAULT_TOP_GAINERS_LIMIT = 100;
+const DEFAULT_ACHIEVEMENT_SOURCE_LIMIT = 1000;
+const DEFAULT_HONORABLE_KILL_SOURCE_LIMIT: number | undefined = undefined;
+const ACHIEVEMENT_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
+  { value: 100, label: 'Achievement Top 100' },
+  { value: 500, label: 'Achievement Top 500' },
+  { value: 1000, label: 'Achievement Top 1000' },
+  { value: undefined, label: 'All players' }
+];
+const HONORABLE_KILL_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
+  { value: 100, label: 'HK Top 100' },
+  { value: 500, label: 'HK Top 500' },
+  { value: 1000, label: 'HK Top 1000' },
+  { value: undefined, label: 'All players' }
+];
 
 @Component({
   selector: 'app-rank-movement-page',
@@ -46,12 +60,16 @@ export class TopGainersPageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly topGainersLimit = signal(DEFAULT_TOP_GAINERS_LIMIT);
+  readonly achievementSourceLimit = signal<number | undefined>(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
+  readonly honorableKillSourceLimit = signal<number | undefined>(DEFAULT_HONORABLE_KILL_SOURCE_LIMIT);
   readonly currentRealm = signal<string | undefined>(undefined);
   readonly currentClass = signal<number | undefined>(undefined);
   readonly limitOptions: ReadonlyArray<FilterDropdownOption<number>> = PAGE_SIZE_OPTIONS.map((size) => ({
     value: size,
-    label: `Top ${size}`
+    label: `Display Top ${size}`
   }));
+  readonly achievementSourceLimitOptions = ACHIEVEMENT_SOURCE_LIMIT_OPTIONS;
+  readonly honorableKillSourceLimitOptions = HONORABLE_KILL_SOURCE_LIMIT_OPTIONS;
   readonly realmOptions = REALM_OPTIONS;
   readonly classOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
     { value: undefined, label: 'All Classes' },
@@ -63,11 +81,17 @@ export class TopGainersPageComponent implements OnInit {
   ];
   readonly comparisonLabel = computed(() => buildHistoryComparisonLabel(this.history()?.snapshots ?? []));
   readonly snapshotCount = computed(() => this.history()?.snapshots.length ?? 0);
-  readonly achievementMovers = computed(() => this.filterMovers(this.history()?.movers.achievementPoints ?? []));
-  readonly honorableKillMovers = computed(() => this.filterMovers(this.history()?.movers.honorableKills ?? []));
+  readonly achievementMovers = computed(() =>
+    this.filterMovers(this.history()?.movers.achievementPoints ?? [], this.achievementSourceLimit())
+  );
+  readonly honorableKillMovers = computed(() =>
+    this.filterMovers(this.history()?.movers.honorableKills ?? [], this.honorableKillSourceLimit())
+  );
   readonly historyAvailable = computed(() => this.snapshotCount() > 1);
   readonly hasActiveFilters = computed(() =>
     this.topGainersLimit() !== DEFAULT_TOP_GAINERS_LIMIT
+      || this.achievementSourceLimit() !== DEFAULT_ACHIEVEMENT_SOURCE_LIMIT
+      || this.honorableKillSourceLimit() !== DEFAULT_HONORABLE_KILL_SOURCE_LIMIT
       || !!this.currentRealm()
       || this.currentClass() !== undefined
   );
@@ -112,7 +136,15 @@ export class TopGainersPageComponent implements OnInit {
   }
 
   get selectedLimitLabel(): string {
-    return this.limitOptions.find((option) => option.value === this.topGainersLimit())?.label ?? 'Top 100';
+    return this.limitOptions.find((option) => option.value === this.topGainersLimit())?.label ?? 'Display Top 100';
+  }
+
+  get selectedAchievementSourceLimitLabel(): string {
+    return this.getSourceLimitLabel(this.achievementSourceLimit());
+  }
+
+  get selectedHonorableKillSourceLimitLabel(): string {
+    return this.getHonorableKillSourceLimitLabel(this.honorableKillSourceLimit());
   }
 
   get selectedRealmLabel(): string {
@@ -160,9 +192,19 @@ export class TopGainersPageComponent implements OnInit {
     }
   }
 
+  onAchievementSourceLimitSelection(value: FilterDropdownValue): void {
+    this.achievementSourceLimit.set(value as number | undefined);
+  }
+
+  onHonorableKillSourceLimitSelection(value: FilterDropdownValue): void {
+    this.honorableKillSourceLimit.set(value as number | undefined);
+  }
+
   resetFilters(): void {
     this.dropdownCoordinator.closeAll();
     this.topGainersLimit.set(DEFAULT_TOP_GAINERS_LIMIT);
+    this.achievementSourceLimit.set(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
+    this.honorableKillSourceLimit.set(DEFAULT_HONORABLE_KILL_SOURCE_LIMIT);
     this.currentRealm.set(undefined);
     this.currentClass.set(undefined);
   }
@@ -171,12 +213,19 @@ export class TopGainersPageComponent implements OnInit {
     return dropdown.key;
   }
 
-  private filterMovers(movers: ReadonlyArray<LadderHistoryMoverView>): LadderHistoryMoverView[] {
+  private filterMovers(
+    movers: ReadonlyArray<LadderHistoryMoverView>,
+    sourceLimit: number | undefined
+  ): LadderHistoryMoverView[] {
     const realm = this.currentRealm();
     const playerClass = this.currentClass();
 
     return movers
       .filter((mover) => {
+        if (sourceLimit !== undefined && (mover.currentRank > sourceLimit || mover.previousRank > sourceLimit)) {
+          return false;
+        }
+
         if (realm && mover.realm !== realm) {
           return false;
         }
@@ -192,5 +241,13 @@ export class TopGainersPageComponent implements OnInit {
 
   private get selectedClassOption(): FilterDropdownOption<number | undefined> | undefined {
     return this.classOptions.find((option) => option.value === this.currentClass());
+  }
+
+  private getSourceLimitLabel(sourceLimit: number | undefined): string {
+    return this.achievementSourceLimitOptions.find((option) => option.value === sourceLimit)?.label ?? 'All players';
+  }
+
+  private getHonorableKillSourceLimitLabel(sourceLimit: number | undefined): string {
+    return this.honorableKillSourceLimitOptions.find((option) => option.value === sourceLimit)?.label ?? 'All players';
   }
 }

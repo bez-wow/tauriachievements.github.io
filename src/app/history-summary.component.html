@@ -1,11 +1,17 @@
 <section class="history-summary">
-  <div class="history-summary-header" *ngIf="comparisonLabel">
-    <span class="history-summary-label" *ngIf="comparisonLabel">Compared with {{ comparisonLabel }}</span>
-  </div>
-
   <div class="history-summary-grid">
     <article class="history-panel">
-      <h3>Achievement Climbers</h3>
+      <div class="history-panel-header">
+        <h3>Achievement Climbers</h3>
+        <app-filter-dropdown
+          dropdownId="achievementSourceLimit"
+          triggerId="achievementSourceLimitSelect"
+          ariaLabel="Achievement ladder source"
+          [options]="achievementSourceLimitOptions"
+          [selectedValue]="achievementSourceLimit"
+          [selectedLabel]="achievementSourceLimitLabel"
+          (selectionChange)="achievementSourceLimitChange.emit($event)" />
+      </div>
       <div class="history-table-wrap" *ngIf="achievementMovers.length > 0; else emptyAchievementMovers">
         <table class="history-table">
           <thead>
@@ -37,9 +43,9 @@
                       class="history-icon class-icon"
                       loading="lazy"
                       (error)="onImageError($event)" />
-                    <span class="history-player-name">{{ mover.name }}</span>
+                    <span class="history-player-name">{{ mover.name }} - {{ mover.realm }}</span>
                   </span>
-                  <span class="history-player-realm">{{ mover.realm }}</span>
+                  <span class="history-player-guild">{{ mover.guild || 'No guild' }}</span>
                 </a>
               </td>
               <td>
@@ -55,7 +61,17 @@
     </article>
 
     <article class="history-panel">
-      <h3>Honorable Kill Climbers</h3>
+      <div class="history-panel-header">
+        <h3>Honorable Kill Climbers</h3>
+        <app-filter-dropdown
+          dropdownId="honorableKillSourceLimit"
+          triggerId="honorableKillSourceLimitSelect"
+          ariaLabel="Honorable kill ladder source"
+          [options]="honorableKillSourceLimitOptions"
+          [selectedValue]="honorableKillSourceLimit"
+          [selectedLabel]="honorableKillSourceLimitLabel"
+          (selectionChange)="honorableKillSourceLimitChange.emit($event)" />
+      </div>
       <div class="history-table-wrap" *ngIf="honorableKillMovers.length > 0; else emptyHonorableKillMovers">
         <table class="history-table">
           <thead>
@@ -87,9 +103,9 @@
                       class="history-icon class-icon"
                       loading="lazy"
                       (error)="onImageError($event)" />
-                    <span class="history-player-name">{{ mover.name }}</span>
+                    <span class="history-player-name">{{ mover.name }} - {{ mover.realm }}</span>
                   </span>
-                  <span class="history-player-realm">{{ mover.realm }}</span>
+                  <span class="history-player-guild">{{ mover.guild || 'No guild' }}</span>
                 </a>
               </td>
               <td>

@@ -9,8 +9,6 @@ const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.history.snapshot.json");
 
 const SNAPSHOT_DAY_LIMIT = 21;
-const MOVERS_LIMIT = 1000;
-const ACHIEVEMENT_MOVERS_PLAYER_LIMIT = 1000;
 const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 
 function generatePlayerHistorySnapshot() {
@@ -160,22 +158,12 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
   const currentRanks = buildRankMap(currentPlayers, compareFn);
   const previousRanks = buildRankMap(previousPlayers, compareFn);
   const previousPlayersByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
-  const candidatePlayers = sortMetric === "achievementPoints"
-    ? [...currentPlayers].sort(compareFn).slice(0, ACHIEVEMENT_MOVERS_PLAYER_LIMIT)
-    : currentPlayers;
-  const previousEligiblePlayerKeys = sortMetric === "achievementPoints"
-    ? new Set([...previousPlayers].sort(compareFn).slice(0, ACHIEVEMENT_MOVERS_PLAYER_LIMIT).map(getPlayerKey))
-    : undefined;
   const movers = [];
 
-  for (const player of candidatePlayers) {
+  for (const player of currentPlayers) {
     const playerKey = getPlayerKey(player);
     const previousPlayer = previousPlayersByKey.get(playerKey);
     if (!previousPlayer) {
-      continue;
-    }
-
-    if (previousEligiblePlayerKeys && !previousEligiblePlayerKeys.has(playerKey)) {
       continue;
     }
 
@@ -214,6 +202,7 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
       player.race ?? 0,
       player.gender ?? 0,
       player.playerClass ?? 0,
+      player.guild ?? "",
     ]);
   }
 
@@ -235,8 +224,7 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
       }
 
       return left[0].localeCompare(right[0]);
-    })
-    .slice(0, MOVERS_LIMIT);
+    });
 }
 
 function buildRankMap(players, compareFn) {

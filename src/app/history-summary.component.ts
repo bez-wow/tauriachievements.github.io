@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
+import { FilterDropdownComponent } from './filter-dropdown.component';
+import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { LadderHistoryMoverView } from './ladder-history.types';
 
 @Component({
@@ -10,15 +12,23 @@ import { LadderHistoryMoverView } from './ladder-history.types';
   templateUrl: './history-summary.component.html',
   styleUrls: ['./history-summary.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FilterDropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HistorySummaryComponent {
-  @Input() comparisonLabel = '';
+  @Input() achievementSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
+  @Input() honorableKillSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
+  @Input() achievementSourceLimit?: number;
+  @Input() achievementSourceLimitLabel = 'All players';
+  @Input() honorableKillSourceLimit?: number;
+  @Input() honorableKillSourceLimitLabel = 'All players';
   @Input() achievementMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() honorableKillMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() achievementEmptyMessage = 'No achievement climbers available yet.';
   @Input() honorableKillEmptyMessage = 'No honorable kill climbers available yet.';
+
+  @Output() readonly achievementSourceLimitChange = new EventEmitter<FilterDropdownValue>();
+  @Output() readonly honorableKillSourceLimitChange = new EventEmitter<FilterDropdownValue>();
 
   readonly getArmoryUrl = getArmoryUrl;
   readonly getClassIconPath = getClassIconPath;
