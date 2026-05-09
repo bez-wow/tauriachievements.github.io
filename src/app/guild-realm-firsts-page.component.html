@@ -24,17 +24,33 @@
       <table class="realm-firsts-table">
         <thead>
           <tr>
-            <th scope="col">Achievement</th>
-            <th scope="col" *ngFor="let realm of realms()">{{ realm }}</th>
+            <th scope="col" class="expansion-column" aria-label="Expansion"></th>
+            <th scope="col" class="achievement-column">Achievement</th>
+            <th scope="col" class="realm-column" *ngFor="let realm of realms()">{{ realm }}</th>
           </tr>
         </thead>
         <tbody>
           <ng-container *ngFor="let row of rows(); let rowIndex = index; trackBy: trackRow">
             <tr *ngIf="row.startsExpansionGroup" class="expansion-separator-row" aria-hidden="true">
-              <td [attr.colspan]="realms().length + 1"></td>
+              <td [attr.colspan]="realms().length + 2"></td>
             </tr>
 
             <tr [class.is-even-achievement-row]="rowIndex % 2 === 1">
+              <td
+                *ngIf="row.showsExpansionLogo && row.expansion"
+                class="expansion-logo-cell"
+                [attr.rowspan]="row.expansionRowSpan">
+                <img
+                  class="expansion-logo"
+                  [src]="row.expansion.logoUrl"
+                  [alt]="row.expansion.name"
+                  [title]="row.expansion.name"
+                  loading="lazy" />
+              </td>
+              <td
+                *ngIf="!row.expansion"
+                class="expansion-logo-cell expansion-logo-cell--empty"
+                aria-hidden="true"></td>
               <th scope="row">
                 <span class="achievement-label">
                   <span *ngIf="row.iconUrl" class="achievement-icon-frame" aria-hidden="true">
@@ -49,6 +65,7 @@
               </th>
               <td
                 *ngFor="let cell of row.cells; trackBy: trackCell"
+                class="realm-cell"
                 [class.is-empty]="!cell.guild"
                 [class.has-video]="cell.hasVideo">
                 <a

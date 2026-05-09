@@ -29,18 +29,57 @@ interface GuildRealmFirstCellView {
   hasVideo: boolean;
 }
 
+interface GuildRealmFirstExpansionView {
+  name: string;
+  logoUrl: string;
+}
+
 interface GuildRealmFirstAchievementView {
   name: string;
   iconUrl: string;
+  expansion: GuildRealmFirstExpansionView | null;
+  showsExpansionLogo: boolean;
+  expansionRowSpan: number;
   startsExpansionGroup: boolean;
   cells: GuildRealmFirstCellView[];
 }
 
-const EXPANSION_START_ACHIEVEMENTS = new Set([
-  'Realm First! Imperator\'s Fall',
-  'Realm First! Garrosh Hellscream (25 player)',
-  'Realm First! Deathwing',
-  'Realm First! Fall of the Lich King'
+const EXPANSION_GROUPS_BY_START_ACHIEVEMENT = new Map<string, GuildRealmFirstExpansionView>([
+  [
+    'Realm First! Xavius',
+    {
+      name: 'Legion',
+      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/Legionlogo.png?width=180'
+    }
+  ],
+  [
+    'Realm First! Imperator\'s Fall',
+    {
+      name: 'Warlords of Draenor',
+      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/WoDLogo.png?width=180'
+    }
+  ],
+  [
+    'Realm First! Garrosh Hellscream (25 player)',
+    {
+      name: 'Mists of Pandaria',
+      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/MoPlogo.png?width=180'
+    }
+  ],
+  [
+    'Realm First! Deathwing',
+    {
+      name: 'Cataclysm',
+      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/Cataclysmlogo.png?width=180'
+    }
+  ],
+  [
+    'Realm First! Fall of the Lich King',
+    {
+      name: 'Wrath of the Lich King',
+      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/WrathLogo.png?width=180'
+    }
+  ]
 ]);
 
 const LEGION_WHEN_GUILD = 'Legion when?';
@@ -73,7 +112,25 @@ export class GuildRealmFirstsPageComponent implements OnInit {
       return [];
     }
 
-    return dataset.achievements.map((achievement) => {
+    const rows: GuildRealmFirstAchievementView[] = [];
+    let activeExpansion: GuildRealmFirstExpansionView | null = null;
+    let activeExpansionStartRow: GuildRealmFirstAchievementView | undefined;
+    let activeExpansionRowSpan = 0;
+    const updateActiveExpansionRowSpan = () => {
+      if (activeExpansionStartRow) {
+        activeExpansionStartRow.expansionRowSpan = activeExpansionRowSpan;
+      }
+    };
+
+    for (const achievement of dataset.achievements) {
+      const expansion = EXPANSION_GROUPS_BY_START_ACHIEVEMENT.get(achievement.name);
+      if (expansion) {
+        updateActiveExpansionRowSpan();
+        activeExpansion = expansion;
+        activeExpansionStartRow = undefined;
+        activeExpansionRowSpan = 0;
+      }
+
       const cells = dataset.realms.map((realm) => {
         const result = achievement.results?.[realm];
         const guild = this.normalizeGuild(result?.guild);
@@ -87,13 +144,30 @@ export class GuildRealmFirstsPageComponent implements OnInit {
         };
       });
 
-      return {
+      const showsExpansionLogo = expansion !== undefined;
+      const row = {
         name: achievement.name,
         iconUrl: this.normalizeIconUrl(achievement.iconUrl),
-        startsExpansionGroup: EXPANSION_START_ACHIEVEMENTS.has(achievement.name),
+        expansion: activeExpansion,
+        showsExpansionLogo,
+        expansionRowSpan: 1,
+        startsExpansionGroup: showsExpansionLogo && rows.length > 0,
         cells
       };
-    });
+
+      rows.push(row);
+
+      if (showsExpansionLogo) {
+        activeExpansionStartRow = row;
+      }
+
+      if (activeExpansionStartRow) {
+        activeExpansionRowSpan++;
+      }
+    }
+
+    updateActiveExpansionRowSpan();
+    return rows;
   });
   readonly hasRows = computed(() => this.rows().length > 0);
 
