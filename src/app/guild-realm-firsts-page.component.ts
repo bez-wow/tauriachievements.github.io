@@ -37,6 +37,7 @@ interface GuildRealmFirstAchievementView {
 }
 
 const EXPANSION_START_ACHIEVEMENTS = new Set([
+  'Realm First! Imperator\'s Fall',
   'Realm First! Garrosh Hellscream (25 player)',
   'Realm First! Deathwing',
   'Realm First! Fall of the Lich King'
