@@ -37,13 +37,13 @@
             <tr [class.is-even-achievement-row]="rowIndex % 2 === 1">
               <th scope="row">
                 <span class="achievement-label">
-                  <img
-                    *ngIf="row.iconUrl"
-                    class="achievement-icon"
-                    [src]="row.iconUrl"
-                    alt=""
-                    aria-hidden="true"
-                    loading="lazy" />
+                  <span *ngIf="row.iconUrl" class="achievement-icon-frame" aria-hidden="true">
+                    <img
+                      class="achievement-icon"
+                      [src]="row.iconUrl"
+                      alt=""
+                      loading="lazy" />
+                  </span>
                   <span class="achievement-name">{{ row.name }}</span>
                 </span>
               </th>
