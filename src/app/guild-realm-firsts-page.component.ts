@@ -43,6 +43,9 @@ const EXPANSION_START_ACHIEVEMENTS = new Set([
   'Realm First! Fall of the Lich King'
 ]);
 
+const LEGION_WHEN_GUILD = 'Legion when?';
+const PEPEGA_EMOTE_URL = 'https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/1x';
+
 @Component({
   selector: 'app-guild-realm-firsts-page',
   templateUrl: './guild-realm-firsts-page.component.html',
@@ -61,6 +64,8 @@ export class GuildRealmFirstsPageComponent implements OnInit {
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
+  readonly legionWhenGuild = LEGION_WHEN_GUILD;
+  readonly pepegaEmoteUrl = PEPEGA_EMOTE_URL;
   readonly realms = computed(() => this.dataset()?.realms ?? []);
   readonly rows = computed<ReadonlyArray<GuildRealmFirstAchievementView>>(() => {
     const dataset = this.dataset();

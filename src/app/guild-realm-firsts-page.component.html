@@ -58,12 +58,24 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   [title]="getVideoTitle(row, cell)">
-                  {{ cell.guild }}
+                  <span>{{ cell.guild }}</span>
+                  <img
+                    *ngIf="cell.guild === legionWhenGuild"
+                    class="guild-emote guild-emote--pepega"
+                    [src]="pepegaEmoteUrl"
+                    alt="Pepega"
+                    loading="lazy" />
                 </a>
 
                 <ng-template #guildNameCell>
                   <span *ngIf="cell.guild; else missingWinner" class="guild-name">
-                    {{ cell.guild }}
+                    <span>{{ cell.guild }}</span>
+                    <img
+                      *ngIf="cell.guild === legionWhenGuild"
+                      class="guild-emote guild-emote--pepega"
+                      [src]="pepegaEmoteUrl"
+                      alt="Pepega"
+                      loading="lazy" />
                   </span>
                 </ng-template>
 
