@@ -19,8 +19,13 @@ export const routes: Routes = [
     component: RareAchievementsPageComponent
   },
   {
-    path: 'guild-realm-firsts',
+    path: 'raid-history',
     component: GuildRealmFirstsPageComponent
+  },
+  {
+    path: 'guild-realm-firsts',
+    redirectTo: 'raid-history',
+    pathMatch: 'full'
   },
   {
     path: 'top-gainers',

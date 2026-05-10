@@ -216,9 +216,9 @@ export class GuildRealmFirstsPageComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (error: unknown) => {
-        console.error('Failed to load guild realm firsts:', error);
+        console.error('Failed to load raid history:', error);
         this.dataset.set(null);
-        this.loadError.set('We could not load guild realm first data right now. Please try again in a moment.');
+        this.loadError.set('We could not load raid history data right now. Please try again in a moment.');
         this.isLoading.set(false);
       }
     });
