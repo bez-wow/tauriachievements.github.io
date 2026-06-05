@@ -82,8 +82,8 @@ const EXPANSION_GROUPS_BY_START_ACHIEVEMENT = new Map<string, GuildRealmFirstExp
   ]
 ]);
 
-const LEGION_WHEN_GUILD = 'Legion when?';
-const PEPEGA_EMOTE_URL = 'https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/1x';
+const LEGION_RELEASE_LABEL = 'Legion 15. July';
+const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
 
 @Component({
   selector: 'app-guild-realm-firsts-page',
@@ -103,8 +103,8 @@ export class GuildRealmFirstsPageComponent implements OnInit {
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
-  readonly legionWhenGuild = LEGION_WHEN_GUILD;
-  readonly pepegaEmoteUrl = PEPEGA_EMOTE_URL;
+  readonly legionReleaseLabel = LEGION_RELEASE_LABEL;
+  readonly pogchampEmoteUrl = POGCHAMP_EMOTE_URL;
   readonly realms = computed(() => this.dataset()?.realms ?? []);
   readonly rows = computed<ReadonlyArray<GuildRealmFirstAchievementView>>(() => {
     const dataset = this.dataset();

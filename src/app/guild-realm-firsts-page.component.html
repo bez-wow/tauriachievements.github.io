@@ -77,10 +77,10 @@
                   [title]="getVideoTitle(row, cell)">
                   <span>{{ cell.guild }}</span>
                   <img
-                    *ngIf="cell.guild === legionWhenGuild"
-                    class="guild-emote guild-emote--pepega"
-                    [src]="pepegaEmoteUrl"
-                    alt="Pepega"
+                    *ngIf="cell.guild === legionReleaseLabel"
+                    class="guild-emote guild-emote--pogchamp"
+                    [src]="pogchampEmoteUrl"
+                    alt="PogChamp"
                     loading="lazy" />
                 </a>
 
@@ -88,10 +88,10 @@
                   <span *ngIf="cell.guild; else missingWinner" class="guild-name">
                     <span>{{ cell.guild }}</span>
                     <img
-                      *ngIf="cell.guild === legionWhenGuild"
-                      class="guild-emote guild-emote--pepega"
-                      [src]="pepegaEmoteUrl"
-                      alt="Pepega"
+                      *ngIf="cell.guild === legionReleaseLabel"
+                      class="guild-emote guild-emote--pogchamp"
+                      [src]="pogchampEmoteUrl"
+                      alt="PogChamp"
                       loading="lazy" />
                   </span>
                 </ng-template>
@@ -149,10 +149,10 @@
                 [title]="getVideoTitle(row, cell)">
                 <span>{{ cell.guild }}</span>
                 <img
-                  *ngIf="cell.guild === legionWhenGuild"
-                  class="guild-emote guild-emote--pepega"
-                  [src]="pepegaEmoteUrl"
-                  alt="Pepega"
+                  *ngIf="cell.guild === legionReleaseLabel"
+                  class="guild-emote guild-emote--pogchamp"
+                  [src]="pogchampEmoteUrl"
+                  alt="PogChamp"
                   loading="lazy" />
               </a>
 
@@ -160,10 +160,10 @@
                 <span *ngIf="cell.guild; else mobileMissingWinner" class="mobile-guild-name">
                   <span>{{ cell.guild }}</span>
                   <img
-                    *ngIf="cell.guild === legionWhenGuild"
-                    class="guild-emote guild-emote--pepega"
-                    [src]="pepegaEmoteUrl"
-                    alt="Pepega"
+                    *ngIf="cell.guild === legionReleaseLabel"
+                    class="guild-emote guild-emote--pogchamp"
+                    [src]="pogchampEmoteUrl"
+                    alt="PogChamp"
                     loading="lazy" />
                 </span>
               </ng-template>

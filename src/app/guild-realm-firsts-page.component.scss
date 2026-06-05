@@ -264,6 +264,12 @@
   vertical-align: -3px;
 }
 
+.guild-emote--pogchamp {
+  width: 42px;
+  height: 35px;
+  transform: translateX(-4px);
+}
+
 .guild-video-link {
   color: #ffdd79;
   text-shadow: 0 0 10px rgba(247, 181, 0, 0.26);
@@ -473,6 +479,12 @@
   .mobile-realm-result .guild-emote {
     width: 24px;
     height: 24px;
+  }
+
+  .mobile-realm-result .guild-emote--pogchamp {
+    width: 38px;
+    height: 32px;
+    transform: translateX(-3px);
   }
 
   .mobile-missing-winner {
