@@ -105,6 +105,77 @@
         </tbody>
       </table>
     </div>
+
+    <div class="realm-firsts-mobile-list" role="list" aria-label="Raid history achievements">
+      <ng-container *ngFor="let row of rows(); let rowIndex = index; trackBy: trackRow">
+        <div class="mobile-expansion-heading" *ngIf="row.showsExpansionLogo && row.expansion">
+          <img
+            class="mobile-expansion-logo"
+            [src]="row.expansion.logoUrl"
+            [alt]="row.expansion.name"
+            loading="lazy" />
+          <span>{{ row.expansion.name }}</span>
+        </div>
+
+        <article
+          class="mobile-achievement-card"
+          [class.is-even-achievement-card]="rowIndex % 2 === 1"
+          role="listitem">
+          <header class="mobile-achievement-header">
+            <span *ngIf="row.iconUrl" class="mobile-achievement-icon-frame" aria-hidden="true">
+              <img
+                class="mobile-achievement-icon"
+                [src]="row.iconUrl"
+                alt=""
+                loading="lazy" />
+            </span>
+            <h2 class="mobile-achievement-name">{{ row.name }}</h2>
+          </header>
+
+          <div class="mobile-realm-grid">
+            <div
+              *ngFor="let cell of row.cells; trackBy: trackCell"
+              class="mobile-realm-result"
+              [class.is-empty]="!cell.guild"
+              [class.has-video]="cell.hasVideo">
+              <span class="mobile-realm-label">{{ cell.realm }}</span>
+
+              <a
+                *ngIf="cell.guild && cell.hasVideo; else mobileGuildNameCell"
+                class="mobile-guild-link"
+                [href]="cell.videoUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                [title]="getVideoTitle(row, cell)">
+                <span>{{ cell.guild }}</span>
+                <img
+                  *ngIf="cell.guild === legionWhenGuild"
+                  class="guild-emote guild-emote--pepega"
+                  [src]="pepegaEmoteUrl"
+                  alt="Pepega"
+                  loading="lazy" />
+              </a>
+
+              <ng-template #mobileGuildNameCell>
+                <span *ngIf="cell.guild; else mobileMissingWinner" class="mobile-guild-name">
+                  <span>{{ cell.guild }}</span>
+                  <img
+                    *ngIf="cell.guild === legionWhenGuild"
+                    class="guild-emote guild-emote--pepega"
+                    [src]="pepegaEmoteUrl"
+                    alt="Pepega"
+                    loading="lazy" />
+                </span>
+              </ng-template>
+
+              <ng-template #mobileMissingWinner>
+                <span class="mobile-missing-winner">-</span>
+              </ng-template>
+            </div>
+          </div>
+        </article>
+      </ng-container>
+    </div>
   </section>
 </main>
 
