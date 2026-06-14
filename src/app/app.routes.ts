@@ -4,6 +4,7 @@ import { GuildPresencePageComponent } from './guild-presence-page.component';
 import { GuildRealmFirstsPageComponent } from './guild-realm-firsts-page.component';
 import { RareAchievementsPageComponent } from './rare-achievements-page.component';
 import { TopGainersPageComponent } from './rank-movement-page.component';
+import { StatsPageComponent } from './stats-page.component';
 
 export const routes: Routes = [
   {
@@ -30,6 +31,10 @@ export const routes: Routes = [
   {
     path: 'top-gainers',
     component: TopGainersPageComponent
+  },
+  {
+    path: 'stats',
+    component: StatsPageComponent
   },
   {
     path: '**',

@@ -1,0 +1,79 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="stats-container">
+  <header class="stats-header">
+    <h1 class="stats-title">Tauri by the Numbers</h1>
+    <p class="stats-subtitle">Server-wide statistics across all tracked characters</p>
+  </header>
+
+  <div class="stats-feedback loading" *ngIf="showLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Computing server statistics...</h2>
+    <p>Crunching data for every character on the server</p>
+  </div>
+
+  <div class="stats-feedback error" *ngIf="showError()">
+    <h2>Could not load statistics</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+  </div>
+
+  <ng-container *ngIf="showContent()">
+
+    <!-- Top row: 3 stat cards (stacked) + faction doughnut side by side -->
+    <div class="stats-top">
+      <div class="stats-summary">
+        <div class="stat-card">
+          <div class="stat-value">{{ stats().totalPlayers | number }}</div>
+          <div class="stat-label">Total Characters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ stats().uniqueGuilds | number }}</div>
+          <div class="stat-label">Guilds Scanned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ stats().guildedPlayers | number }}</div>
+          <div class="stat-label">Guilded Players</div>
+        </div>
+      </div>
+
+      <article class="chart-panel faction-chart-panel" aria-label="Faction balance">
+        <h2 class="chart-title">Faction Balance</h2>
+        <div class="faction-canvas-wrap">
+          <canvas #factionCanvas></canvas>
+        </div>
+      </article>
+    </div>
+
+    <!-- Realm pills -->
+    <div class="realm-pills" *ngIf="stats().realmLabels.length > 0">
+      <span class="realm-pill-label">By Realm:</span>
+      <span class="realm-pill" *ngFor="let realm of stats().realmLabels; let i = index">
+        {{ realm }}: <strong>{{ stats().realmCounts[i] | number }}</strong>
+      </span>
+    </div>
+
+    <!-- Charts: Class + Race side by side, Guilds full width -->
+    <div class="charts-grid">
+      <article class="chart-panel">
+        <h2 class="chart-title">Class Distribution</h2>
+        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
+          <canvas #classCanvas></canvas>
+        </div>
+      </article>
+
+      <article class="chart-panel">
+        <h2 class="chart-title">Race Popularity</h2>
+        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
+          <canvas #raceCanvas></canvas>
+        </div>
+      </article>
+
+    </div>
+
+  </ng-container>
+</div>
+
+<app-back-to-top-button />

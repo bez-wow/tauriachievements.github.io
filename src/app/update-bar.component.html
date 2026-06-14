@@ -45,6 +45,11 @@
           routerLink="/raid-history"
           routerLinkActive="active"
           (click)="closeMobileMenu()">Raid History</a>
+        <a
+          class="update-nav-link"
+          routerLink="/stats"
+          routerLinkActive="active"
+          (click)="closeMobileMenu()">Stats</a>
       </nav>
     </div>
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">

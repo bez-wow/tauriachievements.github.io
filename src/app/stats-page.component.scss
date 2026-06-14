@@ -1,0 +1,299 @@
+:host {
+  display: block;
+}
+
+.stats-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 52px 20px 32px;
+  color: #e0e0e0;
+}
+
+// ─── Header ────────────────────────────────────────────────────────────────
+
+.stats-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.stats-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #f7f7fa;
+  margin-bottom: 6px;
+}
+
+.stats-subtitle {
+  color: #9fa6b4;
+  font-size: 0.9rem;
+}
+
+// ─── Shared panel style ─────────────────────────────────────────────────────
+
+.stat-card,
+.chart-panel,
+.stats-feedback {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.86), rgba(15, 15, 20, 0.94));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+// ─── Feedback (loading / error) ─────────────────────────────────────────────
+
+.stats-feedback {
+  min-height: 260px;
+  margin-bottom: 16px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+
+  h2 {
+    color: #fff;
+    font-size: 1.15rem;
+  }
+
+  p {
+    color: #9fa6b4;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  &.error {
+    border-color: rgba(239, 68, 68, 0.22);
+    h2 { color: #fecaca; }
+  }
+}
+
+.feedback-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #f7b500;
+  animation: stats-spin 0.9s linear infinite;
+}
+
+@keyframes stats-spin {
+  to { transform: rotate(360deg); }
+}
+
+.feedback-action {
+  margin-top: 4px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(40, 40, 50, 0.95), rgba(25, 25, 32, 0.98));
+  color: #f0f0f0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s, box-shadow 0.18s;
+
+  &:hover {
+    border-color: rgba(247, 181, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// ─── Top row: stat cards + faction doughnut ─────────────────────────────────
+
+.stats-top {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: stretch;
+}
+
+.stats-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-card {
+  flex: 1;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 0.18s;
+
+  &:hover {
+    border-color: rgba(247, 181, 0, 0.2);
+  }
+}
+
+.stat-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #f4f4f7;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #9fa6b4;
+}
+
+.faction-chart-panel {
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.faction-canvas-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 200px;
+
+  canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+// ─── Realm pills ────────────────────────────────────────────────────────────
+
+.realm-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.realm-pill-label {
+  color: #9fa6b4;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.realm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cdd2dc;
+  font-size: 0.8rem;
+
+  strong {
+    color: #f0f0f4;
+    font-weight: 700;
+  }
+}
+
+// ─── Charts grid ────────────────────────────────────────────────────────────
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.chart-panel {
+  padding: 20px 18px 16px;
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.chart-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #c8cdd8;
+  margin-bottom: 4px;
+}
+
+.chart-subtitle {
+  font-size: 0.76rem;
+  color: #7c8494;
+  margin-bottom: 12px;
+}
+
+.chart-canvas-wrap {
+  position: relative;
+
+  canvas {
+    display: block;
+    width: 100% !important;
+  }
+
+  &--hbar {
+    height: 340px;
+  }
+
+  &--hbar-tall {
+    height: 360px;
+  }
+}
+
+// ─── Responsive ─────────────────────────────────────────────────────────────
+
+@media (max-width: 860px) {
+  .stats-top {
+    grid-template-columns: 1fr;
+  }
+
+  .faction-canvas-wrap {
+    min-height: 260px;
+    position: relative;
+
+    canvas {
+      position: static;
+      height: 260px !important;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-panel--full {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-container {
+    padding: 46px 12px 24px;
+  }
+
+  .stats-title {
+    font-size: 1.4rem;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+  }
+}
