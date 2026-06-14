@@ -17,6 +17,7 @@ export interface LadderAchievement {
   honorableKills: number;
   honorableKillsDelta: number;
   honorableKillsRankDelta: number;
+  isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';
 }
 
@@ -195,6 +196,7 @@ export class LadderService {
         honorableKills: player.honorableKills,
         honorableKillsDelta: player.honorableKillsDelta,
         honorableKillsRankDelta: player.honorableKillsRankDelta,
+        isNewCharacter: player.isNewCharacter,
         faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
       }
     };

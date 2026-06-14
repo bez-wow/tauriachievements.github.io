@@ -25,6 +25,7 @@
               [class.player-name--rbg-hero-alliance]="player.ratedBattlegroundHeroCount > 0 && player.faction === 'Alliance'"
               [class.player-name--rbg-hero-horde]="player.ratedBattlegroundHeroCount > 0 && player.faction === 'Horde'"
               [class.player-name--realm-first]="player.realmFirstCount > 0"
+              [class.player-name--new-rare]="player.isNewRareAchievementCharacter"
               [href]="getArmoryUrl(player.name, player.realm)"
               target="_blank"
               rel="noopener noreferrer"

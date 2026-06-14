@@ -23,5 +23,6 @@ export interface LadderPlayerView extends PlayerAchievement {
   gladiatorMountCount: number;
   ratedBattlegroundHeroCount: number;
   realmFirstCount: number;
+  isNewRareAchievementCharacter: boolean;
   rareAchievementSummaryLabel?: string;
 }

@@ -409,6 +409,40 @@
   }
 }
 
+.player-name--new-rare,
+.player-name--new-rare.player-name--gladiator-title,
+.player-name--new-rare.player-name--gladiator-mount,
+.player-name--new-rare.player-name--realm-first,
+.player-name--new-rare.player-name--gladiator-title.player-name--gladiator-mount,
+.player-name--new-rare.player-name--realm-first.player-name--gladiator-title,
+.player-name--new-rare.player-name--realm-first.player-name--gladiator-mount,
+.player-name--new-rare.player-name--realm-first.player-name--gladiator-title.player-name--gladiator-mount,
+.player-name--new-rare.player-name--realm-first:not(.player-name--gladiator-title):not(.player-name--gladiator-mount),
+.wow-table tr.Horde .player-name--new-rare.player-name--gladiator-mount:not(.player-name--gladiator-title) {
+  color: #1eff00;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.68),
+    0 0 8px rgba(30, 255, 0, 0.76),
+    0 0 16px rgba(30, 255, 0, 0.38),
+    0 0 24px rgba(112, 255, 82, 0.2);
+
+  &::after {
+    background: linear-gradient(90deg, rgba(180, 255, 150, 0.2), rgba(30, 255, 0, 0.96), rgba(12, 176, 0, 0.46));
+    box-shadow:
+      0 0 10px rgba(30, 255, 0, 0.42),
+      0 0 18px rgba(30, 255, 0, 0.2);
+  }
+
+  &.clickable:hover {
+    color: #a8ff9b;
+    text-decoration: none;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.7),
+      0 0 10px rgba(76, 255, 52, 0.82),
+      0 0 20px rgba(30, 255, 0, 0.48);
+  }
+}
+
 .guild-name {
   color: #e0e0e0;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);

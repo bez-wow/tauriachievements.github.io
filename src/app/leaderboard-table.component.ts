@@ -99,6 +99,10 @@ export class LeaderboardTableComponent {
   }
 
   getPlayerLinkTitle(player: LadderPlayerView): string {
+    if (player.isNewRareAchievementCharacter && player.rareAchievementSummaryLabel) {
+      return `New rare character found\n${player.rareAchievementSummaryLabel}`;
+    }
+
     return player.rareAchievementSummaryLabel
       ? player.rareAchievementSummaryLabel
       : `Open ${player.name} on Tauri armory`;

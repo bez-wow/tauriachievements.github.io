@@ -32,6 +32,7 @@ export function mapLadderPlayersToView(
       honorableKills: player.honorableKills,
       honorableKillsDelta: player.honorableKillsDelta,
       honorableKillsRankDelta: player.honorableKillsRankDelta,
+      isNewCharacter: player.isNewCharacter,
       faction: player.faction,
       nameParts: buildHighlightParts(player.name, normalizedSearchQuery),
       guildParts: buildHighlightParts(player.guild, normalizedSearchQuery),
@@ -39,6 +40,7 @@ export function mapLadderPlayersToView(
       gladiatorMountCount: rareAchievementSummary?.gladiatorMountCount ?? 0,
       ratedBattlegroundHeroCount: rareAchievementSummary?.ratedBattlegroundHeroCount ?? 0,
       realmFirstCount: rareAchievementSummary?.realmFirstCount ?? 0,
+      isNewRareAchievementCharacter: isNewRareAchievementCharacter(player.isNewCharacter, rareAchievementSummary),
       rareAchievementSummaryLabel: buildRareAchievementSummaryLabel(rareAchievementSummary)
     };
   });
@@ -78,4 +80,15 @@ export function buildHighlightParts(value: string, query: string): HighlightPart
   }
 
   return parts;
+}
+
+function isNewRareAchievementCharacter(
+  isNewCharacter: boolean,
+  rareAchievementSummary: RareAchievementSummary | undefined
+): boolean {
+  return isNewCharacter && !!rareAchievementSummary && (
+    rareAchievementSummary.gladiatorTitleCount > 0
+    || rareAchievementSummary.gladiatorMountCount > 0
+    || rareAchievementSummary.realmFirstCount > 0
+  );
 }

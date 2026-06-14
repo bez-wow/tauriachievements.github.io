@@ -53,7 +53,7 @@ function generatePlayerSnapshot() {
       const currentHonorableKillRank = currentHonorableKillRanks.get(playerKey) ?? 0;
       const previousHonorableKillRank = previousHonorableKillRanks.get(playerKey) ?? 0;
 
-      return [
+      const serializedPlayer = [
         player.name,
         player.race,
         player.gender,
@@ -68,6 +68,12 @@ function generatePlayerSnapshot() {
         previousPlayer ? player.honorableKills - previousPlayer.honorableKills : 0,
         previousHonorableKillRank && currentHonorableKillRank ? previousHonorableKillRank - currentHonorableKillRank : 0,
       ];
+
+      if (previousRows.length > 0 && !previousPlayer) {
+        serializedPlayer.push(true);
+      }
+
+      return serializedPlayer;
     }),
   };
 
