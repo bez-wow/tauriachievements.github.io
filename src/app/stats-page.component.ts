@@ -96,6 +96,7 @@ function computeStats(players: Player[]): ServerStats {
   const guildMap = new Map<string, number>();
   const realmMap = new Map<string, number>();
 
+  //comment
   let totalAP = 0;
   let maxAP = 0;
   let totalHK = 0;
