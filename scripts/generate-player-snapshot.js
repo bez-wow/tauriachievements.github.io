@@ -36,6 +36,9 @@ function generatePlayerSnapshot() {
   const realmIndex = new Map(realmList.map((realm, idx) => [realm, idx]));
   const factionIndex = new Map(factionList.map((faction, idx) => [faction, idx]));
   const previousPlayersByKey = new Map(previousRows.map((player) => [getPlayerKey(player), player]));
+  // Identify a character by name + class so a faction/race change (often bundled
+  // with a realm transfer) is not mistaken for a brand-new character.
+  const previousNameClassKeys = new Set(previousRows.map((player) => getNameClassKey(player)));
   const currentAchievementRanks = buildRankMap(normalizedRows, compareAchievementPoints);
   const currentHonorableKillRanks = buildRankMap(normalizedRows, compareHonorableKills);
   const previousAchievementRanks = buildRankMap(previousRows, compareAchievementPoints);
@@ -69,7 +72,7 @@ function generatePlayerSnapshot() {
         previousHonorableKillRank && currentHonorableKillRank ? previousHonorableKillRank - currentHonorableKillRank : 0,
       ];
 
-      if (previousRows.length > 0 && !previousPlayer) {
+      if (previousRows.length > 0 && !previousNameClassKeys.has(getNameClassKey(player))) {
         serializedPlayer.push(true);
       }
 
@@ -184,6 +187,10 @@ function compareHonorableKills(left, right) {
 
 function getPlayerKey(player) {
   return `${player.realm}::${player.name}`;
+}
+
+function getNameClassKey(player) {
+  return `${String(player.name).trim().toLowerCase()}::${player.playerClass}`;
 }
 
 function getCurrentSnapshotTimestamp() {
