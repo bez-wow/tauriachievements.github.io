@@ -92,6 +92,14 @@
           "options": {
             "buildTarget": "tauri-achievements:build"
           }
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "buildTarget": "tauri-achievements:build",
+            "runner": "vitest"
+          }
         }
       }
     }

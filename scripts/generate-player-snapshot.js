@@ -242,4 +242,6 @@ if (require.main === module) {
 
 module.exports = {
   generatePlayerSnapshot,
+  getNameClassKey,
+  getPlayerKey,
 };
