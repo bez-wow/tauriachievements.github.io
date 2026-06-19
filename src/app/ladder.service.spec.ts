@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { of } from 'rxjs';
-import { LadderService, LadderAchievement } from './ladder.service';
+import { LadderService, LadderAchievement, RankedLadderPlayer } from './ladder.service';
 import { DataSyncService } from './services/data-sync.service';
 import { Player } from './models/character.model';
 
@@ -130,8 +130,8 @@ describe('LadderService.getRankedPlayer', () => {
     ];
   }
 
-  function resolve(service: LadderService, name: string, realm: string) {
-    let result;
+  function resolve(service: LadderService, name: string, realm: string): RankedLadderPlayer | undefined {
+    let result: RankedLadderPlayer | undefined;
     service.getRankedPlayer(name, realm).subscribe((value) => (result = value));
     return result;
   }
