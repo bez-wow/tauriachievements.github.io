@@ -1,0 +1,131 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="compare-container">
+  <section class="compare-header" *ngIf="!loadError()">
+    <h1>Player Comparison</h1>
+    <p>Put two characters head to head</p>
+  </section>
+
+  <div class="compare-feedback loading" *ngIf="isLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading players...</h2>
+  </div>
+
+  <div class="compare-feedback error" *ngIf="!isLoading() && loadError()">
+    <h2>Could not load players</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+  </div>
+
+  <ng-container *ngIf="!isLoading() && !loadError()">
+    <div class="compare-slots">
+      <div class="compare-slot">
+        <ng-container *ngIf="slotA() as a; else searchSlotA">
+          <div class="slot-card" [ngClass]="a.faction">
+            <div class="slot-identity">
+              <div class="slot-main">
+                <div class="slot-icons">
+                  <img [src]="getRaceIconPath(a.race, a.gender)" [alt]="'Race ' + a.race + '-' + a.gender" class="icon" loading="lazy" (error)="onImageError($event)" />
+                  <img [src]="getClassIconPath(a.class)" [alt]="'Class ' + a.class" class="icon" loading="lazy" (error)="onImageError($event)" />
+                </div>
+                <a class="slot-name clickable" [style.color]="getClassColor(a.class)" [href]="getArmoryUrl(a.name, a.realm)" target="_blank" rel="noopener noreferrer">{{ a.name }}</a>
+              </div>
+              <span class="slot-meta">{{ a.realm }}<ng-container *ngIf="a.guild"> · {{ a.guild }}</ng-container></span>
+            </div>
+            <button type="button" class="slot-clear" aria-label="Clear character A" (click)="clearSlot('a')">✕</button>
+          </div>
+        </ng-container>
+        <ng-template #searchSlotA>
+          <div class="slot-search">
+            <input
+              type="text"
+              class="slot-search-input"
+              placeholder="Search character A..."
+              aria-label="Search character A"
+              [value]="searchA()"
+              (input)="onSearch('a', $any($event.target).value)" />
+            <ul class="suggestions" *ngIf="suggestionsA().length > 0">
+              <li *ngFor="let player of suggestionsA(); trackBy: trackSuggestion" (click)="selectPlayer('a', player)">
+                <span class="suggestion-name">{{ player.name }}</span>
+                <span class="suggestion-meta">{{ player.realm }}<ng-container *ngIf="player.guild"> · {{ player.guild }}</ng-container></span>
+              </li>
+            </ul>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="compare-vs">
+        <span class="vs-label">VS</span>
+        <button type="button" class="vs-swap" *ngIf="bothSelected()" aria-label="Swap sides" (click)="swap()">⇄</button>
+      </div>
+
+      <div class="compare-slot">
+        <ng-container *ngIf="slotB() as b; else searchSlotB">
+          <div class="slot-card" [ngClass]="b.faction">
+            <div class="slot-identity">
+              <div class="slot-main">
+                <div class="slot-icons">
+                  <img [src]="getRaceIconPath(b.race, b.gender)" [alt]="'Race ' + b.race + '-' + b.gender" class="icon" loading="lazy" (error)="onImageError($event)" />
+                  <img [src]="getClassIconPath(b.class)" [alt]="'Class ' + b.class" class="icon" loading="lazy" (error)="onImageError($event)" />
+                </div>
+                <a class="slot-name clickable" [style.color]="getClassColor(b.class)" [href]="getArmoryUrl(b.name, b.realm)" target="_blank" rel="noopener noreferrer">{{ b.name }}</a>
+              </div>
+              <span class="slot-meta">{{ b.realm }}<ng-container *ngIf="b.guild"> · {{ b.guild }}</ng-container></span>
+            </div>
+            <button type="button" class="slot-clear" aria-label="Clear character B" (click)="clearSlot('b')">✕</button>
+          </div>
+        </ng-container>
+        <ng-template #searchSlotB>
+          <div class="slot-search">
+            <input
+              type="text"
+              class="slot-search-input"
+              placeholder="Search character B..."
+              aria-label="Search character B"
+              [value]="searchB()"
+              (input)="onSearch('b', $any($event.target).value)" />
+            <ul class="suggestions" *ngIf="suggestionsB().length > 0">
+              <li *ngFor="let player of suggestionsB(); trackBy: trackSuggestion" (click)="selectPlayer('b', player)">
+                <span class="suggestion-name">{{ player.name }}</span>
+                <span class="suggestion-meta">{{ player.realm }}<ng-container *ngIf="player.guild"> · {{ player.guild }}</ng-container></span>
+              </li>
+            </ul>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="compare-result" *ngIf="comparison() as result; else comparePrompt">
+      <div class="result-rows">
+        <div class="result-row" *ngFor="let row of result.rows; trackBy: trackRow" [ngClass]="row.kind">
+          <div
+            class="result-cell result-cell--a"
+            [class.win]="isWinner(row, 'a')"
+            [style.color]="row.kind === 'info' ? row.aColor : null">
+            {{ displayValue(row, 'a') }}
+          </div>
+          <div class="result-label">
+            <span>{{ row.label }}</span>
+            <span class="result-difference" *ngIf="row.kind === 'metric'">
+              Difference {{ row.difference | number }}
+            </span>
+          </div>
+          <div
+            class="result-cell result-cell--b"
+            [class.win]="isWinner(row, 'b')"
+            [style.color]="row.kind === 'info' ? row.bColor : null">
+            {{ displayValue(row, 'b') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #comparePrompt>
+      <p class="compare-hint">Search and pick two characters to see how they stack up.</p>
+    </ng-template>
+  </ng-container>
+</div>
+
+<app-back-to-top-button />

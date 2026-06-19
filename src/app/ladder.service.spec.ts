@@ -120,3 +120,44 @@ describe('LadderService pagination', () => {
     expect(rows.map((row) => row.name)).toEqual(['A', 'B']);
   });
 });
+
+describe('LadderService.getRankedPlayer', () => {
+  function rankedFixture(): Player[] {
+    return [
+      makePlayer({ name: 'Top', realm: 'Tauri', achievementPoints: 1000, honorableKills: 10 }),
+      makePlayer({ name: 'Mid', realm: 'Evermoon', achievementPoints: 900, honorableKills: 50 }),
+      makePlayer({ name: 'Low', realm: 'Tauri', achievementPoints: 800, honorableKills: 90 })
+    ];
+  }
+
+  function resolve(service: LadderService, name: string, realm: string) {
+    let result;
+    service.getRankedPlayer(name, realm).subscribe((value) => (result = value));
+    return result;
+  }
+
+  it('returns the global achievement and honorable-kill ranks for a player', () => {
+    const player = resolve(serviceWith(rankedFixture()), 'Mid', 'Evermoon');
+
+    expect(player?.achievementRank).toBe(2);
+    expect(player?.honorableKillRank).toBe(2);
+  });
+
+  it('ranks the highest honorable kills as rank 1 independently of achievement order', () => {
+    const player = resolve(serviceWith(rankedFixture()), 'Low', 'Tauri');
+
+    expect(player?.achievementRank).toBe(3);
+    expect(player?.honorableKillRank).toBe(1);
+  });
+
+  it('matches name and realm case-insensitively', () => {
+    const player = resolve(serviceWith(rankedFixture()), 'top', 'tauri');
+
+    expect(player?.name).toBe('Top');
+    expect(player?.achievementRank).toBe(1);
+  });
+
+  it('returns undefined when the character is not on the ladder', () => {
+    expect(resolve(serviceWith(rankedFixture()), 'Ghost', 'Tauri')).toBeUndefined();
+  });
+});

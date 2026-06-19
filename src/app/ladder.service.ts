@@ -21,6 +21,11 @@ export interface LadderAchievement {
   faction: 'Horde' | 'Alliance';
 }
 
+export interface RankedLadderPlayer extends LadderAchievement {
+  achievementRank: number;
+  honorableKillRank: number;
+}
+
 interface IndexedLadderPlayer {
   view: LadderAchievement;
   nameLower: string;
@@ -59,6 +64,40 @@ export class LadderService {
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
     return this.getRankedPlayers('honorableKills', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
+  }
+
+  getRankedPlayer(name: string, realm: string): Observable<RankedLadderPlayer | undefined> {
+    const nameLower = name.trim().toLowerCase();
+    const realmLower = realm.trim().toLowerCase();
+
+    return this.dataSyncService.getPlayers().pipe(
+      map(players => {
+        const indexes = this.getOrBuildIndexes(players);
+        const achievementRank = this.findRank(indexes.achievementPoints, nameLower, realmLower);
+        const honorableKillRank = this.findRank(indexes.honorableKills, nameLower, realmLower);
+
+        if (!achievementRank || !honorableKillRank) {
+          return undefined;
+        }
+
+        return {
+          ...indexes.achievementPoints[achievementRank - 1].view,
+          achievementRank,
+          honorableKillRank
+        };
+      })
+    );
+  }
+
+  private findRank(players: IndexedLadderPlayer[], nameLower: string, realmLower: string): number {
+    for (let index = 0; index < players.length; index++) {
+      const player = players[index];
+      if (player.nameLower === nameLower && player.view.realm.toLowerCase() === realmLower) {
+        return index + 1;
+      }
+    }
+
+    return 0;
   }
 
   private getRankedPlayers(

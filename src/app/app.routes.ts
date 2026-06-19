@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AchievementLadderComponent } from './ladder.component';
+import { ComparePageComponent } from './compare-page.component';
 import { GuildPresencePageComponent } from './guild-presence-page.component';
 import { GuildRealmFirstsPageComponent } from './guild-realm-firsts-page.component';
 import { NewRareCharactersPageComponent } from './new-rare-characters-page.component';
@@ -40,6 +41,10 @@ export const routes: Routes = [
   {
     path: 'stats',
     component: StatsPageComponent
+  },
+  {
+    path: 'compare',
+    component: ComparePageComponent
   },
   {
     path: '**',
