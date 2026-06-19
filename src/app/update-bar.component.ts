@@ -14,39 +14,25 @@ export class UpdateBarComponent {
   @Input() lastEdited?: Date;
   @Input() lastEditedTimeZoneLabel = 'Local time';
 
-  protected readonly isMobileMenuOpen = signal(false);
+  protected readonly isNavOpen = signal(false);
 
   private readonly hostRef = inject(ElementRef<HTMLElement>);
 
-  toggleMobileMenu(): void {
-    this.isMobileMenuOpen.update((isOpen) => !isOpen);
+  toggleNav(): void {
+    this.isNavOpen.update((isOpen) => !isOpen);
   }
 
-  closeMobileMenu(): void {
-    this.isMobileMenuOpen.set(false);
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.isMobileMenuOpen()) {
-      return;
-    }
-
-    const target = event.target;
-    if (!(target instanceof Node) || this.hostRef.nativeElement.contains(target)) {
-      return;
-    }
-
-    this.closeMobileMenu();
+  closeNav(): void {
+    this.isNavOpen.set(false);
   }
 
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(event: Event): void {
-    if (!this.isMobileMenuOpen()) {
+    if (!this.isNavOpen()) {
       return;
     }
 
     event.preventDefault();
-    this.closeMobileMenu();
+    this.closeNav();
   }
 }

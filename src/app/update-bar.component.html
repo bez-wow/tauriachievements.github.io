@@ -3,60 +3,18 @@
     <div class="update-bar-nav-shell">
       <button
         type="button"
-        class="mobile-nav-toggle"
-        [class.is-open]="isMobileMenuOpen()"
-        [attr.aria-expanded]="isMobileMenuOpen()"
+        class="nav-toggle"
+        [class.is-open]="isNavOpen()"
+        [attr.aria-expanded]="isNavOpen()"
         aria-controls="primary-navigation"
         aria-label="Toggle navigation menu"
-        (click)="toggleMobileMenu()">
-        <span class="mobile-nav-toggle-bar" aria-hidden="true"></span>
-        <span class="mobile-nav-toggle-bar" aria-hidden="true"></span>
-        <span class="mobile-nav-toggle-bar" aria-hidden="true"></span>
+        (click)="toggleNav()">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
       </button>
-
-      <nav
-        id="primary-navigation"
-        class="update-bar-nav"
-        [class.is-open]="isMobileMenuOpen()"
-        aria-label="Primary">
-        <a
-          class="update-nav-link"
-          routerLink="/"
-          [routerLinkActiveOptions]="{ exact: true }"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">Ladder</a>
-        <a
-          class="update-nav-link"
-          routerLink="/top-gainers"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">Top Gainers</a>
-        <a
-          class="update-nav-link"
-          routerLink="/new-rare-characters"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">New Rare Characters</a>
-        <a
-          class="update-nav-link"
-          routerLink="/guilds"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">Guilds</a>
-        <a
-          class="update-nav-link"
-          routerLink="/rare-achievements"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">Rare Achievements</a>
-        <a
-          class="update-nav-link"
-          routerLink="/raid-history"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">Raid History</a>
-        <a
-          class="update-nav-link"
-          routerLink="/stats"
-          routerLinkActive="active"
-          (click)="closeMobileMenu()">Stats</a>
-      </nav>
     </div>
+
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
       <span class="update-label gold-text">Last updated:</span>
       <span class="update-gap" aria-hidden="true"></span>
@@ -66,6 +24,7 @@
       <span class="update-gap" aria-hidden="true"></span>
       <span class="update-zone">{{ lastEditedTimeZoneLabel }}</span>
     </span>
+
     <div class="update-bar-actions">
       <a
         class="discord-link"
@@ -81,6 +40,70 @@
     </div>
   </div>
 </div>
+
+<div
+  class="nav-drawer-backdrop"
+  [class.is-open]="isNavOpen()"
+  (click)="closeNav()"
+  aria-hidden="true"></div>
+
+<aside
+  id="primary-navigation"
+  class="nav-drawer"
+  [class.is-open]="isNavOpen()"
+  aria-label="Primary navigation">
+  <div class="nav-drawer-header">
+    <span class="nav-drawer-title gold-text">Navigation</span>
+    <button
+      type="button"
+      class="nav-drawer-close"
+      aria-label="Close navigation menu"
+      (click)="closeNav()">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="nav-drawer-links" aria-label="Primary">
+    <a
+      class="nav-drawer-link"
+      routerLink="/"
+      [routerLinkActiveOptions]="{ exact: true }"
+      routerLinkActive="active"
+      (click)="closeNav()">Ladder</a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/top-gainers"
+      routerLinkActive="active"
+      (click)="closeNav()">Top Gainers</a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/new-rare-characters"
+      routerLinkActive="active"
+      (click)="closeNav()">New Rare Characters</a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/guilds"
+      routerLinkActive="active"
+      (click)="closeNav()">Guilds</a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/rare-achievements"
+      routerLinkActive="active"
+      (click)="closeNav()">Rare Achievements</a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/raid-history"
+      routerLinkActive="active"
+      (click)="closeNav()">Raid History</a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/stats"
+      routerLinkActive="active"
+      (click)="closeNav()">Stats</a>
+  </nav>
+</aside>
 
 <ng-template #updateUnavailable>
   <span class="update-bar-text">
