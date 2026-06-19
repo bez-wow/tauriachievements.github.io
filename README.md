@@ -31,7 +31,7 @@ This project is an effort to bring that experience back in a modern form and mak
 
 `src/Players.csv` remains the source dataset in the repository, but the app itself reads a build-generated JSON snapshot derived from it. The displayed timestamp still comes from `src/lastUpdated.txt`.
 
-That keeps the site easy to host statically while avoiding CSV parsing work in the browser on every load. The repository also includes environment templates and API service scaffolding for future or private Tauri API-based workflows.
+That keeps the site easy to host statically while avoiding CSV parsing work in the browser on every load.
 
 ## Tech stack
 
@@ -53,16 +53,6 @@ That keeps the site easy to host statically while avoiding CSV parsing work in t
 npm install
 ```
 
-### Prepare environment files
-
-Generate the local environment files from the committed templates:
-
-```bash
-node .\scripts\prepare-envs.js
-```
-
-If you plan to use the Tauri API integration, fill in the generated files under `src/environments/` with your own credentials. If you are only working on the CSV-driven frontend, the generated placeholder files are enough to get started.
-
 ### Start the development server
 
 The snapshot is generated automatically before the dev server starts.
@@ -81,25 +71,12 @@ The production build also regenerates the snapshot automatically.
 npm run build
 ```
 
-## Environment configuration
-
-Template files live in [`src/environments/`](./src/environments/).
-
-- `environment.template.ts`
-- `environment.prod.template.ts`
-- `environment.dev-proxy.template.ts`
-
-If you need proxy-based local API development, a proxy configuration is already included in [`proxy.conf.json`](./proxy.conf.json).
-
-For more setup details, see [`src/environments/README.md`](./src/environments/README.md).
-
 ## Project structure
 
 - `src/app/` - application components, services, models, and ladder logic
 - `src/assets/` - images plus race and class icons
 - `src/Players.csv` - leaderboard dataset consumed by the frontend
 - `src/lastUpdated.txt` - timestamp shown in the UI
-- `scripts/prepare-envs.js` - creates missing environment files from templates
 
 ## Feedback and contributions
 
