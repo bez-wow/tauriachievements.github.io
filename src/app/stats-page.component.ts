@@ -85,7 +85,7 @@ export interface ServerStats {
   realmCounts: number[];
 }
 
-function computeStats(players: Player[]): ServerStats {
+export function computeStats(players: Player[]): ServerStats {
   if (!players.length) {
     return emptyStats();
   }

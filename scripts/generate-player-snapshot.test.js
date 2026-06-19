@@ -1,6 +1,16 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { getNameClassKey } = require("./generate-player-snapshot");
+const {
+  getNameClassKey,
+  getPlayerKey,
+  buildRankMap,
+  compareAchievementPoints,
+  compareHonorableKills,
+} = require("./generate-player-snapshot");
+
+function ranked(name, achievementPoints, honorableKills, realm = "Tauri") {
+  return { name, realm, achievementPoints, honorableKills };
+}
 
 function player(overrides) {
   return {
@@ -53,4 +63,33 @@ test("newness rule: a genuinely new name or a reused name on a new class is new"
 
   assert.equal(previousNameClassKeys.has(getNameClassKey(brandNewName)), false);
   assert.equal(previousNameClassKeys.has(getNameClassKey(sameNameNewClass)), false);
+});
+
+test("buildRankMap assigns 1-based ranks in comparator order", () => {
+  const players = [
+    ranked("Low", 800, 0),
+    ranked("High", 1000, 0),
+    ranked("Mid", 900, 0),
+  ];
+  const ranks = buildRankMap(players, compareAchievementPoints);
+
+  assert.equal(ranks.get(getPlayerKey(ranked("High", 1000, 0))), 1);
+  assert.equal(ranks.get(getPlayerKey(ranked("Mid", 900, 0))), 2);
+  assert.equal(ranks.get(getPlayerKey(ranked("Low", 800, 0))), 3);
+});
+
+test("compareAchievementPoints breaks ties on honorable kills, then on key", () => {
+  assert.ok(compareAchievementPoints(ranked("A", 1000, 0), ranked("B", 900, 0)) < 0);
+  assert.ok(compareAchievementPoints(ranked("A", 1000, 50), ranked("B", 1000, 10)) < 0);
+
+  const sameMetrics = compareAchievementPoints(
+    ranked("Bravo", 1000, 10, "Tauri"),
+    ranked("Alpha", 1000, 10, "Tauri")
+  );
+  assert.ok(sameMetrics > 0);
+});
+
+test("compareHonorableKills ranks by honorable kills first", () => {
+  assert.ok(compareHonorableKills(ranked("A", 0, 1000), ranked("B", 99999, 500)) < 0);
+  assert.ok(compareHonorableKills(ranked("A", 1000, 500), ranked("B", 200, 500)) < 0);
 });

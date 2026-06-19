@@ -244,4 +244,7 @@ module.exports = {
   generatePlayerSnapshot,
   getNameClassKey,
   getPlayerKey,
+  buildRankMap,
+  compareAchievementPoints,
+  compareHonorableKills,
 };

@@ -92,4 +92,31 @@ describe('LadderService rank movement', () => {
 
     expect(rows.every((row) => row.class === 2)).toBe(true);
   });
+
+  it('recomputes the honorable-kills rank delta within a class filter', () => {
+    const players = [
+      makePlayer({ name: 'A', class: 2, honorableKills: 1000, honorableKillsDelta: 0, honorableKillsRankDelta: 42 }),
+      makePlayer({ name: 'B', class: 2, honorableKills: 900, honorableKillsDelta: 200, honorableKillsRankDelta: 42 }),
+      makePlayer({ name: 'C', class: 2, honorableKills: 800, honorableKillsDelta: 0, honorableKillsRankDelta: 42 })
+    ];
+    const rows = collect(serviceWith(players).getHonorableKills(undefined, undefined, 2, '', 1, 100));
+
+    expect(rows.map((row) => row.name)).toEqual(['A', 'B', 'C']);
+    expect(Object.fromEntries(rows.map((row) => [row.name, row.honorableKillsRankDelta]))).toEqual({ A: 0, B: 1, C: -1 });
+  });
+});
+
+describe('LadderService pagination', () => {
+  it('returns the requested page slice in the unfiltered view', () => {
+    const service = serviceWith(cohortFixture());
+
+    expect(collect(service.getAchievements(undefined, undefined, undefined, '', 1, 2)).map((row) => row.name)).toEqual(['A', 'M']);
+    expect(collect(service.getAchievements(undefined, undefined, undefined, '', 2, 2)).map((row) => row.name)).toEqual(['B', 'C']);
+  });
+
+  it('paginates within a filtered cohort', () => {
+    const rows = collect(serviceWith(cohortFixture()).getAchievements(undefined, undefined, 2, '', 1, 2));
+
+    expect(rows.map((row) => row.name)).toEqual(['A', 'B']);
+  });
 });
