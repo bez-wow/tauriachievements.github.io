@@ -96,7 +96,6 @@ function computeStats(players: Player[]): ServerStats {
   const guildMap = new Map<string, number>();
   const realmMap = new Map<string, number>();
 
-  //comment
   let totalAP = 0;
   let maxAP = 0;
   let totalHK = 0;
@@ -236,7 +235,6 @@ export class StatsPageComponent {
       const ready = this.viewReady();
       if (!ready || !stats.totalPlayers) return;
 
-      // Defer one tick so *ngIf has rendered canvases into the DOM
       if (!this.renderPending) {
         this.renderPending = true;
         setTimeout(() => {

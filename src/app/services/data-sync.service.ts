@@ -36,9 +36,6 @@ export class DataSyncService {
     return this.players$.value;
   }
 
-  /**
-   * Main sync function - fetches characters from JSON files
-   */
   async syncData(): Promise<void> {
     try {
       this.updateProgress(true, 0, 1, 'Loading ladder data...');
@@ -56,9 +53,6 @@ export class DataSyncService {
     }
   }
 
-  /**
-   * Load players from the generated JSON snapshot
-   */
   private async loadPlayersFromSnapshot(): Promise<Player[]> {
     const snapshot = await firstValueFrom(this.http.get<PlayerSnapshot>('assets/data/players.snapshot.json'));
     if (!snapshot || !Array.isArray(snapshot.p) || !Array.isArray(snapshot.r) || !Array.isArray(snapshot.f)) {
@@ -70,9 +64,6 @@ export class DataSyncService {
       .filter((player): player is Player => player !== null);
   }
 
-  /**
-   * Update sync progress
-   */
   private updateProgress(isLoading: boolean, current: number, total: number, message: string): void {
     this.syncProgress$.next({ isLoading, current, total, message });
   }
@@ -126,7 +117,6 @@ export class DataSyncService {
       localStorage.removeItem('ladder_players_cache');
       localStorage.removeItem('ladder_last_sync');
     } catch {
-      // Ignore storage access failures; the app can still load from the shipped snapshot.
     }
   }
 }

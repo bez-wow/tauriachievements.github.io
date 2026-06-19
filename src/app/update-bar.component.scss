@@ -35,7 +35,6 @@
   align-items: center;
 }
 
-/* ---- Sidebar toggle (hamburger) ---- */
 .nav-toggle {
   display: inline-flex;
   width: 28px;
@@ -74,7 +73,6 @@
   background: currentColor;
 }
 
-/* ---- Sidebar drawer ---- */
 .nav-drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -210,7 +208,6 @@
   }
 }
 
-/* ---- Centered "Last updated" text ---- */
 .update-bar-text {
   justify-self: center;
   z-index: 1;

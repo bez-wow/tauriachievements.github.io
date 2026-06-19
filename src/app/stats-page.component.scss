@@ -10,8 +10,6 @@
   color: #e0e0e0;
 }
 
-// ─── Header ────────────────────────────────────────────────────────────────
-
 .stats-header {
   margin-bottom: 20px;
   text-align: center;
@@ -30,8 +28,6 @@
   font-size: 0.9rem;
 }
 
-// ─── Shared panel style ─────────────────────────────────────────────────────
-
 .stat-card,
 .chart-panel,
 .stats-feedback {
@@ -40,8 +36,6 @@
   background: linear-gradient(135deg, rgba(30, 30, 35, 0.86), rgba(15, 15, 20, 0.94));
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
-
-// ─── Feedback (loading / error) ─────────────────────────────────────────────
 
 .stats-feedback {
   min-height: 260px;
@@ -100,8 +94,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 }
-
-// ─── Top row: stat cards + faction doughnut ─────────────────────────────────
 
 .stats-top {
   display: grid;
@@ -168,8 +160,6 @@
   }
 }
 
-// ─── Realm pills ────────────────────────────────────────────────────────────
-
 .realm-pills {
   display: flex;
   flex-wrap: wrap;
@@ -207,8 +197,6 @@
     font-weight: 700;
   }
 }
-
-// ─── Charts grid ────────────────────────────────────────────────────────────
 
 .charts-grid {
   display: grid;
@@ -255,8 +243,6 @@
     height: 360px;
   }
 }
-
-// ─── Responsive ─────────────────────────────────────────────────────────────
 
 @media (max-width: 860px) {
   .stats-top {

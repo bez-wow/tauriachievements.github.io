@@ -285,7 +285,6 @@ function getCurrentSnapshotTimestamp() {
       candidates.push(modifiedAt.toISOString());
     }
   } catch {
-    // Ignore stat failures and fall back to the lastUpdated value or the current time.
   }
 
   if (candidates.length === 0) {

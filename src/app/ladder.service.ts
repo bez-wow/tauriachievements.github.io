@@ -39,9 +39,6 @@ export class LadderService {
 
   constructor(private dataSyncService: DataSyncService) {}
 
-  /**
-   * Get players sorted by achievement points with optional filters
-   */
   getAchievements(
     realm?: string,
     faction?: string,
@@ -53,9 +50,6 @@ export class LadderService {
     return this.getRankedPlayers('achievementPoints', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
   }
 
-  /**
-   * Get players sorted by honorable kills with optional filters
-   */
   getHonorableKills(
     realm?: string,
     faction?: string,
@@ -83,8 +77,6 @@ export class LadderService {
           ? indexes.achievementPoints
           : indexes.honorableKills;
 
-        // Without a population filter the precomputed global rank deltas are correct,
-        // so keep the fast early-exit page collection.
         if (!this.hasCohortFilter(realm, faction, playerClass)) {
           return this.collectPage(sortedPlayers, realm, faction, playerClass, searchTerm, pageNumber, pageSize);
         }
@@ -103,14 +95,6 @@ export class LadderService {
     );
   }
 
-  /**
-   * Collect a page for a filtered cohort, recomputing each player's rank movement
-   * relative to that cohort instead of the global ladder.
-   *
-   * The cohort is defined by the population filters (realm/faction/class) only;
-   * the search term merely narrows which cohort rows are shown, so a name lookup
-   * never collapses the cohort and erases the movement.
-   */
   private collectFilteredPage(
     sortedPlayers: IndexedLadderPlayer[],
     sort: LadderSort,
@@ -121,7 +105,6 @@ export class LadderService {
     pageNumber: number = 1,
     pageSize: number = 1000
   ): LadderAchievement[] {
-    // sortedPlayers is already in current-rank order, so filtering preserves that order.
     const cohort = sortedPlayers.filter(player =>
       this.matchesFilters(player, realm, faction, playerClass, undefined)
     );
@@ -143,12 +126,6 @@ export class LadderService {
     );
   }
 
-  /**
-   * Map each cohort member to its rank movement within the cohort:
-   * previousCohortRank - currentCohortRank. Previous metric values are
-   * reconstructed from the stored per-player deltas (current - delta), and
-   * brand-new characters are excluded from the previous ranking.
-   */
   private buildCohortRankDeltas(cohort: IndexedLadderPlayer[], sort: LadderSort): Map<string, number> {
     const currentRank = new Map<string, number>();
     cohort.forEach((player, index) => {
@@ -254,7 +231,6 @@ export class LadderService {
     const results: LadderAchievement[] = [];
     let matchIndex = 0;
 
-    // Walk the chosen sorted list once and stop as soon as the requested page is filled.
     for (const player of players) {
       if (!this.matchesFilters(player, realm, faction, playerClass, normalizedSearchTerm)) {
         continue;

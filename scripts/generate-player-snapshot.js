@@ -36,8 +36,6 @@ function generatePlayerSnapshot() {
   const realmIndex = new Map(realmList.map((realm, idx) => [realm, idx]));
   const factionIndex = new Map(factionList.map((faction, idx) => [faction, idx]));
   const previousPlayersByKey = new Map(previousRows.map((player) => [getPlayerKey(player), player]));
-  // Identify a character by name + class so a faction/race change (often bundled
-  // with a realm transfer) is not mistaken for a brand-new character.
   const previousNameClassKeys = new Set(previousRows.map((player) => getNameClassKey(player)));
   const currentAchievementRanks = buildRankMap(normalizedRows, compareAchievementPoints);
   const currentHonorableKillRanks = buildRankMap(normalizedRows, compareHonorableKills);
@@ -212,7 +210,6 @@ function getCurrentSnapshotTimestamp() {
       candidates.push(modifiedAt.toISOString());
     }
   } catch {
-    // Ignore stat failures and fall back to the lastUpdated value or the current time.
   }
 
   if (candidates.length === 0) {

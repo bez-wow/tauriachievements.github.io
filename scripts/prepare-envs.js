@@ -14,7 +14,6 @@ function ensureEnvFiles() {
     const targetPath = path.join(envDir, targetName);
 
     if (!fs.existsSync(templatePath)) {
-      // Skip if the template isn't present (keeps script safe for partial setups).
       continue;
     }
 
