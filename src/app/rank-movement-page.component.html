@@ -34,12 +34,18 @@
     [honorableKillSourceLimitOptions]="honorableKillSourceLimitOptions"
     [honorableKillSourceLimit]="honorableKillSourceLimit()"
     [honorableKillSourceLimitLabel]="selectedHonorableKillSourceLimitLabel"
+    [appearanceSourceLimitOptions]="appearanceSourceLimitOptions"
+    [appearanceSourceLimit]="appearanceSourceLimit()"
+    [appearanceSourceLimitLabel]="selectedAppearanceSourceLimitLabel"
     [achievementMovers]="achievementMovers()"
     [honorableKillMovers]="honorableKillMovers()"
+    [appearanceMovers]="appearanceMovers()"
     [achievementEmptyMessage]="achievementEmptyMessage()"
     [honorableKillEmptyMessage]="honorableKillEmptyMessage()"
+    [appearanceEmptyMessage]="appearanceEmptyMessage()"
     (achievementSourceLimitChange)="onAchievementSourceLimitSelection($event)"
-    (honorableKillSourceLimitChange)="onHonorableKillSourceLimitSelection($event)" />
+    (honorableKillSourceLimitChange)="onHonorableKillSourceLimitSelection($event)"
+    (appearanceSourceLimitChange)="onAppearanceSourceLimitSelection($event)" />
 </div>
 
 <ng-template #historyUnavailable>

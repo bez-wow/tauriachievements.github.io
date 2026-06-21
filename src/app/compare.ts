@@ -63,6 +63,7 @@ export function buildPlayerComparison(a: RankedLadderPlayer, b: RankedLadderPlay
     metricRow('Achievement Rank', a.achievementRank, b.achievementRank, 'lower'),
     metricRow('Honorable Kills', a.honorableKills, b.honorableKills, 'higher'),
     metricRow('Honorable Kill Rank', a.honorableKillRank, b.honorableKillRank, 'lower'),
+    metricRow('Appearances', a.appearanceCount, b.appearanceCount, 'higher'),
     infoRow(
       'Class',
       getClassName(a.class),

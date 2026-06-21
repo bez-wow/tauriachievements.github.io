@@ -13,6 +13,9 @@ export interface PlayerAchievement {
   honorableKills: number;
   honorableKillsDelta: number;
   honorableKillsRankDelta: number;
+  appearanceCount: number;
+  appearanceCountDelta: number;
+  appearanceRankDelta: number;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance'; 
 }

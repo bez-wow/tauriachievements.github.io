@@ -54,6 +54,14 @@ export class LeaderboardTableComponent {
     return this.currentSort === 'honorableKills' && player.honorableKillsRankDelta !== 0;
   }
 
+  showAppearanceDelta(player: LadderPlayerView): boolean {
+    return player.appearanceCountDelta !== 0;
+  }
+
+  showAppearanceRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'appearanceCount' && player.appearanceRankDelta !== 0;
+  }
+
   formatSignedValue(value: number): string {
     if (value > 0) {
       return `+${value.toLocaleString()}`;
@@ -74,12 +82,20 @@ export class LeaderboardTableComponent {
     return this.getDeltaClass(player.honorableKillsDelta);
   }
 
+  getAppearanceDeltaClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.appearanceCountDelta);
+  }
+
   getAchievementRankClass(player: LadderPlayerView): string {
     return this.getDeltaClass(player.achievementRankDelta);
   }
 
   getHonorableKillRankClass(player: LadderPlayerView): string {
     return this.getDeltaClass(player.honorableKillsRankDelta);
+  }
+
+  getAppearanceRankClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.appearanceRankDelta);
   }
 
   getAchievementRankLabel(player: LadderPlayerView): string {
@@ -90,12 +106,20 @@ export class LeaderboardTableComponent {
     return this.formatSignedValue(player.honorableKillsRankDelta);
   }
 
+  getAppearanceRankLabel(player: LadderPlayerView): string {
+    return this.formatSignedValue(player.appearanceRankDelta);
+  }
+
   getAchievementRankTitle(player: LadderPlayerView): string {
     return this.buildRankTitle(player.name, player.achievementRankDelta);
   }
 
   getHonorableKillRankTitle(player: LadderPlayerView): string {
     return this.buildRankTitle(player.name, player.honorableKillsRankDelta);
+  }
+
+  getAppearanceRankTitle(player: LadderPlayerView): string {
+    return this.buildRankTitle(player.name, player.appearanceRankDelta);
   }
 
   getPlayerLinkTitle(player: LadderPlayerView): string {

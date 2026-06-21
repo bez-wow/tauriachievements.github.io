@@ -83,6 +83,7 @@ function parsePlayersCsv(csvText) {
 
   const header = rows[0];
   const index = buildHeaderIndex(header);
+  const hasAppearanceCount = index.AppearanceCount !== undefined;
   const players = [];
 
   for (let i = 1; i < rows.length; i++) {
@@ -107,6 +108,8 @@ function parsePlayersCsv(csvText) {
       guild: getField(row, index, "Guild"),
       achievementPoints: toNumber(getField(row, index, "AchievementPoints")),
       honorableKills: toNumber(getField(row, index, "HonorableKills")),
+      appearanceCount: toNumber(getField(row, index, "AppearanceCount")),
+      hasAppearanceCount,
       faction: getField(row, index, "Faction") || "Horde",
     });
   }

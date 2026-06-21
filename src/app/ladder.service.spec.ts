@@ -18,6 +18,9 @@ function makePlayer(overrides: Partial<Player>): Player {
     honorableKills: 0,
     honorableKillsDelta: 0,
     honorableKillsRankDelta: 0,
+    appearanceCount: 0,
+    appearanceCountDelta: 0,
+    appearanceRankDelta: 0,
     isNewCharacter: false,
     faction: 'Alliance',
     ...overrides
@@ -103,6 +106,18 @@ describe('LadderService rank movement', () => {
 
     expect(rows.map((row) => row.name)).toEqual(['A', 'B', 'C']);
     expect(Object.fromEntries(rows.map((row) => [row.name, row.honorableKillsRankDelta]))).toEqual({ A: 0, B: 1, C: -1 });
+  });
+
+  it('sorts appearances and recomputes appearance rank delta within a class filter', () => {
+    const players = [
+      makePlayer({ name: 'A', class: 2, appearanceCount: 1000, appearanceCountDelta: 0, appearanceRankDelta: 42 }),
+      makePlayer({ name: 'B', class: 2, appearanceCount: 900, appearanceCountDelta: 200, appearanceRankDelta: 42 }),
+      makePlayer({ name: 'C', class: 2, appearanceCount: 800, appearanceCountDelta: 0, appearanceRankDelta: 42 })
+    ];
+    const rows = collect(serviceWith(players).getAppearances(undefined, undefined, 2, '', 1, 100));
+
+    expect(rows.map((row) => row.name)).toEqual(['A', 'B', 'C']);
+    expect(Object.fromEntries(rows.map((row) => [row.name, row.appearanceRankDelta]))).toEqual({ A: 0, B: 1, C: -1 });
   });
 });
 

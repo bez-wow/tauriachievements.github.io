@@ -16,6 +16,9 @@ function makePlayer(overrides: Partial<Player>): Player {
     honorableKills: 0,
     honorableKillsDelta: 0,
     honorableKillsRankDelta: 0,
+    appearanceCount: 0,
+    appearanceCountDelta: 0,
+    appearanceRankDelta: 0,
     isNewCharacter: false,
     faction: 'Horde',
     ...overrides

@@ -1,7 +1,10 @@
 <div class="wow-table-scroll">
   <table
     class="wow-table"
-    [ngClass]="{ 'sort-honorable-kills': currentSort === 'honorableKills' }">
+    [ngClass]="{
+      'sort-honorable-kills': currentSort === 'honorableKills',
+      'sort-appearances': currentSort === 'appearanceCount'
+    }">
     <thead>
       <tr>
         <th>#</th>
@@ -11,6 +14,7 @@
         <th>Guild</th>
         <th>Achievements</th>
         <th>Honorable kills</th>
+        <th>Appearances</th>
       </tr>
     </thead>
     <tbody>
@@ -111,6 +115,28 @@
                 [ngClass]="getHonorableKillRankClass(player)"
                 [title]="getHonorableKillRankTitle(player)">
                 {{ getHonorableKillRankLabel(player) }}
+              </span>
+            </span>
+          </span>
+        </td>
+        <td>
+          <span class="metric-inline">
+            <span class="metric-side metric-side-start">
+              <span
+                *ngIf="showAppearanceDelta(player)"
+                class="metric-delta"
+                [ngClass]="getAppearanceDeltaClass(player)">
+                {{ formatSignedValue(player.appearanceCountDelta) }}
+              </span>
+            </span>
+            <span class="metric-value">{{ player.appearanceCount | number }}</span>
+            <span class="metric-side metric-side-end">
+              <span
+                *ngIf="showAppearanceRank(player)"
+                class="metric-rank-pill"
+                [ngClass]="getAppearanceRankClass(player)"
+                [title]="getAppearanceRankTitle(player)">
+                {{ getAppearanceRankLabel(player) }}
               </span>
             </span>
           </span>

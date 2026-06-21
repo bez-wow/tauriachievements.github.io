@@ -6,10 +6,11 @@ const {
   buildRankMap,
   compareAchievementPoints,
   compareHonorableKills,
+  compareAppearances,
 } = require("./generate-player-snapshot");
 
-function ranked(name, achievementPoints, honorableKills, realm = "Tauri") {
-  return { name, realm, achievementPoints, honorableKills };
+function ranked(name, achievementPoints, honorableKills, realm = "Tauri", appearanceCount = 0) {
+  return { name, realm, achievementPoints, honorableKills, appearanceCount };
 }
 
 function player(overrides) {
@@ -92,4 +93,9 @@ test("compareAchievementPoints breaks ties on honorable kills, then on key", () 
 test("compareHonorableKills ranks by honorable kills first", () => {
   assert.ok(compareHonorableKills(ranked("A", 0, 1000), ranked("B", 99999, 500)) < 0);
   assert.ok(compareHonorableKills(ranked("A", 1000, 500), ranked("B", 200, 500)) < 0);
+});
+
+test("compareAppearances ranks by appearance count first", () => {
+  assert.ok(compareAppearances(ranked("A", 0, 0, "Tauri", 1000), ranked("B", 99999, 99999, "Tauri", 500)) < 0);
+  assert.ok(compareAppearances(ranked("A", 1000, 0, "Tauri", 500), ranked("B", 200, 99999, "Tauri", 500)) < 0);
 });

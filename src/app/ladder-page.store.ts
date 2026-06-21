@@ -124,16 +124,12 @@ export class LadderPageStore {
   }
 
   private getFilteredPlayers(state: LadderFilterState) {
-    const players$ = state.sort === 'achievementPoints'
-      ? this.ladderService.getAchievements(
-          state.realm,
-          state.faction,
-          state.playerClass,
-          state.search,
-          1,
-          state.pageSize
-        )
-      : this.ladderService.getHonorableKills(
+    const request = state.sort === 'achievementPoints'
+      ? this.ladderService.getAchievements.bind(this.ladderService)
+      : state.sort === 'honorableKills'
+        ? this.ladderService.getHonorableKills.bind(this.ladderService)
+        : this.ladderService.getAppearances.bind(this.ladderService);
+    const players$ = request(
           state.realm,
           state.faction,
           state.playerClass,

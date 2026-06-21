@@ -39,11 +39,16 @@ function generatePlayerSnapshot() {
   const previousNameClassKeys = new Set(previousRows.map((player) => getNameClassKey(player)));
   const currentAchievementRanks = buildRankMap(normalizedRows, compareAchievementPoints);
   const currentHonorableKillRanks = buildRankMap(normalizedRows, compareHonorableKills);
+  const currentAppearanceRanks = buildRankMap(normalizedRows, compareAppearances);
   const previousAchievementRanks = buildRankMap(previousRows, compareAchievementPoints);
   const previousHonorableKillRanks = buildRankMap(previousRows, compareHonorableKills);
+  const previousAppearanceRanks = buildRankMap(
+    previousRows.filter((player) => player.hasAppearanceCount),
+    compareAppearances
+  );
 
   const snapshot = {
-    v: 1,
+    v: 2,
     r: realmList,
     f: factionList,
     p: normalizedRows.map((player) => {
@@ -53,6 +58,9 @@ function generatePlayerSnapshot() {
       const previousAchievementRank = previousAchievementRanks.get(playerKey) ?? 0;
       const currentHonorableKillRank = currentHonorableKillRanks.get(playerKey) ?? 0;
       const previousHonorableKillRank = previousHonorableKillRanks.get(playerKey) ?? 0;
+      const currentAppearanceRank = currentAppearanceRanks.get(playerKey) ?? 0;
+      const previousAppearanceRank = previousAppearanceRanks.get(playerKey) ?? 0;
+      const canCompareAppearances = previousPlayer?.hasAppearanceCount === true;
 
       const serializedPlayer = [
         player.name,
@@ -68,11 +76,13 @@ function generatePlayerSnapshot() {
         previousAchievementRank && currentAchievementRank ? previousAchievementRank - currentAchievementRank : 0,
         previousPlayer ? player.honorableKills - previousPlayer.honorableKills : 0,
         previousHonorableKillRank && currentHonorableKillRank ? previousHonorableKillRank - currentHonorableKillRank : 0,
+        previousRows.length > 0 && !previousNameClassKeys.has(getNameClassKey(player)),
+        player.appearanceCount,
+        canCompareAppearances ? player.appearanceCount - previousPlayer.appearanceCount : 0,
+        canCompareAppearances && previousAppearanceRank && currentAppearanceRank
+          ? previousAppearanceRank - currentAppearanceRank
+          : 0,
       ];
-
-      if (previousRows.length > 0 && !previousNameClassKeys.has(getNameClassKey(player))) {
-        serializedPlayer.push(true);
-      }
 
       return serializedPlayer;
     }),
@@ -183,6 +193,22 @@ function compareHonorableKills(left, right) {
   return getPlayerKey(left).localeCompare(getPlayerKey(right));
 }
 
+function compareAppearances(left, right) {
+  if (right.appearanceCount !== left.appearanceCount) {
+    return right.appearanceCount - left.appearanceCount;
+  }
+
+  if (right.achievementPoints !== left.achievementPoints) {
+    return right.achievementPoints - left.achievementPoints;
+  }
+
+  if (right.honorableKills !== left.honorableKills) {
+    return right.honorableKills - left.honorableKills;
+  }
+
+  return getPlayerKey(left).localeCompare(getPlayerKey(right));
+}
+
 function getPlayerKey(player) {
   return `${player.realm}::${player.name}`;
 }
@@ -247,4 +273,5 @@ module.exports = {
   buildRankMap,
   compareAchievementPoints,
   compareHonorableKills,
+  compareAppearances,
 };

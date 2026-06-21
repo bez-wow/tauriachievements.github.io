@@ -17,6 +17,9 @@ export interface LadderAchievement {
   honorableKills: number;
   honorableKillsDelta: number;
   honorableKillsRankDelta: number;
+  appearanceCount: number;
+  appearanceCountDelta: number;
+  appearanceRankDelta: number;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';
 }
@@ -35,6 +38,7 @@ interface IndexedLadderPlayer {
 interface LadderIndexes {
   achievementPoints: IndexedLadderPlayer[];
   honorableKills: IndexedLadderPlayer[];
+  appearanceCount: IndexedLadderPlayer[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -64,6 +68,17 @@ export class LadderService {
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
     return this.getRankedPlayers('honorableKills', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
+  }
+
+  getAppearances(
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    searchTerm?: string,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): Observable<LadderAchievement[]> {
+    return this.getRankedPlayers('appearanceCount', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
   }
 
   getRankedPlayer(name: string, realm: string): Observable<RankedLadderPlayer | undefined> {
@@ -112,9 +127,7 @@ export class LadderService {
     return this.dataSyncService.getPlayers().pipe(
       map(players => {
         const indexes = this.getOrBuildIndexes(players);
-        const sortedPlayers = sort === 'achievementPoints'
-          ? indexes.achievementPoints
-          : indexes.honorableKills;
+        const sortedPlayers = indexes[sort];
 
         if (!this.hasCohortFilter(realm, faction, playerClass)) {
           return this.collectPage(sortedPlayers, realm, faction, playerClass, searchTerm, pageNumber, pageSize);
@@ -171,11 +184,7 @@ export class LadderService {
       currentRank.set(this.getPlayerKey(player.view), index + 1);
     });
 
-    const comparePrevious = sort === 'achievementPoints'
-      ? (left: IndexedLadderPlayer, right: IndexedLadderPlayer) =>
-          this.comparePreviousAchievementPlayers(left.view, right.view)
-      : (left: IndexedLadderPlayer, right: IndexedLadderPlayer) =>
-          this.comparePreviousHonorableKillPlayers(left.view, right.view);
+    const comparePrevious = this.getPreviousComparator(sort);
 
     const previousOrder = cohort
       .filter(player => !player.view.isNewCharacter)
@@ -198,9 +207,14 @@ export class LadderService {
   }
 
   private withFilteredRankDelta(view: LadderAchievement, sort: LadderSort, rankDelta: number): LadderAchievement {
-    return sort === 'achievementPoints'
-      ? { ...view, achievementRankDelta: rankDelta }
-      : { ...view, honorableKillsRankDelta: rankDelta };
+    switch (sort) {
+      case 'achievementPoints':
+        return { ...view, achievementRankDelta: rankDelta };
+      case 'honorableKills':
+        return { ...view, honorableKillsRankDelta: rankDelta };
+      case 'appearanceCount':
+        return { ...view, appearanceRankDelta: rankDelta };
+    }
   }
 
   private paginate<T>(items: T[], pageNumber: number, pageSize: number): T[] {
@@ -235,7 +249,8 @@ export class LadderService {
     const indexedPlayers = players.map(player => this.toIndexedLadderPlayer(player));
     const indexes: LadderIndexes = {
       achievementPoints: [...indexedPlayers].sort((a, b) => this.compareAchievementPlayers(a.view, b.view)),
-      honorableKills: [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view))
+      honorableKills: [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view)),
+      appearanceCount: [...indexedPlayers].sort((a, b) => this.compareAppearancePlayers(a.view, b.view))
     };
 
     this.indexedSource = players;
@@ -334,6 +349,9 @@ export class LadderService {
         honorableKills: player.honorableKills,
         honorableKillsDelta: player.honorableKillsDelta,
         honorableKillsRankDelta: player.honorableKillsRankDelta,
+        appearanceCount: player.appearanceCount,
+        appearanceCountDelta: player.appearanceCountDelta,
+        appearanceRankDelta: player.appearanceRankDelta,
         isNewCharacter: player.isNewCharacter,
         faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
       }
@@ -359,6 +377,22 @@ export class LadderService {
 
     if (right.achievementPoints !== left.achievementPoints) {
       return right.achievementPoints - left.achievementPoints;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private compareAppearancePlayers(left: LadderAchievement, right: LadderAchievement): number {
+    if (right.appearanceCount !== left.appearanceCount) {
+      return right.appearanceCount - left.appearanceCount;
+    }
+
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
+    }
+
+    if (right.honorableKills !== left.honorableKills) {
+      return right.honorableKills - left.honorableKills;
     }
 
     return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
@@ -394,6 +428,39 @@ export class LadderService {
     }
 
     return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private comparePreviousAppearancePlayers(left: LadderAchievement, right: LadderAchievement): number {
+    const leftAppearances = left.appearanceCount - left.appearanceCountDelta;
+    const rightAppearances = right.appearanceCount - right.appearanceCountDelta;
+    if (rightAppearances !== leftAppearances) {
+      return rightAppearances - leftAppearances;
+    }
+
+    const leftPoints = left.achievementPoints - left.achievementPointsDelta;
+    const rightPoints = right.achievementPoints - right.achievementPointsDelta;
+    if (rightPoints !== leftPoints) {
+      return rightPoints - leftPoints;
+    }
+
+    const leftKills = left.honorableKills - left.honorableKillsDelta;
+    const rightKills = right.honorableKills - right.honorableKillsDelta;
+    if (rightKills !== leftKills) {
+      return rightKills - leftKills;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private getPreviousComparator(sort: LadderSort): (left: IndexedLadderPlayer, right: IndexedLadderPlayer) => number {
+    switch (sort) {
+      case 'achievementPoints':
+        return (left, right) => this.comparePreviousAchievementPlayers(left.view, right.view);
+      case 'honorableKills':
+        return (left, right) => this.comparePreviousHonorableKillPlayers(left.view, right.view);
+      case 'appearanceCount':
+        return (left, right) => this.comparePreviousAppearancePlayers(left.view, right.view);
+    }
   }
 
   private getPlayerKey(player: LadderAchievement): string {

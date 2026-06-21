@@ -21,16 +21,18 @@ function generatePlayerHistorySnapshot() {
   const movers = {
     achievementPoints: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "achievementPoints"),
     honorableKills: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "honorableKills"),
+    appearanceCount: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "appearanceCount"),
   };
 
   const payload = {
-    v: 1,
+    v: 2,
     g: new Date().toISOString(),
     c: trackedKeys.size,
     s: snapshotSources.map((source) => source.timestamp),
     m: {
       a: movers.achievementPoints,
       h: movers.honorableKills,
+      p: movers.appearanceCount,
     },
   };
 
@@ -154,7 +156,11 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
     return [];
   }
 
-  const compareFn = sortMetric === "achievementPoints" ? compareAchievementPoints : compareHonorableKills;
+  const compareFn = sortMetric === "achievementPoints"
+    ? compareAchievementPoints
+    : sortMetric === "honorableKills"
+      ? compareHonorableKills
+      : compareAppearances;
   const currentRanks = buildRankMap(currentPlayers, compareFn);
   const previousRanks = buildRankMap(previousPlayers, compareFn);
   const previousPlayersByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
@@ -164,6 +170,10 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
     const playerKey = getPlayerKey(player);
     const previousPlayer = previousPlayersByKey.get(playerKey);
     if (!previousPlayer) {
+      continue;
+    }
+
+    if (sortMetric === "appearanceCount" && !previousPlayer.hasAppearanceCount) {
       continue;
     }
 
@@ -180,9 +190,14 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
     const currentHonorableKills = player.honorableKills;
     const achievementPointsDelta = currentAchievementPoints - previousAchievementPoints;
     const honorableKillsDelta = currentHonorableKills - previousHonorableKills;
+    const previousAppearanceCount = previousPlayer.hasAppearanceCount ? previousPlayer.appearanceCount : player.appearanceCount;
+    const currentAppearanceCount = player.appearanceCount;
+    const appearanceCountDelta = currentAppearanceCount - previousAppearanceCount;
     const metricDelta = sortMetric === "achievementPoints"
       ? achievementPointsDelta
-      : honorableKillsDelta;
+      : sortMetric === "honorableKills"
+        ? honorableKillsDelta
+        : appearanceCountDelta;
 
     if (metricDelta <= 0) {
       continue;
@@ -203,13 +218,17 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
       player.gender ?? 0,
       player.playerClass ?? 0,
       player.guild ?? "",
+      appearanceCountDelta,
+      previousAppearanceCount,
+      currentAppearanceCount,
     ]);
   }
 
   return movers
     .sort((left, right) => {
-      const leftMetricDelta = sortMetric === "achievementPoints" ? left[4] : left[5];
-      const rightMetricDelta = sortMetric === "achievementPoints" ? right[4] : right[5];
+      const metricDeltaIndex = sortMetric === "achievementPoints" ? 4 : sortMetric === "honorableKills" ? 5 : 14;
+      const leftMetricDelta = left[metricDeltaIndex];
+      const rightMetricDelta = right[metricDeltaIndex];
 
       if (rightMetricDelta !== leftMetricDelta) {
         return rightMetricDelta - leftMetricDelta;
@@ -257,6 +276,22 @@ function compareHonorableKills(left, right) {
 
   if (right.achievementPoints !== left.achievementPoints) {
     return right.achievementPoints - left.achievementPoints;
+  }
+
+  return getPlayerKey(left).localeCompare(getPlayerKey(right));
+}
+
+function compareAppearances(left, right) {
+  if (right.appearanceCount !== left.appearanceCount) {
+    return right.appearanceCount - left.appearanceCount;
+  }
+
+  if (right.achievementPoints !== left.achievementPoints) {
+    return right.achievementPoints - left.achievementPoints;
+  }
+
+  if (right.honorableKills !== left.honorableKills) {
+    return right.honorableKills - left.honorableKills;
   }
 
   return getPlayerKey(left).localeCompare(getPlayerKey(right));
@@ -317,4 +352,6 @@ if (require.main === module) {
 
 module.exports = {
   generatePlayerHistorySnapshot,
+  computeTopMoversForSnapshots,
+  compareAppearances,
 };

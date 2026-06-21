@@ -17,6 +17,9 @@ function achievement(overrides: Partial<LadderAchievement> = {}): LadderAchievem
     honorableKills: 329412,
     honorableKillsDelta: 0,
     honorableKillsRankDelta: 0,
+    appearanceCount: 1234,
+    appearanceCountDelta: 0,
+    appearanceRankDelta: 0,
     isNewCharacter: false,
     faction: 'Alliance',
     ...overrides
@@ -59,6 +62,16 @@ describe('mapLadderPlayersToView', () => {
   it('maps the class id to the class icon key as a string', () => {
     const [view] = mapLadderPlayersToView([achievement({ class: 11 })], '');
     expect(view.classIcon).toBe('11');
+  });
+
+  it('maps appearance totals and movement', () => {
+    const [view] = mapLadderPlayersToView([
+      achievement({ appearanceCount: 1234, appearanceCountDelta: 12, appearanceRankDelta: 3 })
+    ], '');
+
+    expect(view.appearanceCount).toBe(1234);
+    expect(view.appearanceCountDelta).toBe(12);
+    expect(view.appearanceRankDelta).toBe(3);
   });
 
   it('defaults rare-achievement counts to zero when no summary is provided', () => {

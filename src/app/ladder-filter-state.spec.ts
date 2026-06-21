@@ -62,6 +62,10 @@ describe('parseLadderFilterState', () => {
     expect(parseLadderFilterState(paramMap({ pageSize: '1000' })).pageSize).toBe(1000);
     expect(parseLadderFilterState(paramMap({ pageSize: '250' })).pageSize).toBe(DEFAULT_LADDER_FILTER_STATE.pageSize);
   });
+
+  it('accepts appearances as a sort metric', () => {
+    expect(parseLadderFilterState(paramMap({ sort: 'appearanceCount' })).sort).toBe('appearanceCount');
+  });
 });
 
 describe('toLadderQueryParams', () => {
@@ -113,6 +117,13 @@ describe('toLadderQueryParams', () => {
       pageSize: 500,
       search: 'Larahh'
     });
+  });
+
+  it('emits the appearances sort in query params', () => {
+    expect(toLadderQueryParams({
+      ...DEFAULT_LADDER_FILTER_STATE,
+      sort: 'appearanceCount'
+    })['sort']).toBe('appearanceCount');
   });
 });
 

@@ -40,7 +40,8 @@ export class LadderHistoryService {
       trackedPlayerCount: snapshot.c ?? 0,
       movers: {
         achievementPoints: (snapshot.m?.a ?? []).map((mover) => this.deserializeMover(mover)),
-        honorableKills: (snapshot.m?.h ?? []).map((mover) => this.deserializeMover(mover))
+        honorableKills: (snapshot.m?.h ?? []).map((mover) => this.deserializeMover(mover)),
+        appearanceCount: (snapshot.m?.p ?? []).map((mover) => this.deserializeMover(mover))
       }
     };
   }
@@ -60,7 +61,10 @@ export class LadderHistoryService {
       race,
       gender,
       classId,
-      guild
+      guild,
+      appearanceCountDelta = 0,
+      previousAppearanceCount = 0,
+      currentAppearanceCount = 0
     ] = mover;
     const { name, realm } = splitLadderHistoryPlayerKey(playerKey);
 
@@ -80,7 +84,10 @@ export class LadderHistoryService {
       previousAchievementPoints,
       currentAchievementPoints,
       previousHonorableKills,
-      currentHonorableKills
+      currentHonorableKills,
+      appearanceCountDelta,
+      previousAppearanceCount,
+      currentAppearanceCount
     };
   }
 

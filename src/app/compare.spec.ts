@@ -16,6 +16,9 @@ function ranked(overrides: Partial<RankedLadderPlayer> = {}): RankedLadderPlayer
     honorableKills: 329412,
     honorableKillsDelta: 0,
     honorableKillsRankDelta: 0,
+    appearanceCount: 0,
+    appearanceCountDelta: 0,
+    appearanceRankDelta: 0,
     isNewCharacter: false,
     faction: 'Alliance',
     achievementRank: 1,
@@ -75,6 +78,16 @@ describe('buildPlayerComparison', () => {
     );
 
     expect(metric(result, 'Honorable Kills').outcome).toBe('tie');
+  });
+
+  it('compares appearance totals as a higher-is-better metric', () => {
+    const result = buildPlayerComparison(
+      ranked({ appearanceCount: 2849 }),
+      ranked({ appearanceCount: 1932 })
+    );
+
+    expect(metric(result, 'Appearances').outcome).toBe('a');
+    expect(metric(result, 'Appearances').difference).toBe(917);
   });
 
   it('shows the absolute difference between metric values', () => {

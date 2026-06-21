@@ -19,11 +19,14 @@ export type SerializedPlayerRecord = [
   achievementRankDelta?: number,
   honorableKillsDelta?: number,
   honorableKillsRankDelta?: number,
-  isNewCharacter?: boolean
+  isNewCharacter?: boolean,
+  appearanceCount?: number,
+  appearanceCountDelta?: number,
+  appearanceRankDelta?: number
 ];
 
 export interface PlayerSnapshot {
-  v: 1;
+  v: 1 | 2;
   r: string[];
   f: string[];
   p: SerializedPlayerRecord[];
@@ -42,6 +45,9 @@ export interface Player {
   honorableKills: number;
   honorableKillsDelta: number;
   honorableKillsRankDelta: number;
+  appearanceCount: number;
+  appearanceCountDelta: number;
+  appearanceRankDelta: number;
   isNewCharacter: boolean;
   faction: string;
 }

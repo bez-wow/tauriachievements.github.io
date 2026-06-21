@@ -18,7 +18,8 @@ export const PAGE_SIZE_OPTIONS = [100, 500, 1000] as const;
 
 export const SORT_OPTIONS: ReadonlyArray<LadderSelectOption<LadderSort>> = [
   { value: 'achievementPoints', label: 'Achievements' },
-  { value: 'honorableKills', label: 'Honorable Kills' }
+  { value: 'honorableKills', label: 'Honorable Kills' },
+  { value: 'appearanceCount', label: 'Appearances' }
 ];
 
 export const REALM_OPTIONS: ReadonlyArray<LadderSelectOption<string | undefined>> = [

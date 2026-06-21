@@ -4,8 +4,7 @@
 
 .wow-table-scroll {
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
 }
 
 .wow-table {
@@ -61,7 +60,8 @@
     z-index: 10;
 
     &:nth-child(6),
-    &:nth-child(7) {
+    &:nth-child(7),
+    &:nth-child(8) {
       text-align: center;
     }
   }
@@ -86,7 +86,8 @@
     }
 
     &:nth-child(6),
-    &:nth-child(7) {
+    &:nth-child(7),
+    &:nth-child(8) {
       text-align: center;
       font-weight: 500;
     }
@@ -446,6 +447,11 @@
 .guild-name {
   color: #e0e0e0;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
 
   &.clickable {
     cursor: pointer;
@@ -481,7 +487,7 @@
 
 .metric-inline {
   display: inline-grid;
-  grid-template-columns: 72px max-content 72px;
+  grid-template-columns: 56px max-content 56px;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -594,6 +600,11 @@
     display: none;
   }
 
+  .wow-table th:nth-child(8),
+  .wow-table td:nth-child(8) {
+    display: none;
+  }
+
   .wow-table.sort-honorable-kills th:nth-child(6),
   .wow-table.sort-honorable-kills td:nth-child(6) {
     display: none;
@@ -601,6 +612,16 @@
 
   .wow-table.sort-honorable-kills th:nth-child(7),
   .wow-table.sort-honorable-kills td:nth-child(7) {
+    display: table-cell;
+  }
+
+  .wow-table.sort-appearances th:nth-child(6),
+  .wow-table.sort-appearances td:nth-child(6) {
+    display: none;
+  }
+
+  .wow-table.sort-appearances th:nth-child(8),
+  .wow-table.sort-appearances td:nth-child(8) {
     display: table-cell;
   }
 

@@ -12,17 +12,21 @@ export type SerializedLadderHistoryMover = [
   race: number,
   gender: number,
   classId: number,
-  guild?: string
+  guild?: string,
+  appearanceCountDelta?: number,
+  previousAppearanceCount?: number,
+  currentAppearanceCount?: number
 ];
 
 export interface SerializedLadderHistorySnapshot {
-  v: 1;
+  v: 1 | 2;
   g: string;
   c: number;
   s: string[];
   m: {
     a: SerializedLadderHistoryMover[];
     h: SerializedLadderHistoryMover[];
+    p?: SerializedLadderHistoryMover[];
   };
 }
 
@@ -43,6 +47,9 @@ export interface LadderHistoryMoverView {
   currentAchievementPoints: number;
   previousHonorableKills: number;
   currentHonorableKills: number;
+  appearanceCountDelta: number;
+  previousAppearanceCount: number;
+  currentAppearanceCount: number;
 }
 
 export interface LadderHistoryData {
@@ -52,5 +59,6 @@ export interface LadderHistoryData {
   movers: {
     achievementPoints: LadderHistoryMoverView[];
     honorableKills: LadderHistoryMoverView[];
+    appearanceCount: LadderHistoryMoverView[];
   };
 }
