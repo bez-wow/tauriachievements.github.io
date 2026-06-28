@@ -22,7 +22,8 @@ export type SerializedPlayerRecord = [
   isNewCharacter?: boolean,
   appearanceCount?: number,
   appearanceCountDelta?: number,
-  appearanceRankDelta?: number
+  appearanceRankDelta?: number,
+  characterAge?: string
 ];
 
 export interface PlayerSnapshot {
@@ -48,6 +49,7 @@ export interface Player {
   appearanceCount: number;
   appearanceCountDelta: number;
   appearanceRankDelta: number;
+  characterAge: string;
   isNewCharacter: boolean;
   faction: string;
 }

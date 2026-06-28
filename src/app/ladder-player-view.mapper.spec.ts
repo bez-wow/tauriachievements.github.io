@@ -20,6 +20,7 @@ function achievement(overrides: Partial<LadderAchievement> = {}): LadderAchievem
     appearanceCount: 1234,
     appearanceCountDelta: 0,
     appearanceRankDelta: 0,
+    characterAge: '14 years 6 months 21 days',
     isNewCharacter: false,
     faction: 'Alliance',
     ...overrides

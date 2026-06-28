@@ -86,7 +86,8 @@ export class DataSyncService {
       isNewCharacter = false,
       appearanceCount = 0,
       appearanceCountDelta = 0,
-      appearanceRankDelta = 0
+      appearanceRankDelta = 0,
+      characterAge = ''
     ] = row;
 
     const realm = snapshot.r[realmIndex];
@@ -110,6 +111,7 @@ export class DataSyncService {
       appearanceCount,
       appearanceCountDelta,
       appearanceRankDelta,
+      characterAge,
       isNewCharacter,
       faction: snapshot.f[factionIndex] ?? 'Horde'
     };

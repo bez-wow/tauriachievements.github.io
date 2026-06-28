@@ -19,6 +19,7 @@ function makePlayer(overrides: Partial<Player>): Player {
     appearanceCount: 0,
     appearanceCountDelta: 0,
     appearanceRankDelta: 0,
+    characterAge: '',
     isNewCharacter: false,
     faction: 'Horde',
     ...overrides

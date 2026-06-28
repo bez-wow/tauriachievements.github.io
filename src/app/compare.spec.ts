@@ -19,6 +19,7 @@ function ranked(overrides: Partial<RankedLadderPlayer> = {}): RankedLadderPlayer
     appearanceCount: 0,
     appearanceCountDelta: 0,
     appearanceRankDelta: 0,
+    characterAge: '',
     isNewCharacter: false,
     faction: 'Alliance',
     achievementRank: 1,

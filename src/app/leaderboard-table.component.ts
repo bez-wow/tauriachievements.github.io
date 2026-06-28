@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
+import { formatCharacterAge } from './character-age';
 import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 
 @Component({
@@ -123,13 +124,24 @@ export class LeaderboardTableComponent {
   }
 
   getPlayerLinkTitle(player: LadderPlayerView): string {
+    const titleLines: string[] = [];
+
     if (player.isNewRareAchievementCharacter && player.rareAchievementSummaryLabel) {
-      return `New rare character found\n${player.rareAchievementSummaryLabel}`;
+      titleLines.push('New rare character found', player.rareAchievementSummaryLabel);
+    } else if (player.rareAchievementSummaryLabel) {
+      titleLines.push(player.rareAchievementSummaryLabel);
     }
 
-    return player.rareAchievementSummaryLabel
-      ? player.rareAchievementSummaryLabel
-      : `Open ${player.name} on Tauri armory`;
+    const characterAge = this.getCharacterAge(player);
+    if (characterAge) {
+      titleLines.push(`Character Age: ${characterAge}`);
+    }
+
+    return titleLines.join('\n');
+  }
+
+  getCharacterAge(player: LadderPlayerView): string {
+    return formatCharacterAge(player.characterAge);
   }
 
   private getDeltaClass(value: number): string {

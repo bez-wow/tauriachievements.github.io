@@ -20,6 +20,7 @@ export interface LadderAchievement {
   appearanceCount: number;
   appearanceCountDelta: number;
   appearanceRankDelta: number;
+  characterAge: string;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';
 }
@@ -352,6 +353,7 @@ export class LadderService {
         appearanceCount: player.appearanceCount,
         appearanceCountDelta: player.appearanceCountDelta,
         appearanceRankDelta: player.appearanceRankDelta,
+        characterAge: player.characterAge,
         isNewCharacter: player.isNewCharacter,
         faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
       }

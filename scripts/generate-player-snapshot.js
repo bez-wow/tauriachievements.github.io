@@ -82,6 +82,7 @@ function generatePlayerSnapshot() {
         canCompareAppearances && previousAppearanceRank && currentAppearanceRank
           ? previousAppearanceRank - currentAppearanceRank
           : 0,
+        player.characterAge ?? "",
       ];
 
       return serializedPlayer;

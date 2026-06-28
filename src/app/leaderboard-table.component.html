@@ -22,6 +22,7 @@
         <td>{{ player.rank }}</td>
         <td>
           <div class="player-identity">
+            <ng-container *ngIf="getPlayerLinkTitle(player) as playerLinkTitle">
             <a
               class="player-name clickable"
               [class.player-name--gladiator-title]="player.gladiatorTitleCount > 0"
@@ -33,7 +34,7 @@
               [href]="getArmoryUrl(player.name, player.realm)"
               target="_blank"
               rel="noopener noreferrer"
-              [title]="getPlayerLinkTitle(player)">
+              [attr.aria-label]="playerLinkTitle">
               <span
                 *ngIf="player.ratedBattlegroundHeroCount > 0"
                 class="player-name-rbg-sigil"
@@ -45,6 +46,8 @@
                 <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
               </ng-container>
             </a>
+            <span class="player-link-tooltip" aria-hidden="true">{{ playerLinkTitle }}</span>
+            </ng-container>
           </div>
         </td>
         <td>

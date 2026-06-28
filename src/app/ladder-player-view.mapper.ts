@@ -35,6 +35,7 @@ export function mapLadderPlayersToView(
       appearanceCount: player.appearanceCount,
       appearanceCountDelta: player.appearanceCountDelta,
       appearanceRankDelta: player.appearanceRankDelta,
+      characterAge: player.characterAge,
       isNewCharacter: player.isNewCharacter,
       faction: player.faction,
       nameParts: buildHighlightParts(player.name, normalizedSearchQuery),

@@ -110,6 +110,7 @@ function parsePlayersCsv(csvText) {
       honorableKills: toNumber(getField(row, index, "HonorableKills")),
       appearanceCount: toNumber(getField(row, index, "AppearanceCount")),
       hasAppearanceCount,
+      characterAge: getField(row, index, "CharacterAge"),
       faction: getField(row, index, "Faction") || "Horde",
     });
   }
