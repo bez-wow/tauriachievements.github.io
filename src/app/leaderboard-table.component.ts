@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, Input } from '@angular/core';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { formatCharacterAge } from './character-age';
@@ -16,6 +16,10 @@ import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 export class LeaderboardTableComponent {
   @Input() players: LadderPlayerView[] = [];
   @Input() currentSort: LadderSort = 'achievementPoints';
+
+  activePlayerTooltip = '';
+  playerTooltipLeft = 0;
+  playerTooltipTop = 0;
 
   readonly getClassIconPath = getClassIconPath;
   readonly getArmoryUrl = getArmoryUrl;
@@ -144,6 +148,29 @@ export class LeaderboardTableComponent {
     return formatCharacterAge(player.characterAge);
   }
 
+  showPlayerTooltip(event: MouseEvent | FocusEvent, tooltip: string): void {
+    if (!tooltip) {
+      return;
+    }
+
+    this.activePlayerTooltip = tooltip;
+    this.positionPlayerTooltip(event.currentTarget as HTMLElement | null, tooltip);
+  }
+
+  movePlayerTooltip(event: MouseEvent): void {
+    if (!this.activePlayerTooltip) {
+      return;
+    }
+
+    this.positionPlayerTooltip(event.currentTarget as HTMLElement | null, this.activePlayerTooltip);
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  hidePlayerTooltip(): void {
+    this.activePlayerTooltip = '';
+  }
+
   private getDeltaClass(value: number): string {
     if (value > 0) {
       return 'positive';
@@ -173,5 +200,40 @@ export class LeaderboardTableComponent {
     }
 
     return `${playerName} had no rank change`;
+  }
+
+  private positionPlayerTooltip(anchor: HTMLElement | null, tooltip: string): void {
+    if (!anchor) {
+      return;
+    }
+
+    const viewportPadding = 8;
+    const anchorGap = 6;
+    const anchorRect = anchor.getBoundingClientRect();
+    const tooltipSize = this.estimateTooltipSize(tooltip);
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const maxLeft = viewportWidth - tooltipSize.width - viewportPadding;
+    const preferredTop = anchorRect.bottom + anchorGap;
+    const fallbackTop = anchorRect.top - tooltipSize.height - anchorGap;
+
+    this.playerTooltipLeft = Math.max(
+      viewportPadding,
+      Math.min(anchorRect.left, Math.max(viewportPadding, maxLeft))
+    );
+
+    this.playerTooltipTop = preferredTop + tooltipSize.height <= viewportHeight - viewportPadding
+      ? preferredTop
+      : Math.max(viewportPadding, fallbackTop);
+  }
+
+  private estimateTooltipSize(tooltip: string): { width: number; height: number } {
+    const lines = tooltip.split('\n');
+    const longestLineLength = Math.max(...lines.map((line) => line.length), 1);
+
+    return {
+      width: Math.min(420, Math.max(80, longestLineLength * 7 + 12)),
+      height: lines.length * 16 + 8
+    };
   }
 }

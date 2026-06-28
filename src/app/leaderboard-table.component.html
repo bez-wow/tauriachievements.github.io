@@ -34,7 +34,12 @@
               [href]="getArmoryUrl(player.name, player.realm)"
               target="_blank"
               rel="noopener noreferrer"
-              [attr.aria-label]="playerLinkTitle">
+              [attr.aria-label]="playerLinkTitle"
+              (mouseenter)="showPlayerTooltip($event, playerLinkTitle)"
+              (mousemove)="movePlayerTooltip($event)"
+              (mouseleave)="hidePlayerTooltip()"
+              (focus)="showPlayerTooltip($event, playerLinkTitle)"
+              (blur)="hidePlayerTooltip()">
               <span
                 *ngIf="player.ratedBattlegroundHeroCount > 0"
                 class="player-name-rbg-sigil"
@@ -46,7 +51,6 @@
                 <span [class.match-highlight]="part.isMatch">{{ part.text }}</span>
               </ng-container>
             </a>
-            <span class="player-link-tooltip" aria-hidden="true">{{ playerLinkTitle }}</span>
             </ng-container>
           </div>
         </td>
@@ -147,4 +151,13 @@
       </tr>
     </tbody>
   </table>
+</div>
+
+<div
+  *ngIf="activePlayerTooltip"
+  class="player-link-tooltip"
+  [style.left.px]="playerTooltipLeft"
+  [style.top.px]="playerTooltipTop"
+  aria-hidden="true">
+  {{ activePlayerTooltip }}
 </div>
