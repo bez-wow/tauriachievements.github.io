@@ -176,7 +176,7 @@
 }
 
 .player-identity:hover .player-link-tooltip,
-.player-identity:focus-within .player-link-tooltip {
+.player-name:focus-visible + .player-link-tooltip {
   visibility: visible;
   opacity: 1;
 }
