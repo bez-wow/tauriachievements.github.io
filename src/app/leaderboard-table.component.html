@@ -158,6 +158,5 @@
   class="player-link-tooltip"
   [style.left.px]="playerTooltipLeft"
   [style.top.px]="playerTooltipTop"
-  aria-hidden="true">
-  {{ activePlayerTooltip }}
-</div>
+  [textContent]="activePlayerTooltip"
+  aria-hidden="true"></div>
