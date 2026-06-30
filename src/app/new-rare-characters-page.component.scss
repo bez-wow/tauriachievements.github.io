@@ -182,12 +182,6 @@
     vertical-align: middle;
     font-size: 0.9rem;
 
-    &:nth-child(3) {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
     &:nth-child(7) {
       text-align: center;
       font-weight: 700;
@@ -201,10 +195,16 @@
   }
 }
 
+.character-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: middle;
+}
+
 .icon {
   width: 20px;
   height: 20px;
-  margin-right: 6px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 3px;
   display: inline-block;

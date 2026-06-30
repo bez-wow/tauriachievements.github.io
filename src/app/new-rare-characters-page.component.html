@@ -55,18 +55,20 @@
             </div>
           </td>
           <td>
-            <img
-              [src]="character.raceIcon"
-              [alt]="'Race ' + character.race + '-' + character.gender"
-              class="icon race-icon"
-              loading="lazy"
-              (error)="onImageError($event)" />
-            <img
-              [src]="character.classIcon"
-              [alt]="'Class ' + character.classId"
-              class="icon class-icon"
-              loading="lazy"
-              (error)="onImageError($event)" />
+            <div class="character-icons">
+              <img
+                [src]="character.raceIcon"
+                [alt]="'Race ' + character.race + '-' + character.gender"
+                class="icon race-icon"
+                loading="lazy"
+                (error)="onImageError($event)" />
+              <img
+                [src]="character.classIcon"
+                [alt]="'Class ' + character.classId"
+                class="icon class-icon"
+                loading="lazy"
+                (error)="onImageError($event)" />
+            </div>
           </td>
           <td>{{ character.realm }}</td>
           <td>
