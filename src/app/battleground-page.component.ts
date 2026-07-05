@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
@@ -10,12 +10,34 @@ import {
   BattlegroundHourlyChartPoint,
   BattlegroundQueueHour,
   BattlegroundQueueRecommendation,
+  NormalizedBattleground,
   computeBattlegroundStats,
+  formatDuration,
   getCompletedBattlegroundDateBounds,
   normalizeBattlegrounds
 } from './battleground-stats';
 import { BattlegroundCollectorState, BattlegroundsService } from './battlegrounds.service';
 import { UpdateBarComponent } from './update-bar.component';
+
+interface BattlegroundStartEntry {
+  id: string;
+  startLabel: string;
+  durationLabel: string;
+  durationKnown: boolean;
+}
+
+interface BattlegroundStartGroup {
+  label: string;
+  count: number;
+  entries: BattlegroundStartEntry[];
+}
+
+interface BattlegroundStartDetails {
+  name: string;
+  selectedDayLabel: string;
+  total: number;
+  groups: BattlegroundStartGroup[];
+}
 
 @Component({
   selector: 'app-battleground-page',
@@ -32,6 +54,7 @@ export class BattlegroundPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedDay = signal('');
+  readonly selectedBattlegroundName = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
 
@@ -43,6 +66,20 @@ export class BattlegroundPageComponent implements OnInit {
   readonly stats = computed(() =>
     computeBattlegroundStats(this.battlegrounds(), this.selectedDay())
   );
+  readonly selectedBattlegroundDetails = computed(() => {
+    const name = this.selectedBattlegroundName();
+    if (!name) {
+      return undefined;
+    }
+
+    const groups = this.buildBattlegroundStartGroups(name);
+    return {
+      name,
+      selectedDayLabel: this.stats().selectedDayLabel,
+      total: groups.reduce((total, group) => total + group.count, 0),
+      groups
+    };
+  });
 
   ngOnInit(): void {
     this.loadBattlegrounds();
@@ -54,6 +91,8 @@ export class BattlegroundPageComponent implements OnInit {
 
   setSelectedDay(value: string): void {
     const bounds = this.dateBounds();
+    this.closeBattlegroundStarts();
+
     if (!bounds) {
       this.selectedDay.set('');
       return;
@@ -65,6 +104,14 @@ export class BattlegroundPageComponent implements OnInit {
     }
 
     this.selectedDay.set(value);
+  }
+
+  openBattlegroundStarts(row: BattlegroundDayRow): void {
+    this.selectedBattlegroundName.set(row.name);
+  }
+
+  closeBattlegroundStarts(): void {
+    this.selectedBattlegroundName.set(undefined);
   }
 
   trackBattlegroundRow(_index: number, row: BattlegroundDayRow): string {
@@ -93,6 +140,24 @@ export class BattlegroundPageComponent implements OnInit {
 
   trackDurationGroup(_index: number, group: BattlegroundDurationGroup): string {
     return group.label;
+  }
+
+  trackStartGroup(_index: number, group: BattlegroundStartGroup): string {
+    return group.label;
+  }
+
+  trackStartEntry(_index: number, entry: BattlegroundStartEntry): string {
+    return entry.id;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: Event): void {
+    if (!this.selectedBattlegroundName()) {
+      return;
+    }
+
+    event.preventDefault();
+    this.closeBattlegroundStarts();
   }
 
   private loadBattlegrounds(): void {
@@ -177,5 +242,54 @@ export class BattlegroundPageComponent implements OnInit {
     } catch {
       return 'Local time';
     }
+  }
+
+  private buildBattlegroundStartGroups(name: string): BattlegroundStartGroup[] {
+    const selectedDay = this.selectedDay();
+    const records = this.battlegrounds()
+      .filter((record) => record.name === name && record.date === selectedDay)
+      .sort((left, right) => this.compareStartRecords(left, right));
+    const groups = new Map<string, BattlegroundStartGroup>();
+
+    records.forEach((record, index) => {
+      const groupLabel = record.startHour === undefined
+        ? 'Unknown time'
+        : `${record.startHour.toString().padStart(2, '0')}:00`;
+      const group = groups.get(groupLabel) ?? {
+        label: groupLabel,
+        count: 0,
+        entries: []
+      };
+
+      group.count++;
+      group.entries.push({
+        id: `${record.id ?? 'record'}-${record.startTime || index}-${index}`,
+        startLabel: this.formatStartLabel(record),
+        durationLabel: record.durationMs === undefined ? 'Unknown duration' : formatDuration(record.durationMs),
+        durationKnown: record.durationMs !== undefined
+      });
+      groups.set(groupLabel, group);
+    });
+
+    return [...groups.values()];
+  }
+
+  private compareStartRecords(left: NormalizedBattleground, right: NormalizedBattleground): number {
+    const leftMinute = left.startMinuteOfDay ?? Number.MAX_SAFE_INTEGER;
+    const rightMinute = right.startMinuteOfDay ?? Number.MAX_SAFE_INTEGER;
+
+    return leftMinute - rightMinute
+      || (left.startTimestamp ?? 0) - (right.startTimestamp ?? 0)
+      || (left.id ?? 0) - (right.id ?? 0);
+  }
+
+  private formatStartLabel(record: NormalizedBattleground): string {
+    if (record.startMinuteOfDay !== undefined) {
+      const hour = Math.floor(record.startMinuteOfDay / 60);
+      const minute = record.startMinuteOfDay % 60;
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    }
+
+    return record.startTime || 'Unknown start';
   }
 }

@@ -39,14 +39,17 @@
               <small>{{ group.totalStarts | number }} starts</small>
             </div>
             <div class="bg-count-list">
-              <div
+              <button
+                type="button"
                 class="bg-count-row"
+                [attr.aria-label]="'View start times for ' + row.name + ' on ' + stats().selectedDayLabel"
+                (click)="openBattlegroundStarts(row)"
                 *ngFor="let row of group.rows; trackBy: trackBattlegroundRow">
                 <div class="bg-count-main">
                   <span>{{ row.name }}</span>
                   <strong>{{ row.total | number }} starts</strong>
                 </div>
-              </div>
+              </button>
             </div>
           </section>
         </div>
@@ -191,5 +194,61 @@
     </section>
   </ng-container>
 </main>
+
+<div
+  class="bg-start-modal-backdrop"
+  *ngIf="selectedBattlegroundDetails() as detail"
+  (click)="closeBattlegroundStarts()">
+  <section
+    class="bg-start-modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="detail.name + ' start times on ' + detail.selectedDayLabel"
+    (click)="$event.stopPropagation()">
+    <header class="bg-start-modal-header">
+      <div>
+        <span class="metric-label">Start times</span>
+        <h2>{{ detail.name }}</h2>
+        <p>{{ detail.selectedDayLabel }} · {{ detail.total | number }} starts</p>
+      </div>
+
+      <button
+        type="button"
+        class="bg-start-modal-close"
+        aria-label="Close start times"
+        (click)="closeBattlegroundStarts()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="bg-start-modal-body">
+      <div class="empty-state" *ngIf="detail.groups.length === 0">
+        No starts for this battleground on the selected day.
+      </div>
+
+      <div class="bg-start-groups" *ngIf="detail.groups.length > 0">
+        <section
+          class="bg-start-group"
+          *ngFor="let group of detail.groups; trackBy: trackStartGroup">
+          <div class="bg-start-group-heading">
+            <span>{{ group.label }}</span>
+            <small>{{ group.count | number }} starts</small>
+          </div>
+
+          <div class="bg-start-list">
+            <div
+              class="bg-start-row"
+              *ngFor="let entry of group.entries; trackBy: trackStartEntry">
+              <strong>{{ entry.startLabel }}</strong>
+              <span [class.bg-start-duration--unknown]="!entry.durationKnown">{{ entry.durationLabel }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+</div>
 
 <app-back-to-top-button />
