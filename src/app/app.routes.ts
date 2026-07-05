@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AchievementLadderComponent } from './ladder.component';
+import { BattlegroundPageComponent } from './battleground-page.component';
 import { ComparePageComponent } from './compare-page.component';
 import { GuildPresencePageComponent } from './guild-presence-page.component';
 import { GuildRealmFirstsPageComponent } from './guild-realm-firsts-page.component';
@@ -41,6 +42,10 @@ export const routes: Routes = [
   {
     path: 'stats',
     component: StatsPageComponent
+  },
+  {
+    path: 'battleground',
+    component: BattlegroundPageComponent
   },
   {
     path: 'compare',

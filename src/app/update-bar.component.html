@@ -13,6 +13,14 @@
         <span class="nav-toggle-bar" aria-hidden="true"></span>
         <span class="nav-toggle-bar" aria-hidden="true"></span>
       </button>
+      <a
+        class="home-link"
+        routerLink="/"
+        [routerLinkActiveOptions]="{ exact: true }"
+        routerLinkActive="active"
+        (click)="closeNav()">
+        Home
+      </a>
     </div>
 
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
@@ -88,7 +96,7 @@
       routerLink="/compare"
       routerLinkActive="active"
       (click)="closeNav()">
-      <span class="nav-drawer-icon" aria-hidden="true">⚔️</span>
+      <span class="nav-drawer-icon" aria-hidden="true">⚖️</span>
       <span>Player Comparison</span>
     </a>
     <a
@@ -130,6 +138,14 @@
       (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">📊</span>
       <span>Stats</span>
+    </a>
+    <a
+      class="nav-drawer-link"
+      routerLink="/battleground"
+      routerLinkActive="active"
+      (click)="closeNav()">
+      <span class="nav-drawer-icon" aria-hidden="true">⚔️</span>
+      <span>Battleground</span>
     </a>
   </nav>
 </aside>

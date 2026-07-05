@@ -33,6 +33,7 @@
   padding-left: 6px;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .nav-toggle {
@@ -71,6 +72,42 @@
   height: 1.5px;
   border-radius: 999px;
   background: currentColor;
+}
+
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d4dae4;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.45px;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+
+  &:hover,
+  &:focus-visible,
+  &.active {
+    border-color: rgba(247, 181, 0, 0.38);
+    background: rgba(247, 181, 0, 0.09);
+    color: #ffe28a;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.14);
+  }
 }
 
 .nav-drawer-backdrop {
@@ -346,6 +383,12 @@
 
   .update-bar-nav-shell {
     padding-left: 4px;
+    gap: 6px;
+  }
+
+  .home-link {
+    padding: 0 8px;
+    font-size: 0.66rem;
   }
 
   .update-bar-text {

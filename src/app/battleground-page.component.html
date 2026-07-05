@@ -1,0 +1,197 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="battleground-shell">
+  <div class="battleground-feedback loading" *ngIf="showLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Loading battleground data...</h2>
+  </div>
+
+  <div class="battleground-feedback error" *ngIf="showError()">
+    <h2>Could not load battleground data</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+  </div>
+
+  <ng-container *ngIf="showContent()">
+    <section class="analysis-grid">
+      <article class="activity-panel activity-panel--daily" aria-label="Battleground counts on selected day">
+        <div class="panel-heading bg-count-toolbar">
+          <section class="date-console date-console--inline" aria-label="Battleground day filter">
+            <label class="date-field">
+              <input
+                type="date"
+                [attr.min]="dateBounds()?.min ?? null"
+                [attr.max]="dateBounds()?.max ?? null"
+                [value]="selectedDay()"
+                (input)="setSelectedDay($any($event.target).value)" />
+            </label>
+
+            <button type="button" class="console-button" (click)="selectToday()">Today</button>
+          </section>
+        </div>
+
+        <div class="bg-count-groups">
+          <section
+            class="bg-count-group"
+            *ngFor="let group of stats().battlegroundGroups; trackBy: trackBattlegroundDayGroup">
+            <div class="bg-count-group-heading">
+              <span>{{ group.label }}</span>
+              <small>{{ group.totalStarts | number }} starts</small>
+            </div>
+            <div class="bg-count-list">
+              <div
+                class="bg-count-row"
+                *ngFor="let row of group.rows; trackBy: trackBattlegroundRow">
+                <div class="bg-count-main">
+                  <span>{{ row.name }}</span>
+                  <strong>{{ row.total | number }} starts</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </article>
+
+      <aside class="analysis-side">
+        <article class="activity-panel activity-panel--hourly" aria-label="Hourly battleground volume">
+          <div class="panel-heading">
+            <div>
+              <span class="metric-label">Hourly volume</span>
+              <h2>Starts by hour</h2>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="!stats().hasSelectedDayData || stats().hourlyChart.maxCount === 0">
+            No hourly starts to display.
+          </div>
+
+          <div class="hourly-stat" *ngIf="stats().hasSelectedDayData && stats().hourlyChart.maxCount > 0">
+            <div class="hourly-stat-summary">
+              <div>
+                <span>Total</span>
+                <strong>{{ stats().selectedDayCount | number }}</strong>
+              </div>
+              <div *ngIf="stats().busiestHour as busiestHour">
+                <span>Peak</span>
+                <strong>{{ busiestHour.label }}</strong>
+                <small>{{ busiestHour.count | number }} starts</small>
+              </div>
+            </div>
+
+            <div class="hourly-chart-wrap">
+              <svg
+                class="hourly-sparkline"
+                [attr.viewBox]="stats().hourlyChart.viewBox"
+                role="img"
+                [attr.aria-label]="'Hourly starts for ' + stats().selectedDayLabel">
+                <path class="hourly-sparkline-area" [attr.d]="stats().hourlyChart.areaPath"></path>
+                <path class="hourly-sparkline-line" [attr.d]="stats().hourlyChart.linePath"></path>
+              </svg>
+              <div class="hourly-axis" aria-hidden="true">
+                <span>00</span>
+                <span>06</span>
+                <span>12</span>
+                <span>18</span>
+                <span>23</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="recommendation-panel recommendation-panel--compact" aria-label="Queue time recommendations">
+          <div class="panel-heading">
+            <div>
+              <span class="metric-label">Recommendations</span>
+              <h2>Epic queue windows</h2>
+            </div>
+          </div>
+
+          <div class="recommendation-list">
+            <div
+              class="recommendation-card"
+              *ngFor="let recommendation of stats().queueRecommendations; trackBy: trackQueueRecommendation">
+              <div class="recommendation-main">
+                <div>
+                  <span>{{ recommendation.battlegroundName }}</span>
+                  <strong>{{ recommendation.bestWindowLabel }}</strong>
+                </div>
+              </div>
+              <small>
+                {{ recommendation.bestWindowCount | number }} of {{ recommendation.totalStarts | number }} starts
+                in the best 2-hour
+              </small>
+              <div class="queue-hours" *ngIf="recommendation.topHours.length > 0">
+                <div
+                  class="queue-hour"
+                  *ngFor="let hour of recommendation.topHours; trackBy: trackQueueHour">
+                  <span>{{ hour.label }}</span>
+                  <div class="queue-hour-track" aria-hidden="true">
+                    <span [style.width.%]="hour.totalShare"></span>
+                  </div>
+                  <strong>{{ hour.count | number }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </section>
+
+    <section class="activity-panel" aria-label="Battleground average durations">
+      <div class="panel-heading">
+        <div>
+          <span
+            class="duration-range-label"
+            *ngIf="stats().durationRangeStartLabel && stats().durationRangeEndLabel; else durationRangeFallback">
+            Data collected from
+            <strong>{{ stats().durationRangeStartLabel }}</strong>
+            to
+            <strong>{{ stats().durationRangeEndLabel }}</strong>
+          </span>
+          <ng-template #durationRangeFallback>
+            <span class="duration-range-label">{{ stats().durationRangeLabel }}</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!stats().hasDurationData">
+        No duration data to display.
+      </div>
+
+      <div class="table-scroll" *ngIf="stats().hasDurationData">
+        <table class="duration-table">
+          <thead>
+            <tr>
+              <th scope="col">BG</th>
+              <th scope="col">Samples</th>
+              <th scope="col">Average</th>
+              <th scope="col">Shortest</th>
+              <th scope="col">Longest</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let group of stats().durationGroups; trackBy: trackDurationGroup">
+              <tr class="duration-group-row">
+                <th scope="rowgroup" colspan="5">
+                  <span>{{ group.label }}</span>
+                  <small>{{ group.totalRuns | number }} runs</small>
+                </th>
+              </tr>
+              <tr *ngFor="let row of group.rows; trackBy: trackDurationRow">
+                <th scope="row">{{ row.name }}</th>
+                <td>{{ row.durationSampleCount | number }}</td>
+                <td>{{ row.averageDurationLabel }}</td>
+                <td>{{ row.shortestDurationLabel }}</td>
+                <td>{{ row.longestDurationLabel }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />
