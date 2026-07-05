@@ -11,7 +11,7 @@ import {
   BattlegroundQueueHour,
   BattlegroundQueueRecommendation,
   computeBattlegroundStats,
-  getBattlegroundDateBounds,
+  getCompletedBattlegroundDateBounds,
   normalizeBattlegrounds
 } from './battleground-stats';
 import { BattlegroundCollectorState, BattlegroundsService } from './battlegrounds.service';
@@ -35,7 +35,7 @@ export class BattlegroundPageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
 
-  readonly dateBounds = computed(() => getBattlegroundDateBounds(this.battlegrounds()));
+  readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.battlegrounds()));
   readonly hasData = computed(() => this.battlegrounds().length > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());
@@ -52,16 +52,18 @@ export class BattlegroundPageComponent implements OnInit {
     this.loadBattlegrounds();
   }
 
-  selectToday(): void {
+  setSelectedDay(value: string): void {
     const bounds = this.dateBounds();
     if (!bounds) {
+      this.selectedDay.set('');
       return;
     }
 
-    this.selectedDay.set(this.getDefaultSelectedDate(bounds));
-  }
+    if (!value || value < bounds.min || value > bounds.max) {
+      this.selectedDay.set(this.getDefaultSelectedDate(bounds));
+      return;
+    }
 
-  setSelectedDay(value: string): void {
     this.selectedDay.set(value);
   }
 

@@ -223,12 +223,33 @@ export function getBattlegroundDateBounds(records: ReadonlyArray<NormalizedBattl
   return { min, max };
 }
 
+export function getCompletedBattlegroundDateBounds(
+  records: ReadonlyArray<NormalizedBattleground>
+): BattlegroundDateBounds | undefined {
+  const dates = new Set(records.map((record) => record.date));
+  const completedDates = [...dates]
+    .filter((date) => {
+      const nextDate = addIsoDays(date, 1);
+      return nextDate !== undefined && dates.has(nextDate);
+    })
+    .sort();
+
+  if (completedDates.length === 0) {
+    return undefined;
+  }
+
+  return {
+    min: completedDates[0],
+    max: completedDates[completedDates.length - 1]
+  };
+}
+
 export function computeBattlegroundStats(
   records: ReadonlyArray<NormalizedBattleground>,
   selectedDay: string
 ): BattlegroundStats {
   const bounds = getBattlegroundDateBounds(records);
-  const day = isIsoDate(selectedDay) ? selectedDay : bounds?.max ?? '';
+  const day = isIsoDate(selectedDay) ? selectedDay : '';
   const hourlyTotalMap = new Map(HOURS.map((hour) => [hour, 0]));
   const accumulators = new Map<string, BattlegroundAccumulator>();
   const durationAccumulators = new Map<string, BattlegroundAccumulator>();
@@ -851,6 +872,16 @@ function parseIsoDateAsUtc(value: string): Date | undefined {
   const [, year, month, day] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function addIsoDays(value: string, days: number): string | undefined {
+  const date = parseIsoDateAsUtc(value);
+  if (!date) {
+    return undefined;
+  }
+
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 function roundChartCoordinate(value: number): number {
