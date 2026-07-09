@@ -1,16 +1,19 @@
-name: Notify Discord on Push
+name: Notify Discord after Successful Build
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Deploy static content to Pages"]
+    types: [completed]
 
 jobs:
   notify:
-    if: github.event.head_commit.message == 'sync data'
+    if: >
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_commit.message == 'sync data'
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for site deployment
-        run: sleep 120
-
       - name: Send message to Discord
         run: |
           curl -H "Content-Type: application/json" \
