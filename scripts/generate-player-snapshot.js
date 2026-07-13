@@ -73,7 +73,9 @@ function generatePlayerSnapshot() {
       const canCompareAppearances = previousPlayer?.hasAppearanceCount === true;
       const currentAchievementsTotalRank = currentAchievementsTotalRanks.get(playerKey) ?? 0;
       const previousAchievementsTotalRank = previousAchievementsTotalRanks.get(playerKey) ?? 0;
-      const canCompareAchievementsTotal = previousPlayer?.hasAchievementsTotal === true;
+      const canCompareAchievementsTotal = previousPlayer?.hasAchievementsTotal === true
+        && previousPlayer.achievementsTotal >= 0
+        && player.achievementsTotal >= 0;
       const currentPlayedTimeRank = currentPlayedTimeRanks.get(playerKey) ?? 0;
       const previousPlayedTimeRank = previousPlayedTimeRanks.get(playerKey) ?? 0;
       const canComparePlayedTime = previousPlayer?.hasPlayedTime === true;

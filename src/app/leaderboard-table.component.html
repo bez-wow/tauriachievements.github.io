@@ -118,7 +118,12 @@
                 {{ formatSignedValue(player.achievementsTotalDelta) }}
               </span>
             </span>
-            <span class="metric-value">{{ player.achievementsTotal | number }}</span>
+            <span
+              class="metric-value"
+              [class.metric-value--missing]="!hasAchievementsTotalValue(player)"
+              [attr.title]="getAchievementsTotalValueTitle(player) || null">
+              {{ formatAchievementsTotal(player) }}
+            </span>
             <span class="metric-side metric-side-end">
               <span
                 *ngIf="showAchievementsTotalRank(player)"

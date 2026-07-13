@@ -68,12 +68,28 @@ export class LeaderboardTableComponent {
     return this.currentSort === 'appearanceCount' && player.appearanceRankDelta !== 0;
   }
 
+  hasAchievementsTotalValue(player: LadderPlayerView): boolean {
+    return player.achievementsTotal >= 0;
+  }
+
+  formatAchievementsTotal(player: LadderPlayerView): string {
+    return this.hasAchievementsTotalValue(player) ? player.achievementsTotal.toLocaleString() : '-';
+  }
+
+  getAchievementsTotalValueTitle(player: LadderPlayerView): string {
+    return this.hasAchievementsTotalValue(player)
+      ? ''
+      : `No data yet: ${player.name} has not logged in since account-wide achievements were introduced`;
+  }
+
   showAchievementsTotalDelta(player: LadderPlayerView): boolean {
-    return player.achievementsTotalDelta !== 0;
+    return this.hasAchievementsTotalValue(player) && player.achievementsTotalDelta !== 0;
   }
 
   showAchievementsTotalRank(player: LadderPlayerView): boolean {
-    return this.currentSort === 'achievementsTotal' && player.achievementsTotalRankDelta !== 0;
+    return this.currentSort === 'achievementsTotal'
+      && this.hasAchievementsTotalValue(player)
+      && player.achievementsTotalRankDelta !== 0;
   }
 
   showPlayedTimeDelta(player: LadderPlayerView): boolean {

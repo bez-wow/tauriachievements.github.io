@@ -539,6 +539,14 @@
   display: inline-block;
 }
 
+.metric-value--missing {
+  color: rgba(212, 216, 226, 0.6);
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .metric-delta {
   font-size: 0.76rem;
   font-weight: 800;
