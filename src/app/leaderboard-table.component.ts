@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, HostListener, Input } from '@angula
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { formatCharacterAge } from './character-age';
+import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
 import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 
 @Component({
@@ -67,6 +68,30 @@ export class LeaderboardTableComponent {
     return this.currentSort === 'appearanceCount' && player.appearanceRankDelta !== 0;
   }
 
+  showAchievementsTotalDelta(player: LadderPlayerView): boolean {
+    return player.achievementsTotalDelta !== 0;
+  }
+
+  showAchievementsTotalRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'achievementsTotal' && player.achievementsTotalRankDelta !== 0;
+  }
+
+  showPlayedTimeDelta(player: LadderPlayerView): boolean {
+    return player.playedTimeDelta !== 0;
+  }
+
+  showPlayedTimeRank(player: LadderPlayerView): boolean {
+    return this.currentSort === 'playedTime' && player.playedTimeRankDelta !== 0;
+  }
+
+  formatPlayedTime(player: LadderPlayerView): string {
+    return formatPlayedTime(player.playedTime);
+  }
+
+  formatPlayedTimeDelta(player: LadderPlayerView): string {
+    return formatSignedPlayedTime(player.playedTimeDelta);
+  }
+
   formatSignedValue(value: number): string {
     if (value > 0) {
       return `+${value.toLocaleString()}`;
@@ -91,6 +116,14 @@ export class LeaderboardTableComponent {
     return this.getDeltaClass(player.appearanceCountDelta);
   }
 
+  getAchievementsTotalDeltaClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.achievementsTotalDelta);
+  }
+
+  getPlayedTimeDeltaClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.playedTimeDelta);
+  }
+
   getAchievementRankClass(player: LadderPlayerView): string {
     return this.getDeltaClass(player.achievementRankDelta);
   }
@@ -101,6 +134,14 @@ export class LeaderboardTableComponent {
 
   getAppearanceRankClass(player: LadderPlayerView): string {
     return this.getDeltaClass(player.appearanceRankDelta);
+  }
+
+  getAchievementsTotalRankClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.achievementsTotalRankDelta);
+  }
+
+  getPlayedTimeRankClass(player: LadderPlayerView): string {
+    return this.getDeltaClass(player.playedTimeRankDelta);
   }
 
   getAchievementRankLabel(player: LadderPlayerView): string {
@@ -115,6 +156,14 @@ export class LeaderboardTableComponent {
     return this.formatSignedValue(player.appearanceRankDelta);
   }
 
+  getAchievementsTotalRankLabel(player: LadderPlayerView): string {
+    return this.formatSignedValue(player.achievementsTotalRankDelta);
+  }
+
+  getPlayedTimeRankLabel(player: LadderPlayerView): string {
+    return this.formatSignedValue(player.playedTimeRankDelta);
+  }
+
   getAchievementRankTitle(player: LadderPlayerView): string {
     return this.buildRankTitle(player.name, player.achievementRankDelta);
   }
@@ -125,6 +174,14 @@ export class LeaderboardTableComponent {
 
   getAppearanceRankTitle(player: LadderPlayerView): string {
     return this.buildRankTitle(player.name, player.appearanceRankDelta);
+  }
+
+  getAchievementsTotalRankTitle(player: LadderPlayerView): string {
+    return this.buildRankTitle(player.name, player.achievementsTotalRankDelta);
+  }
+
+  getPlayedTimeRankTitle(player: LadderPlayerView): string {
+    return this.buildRankTitle(player.name, player.playedTimeRankDelta);
   }
 
   getPlayerLinkTitle(player: LadderPlayerView): string {

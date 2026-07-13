@@ -20,6 +20,12 @@ export interface LadderAchievement {
   appearanceCount: number;
   appearanceCountDelta: number;
   appearanceRankDelta: number;
+  achievementsTotal: number;
+  achievementsTotalDelta: number;
+  achievementsTotalRankDelta: number;
+  playedTime: number;
+  playedTimeDelta: number;
+  playedTimeRankDelta: number;
   characterAge: string;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';
@@ -38,7 +44,9 @@ interface IndexedLadderPlayer {
 
 interface LadderIndexes {
   achievementPoints: IndexedLadderPlayer[];
+  achievementsTotal: IndexedLadderPlayer[];
   honorableKills: IndexedLadderPlayer[];
+  playedTime: IndexedLadderPlayer[];
   appearanceCount: IndexedLadderPlayer[];
 }
 
@@ -80,6 +88,28 @@ export class LadderService {
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
     return this.getRankedPlayers('appearanceCount', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
+  }
+
+  getAccountWideAchievements(
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    searchTerm?: string,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): Observable<LadderAchievement[]> {
+    return this.getRankedPlayers('achievementsTotal', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
+  }
+
+  getPlaytime(
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    searchTerm?: string,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): Observable<LadderAchievement[]> {
+    return this.getRankedPlayers('playedTime', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
   }
 
   getRankedPlayer(name: string, realm: string): Observable<RankedLadderPlayer | undefined> {
@@ -211,8 +241,12 @@ export class LadderService {
     switch (sort) {
       case 'achievementPoints':
         return { ...view, achievementRankDelta: rankDelta };
+      case 'achievementsTotal':
+        return { ...view, achievementsTotalRankDelta: rankDelta };
       case 'honorableKills':
         return { ...view, honorableKillsRankDelta: rankDelta };
+      case 'playedTime':
+        return { ...view, playedTimeRankDelta: rankDelta };
       case 'appearanceCount':
         return { ...view, appearanceRankDelta: rankDelta };
     }
@@ -250,7 +284,9 @@ export class LadderService {
     const indexedPlayers = players.map(player => this.toIndexedLadderPlayer(player));
     const indexes: LadderIndexes = {
       achievementPoints: [...indexedPlayers].sort((a, b) => this.compareAchievementPlayers(a.view, b.view)),
+      achievementsTotal: [...indexedPlayers].sort((a, b) => this.compareAchievementsTotalPlayers(a.view, b.view)),
       honorableKills: [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view)),
+      playedTime: [...indexedPlayers].sort((a, b) => this.comparePlayedTimePlayers(a.view, b.view)),
       appearanceCount: [...indexedPlayers].sort((a, b) => this.compareAppearancePlayers(a.view, b.view))
     };
 
@@ -353,6 +389,12 @@ export class LadderService {
         appearanceCount: player.appearanceCount,
         appearanceCountDelta: player.appearanceCountDelta,
         appearanceRankDelta: player.appearanceRankDelta,
+        achievementsTotal: player.achievementsTotal,
+        achievementsTotalDelta: player.achievementsTotalDelta,
+        achievementsTotalRankDelta: player.achievementsTotalRankDelta,
+        playedTime: player.playedTime,
+        playedTimeDelta: player.playedTimeDelta,
+        playedTimeRankDelta: player.playedTimeRankDelta,
         characterAge: player.characterAge,
         isNewCharacter: player.isNewCharacter,
         faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
@@ -379,6 +421,38 @@ export class LadderService {
 
     if (right.achievementPoints !== left.achievementPoints) {
       return right.achievementPoints - left.achievementPoints;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private compareAchievementsTotalPlayers(left: LadderAchievement, right: LadderAchievement): number {
+    if (right.achievementsTotal !== left.achievementsTotal) {
+      return right.achievementsTotal - left.achievementsTotal;
+    }
+
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
+    }
+
+    if (right.honorableKills !== left.honorableKills) {
+      return right.honorableKills - left.honorableKills;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private comparePlayedTimePlayers(left: LadderAchievement, right: LadderAchievement): number {
+    if (right.playedTime !== left.playedTime) {
+      return right.playedTime - left.playedTime;
+    }
+
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
+    }
+
+    if (right.honorableKills !== left.honorableKills) {
+      return right.honorableKills - left.honorableKills;
     }
 
     return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
@@ -432,6 +506,50 @@ export class LadderService {
     return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
   }
 
+  private comparePreviousAchievementsTotalPlayers(left: LadderAchievement, right: LadderAchievement): number {
+    const leftTotal = left.achievementsTotal - left.achievementsTotalDelta;
+    const rightTotal = right.achievementsTotal - right.achievementsTotalDelta;
+    if (rightTotal !== leftTotal) {
+      return rightTotal - leftTotal;
+    }
+
+    const leftPoints = left.achievementPoints - left.achievementPointsDelta;
+    const rightPoints = right.achievementPoints - right.achievementPointsDelta;
+    if (rightPoints !== leftPoints) {
+      return rightPoints - leftPoints;
+    }
+
+    const leftKills = left.honorableKills - left.honorableKillsDelta;
+    const rightKills = right.honorableKills - right.honorableKillsDelta;
+    if (rightKills !== leftKills) {
+      return rightKills - leftKills;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private comparePreviousPlayedTimePlayers(left: LadderAchievement, right: LadderAchievement): number {
+    const leftPlayed = left.playedTime - left.playedTimeDelta;
+    const rightPlayed = right.playedTime - right.playedTimeDelta;
+    if (rightPlayed !== leftPlayed) {
+      return rightPlayed - leftPlayed;
+    }
+
+    const leftPoints = left.achievementPoints - left.achievementPointsDelta;
+    const rightPoints = right.achievementPoints - right.achievementPointsDelta;
+    if (rightPoints !== leftPoints) {
+      return rightPoints - leftPoints;
+    }
+
+    const leftKills = left.honorableKills - left.honorableKillsDelta;
+    const rightKills = right.honorableKills - right.honorableKillsDelta;
+    if (rightKills !== leftKills) {
+      return rightKills - leftKills;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
   private comparePreviousAppearancePlayers(left: LadderAchievement, right: LadderAchievement): number {
     const leftAppearances = left.appearanceCount - left.appearanceCountDelta;
     const rightAppearances = right.appearanceCount - right.appearanceCountDelta;
@@ -458,8 +576,12 @@ export class LadderService {
     switch (sort) {
       case 'achievementPoints':
         return (left, right) => this.comparePreviousAchievementPlayers(left.view, right.view);
+      case 'achievementsTotal':
+        return (left, right) => this.comparePreviousAchievementsTotalPlayers(left.view, right.view);
       case 'honorableKills':
         return (left, right) => this.comparePreviousHonorableKillPlayers(left.view, right.view);
+      case 'playedTime':
+        return (left, right) => this.comparePreviousPlayedTimePlayers(left.view, right.view);
       case 'appearanceCount':
         return (left, right) => this.comparePreviousAppearancePlayers(left.view, right.view);
     }

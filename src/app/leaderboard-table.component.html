@@ -2,7 +2,9 @@
   <table
     class="wow-table"
     [ngClass]="{
+      'sort-achievements-total': currentSort === 'achievementsTotal',
       'sort-honorable-kills': currentSort === 'honorableKills',
+      'sort-played-time': currentSort === 'playedTime',
       'sort-appearances': currentSort === 'appearanceCount'
     }">
     <thead>
@@ -12,8 +14,10 @@
         <th>Race / Class</th>
         <th>Realm</th>
         <th>Guild</th>
-        <th>Achievements</th>
+        <th>Character<br />Achievements</th>
+        <th>Account Wide<br />Achievements</th>
         <th>Honorable kills</th>
+        <th>Time Played</th>
         <th>Appearances</th>
       </tr>
     </thead>
@@ -108,6 +112,28 @@
           <span class="metric-inline">
             <span class="metric-side metric-side-start">
               <span
+                *ngIf="showAchievementsTotalDelta(player)"
+                class="metric-delta"
+                [ngClass]="getAchievementsTotalDeltaClass(player)">
+                {{ formatSignedValue(player.achievementsTotalDelta) }}
+              </span>
+            </span>
+            <span class="metric-value">{{ player.achievementsTotal | number }}</span>
+            <span class="metric-side metric-side-end">
+              <span
+                *ngIf="showAchievementsTotalRank(player)"
+                class="metric-rank-pill"
+                [ngClass]="getAchievementsTotalRankClass(player)"
+                [title]="getAchievementsTotalRankTitle(player)">
+                {{ getAchievementsTotalRankLabel(player) }}
+              </span>
+            </span>
+          </span>
+        </td>
+        <td>
+          <span class="metric-inline">
+            <span class="metric-side metric-side-start">
+              <span
                 *ngIf="showHonorableKillDelta(player)"
                 class="metric-delta"
                 [ngClass]="getHonorableKillDeltaClass(player)">
@@ -122,6 +148,28 @@
                 [ngClass]="getHonorableKillRankClass(player)"
                 [title]="getHonorableKillRankTitle(player)">
                 {{ getHonorableKillRankLabel(player) }}
+              </span>
+            </span>
+          </span>
+        </td>
+        <td>
+          <span class="metric-inline">
+            <span class="metric-side metric-side-start">
+              <span
+                *ngIf="showPlayedTimeDelta(player)"
+                class="metric-delta"
+                [ngClass]="getPlayedTimeDeltaClass(player)">
+                {{ formatPlayedTimeDelta(player) }}
+              </span>
+            </span>
+            <span class="metric-value">{{ formatPlayedTime(player) }}</span>
+            <span class="metric-side metric-side-end">
+              <span
+                *ngIf="showPlayedTimeRank(player)"
+                class="metric-rank-pill"
+                [ngClass]="getPlayedTimeRankClass(player)"
+                [title]="getPlayedTimeRankTitle(player)">
+                {{ getPlayedTimeRankLabel(player) }}
               </span>
             </span>
           </span>

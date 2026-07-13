@@ -17,8 +17,10 @@ export const DEFAULT_PAGE_SIZE = 100;
 export const PAGE_SIZE_OPTIONS = [100, 500, 1000] as const;
 
 export const SORT_OPTIONS: ReadonlyArray<LadderSelectOption<LadderSort>> = [
-  { value: 'achievementPoints', label: 'Achievements' },
+  { value: 'achievementPoints', label: 'Character Achievements' },
+  { value: 'achievementsTotal', label: 'Account Wide Achievements' },
   { value: 'honorableKills', label: 'Honorable Kills' },
+  { value: 'playedTime', label: 'Time Played' },
   { value: 'appearanceCount', label: 'Appearances' }
 ];
 

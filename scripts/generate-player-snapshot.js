@@ -40,11 +40,21 @@ function generatePlayerSnapshot() {
   const currentAchievementRanks = buildRankMap(normalizedRows, compareAchievementPoints);
   const currentHonorableKillRanks = buildRankMap(normalizedRows, compareHonorableKills);
   const currentAppearanceRanks = buildRankMap(normalizedRows, compareAppearances);
+  const currentAchievementsTotalRanks = buildRankMap(normalizedRows, compareAchievementsTotal);
+  const currentPlayedTimeRanks = buildRankMap(normalizedRows, comparePlayedTime);
   const previousAchievementRanks = buildRankMap(previousRows, compareAchievementPoints);
   const previousHonorableKillRanks = buildRankMap(previousRows, compareHonorableKills);
   const previousAppearanceRanks = buildRankMap(
     previousRows.filter((player) => player.hasAppearanceCount),
     compareAppearances
+  );
+  const previousAchievementsTotalRanks = buildRankMap(
+    previousRows.filter((player) => player.hasAchievementsTotal),
+    compareAchievementsTotal
+  );
+  const previousPlayedTimeRanks = buildRankMap(
+    previousRows.filter((player) => player.hasPlayedTime),
+    comparePlayedTime
   );
 
   const snapshot = {
@@ -61,6 +71,12 @@ function generatePlayerSnapshot() {
       const currentAppearanceRank = currentAppearanceRanks.get(playerKey) ?? 0;
       const previousAppearanceRank = previousAppearanceRanks.get(playerKey) ?? 0;
       const canCompareAppearances = previousPlayer?.hasAppearanceCount === true;
+      const currentAchievementsTotalRank = currentAchievementsTotalRanks.get(playerKey) ?? 0;
+      const previousAchievementsTotalRank = previousAchievementsTotalRanks.get(playerKey) ?? 0;
+      const canCompareAchievementsTotal = previousPlayer?.hasAchievementsTotal === true;
+      const currentPlayedTimeRank = currentPlayedTimeRanks.get(playerKey) ?? 0;
+      const previousPlayedTimeRank = previousPlayedTimeRanks.get(playerKey) ?? 0;
+      const canComparePlayedTime = previousPlayer?.hasPlayedTime === true;
 
       const serializedPlayer = [
         player.name,
@@ -83,6 +99,16 @@ function generatePlayerSnapshot() {
           ? previousAppearanceRank - currentAppearanceRank
           : 0,
         player.characterAge ?? "",
+        player.achievementsTotal,
+        canCompareAchievementsTotal ? player.achievementsTotal - previousPlayer.achievementsTotal : 0,
+        canCompareAchievementsTotal && previousAchievementsTotalRank && currentAchievementsTotalRank
+          ? previousAchievementsTotalRank - currentAchievementsTotalRank
+          : 0,
+        player.playedTime,
+        canComparePlayedTime ? player.playedTime - previousPlayer.playedTime : 0,
+        canComparePlayedTime && previousPlayedTimeRank && currentPlayedTimeRank
+          ? previousPlayedTimeRank - currentPlayedTimeRank
+          : 0,
       ];
 
       return serializedPlayer;
@@ -210,6 +236,38 @@ function compareAppearances(left, right) {
   return getPlayerKey(left).localeCompare(getPlayerKey(right));
 }
 
+function compareAchievementsTotal(left, right) {
+  if (right.achievementsTotal !== left.achievementsTotal) {
+    return right.achievementsTotal - left.achievementsTotal;
+  }
+
+  if (right.achievementPoints !== left.achievementPoints) {
+    return right.achievementPoints - left.achievementPoints;
+  }
+
+  if (right.honorableKills !== left.honorableKills) {
+    return right.honorableKills - left.honorableKills;
+  }
+
+  return getPlayerKey(left).localeCompare(getPlayerKey(right));
+}
+
+function comparePlayedTime(left, right) {
+  if (right.playedTime !== left.playedTime) {
+    return right.playedTime - left.playedTime;
+  }
+
+  if (right.achievementPoints !== left.achievementPoints) {
+    return right.achievementPoints - left.achievementPoints;
+  }
+
+  if (right.honorableKills !== left.honorableKills) {
+    return right.honorableKills - left.honorableKills;
+  }
+
+  return getPlayerKey(left).localeCompare(getPlayerKey(right));
+}
+
 function getPlayerKey(player) {
   return `${player.realm}::${player.name}`;
 }
@@ -275,4 +333,6 @@ module.exports = {
   compareAchievementPoints,
   compareHonorableKills,
   compareAppearances,
+  compareAchievementsTotal,
+  comparePlayedTime,
 };

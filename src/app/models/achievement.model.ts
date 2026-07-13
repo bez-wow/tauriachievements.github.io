@@ -16,6 +16,12 @@ export interface PlayerAchievement {
   appearanceCount: number;
   appearanceCountDelta: number;
   appearanceRankDelta: number;
+  achievementsTotal: number;
+  achievementsTotalDelta: number;
+  achievementsTotalRankDelta: number;
+  playedTime: number;
+  playedTimeDelta: number;
+  playedTimeRankDelta: number;
   characterAge: string;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';

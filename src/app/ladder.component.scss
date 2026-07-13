@@ -4,14 +4,21 @@
   width: 100%;
 }
 
+.ladder-container app-filter-bar {
+  display: block;
+  width: 100%;
+  contain: inline-size;
+}
+
 .ladder-container {
   background-color: #050505;
   color: #e0e0e0;
   font-family: 'Arial', sans-serif;
   padding: 20px;
   padding-top: 46px;
-  max-width: 1200px;
-  width: 100%;
+  max-width: 1560px;
+  width: fit-content;
+  min-width: min(960px, 100%);
   margin: 0 auto;
   position: relative;
   z-index: 1;

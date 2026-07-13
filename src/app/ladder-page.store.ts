@@ -124,11 +124,7 @@ export class LadderPageStore {
   }
 
   private getFilteredPlayers(state: LadderFilterState) {
-    const request = state.sort === 'achievementPoints'
-      ? this.ladderService.getAchievements.bind(this.ladderService)
-      : state.sort === 'honorableKills'
-        ? this.ladderService.getHonorableKills.bind(this.ladderService)
-        : this.ladderService.getAppearances.bind(this.ladderService);
+    const request = this.getSortRequest(state.sort);
     const players$ = request(
           state.realm,
           state.faction,
@@ -141,6 +137,21 @@ export class LadderPageStore {
     return players$.pipe(
       map((players) => players)
     );
+  }
+
+  private getSortRequest(sort: LadderFilterState['sort']) {
+    switch (sort) {
+      case 'achievementPoints':
+        return this.ladderService.getAchievements.bind(this.ladderService);
+      case 'achievementsTotal':
+        return this.ladderService.getAccountWideAchievements.bind(this.ladderService);
+      case 'honorableKills':
+        return this.ladderService.getHonorableKills.bind(this.ladderService);
+      case 'playedTime':
+        return this.ladderService.getPlaytime.bind(this.ladderService);
+      case 'appearanceCount':
+        return this.ladderService.getAppearances.bind(this.ladderService);
+    }
   }
 
   private mapPlayersForView(

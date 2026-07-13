@@ -4,11 +4,12 @@
 
 .wow-table-scroll {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .wow-table {
-  width: 100%;
+  width: auto;
+  margin: 0 auto;
   border-collapse: separate;
   border-spacing: 0;
   border-radius: 12px;
@@ -61,7 +62,9 @@
 
     &:nth-child(6),
     &:nth-child(7),
-    &:nth-child(8) {
+    &:nth-child(8),
+    &:nth-child(9),
+    &:nth-child(10) {
       text-align: center;
     }
   }
@@ -87,7 +90,9 @@
 
     &:nth-child(6),
     &:nth-child(7),
-    &:nth-child(8) {
+    &:nth-child(8),
+    &:nth-child(9),
+    &:nth-child(10) {
       text-align: center;
       font-weight: 500;
     }
@@ -507,7 +512,7 @@
 
 .metric-inline {
   display: inline-grid;
-  grid-template-columns: 56px max-content 56px;
+  grid-template-columns: minmax(28px, max-content) max-content minmax(28px, max-content);
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -625,13 +630,43 @@
     display: none;
   }
 
+  .wow-table th:nth-child(9),
+  .wow-table td:nth-child(9) {
+    display: none;
+  }
+
+  .wow-table th:nth-child(10),
+  .wow-table td:nth-child(10) {
+    display: none;
+  }
+
+  .wow-table.sort-achievements-total th:nth-child(6),
+  .wow-table.sort-achievements-total td:nth-child(6) {
+    display: none;
+  }
+
+  .wow-table.sort-achievements-total th:nth-child(7),
+  .wow-table.sort-achievements-total td:nth-child(7) {
+    display: table-cell;
+  }
+
   .wow-table.sort-honorable-kills th:nth-child(6),
   .wow-table.sort-honorable-kills td:nth-child(6) {
     display: none;
   }
 
-  .wow-table.sort-honorable-kills th:nth-child(7),
-  .wow-table.sort-honorable-kills td:nth-child(7) {
+  .wow-table.sort-honorable-kills th:nth-child(8),
+  .wow-table.sort-honorable-kills td:nth-child(8) {
+    display: table-cell;
+  }
+
+  .wow-table.sort-played-time th:nth-child(6),
+  .wow-table.sort-played-time td:nth-child(6) {
+    display: none;
+  }
+
+  .wow-table.sort-played-time th:nth-child(9),
+  .wow-table.sort-played-time td:nth-child(9) {
     display: table-cell;
   }
 
@@ -640,8 +675,8 @@
     display: none;
   }
 
-  .wow-table.sort-appearances th:nth-child(8),
-  .wow-table.sort-appearances td:nth-child(8) {
+  .wow-table.sort-appearances th:nth-child(10),
+  .wow-table.sort-appearances td:nth-child(10) {
     display: table-cell;
   }
 
@@ -652,7 +687,7 @@
   }
 
   .metric-inline {
-    grid-template-columns: 56px max-content 56px;
+    grid-template-columns: minmax(28px, max-content) max-content minmax(28px, max-content);
   }
 
   .metric-side-start {
