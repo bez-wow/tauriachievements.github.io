@@ -512,11 +512,16 @@
 
 .metric-inline {
   display: inline-grid;
-  grid-template-columns: minmax(28px, max-content) max-content minmax(28px, max-content);
+  grid-template-columns: minmax(var(--metric-delta-col, 52px), max-content) max-content minmax(44px, 1fr);
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   white-space: nowrap;
   width: 100%;
+}
+
+// Time played deltas ("+1d 0h 44m") need a wider gutter than plain numbers.
+.wow-table td:nth-child(9) {
+  --metric-delta-col: 84px;
 }
 
 .metric-side {
@@ -695,7 +700,7 @@
   }
 
   .metric-inline {
-    grid-template-columns: minmax(28px, max-content) max-content minmax(28px, max-content);
+    grid-template-columns: minmax(var(--metric-delta-col, 44px), max-content) max-content minmax(36px, 1fr);
   }
 
   .metric-side-start {
