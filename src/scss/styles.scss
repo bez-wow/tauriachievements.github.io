@@ -7,6 +7,7 @@
 html, body {
   width: 100%;
   height: 100%;
+  overflow-x: clip;
   background-color: #050505;
   color: #e0e0e0;
   font-family: 'Arial', sans-serif;
@@ -25,10 +26,6 @@ app-root {
   app-root {
     display: block;
     height: auto;
-  }
-
-  body {
-    overflow-x: hidden;
   }
 }
 

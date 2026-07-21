@@ -16,7 +16,7 @@
   font-family: 'Arial', sans-serif;
   padding: 20px;
   padding-top: 46px;
-  max-width: 1560px;
+  max-width: min(1660px, 100%);
   width: fit-content;
   min-width: min(960px, 100%);
   margin: 0 auto;
