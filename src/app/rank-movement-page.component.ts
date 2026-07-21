@@ -29,6 +29,7 @@ interface TopGainersDropdownConfig {
 const DEFAULT_TOP_GAINERS_LIMIT = 100;
 const DEFAULT_ACHIEVEMENT_SOURCE_LIMIT = 1000;
 const DEFAULT_HONORABLE_KILL_SOURCE_LIMIT: number | undefined = undefined;
+const DEFAULT_PLAYED_TIME_SOURCE_LIMIT: number | undefined = undefined;
 const DEFAULT_APPEARANCE_SOURCE_LIMIT: number | undefined = undefined;
 const ACHIEVEMENT_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
   { value: 100, label: 'Achievement Top 100' },
@@ -40,6 +41,12 @@ const HONORABLE_KILL_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<nu
   { value: 100, label: 'HK Top 100' },
   { value: 500, label: 'HK Top 500' },
   { value: 1000, label: 'HK Top 1000' },
+  { value: undefined, label: 'All players' }
+];
+const PLAYED_TIME_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
+  { value: 100, label: 'Played Time Top 100' },
+  { value: 500, label: 'Played Time Top 500' },
+  { value: 1000, label: 'Played Time Top 1000' },
   { value: undefined, label: 'All players' }
 ];
 const APPEARANCE_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
@@ -70,6 +77,7 @@ export class TopGainersPageComponent implements OnInit {
   readonly topGainersLimit = signal(DEFAULT_TOP_GAINERS_LIMIT);
   readonly achievementSourceLimit = signal<number | undefined>(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
   readonly honorableKillSourceLimit = signal<number | undefined>(DEFAULT_HONORABLE_KILL_SOURCE_LIMIT);
+  readonly playedTimeSourceLimit = signal<number | undefined>(DEFAULT_PLAYED_TIME_SOURCE_LIMIT);
   readonly appearanceSourceLimit = signal<number | undefined>(DEFAULT_APPEARANCE_SOURCE_LIMIT);
   readonly currentRealm = signal<string | undefined>(undefined);
   readonly currentClass = signal<number | undefined>(undefined);
@@ -79,6 +87,7 @@ export class TopGainersPageComponent implements OnInit {
   }));
   readonly achievementSourceLimitOptions = ACHIEVEMENT_SOURCE_LIMIT_OPTIONS;
   readonly honorableKillSourceLimitOptions = HONORABLE_KILL_SOURCE_LIMIT_OPTIONS;
+  readonly playedTimeSourceLimitOptions = PLAYED_TIME_SOURCE_LIMIT_OPTIONS;
   readonly appearanceSourceLimitOptions = APPEARANCE_SOURCE_LIMIT_OPTIONS;
   readonly realmOptions = REALM_OPTIONS;
   readonly classOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
@@ -97,6 +106,9 @@ export class TopGainersPageComponent implements OnInit {
   readonly honorableKillMovers = computed(() =>
     this.filterMovers(this.history()?.movers.honorableKills ?? [], this.honorableKillSourceLimit())
   );
+  readonly playedTimeMovers = computed(() =>
+    this.filterMovers(this.history()?.movers.playedTime ?? [], this.playedTimeSourceLimit())
+  );
   readonly appearanceMovers = computed(() =>
     this.filterMovers(this.history()?.movers.appearanceCount ?? [], this.appearanceSourceLimit())
   );
@@ -105,6 +117,7 @@ export class TopGainersPageComponent implements OnInit {
     this.topGainersLimit() !== DEFAULT_TOP_GAINERS_LIMIT
       || this.achievementSourceLimit() !== DEFAULT_ACHIEVEMENT_SOURCE_LIMIT
       || this.honorableKillSourceLimit() !== DEFAULT_HONORABLE_KILL_SOURCE_LIMIT
+      || this.playedTimeSourceLimit() !== DEFAULT_PLAYED_TIME_SOURCE_LIMIT
       || this.appearanceSourceLimit() !== DEFAULT_APPEARANCE_SOURCE_LIMIT
       || !!this.currentRealm()
       || this.currentClass() !== undefined
@@ -116,6 +129,10 @@ export class TopGainersPageComponent implements OnInit {
   readonly honorableKillEmptyMessage = computed(() => this.hasActiveFilters()
     ? 'No honorable kill climbers match the selected filters.'
     : 'No honorable kill climbers available yet.'
+  );
+  readonly playedTimeEmptyMessage = computed(() => this.hasActiveFilters()
+    ? 'No played time climbers match the selected filters.'
+    : 'No played time climbers available yet.'
   );
   readonly appearanceEmptyMessage = computed(() => this.hasActiveFilters()
     ? 'No appearance climbers match the selected filters.'
@@ -163,6 +180,11 @@ export class TopGainersPageComponent implements OnInit {
 
   get selectedHonorableKillSourceLimitLabel(): string {
     return this.getHonorableKillSourceLimitLabel(this.honorableKillSourceLimit());
+  }
+
+  get selectedPlayedTimeSourceLimitLabel(): string {
+    return this.playedTimeSourceLimitOptions.find((option) => option.value === this.playedTimeSourceLimit())?.label
+      ?? 'All players';
   }
 
   get selectedAppearanceSourceLimitLabel(): string {
@@ -223,6 +245,10 @@ export class TopGainersPageComponent implements OnInit {
     this.honorableKillSourceLimit.set(value as number | undefined);
   }
 
+  onPlayedTimeSourceLimitSelection(value: FilterDropdownValue): void {
+    this.playedTimeSourceLimit.set(value as number | undefined);
+  }
+
   onAppearanceSourceLimitSelection(value: FilterDropdownValue): void {
     this.appearanceSourceLimit.set(value as number | undefined);
   }
@@ -232,6 +258,7 @@ export class TopGainersPageComponent implements OnInit {
     this.topGainersLimit.set(DEFAULT_TOP_GAINERS_LIMIT);
     this.achievementSourceLimit.set(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
     this.honorableKillSourceLimit.set(DEFAULT_HONORABLE_KILL_SOURCE_LIMIT);
+    this.playedTimeSourceLimit.set(DEFAULT_PLAYED_TIME_SOURCE_LIMIT);
     this.appearanceSourceLimit.set(DEFAULT_APPEARANCE_SOURCE_LIMIT);
     this.currentRealm.set(undefined);
     this.currentClass.set(undefined);

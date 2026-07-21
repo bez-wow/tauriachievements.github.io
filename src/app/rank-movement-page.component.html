@@ -34,17 +34,23 @@
     [honorableKillSourceLimitOptions]="honorableKillSourceLimitOptions"
     [honorableKillSourceLimit]="honorableKillSourceLimit()"
     [honorableKillSourceLimitLabel]="selectedHonorableKillSourceLimitLabel"
+    [playedTimeSourceLimitOptions]="playedTimeSourceLimitOptions"
+    [playedTimeSourceLimit]="playedTimeSourceLimit()"
+    [playedTimeSourceLimitLabel]="selectedPlayedTimeSourceLimitLabel"
     [appearanceSourceLimitOptions]="appearanceSourceLimitOptions"
     [appearanceSourceLimit]="appearanceSourceLimit()"
     [appearanceSourceLimitLabel]="selectedAppearanceSourceLimitLabel"
     [achievementMovers]="achievementMovers()"
     [honorableKillMovers]="honorableKillMovers()"
+    [playedTimeMovers]="playedTimeMovers()"
     [appearanceMovers]="appearanceMovers()"
     [achievementEmptyMessage]="achievementEmptyMessage()"
     [honorableKillEmptyMessage]="honorableKillEmptyMessage()"
+    [playedTimeEmptyMessage]="playedTimeEmptyMessage()"
     [appearanceEmptyMessage]="appearanceEmptyMessage()"
     (achievementSourceLimitChange)="onAchievementSourceLimitSelection($event)"
     (honorableKillSourceLimitChange)="onHonorableKillSourceLimitSelection($event)"
+    (playedTimeSourceLimitChange)="onPlayedTimeSourceLimitSelection($event)"
     (appearanceSourceLimitChange)="onAppearanceSourceLimitSelection($event)" />
 </div>
 

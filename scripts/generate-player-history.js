@@ -21,17 +21,19 @@ function generatePlayerHistorySnapshot() {
   const movers = {
     achievementPoints: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "achievementPoints"),
     honorableKills: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "honorableKills"),
+    playedTime: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "playedTime"),
     appearanceCount: computeTopMoversForSnapshots(latestPlayers, previousPlayers, "appearanceCount"),
   };
 
   const payload = {
-    v: 2,
+    v: 3,
     g: new Date().toISOString(),
     c: trackedKeys.size,
     s: snapshotSources.map((source) => source.timestamp),
     m: {
       a: movers.achievementPoints,
       h: movers.honorableKills,
+      t: movers.playedTime,
       p: movers.appearanceCount,
     },
   };
@@ -160,7 +162,9 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
     ? compareAchievementPoints
     : sortMetric === "honorableKills"
       ? compareHonorableKills
-      : compareAppearances;
+      : sortMetric === "playedTime"
+        ? comparePlayedTime
+        : compareAppearances;
   const currentRanks = buildRankMap(currentPlayers, compareFn);
   const previousRanks = buildRankMap(previousPlayers, compareFn);
   const previousPlayersByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
@@ -174,6 +178,10 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
     }
 
     if (sortMetric === "appearanceCount" && !previousPlayer.hasAppearanceCount) {
+      continue;
+    }
+
+    if (sortMetric === "playedTime" && !previousPlayer.hasPlayedTime) {
       continue;
     }
 
@@ -193,11 +201,16 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
     const previousAppearanceCount = previousPlayer.hasAppearanceCount ? previousPlayer.appearanceCount : player.appearanceCount;
     const currentAppearanceCount = player.appearanceCount;
     const appearanceCountDelta = currentAppearanceCount - previousAppearanceCount;
+    const previousPlayedTime = previousPlayer.hasPlayedTime ? previousPlayer.playedTime : player.playedTime;
+    const currentPlayedTime = player.playedTime;
+    const playedTimeDelta = currentPlayedTime - previousPlayedTime;
     const metricDelta = sortMetric === "achievementPoints"
       ? achievementPointsDelta
       : sortMetric === "honorableKills"
         ? honorableKillsDelta
-        : appearanceCountDelta;
+        : sortMetric === "playedTime"
+          ? playedTimeDelta
+          : appearanceCountDelta;
 
     if (metricDelta <= 0) {
       continue;
@@ -221,12 +234,21 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
       appearanceCountDelta,
       previousAppearanceCount,
       currentAppearanceCount,
+      playedTimeDelta,
+      previousPlayedTime,
+      currentPlayedTime,
     ]);
   }
 
   return movers
     .sort((left, right) => {
-      const metricDeltaIndex = sortMetric === "achievementPoints" ? 4 : sortMetric === "honorableKills" ? 5 : 14;
+      const metricDeltaIndex = sortMetric === "achievementPoints"
+        ? 4
+        : sortMetric === "honorableKills"
+          ? 5
+          : sortMetric === "playedTime"
+            ? 17
+            : 14;
       const leftMetricDelta = left[metricDeltaIndex];
       const rightMetricDelta = right[metricDeltaIndex];
 
@@ -292,6 +314,18 @@ function compareAppearances(left, right) {
 
   if (right.honorableKills !== left.honorableKills) {
     return right.honorableKills - left.honorableKills;
+  }
+
+  return getPlayerKey(left).localeCompare(getPlayerKey(right));
+}
+
+function comparePlayedTime(left, right) {
+  if (right.playedTime !== left.playedTime) {
+    return right.playedTime - left.playedTime;
+  }
+
+  if (right.achievementPoints !== left.achievementPoints) {
+    return right.achievementPoints - left.achievementPoints;
   }
 
   return getPlayerKey(left).localeCompare(getPlayerKey(right));

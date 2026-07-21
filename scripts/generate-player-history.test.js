@@ -35,3 +35,28 @@ test("a legacy scan without AppearanceCount is used as a baseline, not a gain", 
 
   assert.deepEqual(computeTopMoversForSnapshots(current, previous, "appearanceCount"), []);
 });
+
+test("played time movers track and order time gained between scans", () => {
+  const previous = [
+    { ...player("SmallGain", 100), playedTime: 1000, hasPlayedTime: true },
+    { ...player("BigGain", 100), playedTime: 1000, hasPlayedTime: true },
+  ];
+  const current = [
+    { ...player("SmallGain", 100), playedTime: 1600, hasPlayedTime: true },
+    { ...player("BigGain", 100), playedTime: 4600, hasPlayedTime: true },
+  ];
+
+  const movers = computeTopMoversForSnapshots(current, previous, "playedTime");
+
+  assert.deepEqual(movers.map((mover) => mover[0]), ["Tauri::BigGain", "Tauri::SmallGain"]);
+  assert.deepEqual(movers.map((mover) => mover[17]), [3600, 600]);
+  assert.equal(movers[0][18], 1000);
+  assert.equal(movers[0][19], 4600);
+});
+
+test("a legacy scan without PlayedTime is used as a baseline, not a gain", () => {
+  const previous = [{ ...player("Baseline", 100), playedTime: 0, hasPlayedTime: false }];
+  const current = [{ ...player("Baseline", 100), playedTime: 5000, hasPlayedTime: true }];
+
+  assert.deepEqual(computeTopMoversForSnapshots(current, previous, "playedTime"), []);
+});

@@ -6,6 +6,7 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { LadderHistoryMoverView } from './ladder-history.types';
+import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
 
 @Component({
   selector: 'app-history-summary',
@@ -18,22 +19,28 @@ import { LadderHistoryMoverView } from './ladder-history.types';
 export class HistorySummaryComponent {
   @Input() achievementSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
   @Input() honorableKillSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
+  @Input() playedTimeSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
   @Input() appearanceSourceLimitOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [];
   @Input() achievementSourceLimit?: number;
   @Input() achievementSourceLimitLabel = 'All players';
   @Input() honorableKillSourceLimit?: number;
   @Input() honorableKillSourceLimitLabel = 'All players';
+  @Input() playedTimeSourceLimit?: number;
+  @Input() playedTimeSourceLimitLabel = 'All players';
   @Input() appearanceSourceLimit?: number;
   @Input() appearanceSourceLimitLabel = 'All players';
   @Input() achievementMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() honorableKillMovers: ReadonlyArray<LadderHistoryMoverView> = [];
+  @Input() playedTimeMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() appearanceMovers: ReadonlyArray<LadderHistoryMoverView> = [];
   @Input() achievementEmptyMessage = 'No achievement climbers available yet.';
   @Input() honorableKillEmptyMessage = 'No honorable kill climbers available yet.';
+  @Input() playedTimeEmptyMessage = 'No played time climbers available yet.';
   @Input() appearanceEmptyMessage = 'No appearance climbers available yet.';
 
   @Output() readonly achievementSourceLimitChange = new EventEmitter<FilterDropdownValue>();
   @Output() readonly honorableKillSourceLimitChange = new EventEmitter<FilterDropdownValue>();
+  @Output() readonly playedTimeSourceLimitChange = new EventEmitter<FilterDropdownValue>();
   @Output() readonly appearanceSourceLimitChange = new EventEmitter<FilterDropdownValue>();
 
   readonly getArmoryUrl = getArmoryUrl;
@@ -62,6 +69,14 @@ export class HistorySummaryComponent {
     }
 
     return '0';
+  }
+
+  formatPlayedTime(value: number): string {
+    return formatPlayedTime(value);
+  }
+
+  formatSignedPlayedTime(value: number): string {
+    return formatSignedPlayedTime(value);
   }
 
   getDeltaClass(value: number): string {

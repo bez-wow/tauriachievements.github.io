@@ -122,6 +122,66 @@
 
     <article class="history-panel">
       <div class="history-panel-header">
+        <h3>Played Time Climbers</h3>
+        <app-filter-dropdown
+          dropdownId="playedTimeSourceLimit"
+          triggerId="playedTimeSourceLimitSelect"
+          ariaLabel="Played time ladder source"
+          [options]="playedTimeSourceLimitOptions"
+          [selectedValue]="playedTimeSourceLimit"
+          [selectedLabel]="playedTimeSourceLimitLabel"
+          (selectionChange)="playedTimeSourceLimitChange.emit($event)" />
+      </div>
+      <div class="history-table-wrap" *ngIf="playedTimeMovers.length > 0; else emptyPlayedTimeMovers">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Played Time Gained</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mover of playedTimeMovers; trackBy: trackMover">
+              <td>
+                <a
+                  class="history-player-link"
+                  [href]="getArmoryUrl(mover.name, mover.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  <span class="history-player-topline">
+                    <img
+                      *ngIf="hasRaceIcon(mover)"
+                      [src]="getRaceIconPath(mover.race, mover.gender)"
+                      [alt]="'Race ' + mover.race + '-' + mover.gender"
+                      class="history-icon race-icon"
+                      loading="lazy"
+                      (error)="onImageError($event)" />
+                    <img
+                      *ngIf="hasClassIcon(mover)"
+                      [src]="getClassIconPath(mover.classId)"
+                      [alt]="'Class ' + mover.classId"
+                      class="history-icon class-icon"
+                      loading="lazy"
+                      (error)="onImageError($event)" />
+                    <span class="history-player-name">{{ mover.name }} - {{ mover.realm }}</span>
+                  </span>
+                  <span class="history-player-guild">{{ mover.guild || 'No guild' }}</span>
+                </a>
+              </td>
+              <td>
+                <span class="history-primary" [ngClass]="getDeltaClass(mover.playedTimeDelta)">
+                  {{ formatSignedPlayedTime(mover.playedTimeDelta) }}
+                </span>
+                <span class="history-secondary">{{ formatPlayedTime(mover.currentPlayedTime) }} now</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="history-panel">
+      <div class="history-panel-header">
         <h3>Appearance Climbers</h3>
         <app-filter-dropdown
           dropdownId="appearanceSourceLimit"
@@ -188,6 +248,10 @@
 
 <ng-template #emptyHonorableKillMovers>
   <p class="history-empty">{{ honorableKillEmptyMessage }}</p>
+</ng-template>
+
+<ng-template #emptyPlayedTimeMovers>
+  <p class="history-empty">{{ playedTimeEmptyMessage }}</p>
 </ng-template>
 
 <ng-template #emptyAppearanceMovers>
