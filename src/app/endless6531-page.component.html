@@ -5,7 +5,7 @@
 
 <main class="endless-page">
   <header class="page-header">
-    <p class="eyebrow">Endless</p>
+    <p class="eyebrow">{{ guildName }}</p>
     <h1>Guild Overview</h1>
     <p>{{ players().length }} level 110 characters</p>
   </header>
@@ -126,7 +126,7 @@
               [href]="armoryUrl(player)"
               target="_blank"
               rel="noopener noreferrer"
-              [title]="'Open ' + player.name + ' on the Evermoon Armory'">
+              [title]="'Open ' + player.name + ' on the ' + realmName + ' Armory'">
               {{ player.name }}
             </a>
           </td>

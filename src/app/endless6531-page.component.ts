@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import competenceOptionalAnalysis from '../guild-analysis/competence-optional.json';
 import endlessAnalysis from '../guild-analysis/endless.json';
+import outlawsAnalysis from '../guild-analysis/outlaws.json';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { formatPlayedTime } from './played-time';
 import { UpdateBarComponent } from './update-bar.component';
 
-interface EndlessPlayer {
+interface GuildAnalysisPlayer {
   name: string;
   race: number;
   gender: number;
@@ -21,10 +24,36 @@ interface EndlessPlayer {
   itemLevel: number;
 }
 
-interface EndlessAnalysis {
+interface GuildAnalysis {
   timestamp: string;
-  players: EndlessPlayer[];
+  players: GuildAnalysisPlayer[];
 }
+
+type GuildAnalysisKey = 'endless' | 'competence-optional' | 'outlaws';
+
+interface GuildAnalysisConfig {
+  name: string;
+  realm: string;
+  analysis: GuildAnalysis;
+}
+
+const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = {
+  'endless': {
+    name: 'Endless',
+    realm: 'Evermoon',
+    analysis: endlessAnalysis as GuildAnalysis
+  },
+  'competence-optional': {
+    name: 'Competence Optional',
+    realm: 'Evermoon',
+    analysis: competenceOptionalAnalysis as GuildAnalysis
+  },
+  'outlaws': {
+    name: 'Outlaws',
+    realm: 'Tauri',
+    analysis: outlawsAnalysis as GuildAnalysis
+  }
+};
 
 interface ClassCountEntry {
   id: number;
@@ -71,10 +100,15 @@ const SORT_COLUMNS = new Set<SortColumn>([
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Endless6531PageComponent {
-  private readonly analysis = endlessAnalysis as EndlessAnalysis;
+  private readonly guildKey =
+    inject(ActivatedRoute).snapshot.data['guild'] as GuildAnalysisKey ?? 'endless';
+  private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES.endless;
+  private readonly analysis = this.guild.analysis;
   private readonly sourcePlayers = this.analysis.players;
 
-  readonly players = signal<EndlessPlayer[]>([]);
+  readonly guildName = this.guild.name;
+  readonly realmName = this.guild.realm;
+  readonly players = signal<GuildAnalysisPlayer[]>([]);
   readonly lastEdited = this.parseTimestamp(this.analysis.timestamp);
   readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) ?? 'Local time';
   readonly lastEditedTimeZone = this.timeZoneOffset(this.lastEditedTimeZoneLabel);
@@ -131,19 +165,19 @@ export class Endless6531PageComponent {
     return this.sortDirection() === 'asc' ? 'ascending' : 'descending';
   }
 
-  raceIcon(player: EndlessPlayer): string {
+  raceIcon(player: GuildAnalysisPlayer): string {
     return getRaceIconPath(player.race, player.gender);
   }
 
-  armoryUrl(player: EndlessPlayer): string {
-    return getArmoryUrl(player.name, 'Evermoon');
+  armoryUrl(player: GuildAnalysisPlayer): string {
+    return getArmoryUrl(player.name, this.realmName);
   }
 
   formatPlayedTime(seconds: number): string {
     return formatPlayedTime(seconds);
   }
 
-  formatReputation(player: EndlessPlayer): string {
+  formatReputation(player: GuildAnalysisPlayer): string {
     if (player.nightfallenReputation === null || player.nightfallenReputationMaximum === null) {
       return '—';
     }
@@ -151,7 +185,7 @@ export class Endless6531PageComponent {
     return `${player.nightfallenReputation.toLocaleString()} / ${player.nightfallenReputationMaximum.toLocaleString()}`;
   }
 
-  isHighReputation(player: EndlessPlayer): boolean {
+  isHighReputation(player: GuildAnalysisPlayer): boolean {
     return player.nightfallenReputationMaximum === 21_000
       || (
         player.nightfallenReputationMaximum === 12_000
@@ -160,7 +194,7 @@ export class Endless6531PageComponent {
       );
   }
 
-  trackPlayer(_index: number, player: EndlessPlayer): string {
+  trackPlayer(_index: number, player: GuildAnalysisPlayer): string {
     return player.name;
   }
 
@@ -208,7 +242,7 @@ export class Endless6531PageComponent {
     }));
   }
 
-  private sortValue(player: EndlessPlayer, column: SortColumn): string | number | null {
+  private sortValue(player: GuildAnalysisPlayer, column: SortColumn): string | number | null {
     switch (column) {
       case 'name':
         return player.name;

@@ -54,7 +54,18 @@ export const routes: Routes = [
   },
   {
     path: 'endless-f8c2a91d',
-    component: Endless6531PageComponent
+    component: Endless6531PageComponent,
+    data: { guild: 'endless' }
+  },
+  {
+    path: 'competence-optional-a47d9c2e',
+    component: Endless6531PageComponent,
+    data: { guild: 'competence-optional' }
+  },
+  {
+    path: 'outlaws-6b31f0ad',
+    component: Endless6531PageComponent,
+    data: { guild: 'outlaws' }
   },
   {
     path: '**',
