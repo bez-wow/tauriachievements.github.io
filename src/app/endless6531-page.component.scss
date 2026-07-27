@@ -327,6 +327,14 @@ table {
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
+.neon-purple-text {
+  color: #e056fd;
+  font-weight: 700 !important;
+  text-shadow:
+    0 0 5px rgba(224, 86, 253, 0.9),
+    0 0 12px rgba(190, 46, 255, 0.65);
+}
+
 @media (max-width: 1260px) {
   .page-content {
     grid-template-columns: 1fr;

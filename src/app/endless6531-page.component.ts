@@ -124,6 +124,15 @@ export class Endless6531PageComponent {
     return `${player.nightfallenReputation.toLocaleString()} / ${player.nightfallenReputationMaximum.toLocaleString()}`;
   }
 
+  isHighReputation(player: EndlessPlayer): boolean {
+    return player.nightfallenReputationMaximum === 21_000
+      || (
+        player.nightfallenReputationMaximum === 12_000
+        && player.nightfallenReputation !== null
+        && player.nightfallenReputation >= 8_000
+      );
+  }
+
   trackPlayer(_index: number, player: EndlessPlayer): string {
     return player.name;
   }

@@ -105,7 +105,9 @@
             <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
             <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
           </td>
-          <td>{{ formatReputation(player) }}</td>
+          <td [class.neon-purple-text]="isHighReputation(player)">
+            {{ formatReputation(player) }}
+          </td>
           <td>{{ player.artifactRelics | number }}</td>
           <td>{{ player.artifactTraits | number }}</td>
           <td>{{ player.itemLevel | number:'1.2-2' }}</td>
