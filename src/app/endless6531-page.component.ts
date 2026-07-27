@@ -9,6 +9,7 @@ import { formatPlayedTime } from './played-time';
 interface EndlessPlayer {
   name: string;
   race: number;
+  gender: number;
   class: number;
   playedTime: number;
   achievementPoints: number;
@@ -18,6 +19,19 @@ interface EndlessPlayer {
   artifactTraits: number;
   itemLevel: number;
 }
+
+interface ClassCountEntry {
+  id: number;
+  name: string;
+  count: number;
+  percentage: number;
+}
+
+const CLASS_NAMES: Readonly<Record<number, string>> = {
+  1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
+  5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
+  9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
+};
 
 type SortColumn =
   | 'name'
@@ -43,9 +57,11 @@ export class Endless6531PageComponent {
   private readonly sourcePlayers = endlessPlayers as EndlessPlayer[];
 
   readonly players = signal<EndlessPlayer[]>([]);
-  readonly sortColumn = signal<SortColumn>('reputation');
+  readonly sortColumn = signal<SortColumn>('artifactTraits');
   readonly sortDirection = signal<SortDirection>('desc');
   readonly getClassIconPath = getClassIconPath;
+
+  readonly classCounts = this.buildClassCounts();
 
   constructor() {
     this.applySort();
@@ -79,7 +95,7 @@ export class Endless6531PageComponent {
   }
 
   raceIcon(player: EndlessPlayer): string {
-    return getRaceIconPath(player.race, 0);
+    return getRaceIconPath(player.race, player.gender);
   }
 
   armoryUrl(player: EndlessPlayer): string {
@@ -100,6 +116,24 @@ export class Endless6531PageComponent {
 
   trackPlayer(_index: number, player: EndlessPlayer): string {
     return player.name;
+  }
+
+  private buildClassCounts(): ClassCountEntry[] {
+    const counts = new Map<number, number>();
+
+    for (const player of this.sourcePlayers) {
+      counts.set(player.class, (counts.get(player.class) ?? 0) + 1);
+    }
+
+    const largestClassCount = Math.max(0, ...counts.values());
+    return [...counts.entries()]
+      .map(([id, count]) => ({
+        id,
+        name: CLASS_NAMES[id] ?? `Class ${id}`,
+        count,
+        percentage: largestClassCount === 0 ? 0 : count / largestClassCount * 100
+      }))
+      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
   }
 
   private applySort(): void {

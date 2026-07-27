@@ -1,11 +1,34 @@
 <main class="endless-page">
   <header class="page-header">
-    <p class="eyebrow">Endless · 6531</p>
-    <h1>Character Progress</h1>
-    <p>{{ players().length }} characters</p>
+    <p class="eyebrow">Endless</p>
+    <h1>Guild Overview</h1>
+    <p>{{ players().length }} level 110 characters</p>
   </header>
 
-  <div class="table-scroll">
+  <div class="page-content">
+    <aside class="summary-panel" aria-label="Guild roster summary">
+      <section class="summary-card">
+        <div class="summary-heading">
+          <div>
+            <p class="card-eyebrow">Guild composition</p>
+            <h2>Classes</h2>
+          </div>
+        </div>
+
+        <div class="class-list">
+          <div class="class-row" *ngFor="let entry of classCounts">
+            <img [src]="getClassIconPath(entry.id)" [alt]="entry.name" />
+            <span class="class-name">{{ entry.name }}</span>
+            <span class="class-count">{{ entry.count }}</span>
+            <span class="class-bar" aria-hidden="true">
+              <span [style.width.%]="entry.percentage"></span>
+            </span>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -60,5 +83,6 @@
         </tr>
       </tbody>
     </table>
+    </div>
   </div>
 </main>

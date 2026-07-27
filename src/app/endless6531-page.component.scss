@@ -5,9 +5,9 @@
 }
 
 .endless-page {
-  width: fit-content;
-  min-width: min(960px, 100%);
-  max-width: min(1660px, 100%);
+  width: 100%;
+  min-width: 0;
+  max-width: 1920px;
   margin: 0 auto;
   padding: 46px 20px 24px;
   color: #e0e0e0;
@@ -38,7 +38,108 @@
   text-transform: uppercase;
 }
 
+.page-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: start;
+  gap: 20px;
+}
+
+.summary-panel {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.summary-card {
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid rgba(247, 181, 0, 0.14);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(247, 181, 0, 0.09), transparent 44%),
+    linear-gradient(145deg, rgba(42, 24, 27, 0.97), rgba(20, 17, 24, 0.98));
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
+}
+
+.summary-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 2px 0 0;
+    color: #fff;
+    font-size: 1.05rem;
+  }
+}
+
+.card-eyebrow {
+  margin: 0;
+  color: #b48a45;
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.class-list {
+  display: grid;
+  gap: 7px;
+}
+
+.class-row {
+  display: grid;
+  grid-template-columns: 25px 1fr auto;
+  align-items: center;
+  gap: 9px;
+
+  img {
+    width: 25px;
+    height: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+  }
+}
+
+.class-name,
+.class-count {
+  font-size: 0.76rem;
+}
+
+.class-name {
+  color: #ddd;
+}
+
+.class-count {
+  color: #f7b500;
+  font-weight: 800;
+}
+
+.class-bar {
+  grid-column: 2 / 4;
+  height: 3px;
+  margin-top: -6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #7d291f, #f7b500);
+  }
+}
+
 .table-scroll {
+  grid-column: 1;
+  grid-row: 1;
   width: 100%;
   overflow-x: auto;
   border-radius: 12px;
@@ -159,11 +260,28 @@ table {
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
+@media (max-width: 1260px) {
+  .page-content {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-panel {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
 @media (max-width: 640px) {
   .endless-page {
     width: 100%;
     min-width: 0;
     padding: 28px 12px 18px;
+  }
+
+  .summary-panel {
+    grid-template-columns: 1fr;
   }
 
   table th button,
