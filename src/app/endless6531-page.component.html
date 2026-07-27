@@ -1,0 +1,64 @@
+<main class="endless-page">
+  <header class="page-header">
+    <p class="eyebrow">Endless · 6531</p>
+    <h1>Character Progress</h1>
+    <p>{{ players().length }} characters</p>
+  </header>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th [attr.aria-sort]="ariaSort('name')">
+            <button type="button" (click)="sortBy('name')">Name <span>{{ sortIndicator('name') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('raceClass')">
+            <button type="button" (click)="sortBy('raceClass')">Race / Class <span>{{ sortIndicator('raceClass') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('reputation')">
+            <button type="button" (click)="sortBy('reputation')">Nightfallen Reputation <span>{{ sortIndicator('reputation') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('artifactRelics')">
+            <button type="button" (click)="sortBy('artifactRelics')">Artifact Relics <span>{{ sortIndicator('artifactRelics') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('artifactTraits')">
+            <button type="button" (click)="sortBy('artifactTraits')">Artifact Traits <span>{{ sortIndicator('artifactTraits') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('itemLevel')">
+            <button type="button" (click)="sortBy('itemLevel')">Item Level <span>{{ sortIndicator('itemLevel') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('playedTime')">
+            <button type="button" (click)="sortBy('playedTime')">Time Played <span>{{ sortIndicator('playedTime') }}</span></button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('achievementPoints')">
+            <button type="button" (click)="sortBy('achievementPoints')">Achievement Points <span>{{ sortIndicator('achievementPoints') }}</span></button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let player of players(); trackBy: trackPlayer">
+          <td>
+            <a
+              class="player-name"
+              [href]="armoryUrl(player)"
+              target="_blank"
+              rel="noopener noreferrer"
+              [title]="'Open ' + player.name + ' on the Evermoon Armory'">
+              {{ player.name }}
+            </a>
+          </td>
+          <td class="icons">
+            <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
+            <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
+          </td>
+          <td>{{ formatReputation(player) }}</td>
+          <td>{{ player.artifactRelics | number }}</td>
+          <td>{{ player.artifactTraits | number }}</td>
+          <td>{{ player.itemLevel | number:'1.2-2' }}</td>
+          <td>{{ formatPlayedTime(player.playedTime) }}</td>
+          <td class="gold-text">{{ player.achievementPoints | number }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>

@@ -71,6 +71,21 @@ The production build also regenerates the snapshot automatically.
 npm run build
 ```
 
+## List players in a guild
+
+Print each matching player's name, class, race, artifact item level, and spent artifact traits.
+The players come from `src/Players.csv`, and the artifact details are fetched once per player
+from Tauri's `character-artifact` endpoint.
+
+```bash
+$env:TAURI_API_KEY = "your-api-key"
+$env:TAURI_API_SECRET = "your-api-secret"
+npm run guild:players -- --realm Tauri --guild Outlaws
+```
+
+Quote guild names containing spaces. You can also pass `--source path/to/Players.csv` or
+`--concurrency 4`. The optional `TAURI_API_URL` environment variable overrides the API URL.
+
 ## Project structure
 
 - `src/app/` - application components, services, models, and ladder logic

@@ -13,7 +13,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test && npm run test:scripts",
     "test:unit": "ng test",
-    "test:scripts": "node --test \"scripts/*.test.js\""
+    "test:scripts": "node --test \"scripts/*.test.js\"",
+    "guild:players": "node ./scripts/list-guild-players.js"
   },
   "private": true,
   "dependencies": {

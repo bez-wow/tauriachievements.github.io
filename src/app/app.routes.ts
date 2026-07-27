@@ -3,6 +3,7 @@ import { AchievementLadderComponent } from './ladder.component';
 import { BattlegroundPageComponent } from './battleground-page.component';
 import { ComparePageComponent } from './compare-page.component';
 import { GuildPresencePageComponent } from './guild-presence-page.component';
+import { Endless6531PageComponent } from './endless6531-page.component';
 import { GuildRealmFirstsPageComponent } from './guild-realm-firsts-page.component';
 import { NewRareCharactersPageComponent } from './new-rare-characters-page.component';
 import { RareAchievementsPageComponent } from './rare-achievements-page.component';
@@ -50,6 +51,10 @@ export const routes: Routes = [
   {
     path: 'compare',
     component: ComparePageComponent
+  },
+  {
+    path: 'endless6531',
+    component: Endless6531PageComponent
   },
   {
     path: '**',
