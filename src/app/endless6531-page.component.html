@@ -33,6 +33,35 @@
       </section>
     </aside>
 
+    <section class="mobile-sort" aria-label="Sort guild roster">
+      <label for="mobile-sort-column">Sort roster by</label>
+      <div class="mobile-sort-controls">
+        <span class="mobile-sort-select">
+          <select
+            id="mobile-sort-column"
+            [value]="sortColumn()"
+            (change)="selectMobileSort($any($event.target).value)">
+            <option value="name">Name</option>
+            <option value="raceClass">Race / Class</option>
+            <option value="reputation">Nightfallen Reputation</option>
+            <option value="artifactRelics">Artifact Relics</option>
+            <option value="artifactTraits">Artifact Traits</option>
+            <option value="itemLevel">Item Level</option>
+            <option value="playedTime">Time Played</option>
+            <option value="achievementPoints">Achievement Points</option>
+          </select>
+        </span>
+        <button
+          class="sort-direction"
+          type="button"
+          (click)="toggleSortDirection()"
+          [attr.aria-label]="'Change to ' + (sortDirection() === 'asc' ? 'descending' : 'ascending') + ' order'">
+          <span aria-hidden="true">{{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+          {{ sortDirection() === 'asc' ? 'Ascending' : 'Descending' }}
+        </button>
+      </div>
+    </section>
+
     <div class="table-scroll">
     <table>
       <thead>

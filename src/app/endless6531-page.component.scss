@@ -147,6 +147,10 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
+.mobile-sort {
+  display: none;
+}
+
 table {
   width: 100%;
   table-layout: fixed;
@@ -369,6 +373,90 @@ table {
     padding: 12px;
   }
 
+  .mobile-sort {
+    position: sticky;
+    top: 35px;
+    z-index: 60;
+    display: block;
+    grid-row: 2;
+    padding: 9px 10px 10px;
+    border: 1px solid rgba(247, 181, 0, 0.22);
+    border-radius: 10px;
+    background: rgba(25, 20, 24, 0.96);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(8px);
+
+    > label {
+      display: block;
+      margin-bottom: 6px;
+      color: #b48a45;
+      font-size: 0.61rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+  }
+
+  .mobile-sort-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .mobile-sort-select {
+    position: relative;
+    min-width: 0;
+
+    &::after {
+      position: absolute;
+      top: 50%;
+      right: 11px;
+      content: "▾";
+      color: #f7b500;
+      pointer-events: none;
+      transform: translateY(-52%);
+    }
+  }
+
+  .mobile-sort select,
+  .sort-direction {
+    min-height: 38px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 7px;
+    color: #f3f3f3;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .mobile-sort select {
+    width: 100%;
+    padding: 0 30px 0 10px;
+    appearance: none;
+    background: #30262c;
+  }
+
+  .sort-direction {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    background: linear-gradient(135deg, #4c291d, #2f2024);
+    cursor: pointer;
+
+    span {
+      color: #ffd700;
+      font-size: 1rem;
+    }
+  }
+
+  .mobile-sort select:focus-visible,
+  .sort-direction:focus-visible {
+    border-color: #f7b500;
+    outline: 2px solid rgba(247, 181, 0, 0.32);
+    outline-offset: 1px;
+  }
+
   .class-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 16px;
@@ -385,7 +473,7 @@ table {
   }
 
   .table-scroll {
-    grid-row: 2;
+    grid-row: 3;
     overflow: visible;
     border-radius: 0;
     box-shadow: none;

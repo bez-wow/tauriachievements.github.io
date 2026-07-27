@@ -51,6 +51,17 @@ type SortColumn =
 
 type SortDirection = 'asc' | 'desc';
 
+const SORT_COLUMNS = new Set<SortColumn>([
+  'name',
+  'raceClass',
+  'reputation',
+  'artifactRelics',
+  'artifactTraits',
+  'itemLevel',
+  'playedTime',
+  'achievementPoints'
+]);
+
 @Component({
   selector: 'app-endless6531-page',
   standalone: true,
@@ -85,6 +96,22 @@ export class Endless6531PageComponent {
       this.sortDirection.set(column === 'name' || column === 'raceClass' ? 'asc' : 'desc');
     }
 
+    this.applySort();
+  }
+
+  selectMobileSort(column: string): void {
+    if (!SORT_COLUMNS.has(column as SortColumn)) {
+      return;
+    }
+
+    const selectedColumn = column as SortColumn;
+    this.sortColumn.set(selectedColumn);
+    this.sortDirection.set(selectedColumn === 'name' || selectedColumn === 'raceClass' ? 'asc' : 'desc');
+    this.applySort();
+  }
+
+  toggleSortDirection(): void {
+    this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
     this.applySort();
   }
 
