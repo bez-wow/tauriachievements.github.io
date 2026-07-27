@@ -5,6 +5,7 @@ import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { formatPlayedTime } from './played-time';
+import { UpdateBarComponent } from './update-bar.component';
 
 interface EndlessPlayer {
   name: string;
@@ -48,7 +49,7 @@ type SortDirection = 'asc' | 'desc';
 @Component({
   selector: 'app-endless6531-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, UpdateBarComponent],
   templateUrl: './endless6531-page.component.html',
   styleUrls: ['./endless6531-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

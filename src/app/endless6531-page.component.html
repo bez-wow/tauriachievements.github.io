@@ -1,3 +1,5 @@
+<app-update-bar></app-update-bar>
+
 <main class="endless-page">
   <header class="page-header">
     <p class="eyebrow">Endless</p>
@@ -32,34 +34,60 @@
     <table>
       <thead>
         <tr>
+          <th class="row-number-heading" scope="col">#</th>
           <th [attr.aria-sort]="ariaSort('name')">
-            <button type="button" (click)="sortBy('name')">Name <span>{{ sortIndicator('name') }}</span></button>
+            <button type="button" (click)="sortBy('name')">
+              <span class="header-label">Name</span>
+              <span class="sort-indicator">{{ sortIndicator('name') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('raceClass')">
-            <button type="button" (click)="sortBy('raceClass')">Race / Class <span>{{ sortIndicator('raceClass') }}</span></button>
+            <button type="button" (click)="sortBy('raceClass')">
+              <span class="header-label">Race / Class</span>
+              <span class="sort-indicator">{{ sortIndicator('raceClass') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('reputation')">
-            <button type="button" (click)="sortBy('reputation')">Nightfallen Reputation <span>{{ sortIndicator('reputation') }}</span></button>
+            <button type="button" (click)="sortBy('reputation')">
+              <span class="header-label">Nightfallen Reputation</span>
+              <span class="sort-indicator">{{ sortIndicator('reputation') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('artifactRelics')">
-            <button type="button" (click)="sortBy('artifactRelics')">Artifact Relics <span>{{ sortIndicator('artifactRelics') }}</span></button>
+            <button type="button" (click)="sortBy('artifactRelics')">
+              <span class="header-label">Artifact Relics</span>
+              <span class="sort-indicator">{{ sortIndicator('artifactRelics') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('artifactTraits')">
-            <button type="button" (click)="sortBy('artifactTraits')">Artifact Traits <span>{{ sortIndicator('artifactTraits') }}</span></button>
+            <button type="button" (click)="sortBy('artifactTraits')">
+              <span class="header-label">Artifact Traits</span>
+              <span class="sort-indicator">{{ sortIndicator('artifactTraits') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('itemLevel')">
-            <button type="button" (click)="sortBy('itemLevel')">Item Level <span>{{ sortIndicator('itemLevel') }}</span></button>
+            <button type="button" (click)="sortBy('itemLevel')">
+              <span class="header-label">Item Level</span>
+              <span class="sort-indicator">{{ sortIndicator('itemLevel') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('playedTime')">
-            <button type="button" (click)="sortBy('playedTime')">Time Played <span>{{ sortIndicator('playedTime') }}</span></button>
+            <button type="button" (click)="sortBy('playedTime')">
+              <span class="header-label">Time Played</span>
+              <span class="sort-indicator">{{ sortIndicator('playedTime') }}</span>
+            </button>
           </th>
           <th [attr.aria-sort]="ariaSort('achievementPoints')">
-            <button type="button" (click)="sortBy('achievementPoints')">Achievement Points <span>{{ sortIndicator('achievementPoints') }}</span></button>
+            <button type="button" (click)="sortBy('achievementPoints')">
+              <span class="header-label">Achievement Points</span>
+              <span class="sort-indicator">{{ sortIndicator('achievementPoints') }}</span>
+            </button>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let player of players(); trackBy: trackPlayer">
+        <tr *ngFor="let player of players(); let rowIndex = index; trackBy: trackPlayer">
+          <td class="row-number">{{ rowIndex + 1 }}</td>
           <td>
             <a
               class="player-name"
