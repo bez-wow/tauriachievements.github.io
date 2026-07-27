@@ -26,9 +26,9 @@
     <span class="update-bar-text" *ngIf="lastEdited; else updateUnavailable">
       <span class="update-label gold-text">Last updated:</span>
       <span class="update-gap" aria-hidden="true"></span>
-      <span class="update-date">{{ lastEdited | date:'MMM d, y' }}</span>
+      <span class="update-date">{{ lastEdited | date:'MMM d, y':lastEditedTimeZone }}</span>
       <span class="update-separator" aria-hidden="true">&bull;</span>
-      <span class="update-time">{{ lastEdited | date:'HH:mm' }}</span>
+      <span class="update-time">{{ lastEdited | date:'HH:mm':lastEditedTimeZone }}</span>
       <span class="update-gap" aria-hidden="true"></span>
       <span class="update-zone">{{ lastEditedTimeZoneLabel }}</span>
     </span>

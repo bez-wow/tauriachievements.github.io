@@ -13,6 +13,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 export class UpdateBarComponent {
   @Input() lastEdited?: Date;
   @Input() lastEditedTimeZoneLabel = 'Local time';
+  @Input() lastEditedTimeZone?: string;
 
   protected readonly isNavOpen = signal(false);
 

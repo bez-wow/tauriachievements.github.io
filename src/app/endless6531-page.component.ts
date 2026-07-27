@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import endlessPlayers from '../assets/endless6531.json';
+import endlessAnalysis from '../guild-analysis/endless.json';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -19,6 +19,11 @@ interface EndlessPlayer {
   artifactRelics: number;
   artifactTraits: number;
   itemLevel: number;
+}
+
+interface EndlessAnalysis {
+  timestamp: string;
+  players: EndlessPlayer[];
 }
 
 interface ClassCountEntry {
@@ -55,9 +60,13 @@ type SortDirection = 'asc' | 'desc';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Endless6531PageComponent {
-  private readonly sourcePlayers = endlessPlayers as EndlessPlayer[];
+  private readonly analysis = endlessAnalysis as EndlessAnalysis;
+  private readonly sourcePlayers = this.analysis.players;
 
   readonly players = signal<EndlessPlayer[]>([]);
+  readonly lastEdited = this.parseTimestamp(this.analysis.timestamp);
+  readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) ?? 'Local time';
+  readonly lastEditedTimeZone = this.timeZoneOffset(this.lastEditedTimeZoneLabel);
   readonly sortColumn = signal<SortColumn>('artifactTraits');
   readonly sortDirection = signal<SortDirection>('desc');
   readonly getClassIconPath = getClassIconPath;
@@ -176,5 +185,26 @@ export class Endless6531PageComponent {
       default:
         return player[column];
     }
+  }
+
+  private parseTimestamp(timestamp: string): Date | undefined {
+    const match = timestamp.match(
+      /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s+(CET|CEST|UTC)$/
+    );
+    if (!match) {
+      return undefined;
+    }
+
+    const [, year, month, day, hour, minute, second, zone] = match;
+    const offset = zone === 'CEST' ? '+02:00' : zone === 'CET' ? '+01:00' : '+00:00';
+    const parsedDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}${offset}`);
+    return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+  }
+
+  private timeZoneOffset(timeZoneLabel: string): string | undefined {
+    return timeZoneLabel === 'CEST' ? '+0200'
+      : timeZoneLabel === 'CET' ? '+0100'
+      : timeZoneLabel === 'UTC' ? '+0000'
+      : undefined;
   }
 }

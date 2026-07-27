@@ -53,7 +53,7 @@ export const routes: Routes = [
     component: ComparePageComponent
   },
   {
-    path: 'endless6531',
+    path: 'endless-f8c2a91d',
     component: Endless6531PageComponent
   },
   {
