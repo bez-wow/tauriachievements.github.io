@@ -90,8 +90,8 @@
       </thead>
       <tbody>
         <tr *ngFor="let player of players(); let rowIndex = index; trackBy: trackPlayer">
-          <td class="row-number">{{ rowIndex + 1 }}</td>
-          <td>
+          <td class="row-number" data-label="Rank">{{ rowIndex + 1 }}</td>
+          <td class="player-cell" data-label="Name">
             <a
               class="player-name"
               [href]="armoryUrl(player)"
@@ -101,18 +101,18 @@
               {{ player.name }}
             </a>
           </td>
-          <td class="icons">
+          <td class="icons" data-label="Race / Class">
             <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
             <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
           </td>
-          <td [class.neon-purple-text]="isHighReputation(player)">
+          <td data-label="Nightfallen" [class.neon-purple-text]="isHighReputation(player)">
             {{ formatReputation(player) }}
           </td>
-          <td>{{ player.artifactRelics | number }}</td>
-          <td>{{ player.artifactTraits | number }}</td>
-          <td>{{ player.itemLevel | number:'1.2-2' }}</td>
-          <td>{{ formatPlayedTime(player.playedTime) }}</td>
-          <td class="gold-text">{{ player.achievementPoints | number }}</td>
+          <td data-label="Artifact Relics">{{ player.artifactRelics | number }}</td>
+          <td data-label="Artifact Traits">{{ player.artifactTraits | number }}</td>
+          <td data-label="Item Level">{{ player.itemLevel | number:'1.2-2' }}</td>
+          <td data-label="Time Played">{{ formatPlayedTime(player.playedTime) }}</td>
+          <td class="gold-text" data-label="Achievement Points">{{ player.achievementPoints | number }}</td>
         </tr>
       </tbody>
     </table>
