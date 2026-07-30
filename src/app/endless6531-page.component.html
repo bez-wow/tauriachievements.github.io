@@ -12,12 +12,64 @@
 
   <div class="page-content">
     <aside class="summary-panel" aria-label="Guild roster summary">
+      <section class="summary-card character-groups" *ngIf="showMainAltCharacters">
+        <div class="summary-heading">
+          <div>
+            <p class="card-eyebrow">Character groups</p>
+            <h2>Main &amp; Alt Characters</h2>
+          </div>
+        </div>
+
+        <label for="main-character">Main character</label>
+        <span class="main-character-select">
+          <select
+            id="main-character"
+            [value]="selectedMainCharacter()"
+            (change)="selectMainCharacter($any($event.target).value)">
+            <option value="">All characters</option>
+            <option *ngFor="let mainCharacter of mainCharacters" [value]="mainCharacter">
+              {{ mainCharacter }}
+            </option>
+          </select>
+        </span>
+
+        <div class="role-filter">
+          <label for="character-role-filter">Filter by role</label>
+          <span class="main-character-select">
+            <select
+              id="character-role-filter"
+              [value]="selectedCharacterRole()"
+              (change)="selectCharacterRole($any($event.target).value)">
+              <option value="all">All roles</option>
+              <option value="main">Main</option>
+              <option value="alt">Alt</option>
+              <option value="unknown">?</option>
+            </select>
+          </span>
+        </div>
+      </section>
+
       <section class="summary-card">
         <div class="summary-heading">
           <div>
             <p class="card-eyebrow">Guild composition</p>
             <h2>Classes</h2>
           </div>
+        </div>
+
+        <div class="class-filter" *ngIf="showMainAltCharacters">
+          <label for="class-filter">Filter by class</label>
+          <span class="main-character-select">
+            <select
+              id="class-filter"
+              [value]="selectedClassId() ?? ''"
+              (change)="selectClass($any($event.target).value)">
+              <option value="">All classes</option>
+              <option *ngFor="let entry of classCounts" [value]="entry.id">
+                {{ entry.name }}
+              </option>
+            </select>
+          </span>
         </div>
 
         <div class="class-list">
@@ -118,7 +170,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let player of players(); let rowIndex = index; trackBy: trackPlayer">
+        <tr
+          *ngFor="let player of players(); let rowIndex = index; trackBy: trackPlayer"
+          [class.main-character-row]="selectedMainCharacter() && isSelectedMainCharacter(player)"
+          [class.raid-character]="selectedMainCharacter() && !isSelectedMainCharacter(player) && wantsToRaid(player)"
+          [class.non-raid-character]="selectedMainCharacter() && !isSelectedMainCharacter(player) && !wantsToRaid(player)">
           <td class="row-number" data-label="Rank">{{ rowIndex + 1 }}</td>
           <td class="player-cell" data-label="Name">
             <a
@@ -126,9 +182,16 @@
               [href]="armoryUrl(player)"
               target="_blank"
               rel="noopener noreferrer"
-              [title]="'Open ' + player.name + ' on the ' + realmName + ' Armory'">
+              [title]="'Open ' + player.name + ' on Tauri Armory'">
               {{ player.name }}
             </a>
+            <span
+              *ngIf="showMainAltCharacters"
+              class="character-role"
+              [class]="'character-role character-role--' + characterRole(player)"
+              [attr.title]="characterRole(player) === 'alt' ? mainCharacterFor(player) : null">
+              {{ characterRole(player) === 'unknown' ? '?' : characterRole(player) }}
+            </span>
           </td>
           <td class="icons" data-label="Race / Class">
             <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
@@ -142,6 +205,13 @@
           <td data-label="Item Level">{{ player.itemLevel | number:'1.2-2' }}</td>
           <td data-label="Time Played">{{ formatPlayedTime(player.playedTime) }}</td>
           <td class="gold-text" data-label="Achievement Points">{{ player.achievementPoints | number }}</td>
+        </tr>
+        <tr
+          class="empty-roster"
+          *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all')">
+          <td colspan="9">
+            No matching alt characters were found in the current guild roster.
+          </td>
         </tr>
       </tbody>
     </table>

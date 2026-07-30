@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ActivatedRoute } from '@angular/router';
 import competenceOptionalAnalysis from '../guild-analysis/competence-optional.json';
 import endlessAnalysis from '../guild-analysis/endless.json';
+import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import outlawsAnalysis from '../guild-analysis/outlaws.json';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
@@ -62,6 +63,15 @@ interface ClassCountEntry {
   percentage: number;
 }
 
+interface AltCharacterDefinition {
+  name: string;
+  wantsToRaid?: boolean;
+}
+
+type AltCharacterEntry = string | AltCharacterDefinition;
+type MainAltCharacters = Readonly<Record<string, readonly AltCharacterEntry[]>>;
+type CharacterRole = 'main' | 'alt' | 'unknown';
+
 const CLASS_NAMES: Readonly<Record<number, string>> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
@@ -115,6 +125,20 @@ export class Endless6531PageComponent {
   readonly sortColumn = signal<SortColumn>('artifactTraits');
   readonly sortDirection = signal<SortDirection>('desc');
   readonly getClassIconPath = getClassIconPath;
+  readonly showMainAltCharacters = this.guildKey === 'endless';
+  readonly mainCharacters = Object.entries(endlessMainAlts as MainAltCharacters)
+    .filter(([, entries]) =>
+      entries.some((entry) => this.altCharacterName(entry).trim().length > 0)
+    )
+    .map(([mainCharacter]) => mainCharacter)
+    .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }));
+  readonly selectedMainCharacter = signal('');
+  readonly selectedAltCharacters = signal<readonly string[]>([]);
+  readonly selectedClassId = signal<number | null>(null);
+  readonly selectedCharacterRole = signal<CharacterRole | 'all'>('all');
+  readonly raidCharacters = signal<ReadonlySet<string>>(new Set());
+  private readonly characterRoles = this.buildCharacterRoles();
+  private readonly mainCharactersByAlt = this.buildMainCharactersByAlt();
 
   readonly classCounts = this.buildClassCounts();
 
@@ -169,7 +193,7 @@ export class Endless6531PageComponent {
     return getRaceIconPath(player.race, player.gender);
   }
 
-  armoryUrl(player: GuildAnalysisPlayer): string {
+  armoryUrl(player: Pick<GuildAnalysisPlayer, 'name'>): string {
     return getArmoryUrl(player.name, this.realmName);
   }
 
@@ -183,6 +207,56 @@ export class Endless6531PageComponent {
     }
 
     return `${player.nightfallenReputation.toLocaleString()} / ${player.nightfallenReputationMaximum.toLocaleString()}`;
+  }
+
+  selectMainCharacter(name: string): void {
+    const entries = (endlessMainAlts as MainAltCharacters)[name] ?? [];
+
+    this.selectedMainCharacter.set(name);
+    this.selectedAltCharacters.set(entries.map((entry) => this.altCharacterName(entry)));
+    this.raidCharacters.set(new Set(
+      entries
+        .filter((entry): entry is AltCharacterDefinition =>
+          typeof entry !== 'string' && entry.wantsToRaid === true
+        )
+        .map((entry) => entry.name.toLocaleLowerCase())
+    ));
+    this.applySort();
+  }
+
+  selectClass(classId: string): void {
+    const parsedClassId = Number(classId);
+    this.selectedClassId.set(
+      classId && Number.isInteger(parsedClassId) ? parsedClassId : null
+    );
+    this.applySort();
+  }
+
+  selectCharacterRole(role: string): void {
+    this.selectedCharacterRole.set(
+      role === 'main' || role === 'alt' || role === 'unknown' ? role : 'all'
+    );
+    this.applySort();
+  }
+
+  wantsToRaid(player: GuildAnalysisPlayer): boolean {
+    return this.raidCharacters().has(player.name.toLocaleLowerCase());
+  }
+
+  isSelectedMainCharacter(player: GuildAnalysisPlayer): boolean {
+    return player.name.localeCompare(
+      this.selectedMainCharacter(),
+      undefined,
+      { sensitivity: 'base' }
+    ) === 0;
+  }
+
+  characterRole(player: GuildAnalysisPlayer): CharacterRole {
+    return this.characterRoles.get(player.name.toLocaleLowerCase()) ?? 'unknown';
+  }
+
+  mainCharacterFor(player: GuildAnalysisPlayer): string | undefined {
+    return this.mainCharactersByAlt.get(player.name.toLocaleLowerCase());
   }
 
   isHighReputation(player: GuildAnalysisPlayer): boolean {
@@ -219,8 +293,32 @@ export class Endless6531PageComponent {
   private applySort(): void {
     const column = this.sortColumn();
     const multiplier = this.sortDirection() === 'asc' ? 1 : -1;
+    const selectedAltNames = new Set(
+      this.selectedAltCharacters().map((name) => name.toLocaleLowerCase())
+    );
+    const characterFilteredPlayers = this.selectedMainCharacter()
+      ? this.sourcePlayers.filter((player) =>
+          this.isSelectedMainCharacter(player)
+          || selectedAltNames.has(player.name.toLocaleLowerCase())
+        )
+      : this.sourcePlayers;
+    const classFilteredPlayers = this.selectedClassId() === null
+      ? characterFilteredPlayers
+      : characterFilteredPlayers.filter((player) => player.class === this.selectedClassId());
+    const visiblePlayers = this.selectedCharacterRole() === 'all'
+      ? classFilteredPlayers
+      : classFilteredPlayers.filter((player) => this.characterRole(player) === this.selectedCharacterRole());
 
-    this.players.set([...this.sourcePlayers].sort((left, right) => {
+    this.players.set([...visiblePlayers].sort((left, right) => {
+      if (this.selectedMainCharacter()) {
+        const leftIsMain = this.isSelectedMainCharacter(left);
+        const rightIsMain = this.isSelectedMainCharacter(right);
+
+        if (leftIsMain !== rightIsMain) {
+          return leftIsMain ? -1 : 1;
+        }
+      }
+
       const leftValue = this.sortValue(left, column);
       const rightValue = this.sortValue(right, column);
 
@@ -255,6 +353,48 @@ export class Endless6531PageComponent {
       default:
         return player[column];
     }
+  }
+
+  private altCharacterName(entry: AltCharacterEntry): string {
+    return typeof entry === 'string' ? entry : entry.name;
+  }
+
+  private buildCharacterRoles(): ReadonlyMap<string, CharacterRole> {
+    const roles = new Map<string, CharacterRole>();
+    const mainAlts = endlessMainAlts as MainAltCharacters;
+
+    for (const entries of Object.values(mainAlts)) {
+      for (const entry of entries) {
+        const altName = this.altCharacterName(entry).trim();
+        if (altName) {
+          roles.set(altName.toLocaleLowerCase(), 'alt');
+        }
+      }
+    }
+
+    // A character defined as a main always takes precedence if it also appears
+    // in another character's alt list.
+    for (const mainCharacter of Object.keys(mainAlts)) {
+      roles.set(mainCharacter.toLocaleLowerCase(), 'main');
+    }
+
+    return roles;
+  }
+
+  private buildMainCharactersByAlt(): ReadonlyMap<string, string> {
+    const mainCharactersByAlt = new Map<string, string>();
+    const mainAlts = endlessMainAlts as MainAltCharacters;
+
+    for (const [mainCharacter, entries] of Object.entries(mainAlts)) {
+      for (const entry of entries) {
+        const altName = this.altCharacterName(entry).trim();
+        if (altName && !mainCharactersByAlt.has(altName.toLocaleLowerCase())) {
+          mainCharactersByAlt.set(altName.toLocaleLowerCase(), mainCharacter);
+        }
+      }
+    }
+
+    return mainCharactersByAlt;
   }
 
   private parseTimestamp(timestamp: string): Date | undefined {
