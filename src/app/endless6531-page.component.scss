@@ -126,6 +126,30 @@
   margin-top: 14px;
 }
 
+.reset-filters {
+  width: 100%;
+  min-height: 36px;
+  margin-top: 14px;
+  border: 1px solid rgba(247, 181, 0, 0.24);
+  border-radius: 7px;
+  background: rgba(247, 181, 0, 0.08);
+  color: #d7b75f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #f7b500;
+    background: rgba(247, 181, 0, 0.16);
+    color: #ffd700;
+    outline: none;
+  }
+}
+
 .main-character-select {
   position: relative;
   display: block;

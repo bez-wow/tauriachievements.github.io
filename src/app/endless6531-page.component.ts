@@ -239,6 +239,15 @@ export class Endless6531PageComponent {
     this.applySort();
   }
 
+  resetFilters(): void {
+    this.selectedMainCharacter.set('');
+    this.selectedAltCharacters.set([]);
+    this.selectedClassId.set(null);
+    this.selectedCharacterRole.set('all');
+    this.raidCharacters.set(new Set());
+    this.applySort();
+  }
+
   wantsToRaid(player: GuildAnalysisPlayer): boolean {
     return this.raidCharacters().has(player.name.toLocaleLowerCase());
   }
