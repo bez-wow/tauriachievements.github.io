@@ -71,6 +71,7 @@ interface AltCharacterDefinition {
 type AltCharacterEntry = string | AltCharacterDefinition;
 type MainAltCharacters = Readonly<Record<string, readonly AltCharacterEntry[]>>;
 type CharacterRole = 'main' | 'alt' | 'unknown';
+type CombatRole = 'Tank' | 'Heal' | 'Ranged' | 'Melee';
 
 const CLASS_NAMES: Readonly<Record<number, string>> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
@@ -150,6 +151,7 @@ export class Endless6531PageComponent {
   readonly selectedClassId = signal<number | null>(null);
   readonly selectedCharacterRole = signal<CharacterRole | 'all'>('all');
   readonly selectedGuildRank = signal('');
+  readonly selectedCombatRole = signal<CombatRole | ''>('');
   readonly guildRanks = [...new Set(
     this.sourcePlayers
       .map((player) => player.guildRankName?.trim())
@@ -279,12 +281,22 @@ export class Endless6531PageComponent {
     this.applySort();
   }
 
+  selectCombatRole(role: string): void {
+    this.selectedCombatRole.set(
+      role === 'Tank' || role === 'Heal' || role === 'Ranged' || role === 'Melee'
+        ? role
+        : ''
+    );
+    this.applySort();
+  }
+
   resetFilters(): void {
     this.selectedMainCharacter.set('');
     this.selectedAltCharacters.set([]);
     this.selectedClassId.set(null);
     this.selectedCharacterRole.set('all');
     this.selectedGuildRank.set('');
+    this.selectedCombatRole.set('');
     this.raidCharacters.set(new Set());
     this.applySort();
   }
@@ -349,7 +361,7 @@ export class Endless6531PageComponent {
     const roleFilteredPlayers = this.selectedCharacterRole() === 'all'
       ? classFilteredPlayers
       : classFilteredPlayers.filter((player) => this.characterRole(player) === this.selectedCharacterRole());
-    const visiblePlayers = this.selectedGuildRank()
+    const rankFilteredPlayers = this.selectedGuildRank()
       ? roleFilteredPlayers.filter((player) =>
           player.guildRankName?.localeCompare(
             this.selectedGuildRank(),
@@ -358,6 +370,11 @@ export class Endless6531PageComponent {
           ) === 0
         )
       : roleFilteredPlayers;
+    const visiblePlayers = this.selectedCombatRole()
+      ? rankFilteredPlayers.filter((player) =>
+          this.combatRole(player) === this.selectedCombatRole()
+        )
+      : rankFilteredPlayers;
 
     this.players.set([...visiblePlayers].sort((left, right) => {
       if (this.selectedMainCharacter()) {
@@ -407,6 +424,50 @@ export class Endless6531PageComponent {
         return player[column] ?? null;
       default:
         return player[column];
+    }
+  }
+
+  private combatRole(player: GuildAnalysisPlayer): CombatRole | undefined {
+    const specialization = player.specialization?.trim();
+    if (!specialization) {
+      return undefined;
+    }
+
+    switch (player.class) {
+      case 1:
+        return specialization === 'Protection' ? 'Tank' : 'Melee';
+      case 2:
+        return specialization === 'Protection' ? 'Tank'
+          : specialization === 'Holy' ? 'Heal'
+          : 'Melee';
+      case 3:
+        return specialization === 'Survival' ? 'Melee' : 'Ranged';
+      case 4:
+        return 'Melee';
+      case 5:
+        return specialization === 'Shadow' ? 'Ranged' : 'Heal';
+      case 6:
+        return specialization === 'Blood' ? 'Tank' : 'Melee';
+      case 7:
+        return specialization === 'Restoration' ? 'Heal'
+          : specialization === 'Elemental' ? 'Ranged'
+          : 'Melee';
+      case 8:
+      case 9:
+        return 'Ranged';
+      case 10:
+        return specialization === 'Brewmaster' ? 'Tank'
+          : specialization === 'Mistweaver' ? 'Heal'
+          : 'Melee';
+      case 11:
+        return specialization === 'Guardian' ? 'Tank'
+          : specialization === 'Restoration' ? 'Heal'
+          : specialization === 'Balance' ? 'Ranged'
+          : 'Melee';
+      case 12:
+        return specialization === 'Vengeance' ? 'Tank' : 'Melee';
+      default:
+        return undefined;
     }
   }
 

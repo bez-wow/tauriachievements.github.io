@@ -57,6 +57,22 @@
         </span>
       </div>
 
+      <div class="combat-role-filter">
+        <label for="combat-role-filter">Combat role</label>
+        <span class="main-character-select">
+          <select
+            id="combat-role-filter"
+            [value]="selectedCombatRole()"
+            (change)="selectCombatRole($any($event.target).value)">
+            <option value="">All combat roles</option>
+            <option value="Tank">Tank</option>
+            <option value="Heal">Heal</option>
+            <option value="Ranged">Ranged</option>
+            <option value="Melee">Melee</option>
+          </select>
+        </span>
+      </div>
+
       <button class="reset-filters" type="button" (click)="resetFilters()">
         Reset filters
       </button>
@@ -223,7 +239,7 @@
         </tr>
         <tr
           class="empty-roster"
-          *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all' || selectedGuildRank())">
+          *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all' || selectedGuildRank() || selectedCombatRole())">
           <td colspan="10">
             No matching alt characters were found in the current guild roster.
           </td>

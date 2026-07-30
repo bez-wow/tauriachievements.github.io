@@ -45,7 +45,7 @@
   }
 
   .character-groups {
-    flex: 0 1 730px;
+    flex: 0 1 900px;
   }
 }
 
@@ -112,6 +112,7 @@
   display: grid;
   grid-template-columns:
     minmax(150px, 1fr)
+    minmax(125px, 0.75fr)
     minmax(125px, 0.75fr)
     minmax(125px, 0.75fr)
     auto;
