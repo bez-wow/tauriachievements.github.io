@@ -15,22 +15,30 @@
 }
 
 .page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
   margin-bottom: 18px;
 
   h1 {
+    margin: 0;
     color: #fff;
-    font-size: clamp(1.5rem, 3vw, 2.15rem);
-    line-height: 1.15;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    line-height: 1;
+    text-transform: uppercase;
   }
 
   p:last-child {
-    margin-top: 6px;
+    margin: 0;
     color: #999;
   }
 }
 
 .eyebrow {
-  margin-bottom: 5px;
+  margin: 0;
   color: #f7b500;
   font-size: 0.72rem;
   font-weight: 800;

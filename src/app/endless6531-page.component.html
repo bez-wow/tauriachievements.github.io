@@ -13,13 +13,6 @@
   <div class="page-content">
     <aside class="summary-panel" aria-label="Guild roster summary">
       <section class="summary-card character-groups" *ngIf="showMainAltCharacters">
-        <div class="summary-heading">
-          <div>
-            <p class="card-eyebrow">Character groups</p>
-            <h2>Main &amp; Alt Characters</h2>
-          </div>
-        </div>
-
         <label for="main-character">Main character</label>
         <span class="main-character-select">
           <select
@@ -50,13 +43,6 @@
       </section>
 
       <section class="summary-card">
-        <div class="summary-heading">
-          <div>
-            <p class="card-eyebrow">Guild composition</p>
-            <h2>Classes</h2>
-          </div>
-        </div>
-
         <div class="class-filter" *ngIf="showMainAltCharacters">
           <label for="class-filter">Filter by class</label>
           <span class="main-character-select">
