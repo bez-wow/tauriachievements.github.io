@@ -16,10 +16,18 @@
 
 .page-header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
   margin-bottom: 18px;
+
+  .page-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+    padding-top: 12px;
+  }
 
   h1 {
     margin: 0;
@@ -34,6 +42,10 @@
   p:last-child {
     margin: 0;
     color: #999;
+  }
+
+  .character-groups {
+    flex: 0 1 730px;
   }
 }
 
@@ -97,6 +109,16 @@
 }
 
 .character-groups {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(125px, 0.75fr)
+    minmax(125px, 0.75fr)
+    auto;
+  align-items: end;
+  gap: 12px;
+  padding: 10px 12px;
+
   label {
     display: block;
     margin-bottom: 7px;
@@ -123,13 +145,14 @@
 }
 
 .role-filter {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .reset-filters {
-  width: 100%;
+  width: auto;
   min-height: 36px;
-  margin-top: 14px;
+  margin-top: 0;
+  padding: 0 16px;
   border: 1px solid rgba(247, 181, 0, 0.24);
   border-radius: 7px;
   background: rgba(247, 181, 0, 0.08);
@@ -290,15 +313,15 @@ table {
   }
 
   th:nth-child(4) {
-    width: 17%;
+    width: 8%;
   }
 
   th:nth-child(5) {
-    width: 11%;
+    width: 12%;
   }
 
   th:nth-child(6) {
-    width: 11%;
+    width: 10%;
   }
 
   th:nth-child(7) {
@@ -306,10 +329,14 @@ table {
   }
 
   th:nth-child(8) {
-    width: 11%;
+    width: 9%;
   }
 
   th:nth-child(9) {
+    width: 11%;
+  }
+
+  th:nth-child(10) {
     width: 11%;
   }
 
@@ -528,7 +555,7 @@ table tbody tr.main-character-row {
 
   .summary-panel {
     position: static;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     grid-column: 1;
     grid-row: 2;
   }
@@ -542,8 +569,22 @@ table tbody tr.main-character-row {
   }
 
   .page-header {
+    display: grid;
     padding: 0 2px;
     margin-bottom: 14px;
+
+    .page-heading {
+      padding-top: 0;
+    }
+
+    .character-groups {
+      grid-template-columns: 1fr;
+      width: 100%;
+    }
+  }
+
+  .reset-filters {
+    width: 100%;
   }
 
   .summary-panel {

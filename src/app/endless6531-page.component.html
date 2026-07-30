@@ -5,14 +5,14 @@
 
 <main class="endless-page">
   <header class="page-header">
-    <p class="eyebrow">{{ guildName }}</p>
-    <h1>Guild Overview</h1>
-    <p>{{ players().length }} level 110 characters</p>
-  </header>
+    <div class="page-heading">
+      <p class="eyebrow">{{ guildName }}</p>
+      <h1>Guild Overview</h1>
+      <p>{{ players().length }} level 110 characters</p>
+    </div>
 
-  <div class="page-content">
-    <aside class="summary-panel" aria-label="Guild roster summary">
-      <section class="summary-card character-groups" *ngIf="showMainAltCharacters">
+    <section class="summary-card character-groups" *ngIf="showMainAltCharacters">
+      <div class="main-filter">
         <label for="main-character">Main character</label>
         <span class="main-character-select">
           <select
@@ -25,27 +25,46 @@
             </option>
           </select>
         </span>
+      </div>
 
-        <div class="role-filter">
-          <label for="character-role-filter">Filter by role</label>
-          <span class="main-character-select">
-            <select
-              id="character-role-filter"
-              [value]="selectedCharacterRole()"
-              (change)="selectCharacterRole($any($event.target).value)">
-              <option value="all">All roles</option>
-              <option value="main">Main</option>
-              <option value="alt">Alt</option>
-              <option value="unknown">?</option>
-            </select>
-          </span>
-        </div>
+      <div class="role-filter">
+        <label for="character-role-filter">Filter by role</label>
+        <span class="main-character-select">
+          <select
+            id="character-role-filter"
+            [value]="selectedCharacterRole()"
+            (change)="selectCharacterRole($any($event.target).value)">
+            <option value="all">All roles</option>
+            <option value="main">Main</option>
+            <option value="alt">Alt</option>
+            <option value="unknown">?</option>
+          </select>
+        </span>
+      </div>
 
-        <button class="reset-filters" type="button" (click)="resetFilters()">
-          Reset filters
-        </button>
-      </section>
+      <div class="guild-rank-filter">
+        <label for="guild-rank-filter">Guild rank</label>
+        <span class="main-character-select">
+          <select
+            id="guild-rank-filter"
+            [value]="selectedGuildRank()"
+            (change)="selectGuildRank($any($event.target).value)">
+            <option value="">All ranks</option>
+            <option *ngFor="let guildRank of guildRanks" [value]="guildRank">
+              {{ guildRank }}
+            </option>
+          </select>
+        </span>
+      </div>
 
+      <button class="reset-filters" type="button" (click)="resetFilters()">
+        Reset filters
+      </button>
+    </section>
+  </header>
+
+  <div class="page-content">
+    <aside class="summary-panel" aria-label="Guild roster summary">
       <section class="summary-card">
         <div class="class-filter" *ngIf="showMainAltCharacters">
           <label for="class-filter">Filter by class</label>
@@ -85,7 +104,8 @@
             (change)="selectMobileSort($any($event.target).value)">
             <option value="name">Name</option>
             <option value="raceClass">Race / Class</option>
-            <option value="reputation">Nightfallen Reputation</option>
+            <option value="guildRankName">Guild Rank</option>
+            <option value="specialization">Specialization</option>
             <option value="artifactRelics">Artifact Relics</option>
             <option value="artifactTraits">Artifact Traits</option>
             <option value="itemLevel">Item Level</option>
@@ -121,10 +141,16 @@
               <span class="sort-indicator">{{ sortIndicator('raceClass') }}</span>
             </button>
           </th>
-          <th [attr.aria-sort]="ariaSort('reputation')">
-            <button type="button" (click)="sortBy('reputation')">
-              <span class="header-label">Nightfallen Reputation</span>
-              <span class="sort-indicator">{{ sortIndicator('reputation') }}</span>
+          <th [attr.aria-sort]="ariaSort('guildRankName')">
+            <button type="button" (click)="sortBy('guildRankName')">
+              <span class="header-label">Guild Rank</span>
+              <span class="sort-indicator">{{ sortIndicator('guildRankName') }}</span>
+            </button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('specialization')">
+            <button type="button" (click)="sortBy('specialization')">
+              <span class="header-label">Specialization</span>
+              <span class="sort-indicator">{{ sortIndicator('specialization') }}</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('artifactRelics')">
@@ -187,9 +213,8 @@
             <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
             <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
           </td>
-          <td data-label="Nightfallen" [class.neon-purple-text]="isHighReputation(player)">
-            {{ formatReputation(player) }}
-          </td>
+          <td data-label="Guild Rank">{{ player.guildRankName || '—' }}</td>
+          <td data-label="Specialization">{{ player.specialization || '—' }}</td>
           <td data-label="Artifact Relics">{{ player.artifactRelics | number }}</td>
           <td data-label="Artifact Traits">{{ player.artifactTraits | number }}</td>
           <td data-label="Item Level">{{ player.itemLevel | number:'1.2-2' }}</td>
@@ -198,8 +223,8 @@
         </tr>
         <tr
           class="empty-roster"
-          *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all')">
-          <td colspan="9">
+          *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all' || selectedGuildRank())">
+          <td colspan="10">
             No matching alt characters were found in the current guild roster.
           </td>
         </tr>

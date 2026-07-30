@@ -16,10 +16,10 @@ interface GuildAnalysisPlayer {
   race: number;
   gender: number;
   class: number;
+  guildRankName?: string | null;
+  specialization?: string | null;
   playedTime: number;
   achievementPoints: number;
-  nightfallenReputation: number | null;
-  nightfallenReputationMaximum: number | null;
   artifactRelics: number;
   artifactTraits: number;
   itemLevel: number;
@@ -78,10 +78,22 @@ const CLASS_NAMES: Readonly<Record<number, string>> = {
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
 };
 
+const GUILD_RANK_ORDER = [
+  'Guild Master',
+  'Officer',
+  'Officer Alt',
+  'Core',
+  'Raider',
+  'Trial',
+  'Alt',
+  'Family'
+] as const;
+
 type SortColumn =
   | 'name'
   | 'raceClass'
-  | 'reputation'
+  | 'guildRankName'
+  | 'specialization'
   | 'artifactRelics'
   | 'artifactTraits'
   | 'itemLevel'
@@ -93,7 +105,8 @@ type SortDirection = 'asc' | 'desc';
 const SORT_COLUMNS = new Set<SortColumn>([
   'name',
   'raceClass',
-  'reputation',
+  'guildRankName',
+  'specialization',
   'artifactRelics',
   'artifactTraits',
   'itemLevel',
@@ -136,6 +149,22 @@ export class Endless6531PageComponent {
   readonly selectedAltCharacters = signal<readonly string[]>([]);
   readonly selectedClassId = signal<number | null>(null);
   readonly selectedCharacterRole = signal<CharacterRole | 'all'>('all');
+  readonly selectedGuildRank = signal('');
+  readonly guildRanks = [...new Set(
+    this.sourcePlayers
+      .map((player) => player.guildRankName?.trim())
+      .filter((rank): rank is string => Boolean(rank))
+  )].sort((left, right) => {
+    const leftIndex = GUILD_RANK_ORDER.findIndex((rank) => rank === left);
+    const rightIndex = GUILD_RANK_ORDER.findIndex((rank) => rank === right);
+
+    if (leftIndex !== -1 || rightIndex !== -1) {
+      return (leftIndex === -1 ? GUILD_RANK_ORDER.length : leftIndex)
+        - (rightIndex === -1 ? GUILD_RANK_ORDER.length : rightIndex);
+    }
+
+    return left.localeCompare(right, undefined, { sensitivity: 'base' });
+  });
   readonly raidCharacters = signal<ReadonlySet<string>>(new Set());
   private readonly characterRoles = this.buildCharacterRoles();
   private readonly mainCharactersByAlt = this.buildMainCharactersByAlt();
@@ -151,7 +180,14 @@ export class Endless6531PageComponent {
       this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
     } else {
       this.sortColumn.set(column);
-      this.sortDirection.set(column === 'name' || column === 'raceClass' ? 'asc' : 'desc');
+      this.sortDirection.set(
+        column === 'name'
+        || column === 'raceClass'
+        || column === 'guildRankName'
+        || column === 'specialization'
+          ? 'asc'
+          : 'desc'
+      );
     }
 
     this.applySort();
@@ -164,7 +200,14 @@ export class Endless6531PageComponent {
 
     const selectedColumn = column as SortColumn;
     this.sortColumn.set(selectedColumn);
-    this.sortDirection.set(selectedColumn === 'name' || selectedColumn === 'raceClass' ? 'asc' : 'desc');
+    this.sortDirection.set(
+      selectedColumn === 'name'
+      || selectedColumn === 'raceClass'
+      || selectedColumn === 'guildRankName'
+      || selectedColumn === 'specialization'
+        ? 'asc'
+        : 'desc'
+    );
     this.applySort();
   }
 
@@ -201,14 +244,6 @@ export class Endless6531PageComponent {
     return formatPlayedTime(seconds);
   }
 
-  formatReputation(player: GuildAnalysisPlayer): string {
-    if (player.nightfallenReputation === null || player.nightfallenReputationMaximum === null) {
-      return '—';
-    }
-
-    return `${player.nightfallenReputation.toLocaleString()} / ${player.nightfallenReputationMaximum.toLocaleString()}`;
-  }
-
   selectMainCharacter(name: string): void {
     const entries = (endlessMainAlts as MainAltCharacters)[name] ?? [];
 
@@ -239,11 +274,17 @@ export class Endless6531PageComponent {
     this.applySort();
   }
 
+  selectGuildRank(rank: string): void {
+    this.selectedGuildRank.set(rank);
+    this.applySort();
+  }
+
   resetFilters(): void {
     this.selectedMainCharacter.set('');
     this.selectedAltCharacters.set([]);
     this.selectedClassId.set(null);
     this.selectedCharacterRole.set('all');
+    this.selectedGuildRank.set('');
     this.raidCharacters.set(new Set());
     this.applySort();
   }
@@ -266,15 +307,6 @@ export class Endless6531PageComponent {
 
   mainCharacterFor(player: GuildAnalysisPlayer): string | undefined {
     return this.mainCharactersByAlt.get(player.name.toLocaleLowerCase());
-  }
-
-  isHighReputation(player: GuildAnalysisPlayer): boolean {
-    return player.nightfallenReputationMaximum === 21_000
-      || (
-        player.nightfallenReputationMaximum === 12_000
-        && player.nightfallenReputation !== null
-        && player.nightfallenReputation >= 8_000
-      );
   }
 
   trackPlayer(_index: number, player: GuildAnalysisPlayer): string {
@@ -314,9 +346,18 @@ export class Endless6531PageComponent {
     const classFilteredPlayers = this.selectedClassId() === null
       ? characterFilteredPlayers
       : characterFilteredPlayers.filter((player) => player.class === this.selectedClassId());
-    const visiblePlayers = this.selectedCharacterRole() === 'all'
+    const roleFilteredPlayers = this.selectedCharacterRole() === 'all'
       ? classFilteredPlayers
       : classFilteredPlayers.filter((player) => this.characterRole(player) === this.selectedCharacterRole());
+    const visiblePlayers = this.selectedGuildRank()
+      ? roleFilteredPlayers.filter((player) =>
+          player.guildRankName?.localeCompare(
+            this.selectedGuildRank(),
+            undefined,
+            { sensitivity: 'base' }
+          ) === 0
+        )
+      : roleFilteredPlayers;
 
     this.players.set([...visiblePlayers].sort((left, right) => {
       if (this.selectedMainCharacter()) {
@@ -355,10 +396,15 @@ export class Endless6531PageComponent {
         return player.name;
       case 'raceClass':
         return player.race * 100 + player.class;
-      case 'reputation':
-        return player.nightfallenReputation === null || player.nightfallenReputationMaximum === null
-          ? null
-          : player.nightfallenReputationMaximum * 1_000_000 + player.nightfallenReputation;
+      case 'guildRankName':
+        if (!player.guildRankName) {
+          return null;
+        }
+
+        const rankIndex = GUILD_RANK_ORDER.findIndex((rank) => rank === player.guildRankName);
+        return rankIndex === -1 ? GUILD_RANK_ORDER.length : rankIndex;
+      case 'specialization':
+        return player[column] ?? null;
       default:
         return player[column];
     }
