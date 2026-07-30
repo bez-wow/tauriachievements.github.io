@@ -4,14 +4,8 @@
   [lastEditedTimeZone]="lastEditedTimeZone" />
 
 <main class="endless-page">
-  <header class="page-header">
-    <div class="page-heading">
-      <p class="eyebrow">{{ guildName }}</p>
-      <h1>Guild Overview</h1>
-      <p>{{ players().length }} level 110 characters</p>
-    </div>
-
-    <section class="summary-card character-groups" *ngIf="showMainAltCharacters">
+  <div class="page-content">
+    <section class="summary-card character-groups roster-filters" *ngIf="showMainAltCharacters">
       <div class="main-filter">
         <label for="main-character">Main character</label>
         <span class="main-character-select">
@@ -77,9 +71,7 @@
         Reset filters
       </button>
     </section>
-  </header>
 
-  <div class="page-content">
     <aside class="summary-panel" aria-label="Guild roster summary">
       <section class="summary-card">
         <div class="class-filter" *ngIf="showMainAltCharacters">
