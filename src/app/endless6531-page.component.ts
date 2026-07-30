@@ -90,6 +90,15 @@ const GUILD_RANK_ORDER = [
   'Family'
 ] as const;
 
+function guildRankOrderIndex(rankName: string): number {
+  const normalizedRankName = rankName.trim().toLocaleLowerCase();
+  const rankIndex = GUILD_RANK_ORDER.findIndex(
+    (rank) => rank.toLocaleLowerCase() === normalizedRankName
+  );
+
+  return rankIndex === -1 ? GUILD_RANK_ORDER.length : rankIndex;
+}
+
 type SortColumn =
   | 'name'
   | 'raceClass'
@@ -157,12 +166,11 @@ export class Endless6531PageComponent {
       .map((player) => player.guildRankName?.trim())
       .filter((rank): rank is string => Boolean(rank))
   )].sort((left, right) => {
-    const leftIndex = GUILD_RANK_ORDER.findIndex((rank) => rank === left);
-    const rightIndex = GUILD_RANK_ORDER.findIndex((rank) => rank === right);
+    const leftIndex = guildRankOrderIndex(left);
+    const rightIndex = guildRankOrderIndex(right);
 
-    if (leftIndex !== -1 || rightIndex !== -1) {
-      return (leftIndex === -1 ? GUILD_RANK_ORDER.length : leftIndex)
-        - (rightIndex === -1 ? GUILD_RANK_ORDER.length : rightIndex);
+    if (leftIndex !== GUILD_RANK_ORDER.length || rightIndex !== GUILD_RANK_ORDER.length) {
+      return leftIndex - rightIndex;
     }
 
     return left.localeCompare(right, undefined, { sensitivity: 'base' });
@@ -418,8 +426,7 @@ export class Endless6531PageComponent {
           return null;
         }
 
-        const rankIndex = GUILD_RANK_ORDER.findIndex((rank) => rank === player.guildRankName);
-        return rankIndex === -1 ? GUILD_RANK_ORDER.length : rankIndex;
+        return guildRankOrderIndex(player.guildRankName);
       case 'specialization':
         return player[column] ?? null;
       default:
