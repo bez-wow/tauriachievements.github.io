@@ -348,19 +348,21 @@ function getCurrentSnapshotTimestamp() {
     candidates.push(latestGitTimestamp);
   }
 
+  if (candidates.length > 0) {
+    return candidates.sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[candidates.length - 1];
+  }
+
+  // Only use mtime as a last resort: CI checkout time is unrelated to the
+  // player scan and would otherwise turn guild-only deploys into zero deltas.
   try {
     const modifiedAt = fs.statSync(sourcePath).mtime;
     if (!Number.isNaN(modifiedAt.getTime())) {
-      candidates.push(modifiedAt.toISOString());
+      return modifiedAt.toISOString();
     }
   } catch {
   }
 
-  if (candidates.length === 0) {
-    return new Date().toISOString();
-  }
-
-  return candidates.sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[candidates.length - 1];
+  return new Date().toISOString();
 }
 
 function normalizeTimestamp(value) {

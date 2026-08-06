@@ -291,19 +291,22 @@ function getCurrentSnapshotTimestamp() {
     candidates.push(latestGitTimestamp);
   }
 
+  if (candidates.length > 0) {
+    return candidates.sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[candidates.length - 1];
+  }
+
+  // A checkout gives every file a fresh mtime. Using that alongside the data
+  // timestamps makes an unrelated deployment look like a new player scan and
+  // compares Players.csv with its identical latest commit, zeroing all deltas.
   try {
     const modifiedAt = fs.statSync(sourcePath).mtime;
     if (!Number.isNaN(modifiedAt.getTime())) {
-      candidates.push(modifiedAt.toISOString());
+      return modifiedAt.toISOString();
     }
   } catch {
   }
 
-  if (candidates.length === 0) {
-    return new Date().toISOString();
-  }
-
-  return candidates.sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[candidates.length - 1];
+  return new Date().toISOString();
 }
 
 function normalizeTimestamp(value) {
