@@ -1,0 +1,153 @@
+:host { display: block; isolation: isolate; }
+
+.dungeon-backdrop {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  background: #08090d;
+}
+
+.dungeon-half {
+  background-position: center;
+  background-size: cover;
+  filter: blur(3px) saturate(.9);
+  transform: scale(1.015);
+}
+
+.maw { background-image: url('/assets/ap-chest-looters/maw-of-souls.png'); }
+.azshara { background-image: url('/assets/ap-chest-looters/eye-of-azshara.png'); }
+
+.dungeon-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(2,14,14,.52), rgba(0,0,0,.72) 48%, rgba(0,0,0,.72) 52%, rgba(8,12,26,.52)),
+    linear-gradient(180deg, rgba(5,5,9,.5), rgba(5,5,9,.78));
+}
+
+.dungeon-name {
+  position: absolute;
+  bottom: 18px;
+  color: rgba(255,255,255,.28);
+  font-size: clamp(.65rem, 1.5vw, .9rem);
+  font-weight: 900;
+  letter-spacing: .2em;
+  text-shadow: 0 2px 5px #000;
+}
+
+.maw-name { left: 22px; }
+.azshara-name { right: 22px; }
+
+.hall-of-fame {
+  position: relative;
+  z-index: 0;
+  width: min(820px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 42px 0 48px;
+  color: #eeeef3;
+}
+
+.hall-header { margin-bottom: 24px; text-align: center; }
+
+.breaking-news {
+  display: inline-block;
+  padding: 7px 14px;
+  border: 2px solid #ff3b3b;
+  border-radius: 6px;
+  background: #3a0909;
+  color: #ff7474;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  transform: rotate(-1deg);
+}
+
+h1 {
+  margin: 4px 0 10px;
+  color: #fafafa;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 950;
+  line-height: .98;
+  letter-spacing: -.04em;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 #361f00;
+  white-space: nowrap;
+
+  span {
+    color: #f7b500;
+    font-size: .82em;
+  }
+}
+
+.hall-header > p { margin: 0; color: #b7bdc9; font-size: 1rem; }
+
+.leaderboard {
+  width: min(650px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 2px solid rgba(247,181,0,.36);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(35,30,24,.96), rgba(12,12,17,.98));
+  box-shadow: 0 14px 45px rgba(0,0,0,.58), 0 0 28px rgba(247,181,0,.07);
+}
+
+.leaderboard-heading {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) minmax(90px, .8fr) 72px;
+  align-items: center;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #8f96a5;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+
+  span:last-child { text-align: right; }
+}
+
+ol { margin: 0; padding: 0; list-style: none; }
+
+li {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) minmax(90px, .8fr) 72px;
+  align-items: center;
+  min-height: 62px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255,255,255,.065);
+  &:last-child { border-bottom: 0; }
+  &:hover { background: rgba(247,181,0,.07); }
+}
+
+.rank { color: #7f8795; font-size: .92rem; font-weight: 900; }
+.rank.first { color: #f7b500; font-size: 1.15rem; text-shadow: 0 0 12px rgba(247,181,0,.5); }
+.player, .loot { display: flex; flex-direction: column; gap: 3px; }
+.player-name { color: #fff; font-size: 1.02rem; font-weight: 850; }
+.guild-name {
+  overflow: hidden;
+  color: #b7bdc9;
+  font-size: .82rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.loot { align-items: flex-end; }
+.loot-count { color: #f7b500; font-size: 1.15rem; font-weight: 950; font-variant-numeric: tabular-nums; }
+.message { margin: 0; padding: 30px 20px; color: #9fa6b4; text-align: center; }
+.message.error { color: #fecaca; }
+
+@media (max-width: 600px) {
+  .hall-of-fame { padding-top: 30px; }
+  .leaderboard-heading,
+  li { grid-template-columns: 40px minmax(0, 1fr) minmax(72px, .7fr) 58px; }
+  .leaderboard-heading { padding-right: 14px; padding-left: 14px; }
+  li { min-height: 58px; padding: 0 14px; }
+  .guild-name { font-size: .74rem; }
+  .dungeon-half { filter: blur(2px) saturate(.85); }
+  .dungeon-name { bottom: 8px; letter-spacing: .08em; }
+  .maw-name { left: 8px; }
+  .azshara-name { right: 8px; }
+}

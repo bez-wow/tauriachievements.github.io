@@ -1,0 +1,46 @@
+<app-update-bar />
+
+<div class="dungeon-backdrop" aria-hidden="true">
+  <div class="dungeon-half maw"></div>
+  <div class="dungeon-half azshara"></div>
+  <div class="dungeon-shade"></div>
+  <span class="dungeon-name maw-name">MAW OF SOULS</span>
+  <span class="dungeon-name azshara-name">EYE OF AZSHARA</span>
+</div>
+
+<main class="hall-of-fame">
+  <header class="hall-header">
+    <div class="breaking-news">🚨 BREAKING NEWS · 10.Aug.2026 🚨</div>
+    <h1>AP Chest Looters<br><span>Hall of Fame</span></h1>
+    <p>We asked them to touch grass. They looted the grass instead.</p>
+  </header>
+
+  <section class="leaderboard" aria-label="AP chest looters leaderboard">
+    <div class="leaderboard-heading">
+      <span aria-hidden="true"></span>
+      <span>Suspect</span>
+      <span>Guild</span>
+      <span>Chects looted</span>
+    </div>
+
+    <p class="message" *ngIf="isLoading()">Loading the hall of fame...</p>
+    <p class="message error" *ngIf="loadError()">The hall of fame could not be loaded.</p>
+    <p class="message" *ngIf="!isLoading() && !loadError() && looters().length === 0">
+      No players have been added yet.
+    </p>
+
+    <ol *ngIf="looters().length > 0">
+      <li *ngFor="let looter of looters(); let index = index">
+        <span class="rank" [class.first]="index === 0">#{{ index + 1 }}</span>
+        <span class="player">
+          <span class="player-name" [style.color]="classColor(looter.classId)">{{ looter.name }}</span>
+        </span>
+        <span class="guild-name">{{ looter.guild }}</span>
+        <span class="loot">
+          <span class="loot-count">{{ displayCount(looter.count) }}</span>
+        </span>
+      </li>
+    </ol>
+  </section>
+
+</main>

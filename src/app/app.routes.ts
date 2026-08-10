@@ -9,6 +9,7 @@ import { NewRareCharactersPageComponent } from './new-rare-characters-page.compo
 import { RareAchievementsPageComponent } from './rare-achievements-page.component';
 import { TopGainersPageComponent } from './rank-movement-page.component';
 import { StatsPageComponent } from './stats-page.component';
+import { ApChestLootersPageComponent } from './ap-chest-looters-page.component';
 
 export const routes: Routes = [
   {
@@ -47,6 +48,10 @@ export const routes: Routes = [
   {
     path: 'battleground',
     component: BattlegroundPageComponent
+  },
+  {
+    path: 'ap-chest-looters',
+    component: ApChestLootersPageComponent
   },
   {
     path: 'compare',
