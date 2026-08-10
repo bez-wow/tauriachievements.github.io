@@ -2,12 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { UpdateBarComponent } from './update-bar.component';
+import { getArmoryUrl } from '../utils/armory';
 
 interface ApChestLooter {
   name: string;
   guild: string;
   classId: number;
   count: number | '?';
+  realm: string;
 }
 
 const CLASS_COLORS: Record<number, string> = {
@@ -39,6 +41,7 @@ export class ApChestLootersPageComponent {
   readonly looters = signal<ApChestLooter[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal(false);
+  readonly getArmoryUrl = getArmoryUrl;
 
   constructor() {
     this.http.get<ApChestLooter[]>('ap-chest-looters.json').subscribe({

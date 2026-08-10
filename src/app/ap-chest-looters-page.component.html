@@ -33,7 +33,13 @@
       <li *ngFor="let looter of looters(); let index = index">
         <span class="rank" [class.first]="index === 0">#{{ index + 1 }}</span>
         <span class="player">
-          <span class="player-name" [style.color]="classColor(looter.classId)">{{ looter.name }}</span>
+          <a
+            class="player-name"
+            [style.color]="classColor(looter.classId)"
+            [href]="getArmoryUrl(looter.name, looter.realm)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{ looter.name }}</a>
         </span>
         <span class="guild-name">{{ looter.guild }}</span>
         <span class="loot">

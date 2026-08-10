@@ -125,7 +125,14 @@ li {
 .rank { color: #7f8795; font-size: .92rem; font-weight: 900; }
 .rank.first { color: #f7b500; font-size: 1.15rem; text-shadow: 0 0 12px rgba(247,181,0,.5); }
 .player, .loot { display: flex; flex-direction: column; gap: 3px; }
-.player-name { color: #fff; font-size: 1.02rem; font-weight: 850; }
+.player-name {
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 850;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
 .guild-name {
   overflow: hidden;
   color: #b7bdc9;
