@@ -11,7 +11,7 @@
 <main class="hall-of-fame">
   <header class="hall-header">
     <div class="breaking-news">🚨 BREAKING NEWS · 10.Aug.2026 🚨</div>
-    <h1>AP Chest Looters Banned<br><span>Hall of Fame</span></h1>
+    <h1>AP Chest Looters Banned<br /><span>Hall of Fame</span></h1>
     <p>We asked them to touch grass. They looted the grass instead.</p>
   </header>
 
@@ -20,12 +20,17 @@
       <span aria-hidden="true"></span>
       <span>Suspect</span>
       <span>Guild</span>
-      <span>Chest looted</span>
+      <span>Chests looted</span>
     </div>
 
     <p class="message" *ngIf="isLoading()">Loading the hall of fame...</p>
-    <p class="message error" *ngIf="loadError()">The hall of fame could not be loaded.</p>
-    <p class="message" *ngIf="!isLoading() && !loadError() && looters().length === 0">
+    <p class="message error" *ngIf="loadError()">
+      The hall of fame could not be loaded.
+    </p>
+    <p
+      class="message"
+      *ngIf="!isLoading() && !loadError() && looters().length === 0"
+    >
       No players have been added yet.
     </p>
 
@@ -39,7 +44,8 @@
             [href]="getArmoryUrl(looter.name, looter.realm)"
             target="_blank"
             rel="noopener noreferrer"
-          >{{ looter.name }}</a>
+            >{{ looter.name }}</a
+          >
         </span>
         <span class="guild-name">{{ looter.guild }}</span>
         <span class="loot">
@@ -48,5 +54,4 @@
       </li>
     </ol>
   </section>
-
 </main>
