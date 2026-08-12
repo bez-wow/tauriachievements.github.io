@@ -93,6 +93,10 @@
   grid-row: 1;
 }
 
+.roster-filters--standard {
+  grid-template-columns: repeat(2, minmax(125px, 1fr)) auto;
+}
+
 .class-filter {
   margin-bottom: 15px;
 

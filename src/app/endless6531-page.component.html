@@ -5,8 +5,10 @@
 
 <main class="endless-page">
   <div class="page-content">
-    <section class="summary-card character-groups roster-filters" *ngIf="showMainAltCharacters">
-      <div class="main-filter">
+    <section
+      class="summary-card character-groups roster-filters"
+      [class.roster-filters--standard]="!showMainAltCharacters">
+      <div class="main-filter" *ngIf="showMainAltCharacters">
         <label for="main-character">Main character</label>
         <span class="main-character-select">
           <select
@@ -21,7 +23,7 @@
         </span>
       </div>
 
-      <div class="role-filter">
+      <div class="role-filter" *ngIf="showMainAltCharacters">
         <label for="character-role-filter">Filter by role</label>
         <span class="main-character-select">
           <select
@@ -74,7 +76,7 @@
 
     <aside class="summary-panel" aria-label="Guild roster summary">
       <section class="summary-card">
-        <div class="class-filter" *ngIf="showMainAltCharacters">
+        <div class="class-filter">
           <label for="class-filter">Filter by class</label>
           <span class="main-character-select">
             <select
