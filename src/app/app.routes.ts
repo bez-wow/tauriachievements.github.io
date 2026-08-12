@@ -73,6 +73,11 @@ export const routes: Routes = [
     data: { guild: 'outlaws' }
   },
   {
+    path: 'six-seven-d74a9e3c',
+    component: Endless6531PageComponent,
+    data: { guild: 'six-seven' }
+  },
+  {
     path: '**',
     redirectTo: ''
   }

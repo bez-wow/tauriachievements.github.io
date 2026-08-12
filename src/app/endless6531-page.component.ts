@@ -5,6 +5,7 @@ import competenceOptionalAnalysis from '../guild-analysis/competence-optional.js
 import endlessAnalysis from '../guild-analysis/endless.json';
 import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import outlawsAnalysis from '../guild-analysis/outlaws.json';
+import sixSevenAnalysis from '../guild-analysis/six-seven.json';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -30,7 +31,7 @@ interface GuildAnalysis {
   players: GuildAnalysisPlayer[];
 }
 
-type GuildAnalysisKey = 'endless' | 'competence-optional' | 'outlaws';
+type GuildAnalysisKey = 'endless' | 'competence-optional' | 'outlaws' | 'six-seven';
 
 interface GuildAnalysisConfig {
   name: string;
@@ -53,6 +54,11 @@ const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = 
     name: 'Outlaws',
     realm: 'Tauri',
     analysis: outlawsAnalysis as GuildAnalysis
+  },
+  'six-seven': {
+    name: 'Six Seven',
+    realm: 'Evermoon',
+    analysis: sixSevenAnalysis as GuildAnalysis
   }
 };
 
