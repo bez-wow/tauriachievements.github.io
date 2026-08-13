@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-13 07:20:16 CET",
+  "timestamp": "2026-08-13 11:37:50 CET",
   "players": [
     {
       "name": "Rastaeri",
@@ -40,7 +40,7 @@
       "class": 12,
       "guildRankName": "Alt",
       "specialization": "Vengeance",
-      "playedTime": 603949,
+      "playedTime": 604024,
       "achievementPoints": 1515,
       "nightfallenReputation": 17650,
       "nightfallenReputationMaximum": 21000,
@@ -64,6 +64,22 @@
       "artifactRelics": 3,
       "artifactTraits": 22,
       "itemLevel": 852.81
+    },
+    {
+      "name": "Selfless",
+      "race": 10,
+      "gender": 1,
+      "class": 2,
+      "guildRankName": "Raider",
+      "specialization": "Retribution",
+      "playedTime": 995365,
+      "achievementPoints": 2275,
+      "nightfallenReputation": 16875,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Ashbringer",
+      "artifactRelics": 3,
+      "artifactTraits": 23,
+      "itemLevel": 855
     },
     {
       "name": "Tyerukaka",
@@ -98,22 +114,6 @@
       "itemLevel": 851.88
     },
     {
-      "name": "Selfless",
-      "race": 10,
-      "gender": 1,
-      "class": 2,
-      "guildRankName": "Raider",
-      "specialization": "Retribution",
-      "playedTime": 991881,
-      "achievementPoints": 2275,
-      "nightfallenReputation": 15075,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "Ashbringer",
-      "artifactRelics": 3,
-      "artifactTraits": 23,
-      "itemLevel": 855
-    },
-    {
       "name": "Tyerubird",
       "race": 8,
       "gender": 1,
@@ -135,15 +135,15 @@
       "gender": 0,
       "class": 7,
       "guildRankName": "Trial",
-      "specialization": "Elemental",
-      "playedTime": 1363879,
+      "specialization": "Enhancement",
+      "playedTime": 1371687,
       "achievementPoints": 5275,
       "nightfallenReputation": 12649,
       "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "The Fist of Ra-den",
+      "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
-      "artifactTraits": 1,
-      "itemLevel": 848.56
+      "artifactTraits": 23,
+      "itemLevel": 849.94
     },
     {
       "name": "Rewright",
@@ -160,6 +160,22 @@
       "artifactRelics": 3,
       "artifactTraits": 23,
       "itemLevel": 857.69
+    },
+    {
+      "name": "Xyhopmonk",
+      "race": 10,
+      "gender": 1,
+      "class": 10,
+      "guildRankName": "Officer alt",
+      "specialization": "Windwalker",
+      "playedTime": 701507,
+      "achievementPoints": 1695,
+      "nightfallenReputation": 12450,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Fists of the Heavens",
+      "artifactRelics": 3,
+      "artifactTraits": 23,
+      "itemLevel": 855.75
     },
     {
       "name": "Quro",
@@ -210,6 +226,38 @@
       "itemLevel": 851
     },
     {
+      "name": "Allisa",
+      "race": 2,
+      "gender": 1,
+      "class": 6,
+      "guildRankName": "Raider",
+      "specialization": "Unholy",
+      "playedTime": 23013879,
+      "achievementPoints": 16580,
+      "nightfallenReputation": 10300,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Apocalypse",
+      "artifactRelics": 3,
+      "artifactTraits": 23,
+      "itemLevel": 854.81
+    },
+    {
+      "name": "Erza",
+      "race": 10,
+      "gender": 1,
+      "class": 2,
+      "guildRankName": "Raider",
+      "specialization": "Retribution",
+      "playedTime": 28385708,
+      "achievementPoints": 17820,
+      "nightfallenReputation": 10212,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Ashbringer",
+      "artifactRelics": 2,
+      "artifactTraits": 2,
+      "itemLevel": 842.56
+    },
+    {
       "name": "Draaxar",
       "race": 10,
       "gender": 1,
@@ -242,27 +290,11 @@
       "itemLevel": 855.06
     },
     {
-      "name": "Erza",
-      "race": 10,
-      "gender": 1,
-      "class": 2,
-      "guildRankName": "Raider",
-      "specialization": "Holy",
-      "playedTime": 28382071,
-      "achievementPoints": 17810,
-      "nightfallenReputation": 9837,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "The Silver Hand",
-      "artifactRelics": 3,
-      "artifactTraits": 22,
-      "itemLevel": 846.31
-    },
-    {
       "name": "Tyeru",
       "race": 8,
       "gender": 1,
       "class": 9,
-      "guildRankName": "Core",
+      "guildRankName": "Family",
       "specialization": "Destruction",
       "playedTime": 1605103,
       "achievementPoints": 2265,
@@ -288,22 +320,6 @@
       "artifactRelics": 3,
       "artifactTraits": 21,
       "itemLevel": 852.38
-    },
-    {
-      "name": "Allisa",
-      "race": 2,
-      "gender": 1,
-      "class": 6,
-      "guildRankName": "Raider",
-      "specialization": "Unholy",
-      "playedTime": 23011144,
-      "achievementPoints": 16580,
-      "nightfallenReputation": 9550,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "Apocalypse",
-      "artifactRelics": 3,
-      "artifactTraits": 23,
-      "itemLevel": 854.81
     },
     {
       "name": "Rewrxght",
@@ -354,6 +370,22 @@
       "itemLevel": 851.38
     },
     {
+      "name": "Voidspriest",
+      "race": 8,
+      "gender": 1,
+      "class": 5,
+      "guildRankName": "Family",
+      "specialization": "Shadow",
+      "playedTime": 873595,
+      "achievementPoints": 2275,
+      "nightfallenReputation": 8425,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
+      "artifactRelics": 3,
+      "artifactTraits": 23,
+      "itemLevel": 852.27
+    },
+    {
       "name": "Dazerx",
       "race": 2,
       "gender": 1,
@@ -402,29 +434,13 @@
       "itemLevel": 851.25
     },
     {
-      "name": "Voidspriest",
-      "race": 8,
-      "gender": 1,
-      "class": 5,
-      "guildRankName": "Family",
-      "specialization": "Shadow",
-      "playedTime": 866156,
-      "achievementPoints": 2275,
-      "nightfallenReputation": 7675,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
-      "artifactRelics": 3,
-      "artifactTraits": 23,
-      "itemLevel": 852.27
-    },
-    {
       "name": "Vityax",
       "race": 10,
       "gender": 1,
       "class": 3,
       "guildRankName": "Trial",
       "specialization": "Marksmanship",
-      "playedTime": 4180807,
+      "playedTime": 4181717,
       "achievementPoints": 15755,
       "nightfallenReputation": 7550,
       "nightfallenReputationMaximum": 21000,
@@ -598,9 +614,9 @@
       "race": 9,
       "gender": 1,
       "class": 5,
-      "guildRankName": "Officer alt",
+      "guildRankName": "Officer",
       "specialization": "Shadow",
-      "playedTime": 21497132,
+      "playedTime": 21499612,
       "achievementPoints": 19725,
       "nightfallenReputation": 4375,
       "nightfallenReputationMaximum": 21000,
@@ -648,7 +664,7 @@
       "class": 12,
       "guildRankName": "Raider",
       "specialization": "Vengeance",
-      "playedTime": 696336,
+      "playedTime": 696548,
       "achievementPoints": 1705,
       "nightfallenReputation": 3500,
       "nightfallenReputationMaximum": 21000,
@@ -994,6 +1010,22 @@
       "itemLevel": 854.6
     },
     {
+      "name": "Geevcheet",
+      "race": 2,
+      "gender": 1,
+      "class": 1,
+      "guildRankName": "Family",
+      "specialization": "Arms",
+      "playedTime": 292815,
+      "achievementPoints": 1435,
+      "nightfallenReputation": 8050,
+      "nightfallenReputationMaximum": 12000,
+      "artifactWeapon": "Strom\u0027kar, the Warbreaker",
+      "artifactRelics": 3,
+      "artifactTraits": 17,
+      "itemLevel": 850.56
+    },
+    {
       "name": "Venzh",
       "race": 10,
       "gender": 1,
@@ -1024,22 +1056,6 @@
       "artifactRelics": 3,
       "artifactTraits": 19,
       "itemLevel": 852.19
-    },
-    {
-      "name": "Geevcheet",
-      "race": 2,
-      "gender": 1,
-      "class": 1,
-      "guildRankName": "Family",
-      "specialization": "Arms",
-      "playedTime": 290461,
-      "achievementPoints": 1435,
-      "nightfallenReputation": 6725,
-      "nightfallenReputationMaximum": 12000,
-      "artifactWeapon": "Strom\u0027kar, the Warbreaker",
-      "artifactRelics": 3,
-      "artifactTraits": 17,
-      "itemLevel": 850.56
     },
     {
       "name": "Arthazzmage",
@@ -1138,6 +1154,22 @@
       "itemLevel": 844
     },
     {
+      "name": "Infuse",
+      "race": 8,
+      "gender": 1,
+      "class": 5,
+      "guildRankName": "Alt",
+      "specialization": "Shadow",
+      "playedTime": 2269354,
+      "achievementPoints": 2285,
+      "nightfallenReputation": 3325,
+      "nightfallenReputationMaximum": 12000,
+      "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
+      "artifactRelics": 3,
+      "artifactTraits": 19,
+      "itemLevel": 851.33
+    },
+    {
       "name": "Moistdruid",
       "race": 8,
       "gender": 1,
@@ -1167,22 +1199,6 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 13,
-      "itemLevel": 851.67
-    },
-    {
-      "name": "Infuse",
-      "race": 8,
-      "gender": 1,
-      "class": 5,
-      "guildRankName": "Alt",
-      "specialization": "Shadow",
-      "playedTime": 2261259,
-      "achievementPoints": 2285,
-      "nightfallenReputation": 2475,
-      "nightfallenReputationMaximum": 12000,
-      "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
-      "artifactRelics": 3,
-      "artifactTraits": 19,
       "itemLevel": 851.67
     },
     {
@@ -1250,6 +1266,22 @@
       "itemLevel": 849.94
     },
     {
+      "name": "Voidsdudu",
+      "race": 8,
+      "gender": 1,
+      "class": 11,
+      "guildRankName": "Alt",
+      "specialization": "Restoration",
+      "playedTime": 298187,
+      "achievementPoints": 1090,
+      "nightfallenReputation": 1800,
+      "nightfallenReputationMaximum": 12000,
+      "artifactWeapon": "G\u0027Hanir, the Mother Tree",
+      "artifactRelics": 3,
+      "artifactTraits": 20,
+      "itemLevel": 853.75
+    },
+    {
       "name": "Killapete",
       "race": 8,
       "gender": 1,
@@ -1312,22 +1344,6 @@
       "artifactRelics": 3,
       "artifactTraits": 21,
       "itemLevel": 851.88
-    },
-    {
-      "name": "Voidsdudu",
-      "race": 8,
-      "gender": 1,
-      "class": 11,
-      "guildRankName": "Alt",
-      "specialization": "Restoration",
-      "playedTime": 297187,
-      "achievementPoints": 1090,
-      "nightfallenReputation": 1050,
-      "nightfallenReputationMaximum": 12000,
-      "artifactWeapon": "G\u0027Hanir, the Mother Tree",
-      "artifactRelics": 3,
-      "artifactTraits": 19,
-      "itemLevel": 853.75
     },
     {
       "name": "Arthazzdh",
@@ -1400,14 +1416,30 @@
       "class": 6,
       "guildRankName": "Alt",
       "specialization": "Frost",
-      "playedTime": 224045,
+      "playedTime": 230451,
       "achievementPoints": 1220,
       "nightfallenReputation": 5100,
       "nightfallenReputationMaximum": 6000,
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 2,
       "artifactTraits": 15,
-      "itemLevel": 843.56
+      "itemLevel": 844.19
+    },
+    {
+      "name": "H\u00EBaven",
+      "race": 6,
+      "gender": 1,
+      "class": 11,
+      "guildRankName": "Raider",
+      "specialization": "Feral",
+      "playedTime": 13094546,
+      "achievementPoints": 5070,
+      "nightfallenReputation": 4775,
+      "nightfallenReputationMaximum": 6000,
+      "artifactWeapon": "Fangs of Ashamane",
+      "artifactRelics": 3,
+      "artifactTraits": 20,
+      "itemLevel": 851.88
     },
     {
       "name": "Frog",
@@ -1440,22 +1472,6 @@
       "artifactRelics": 3,
       "artifactTraits": 16,
       "itemLevel": 847.07
-    },
-    {
-      "name": "H\u00EBaven",
-      "race": 6,
-      "gender": 1,
-      "class": 11,
-      "guildRankName": "Raider",
-      "specialization": "Feral",
-      "playedTime": 13093840,
-      "achievementPoints": 5070,
-      "nightfallenReputation": 3950,
-      "nightfallenReputationMaximum": 6000,
-      "artifactWeapon": "Fangs of Ashamane",
-      "artifactRelics": 3,
-      "artifactTraits": 20,
-      "itemLevel": 851.88
     },
     {
       "name": "Skogmagus",
@@ -1704,14 +1720,14 @@
       "class": 3,
       "guildRankName": "Family",
       "specialization": "Marksmanship",
-      "playedTime": 10104782,
+      "playedTime": 10118033,
       "achievementPoints": 7785,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 6000,
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 1,
       "artifactTraits": 8,
-      "itemLevel": 771.4
+      "itemLevel": 776.33
     },
     {
       "name": "Wesleysnipez",
@@ -2008,7 +2024,7 @@
       "class": 9,
       "guildRankName": "Trial",
       "specialization": "Affliction",
-      "playedTime": 1485469,
+      "playedTime": 1499591,
       "achievementPoints": 2455,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
@@ -2184,7 +2200,7 @@
       "class": 2,
       "guildRankName": "Alt",
       "specialization": "Protection",
-      "playedTime": 53715,
+      "playedTime": 53755,
       "achievementPoints": 670,
       "nightfallenReputation": null,
       "nightfallenReputationMaximum": null,
