@@ -47,3 +47,72 @@ app-root {
   }
 }
 
+/* Item markup is injected from TauriShoot, so these rules must remain global. */
+.legendary-tooltip-content {
+  color: #fff;
+
+  table {
+    width: 100%;
+    border: 0;
+    border-collapse: collapse;
+    background: transparent;
+  }
+
+  td,
+  th {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    white-space: normal;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .q5 {
+    color: #ff8000;
+  }
+
+  .q.i,
+  .q {
+    color: #ffd100;
+  }
+
+  .q2,
+  .q2 a,
+  .s2,
+  .s3,
+  .s4,
+  .s5 {
+    color: #1eff00;
+  }
+
+  .s1,
+  .ia {
+    color: #fff;
+  }
+
+  .c1 { color: #c79c6e; }
+  .c2 { color: #f58cba; }
+  .c3 { color: #abd473; }
+  .c4 { color: #fff569; }
+  .c5 { color: #fff; }
+  .c6 { color: #c41f3b; }
+  .c7 { color: #0070de; }
+  .c8 { color: #69ccf0; }
+  .c9 { color: #9482c9; }
+  .c10 { color: #00ff96; }
+  .c11 { color: #ff7d0a; }
+  .c12 { color: #a330c9; }
+
+  .moneygold { color: #ffd100; }
+  .moneysilver { color: #c7c7cf; }
+  .moneycopper { color: #c77b30; }
+}
+

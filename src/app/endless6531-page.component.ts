@@ -275,6 +275,17 @@ export class Endless6531PageComponent {
     return `https://legion-shoot.tauri.hu/?item=${item.id}`;
   }
 
+  legendaryTooltipHtml(tooltipHtml: string): string {
+    return tooltipHtml
+      .replace(/(?:&nbsp;)?<small\b[^>]*>.*?<\/small>/gis, '')
+      .replace(
+        /<br\s*\/?>\s*(?:<!--sockets-->)?\s*Durability[^<]*<br\s*\/?>/gi,
+        '<br />'
+      )
+      .replace(/<br\s*\/?>\s*Requires Level[^<]*<br\s*\/?>/gi, '<br />')
+      .replace(/<br\s*\/?>Sell Price:.*?(?=<\/td>)/is, '');
+  }
+
   selectClass(classId: string): void {
     const parsedClassId = Number(classId);
     this.selectedClassId.set(
