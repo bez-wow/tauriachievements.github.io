@@ -39,7 +39,6 @@
       </div>
 
       <div class="guild-rank-filter">
-        <label for="guild-rank-filter">Guild rank</label>
         <app-filter-dropdown
           dropdownId="guild-rank-dropdown"
           triggerId="guild-rank-filter"
@@ -51,7 +50,6 @@
       </div>
 
       <div class="class-filter">
-        <label for="class-filter">Class</label>
         <app-filter-dropdown
           dropdownId="guild-class-filter"
           triggerId="class-filter"
@@ -65,7 +63,6 @@
       </div>
 
       <div class="combat-role-filter">
-        <label for="combat-role-filter">Combat role</label>
         <app-filter-dropdown
           dropdownId="combat-role-dropdown"
           triggerId="combat-role-filter"
@@ -77,7 +74,7 @@
       </div>
 
       <button class="reset-filters" type="button" (click)="resetFilters()">
-        Reset filters
+        Reset
       </button>
     </section>
 
@@ -105,7 +102,6 @@
             [value]="sortColumn()"
             (change)="selectMobileSort($any($event.target).value)">
             <option value="name">Name</option>
-            <option value="raceClass">Race / Class</option>
             <option value="guildRankName">Rank</option>
             <option value="artifactRelics">Relics</option>
             <option value="artifactTraits">Traits</option>
@@ -135,11 +131,7 @@
               <span class="header-label">Name</span>
             </button>
           </th>
-          <th [attr.aria-sort]="ariaSort('raceClass')">
-            <button type="button" (click)="sortBy('raceClass')" [class.active-sort]="sortColumn() === 'raceClass'">
-              <span class="header-label">Race / Class</span>
-            </button>
-          </th>
+          <th class="plain-heading race-class-heading" scope="col">Race / Class</th>
           <th [attr.aria-sort]="ariaSort('guildRankName')">
             <button type="button" (click)="sortBy('guildRankName')" [class.active-sort]="sortColumn() === 'guildRankName'">
               <span class="header-label">Rank</span>

@@ -109,7 +109,8 @@
 
 .reset-filters {
   width: auto;
-  min-height: 36px;
+  min-height: 40px;
+  height: 40px;
   margin-top: 0;
   padding: 0 16px;
   border: 1px solid rgba(247, 181, 0, 0.24);
@@ -269,6 +270,10 @@ table {
     line-height: 1.2;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  .race-class-heading {
+    text-align: center;
   }
 
   th button {

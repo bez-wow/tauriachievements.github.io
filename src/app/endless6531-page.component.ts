@@ -133,7 +133,6 @@ function guildRankOrderIndex(rankName: string): number {
 
 type SortColumn =
   | 'name'
-  | 'raceClass'
   | 'guildRankName'
   | 'artifactRelics'
   | 'artifactTraits'
@@ -145,7 +144,6 @@ type SortDirection = 'asc' | 'desc';
 
 const SORT_COLUMNS = new Set<SortColumn>([
   'name',
-  'raceClass',
   'guildRankName',
   'artifactRelics',
   'artifactTraits',
@@ -245,7 +243,6 @@ export class Endless6531PageComponent {
       this.sortColumn.set(column);
       this.sortDirection.set(
         column === 'name'
-        || column === 'raceClass'
         || column === 'guildRankName'
           ? 'asc'
           : 'desc'
@@ -264,7 +261,6 @@ export class Endless6531PageComponent {
     this.sortColumn.set(selectedColumn);
     this.sortDirection.set(
       selectedColumn === 'name'
-      || selectedColumn === 'raceClass'
       || selectedColumn === 'guildRankName'
         ? 'asc'
         : 'desc'
@@ -405,6 +401,8 @@ export class Endless6531PageComponent {
     this.selectedGuildRank.set('');
     this.selectedCombatRole.set('');
     this.raidCharacters.set(new Set());
+    this.sortColumn.set('artifactTraits');
+    this.sortDirection.set('desc');
     this.applySort();
   }
 
@@ -518,8 +516,6 @@ export class Endless6531PageComponent {
     switch (column) {
       case 'name':
         return player.name;
-      case 'raceClass':
-        return player.race * 100 + player.class;
       case 'guildRankName':
         if (!player.guildRankName) {
           return null;
