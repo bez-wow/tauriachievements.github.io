@@ -3,10 +3,13 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel"
   [lastEditedTimeZone]="lastEditedTimeZone" />
 
-<main class="endless-page">
+<main
+  class="endless-page"
+  [class.guild-faction--alliance]="factionName === 'Alliance'"
+  [class.guild-faction--horde]="factionName === 'Horde'">
   <div class="page-content">
     <header class="guild-page-hero">
-      <p>{{ realmName }}</p>
+      <p>{{ realmName }} Realm</p>
       <div class="guild-title-row">
         <span aria-hidden="true"></span>
         <h1>{{ guildName }}</h1>

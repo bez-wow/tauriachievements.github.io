@@ -92,6 +92,20 @@
   }
 }
 
+.guild-faction--horde .guild-title-row h1 {
+  color: #c41e3a;
+  text-shadow:
+    0 2px 0 #4a0713,
+    0 0 14px rgba(196, 30, 58, 0.48);
+}
+
+.guild-faction--alliance .guild-title-row h1 {
+  color: #69ccf0;
+  text-shadow:
+    0 2px 0 #102d55,
+    0 0 14px rgba(105, 204, 240, 0.48);
+}
+
 .summary-panel {
   grid-column: 2;
   grid-row: 2 / span 2;
@@ -394,6 +408,15 @@ table {
 
     &:hover {
       background: linear-gradient(90deg, rgba(85, 25, 25, 0.9), rgba(70, 15, 15, 0.95));
+    }
+  }
+
+  .guild-faction--alliance & tbody tr {
+    background: linear-gradient(90deg, rgba(25, 35, 55, 0.8), rgba(15, 25, 45, 0.9));
+
+    &:hover {
+      background: linear-gradient(90deg, rgba(35, 50, 75, 0.9), rgba(25, 40, 65, 0.95));
+      box-shadow: inset 0 0 20px rgba(100, 150, 255, 0.1);
     }
   }
 

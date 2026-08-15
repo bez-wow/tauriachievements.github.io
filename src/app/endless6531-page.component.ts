@@ -39,7 +39,14 @@ interface GuildAnalysisLegendary {
 
 interface GuildAnalysis {
   timestamp: string;
+  guild?: GuildAnalysisMetadata;
   players: GuildAnalysisPlayer[];
+}
+
+interface GuildAnalysisMetadata {
+  name: string;
+  realm: string;
+  faction: 'Alliance' | 'Horde' | 'Unknown';
 }
 
 type GuildAnalysisKey = 'endless' | 'competence-optional' | 'outlaws' | 'six-seven';
@@ -168,8 +175,9 @@ export class Endless6531PageComponent {
   private readonly analysis = this.guild.analysis;
   private readonly sourcePlayers = this.analysis.players;
 
-  readonly guildName = this.guild.name;
-  readonly realmName = this.guild.realm;
+  readonly guildName = this.analysis.guild?.name ?? this.guild.name;
+  readonly realmName = this.analysis.guild?.realm ?? this.guild.realm;
+  readonly factionName = this.analysis.guild?.faction;
   readonly players = signal<GuildAnalysisPlayer[]>([]);
   readonly lastEdited = this.parseTimestamp(this.analysis.timestamp);
   readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) ?? 'Local time';
@@ -434,6 +442,10 @@ export class Endless6531PageComponent {
     const counts = new Map<number, number>();
 
     for (const player of this.sourcePlayers) {
+      if (!CLASS_NAMES[player.class]) {
+        continue;
+      }
+
       counts.set(player.class, (counts.get(player.class) ?? 0) + 1);
     }
 
@@ -441,7 +453,7 @@ export class Endless6531PageComponent {
     return [...counts.entries()]
       .map(([id, count]) => ({
         id,
-        name: CLASS_NAMES[id] ?? `Class ${id}`,
+        name: CLASS_NAMES[id],
         count,
         percentage: largestClassCount === 0 ? 0 : count / largestClassCount * 100
       }))
