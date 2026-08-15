@@ -6,6 +6,7 @@ import endlessAnalysis from '../guild-analysis/endless.json';
 import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import outlawsAnalysis from '../guild-analysis/outlaws.json';
 import sixSevenAnalysis from '../guild-analysis/six-seven.json';
+import temeriteAnalysis from '../guild-analysis/témérité.json';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -56,7 +57,7 @@ interface GuildAnalysisMetadata {
   faction: 'Alliance' | 'Horde' | 'Unknown';
 }
 
-type GuildAnalysisKey = 'endless' | 'competence-optional' | 'outlaws' | 'six-seven';
+type GuildAnalysisKey = 'endless' | 'competence-optional' | 'outlaws' | 'six-seven' | 'temerite';
 
 interface GuildAnalysisConfig {
   name: string;
@@ -84,6 +85,11 @@ const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = 
     name: 'Six Seven',
     realm: 'Evermoon',
     analysis: sixSevenAnalysis as GuildAnalysis
+  },
+  'temerite': {
+    name: 'Témérité',
+    realm: 'Evermoon',
+    analysis: temeriteAnalysis as GuildAnalysis
   }
 };
 

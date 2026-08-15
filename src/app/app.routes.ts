@@ -81,6 +81,12 @@ export const routes: Routes = [
     data: { guild: 'six-seven' }
   },
   {
+    path: 'temerite-b93e7a41',
+    loadComponent: () => import('./endless6531-page.component')
+      .then(module => module.Endless6531PageComponent),
+    data: { guild: 'temerite' }
+  },
+  {
     path: '**',
     redirectTo: ''
   }
