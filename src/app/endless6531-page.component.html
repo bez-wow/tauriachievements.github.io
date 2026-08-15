@@ -114,13 +114,12 @@
             (change)="selectMobileSort($any($event.target).value)">
             <option value="name">Name</option>
             <option value="raceClass">Race / Class</option>
-            <option value="guildRankName">Guild Rank</option>
-            <option value="specialization">Specialization</option>
-            <option value="artifactRelics">Artifact Relics</option>
-            <option value="artifactTraits">Artifact Traits</option>
-            <option value="itemLevel">Item Level</option>
-            <option value="playedTime">Time Played</option>
-            <option value="achievementPoints">Achievement Points</option>
+            <option value="guildRankName">Rank</option>
+            <option value="artifactRelics">Relics</option>
+            <option value="artifactTraits">Traits</option>
+            <option value="itemLevel">ilvl</option>
+            <option value="playedTime">/played</option>
+            <option value="achievementPoints">Achievements</option>
           </select>
         </span>
         <button
@@ -140,57 +139,45 @@
         <tr>
           <th class="row-number-heading" scope="col">#</th>
           <th [attr.aria-sort]="ariaSort('name')">
-            <button type="button" (click)="sortBy('name')">
+            <button type="button" (click)="sortBy('name')" [class.active-sort]="sortColumn() === 'name'">
               <span class="header-label">Name</span>
-              <span class="sort-indicator">{{ sortIndicator('name') }}</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('raceClass')">
-            <button type="button" (click)="sortBy('raceClass')">
+            <button type="button" (click)="sortBy('raceClass')" [class.active-sort]="sortColumn() === 'raceClass'">
               <span class="header-label">Race / Class</span>
-              <span class="sort-indicator">{{ sortIndicator('raceClass') }}</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('guildRankName')">
-            <button type="button" (click)="sortBy('guildRankName')">
-              <span class="header-label">Guild Rank</span>
-              <span class="sort-indicator">{{ sortIndicator('guildRankName') }}</span>
+            <button type="button" (click)="sortBy('guildRankName')" [class.active-sort]="sortColumn() === 'guildRankName'">
+              <span class="header-label">Rank</span>
             </button>
           </th>
-          <th [attr.aria-sort]="ariaSort('specialization')">
-            <button type="button" (click)="sortBy('specialization')">
-              <span class="header-label">Specialization</span>
-              <span class="sort-indicator">{{ sortIndicator('specialization') }}</span>
-            </button>
-          </th>
+          <th class="plain-heading" scope="col">Spec</th>
           <th [attr.aria-sort]="ariaSort('artifactRelics')">
-            <button type="button" (click)="sortBy('artifactRelics')">
-              <span class="header-label">Artifact Relics</span>
-              <span class="sort-indicator">{{ sortIndicator('artifactRelics') }}</span>
+            <button type="button" (click)="sortBy('artifactRelics')" [class.active-sort]="sortColumn() === 'artifactRelics'">
+              <span class="header-label">Relics</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('artifactTraits')">
-            <button type="button" (click)="sortBy('artifactTraits')">
-              <span class="header-label">Artifact Traits</span>
-              <span class="sort-indicator">{{ sortIndicator('artifactTraits') }}</span>
+            <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'">
+              <span class="header-label">Traits</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('itemLevel')">
-            <button type="button" (click)="sortBy('itemLevel')">
-              <span class="header-label">Item Level</span>
-              <span class="sort-indicator">{{ sortIndicator('itemLevel') }}</span>
+            <button type="button" (click)="sortBy('itemLevel')" [class.active-sort]="sortColumn() === 'itemLevel'">
+              <span class="header-label">ilvl</span>
             </button>
           </th>
+          <th class="plain-heading" scope="col">Legendaries</th>
           <th [attr.aria-sort]="ariaSort('playedTime')">
-            <button type="button" (click)="sortBy('playedTime')">
-              <span class="header-label">Time Played</span>
-              <span class="sort-indicator">{{ sortIndicator('playedTime') }}</span>
+            <button type="button" (click)="sortBy('playedTime')" [class.active-sort]="sortColumn() === 'playedTime'">
+              <span class="header-label">/played</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('achievementPoints')">
-            <button type="button" (click)="sortBy('achievementPoints')">
-              <span class="header-label">Achievement Points</span>
-              <span class="sort-indicator">{{ sortIndicator('achievementPoints') }}</span>
+            <button type="button" (click)="sortBy('achievementPoints')" [class.active-sort]="sortColumn() === 'achievementPoints'">
+              <span class="header-label">Achievements</span>
             </button>
           </th>
         </tr>
@@ -223,18 +210,37 @@
             <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
             <img [src]="getClassIconPath(player.class)" [alt]="'Class ' + player.class" />
           </td>
-          <td data-label="Guild Rank">{{ player.guildRankName || '—' }}</td>
-          <td data-label="Specialization">{{ player.specialization || '—' }}</td>
-          <td data-label="Artifact Relics">{{ player.artifactRelics | number }}</td>
-          <td data-label="Artifact Traits">{{ player.artifactTraits | number }}</td>
-          <td data-label="Item Level">{{ player.itemLevel | number:'1.2-2' }}</td>
-          <td data-label="Time Played">{{ formatPlayedTime(player.playedTime) }}</td>
-          <td class="gold-text" data-label="Achievement Points">{{ player.achievementPoints | number }}</td>
+          <td data-label="Rank">{{ player.guildRankName || '—' }}</td>
+          <td data-label="Spec">{{ player.specialization || '—' }}</td>
+          <td data-label="Relics">{{ player.artifactRelics | number }}</td>
+          <td data-label="Traits">{{ player.artifactTraits | number }}</td>
+          <td data-label="ilvl">{{ player.itemLevel | number:'1.2-2' }}</td>
+          <td class="legendary-cell" data-label="Legendaries">
+            <ng-container *ngIf="player.legendaries?.length; else noLegendaries">
+              <a
+                *ngFor="let item of player.legendaries"
+                class="legendary-item"
+                [href]="legendaryUrl(item)"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="item.name + ' (opens on TauriShoot)'">
+                <img [src]="item.icon" [alt]="item.name" loading="lazy" />
+                <span class="legendary-tooltip" role="tooltip">
+                  <span *ngIf="!item.tooltipHtml" class="legendary-tooltip-name">{{ item.name }}</span>
+                  <span *ngIf="item.tooltipHtml" class="legendary-tooltip-content" [innerHTML]="item.tooltipHtml"></span>
+                  <span class="legendary-tooltip-source">View on TauriShoot</span>
+                </span>
+              </a>
+            </ng-container>
+            <ng-template #noLegendaries><span class="no-legendary">&mdash;</span></ng-template>
+          </td>
+          <td data-label="/played">{{ formatPlayedTime(player.playedTime) }}</td>
+          <td class="gold-text" data-label="Achievements">{{ player.achievementPoints | number }}</td>
         </tr>
         <tr
           class="empty-roster"
           *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all' || selectedGuildRank() || selectedCombatRole())">
-          <td colspan="10">
+          <td colspan="11">
             No matching alt characters were found in the current guild roster.
           </td>
         </tr>

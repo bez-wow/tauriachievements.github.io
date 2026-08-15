@@ -24,6 +24,14 @@ interface GuildAnalysisPlayer {
   artifactRelics: number;
   artifactTraits: number;
   itemLevel: number;
+  legendaries?: GuildAnalysisLegendary[];
+}
+
+interface GuildAnalysisLegendary {
+  id: number;
+  name: string;
+  icon: string;
+  tooltipHtml?: string;
 }
 
 interface GuildAnalysis {
@@ -109,7 +117,6 @@ type SortColumn =
   | 'name'
   | 'raceClass'
   | 'guildRankName'
-  | 'specialization'
   | 'artifactRelics'
   | 'artifactTraits'
   | 'itemLevel'
@@ -122,7 +129,6 @@ const SORT_COLUMNS = new Set<SortColumn>([
   'name',
   'raceClass',
   'guildRankName',
-  'specialization',
   'artifactRelics',
   'artifactTraits',
   'itemLevel',
@@ -200,7 +206,6 @@ export class Endless6531PageComponent {
         column === 'name'
         || column === 'raceClass'
         || column === 'guildRankName'
-        || column === 'specialization'
           ? 'asc'
           : 'desc'
       );
@@ -220,7 +225,6 @@ export class Endless6531PageComponent {
       selectedColumn === 'name'
       || selectedColumn === 'raceClass'
       || selectedColumn === 'guildRankName'
-      || selectedColumn === 'specialization'
         ? 'asc'
         : 'desc'
     );
@@ -230,14 +234,6 @@ export class Endless6531PageComponent {
   toggleSortDirection(): void {
     this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
     this.applySort();
-  }
-
-  sortIndicator(column: SortColumn): string {
-    if (this.sortColumn() !== column) {
-      return '';
-    }
-
-    return this.sortDirection() === 'asc' ? '▲' : '▼';
   }
 
   ariaSort(column: SortColumn): 'ascending' | 'descending' | 'none' {
@@ -273,6 +269,10 @@ export class Endless6531PageComponent {
         .map((entry) => entry.name.toLocaleLowerCase())
     ));
     this.applySort();
+  }
+
+  legendaryUrl(item: Pick<GuildAnalysisLegendary, 'id'>): string {
+    return `https://legion-shoot.tauri.hu/?item=${item.id}`;
   }
 
   selectClass(classId: string): void {
@@ -433,8 +433,6 @@ export class Endless6531PageComponent {
         }
 
         return guildRankOrderIndex(player.guildRankName);
-      case 'specialization':
-        return player[column] ?? null;
       default:
         return player[column];
     }

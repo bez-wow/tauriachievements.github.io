@@ -242,7 +242,7 @@
 
 table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
 
@@ -267,51 +267,23 @@ table {
     }
   }
 
-  th:nth-child(1) {
-    width: 4%;
-  }
-
-  th:nth-child(2) {
-    width: 15%;
-  }
-
-  th:nth-child(3) {
-    width: 10%;
-  }
-
-  th:nth-child(4) {
-    width: 8%;
-  }
-
-  th:nth-child(5) {
-    width: 12%;
-  }
-
-  th:nth-child(6) {
-    width: 10%;
-  }
-
-  th:nth-child(7) {
-    width: 10%;
-  }
-
-  th:nth-child(8) {
-    width: 9%;
-  }
-
-  th:nth-child(9) {
-    width: 11%;
-  }
-
-  th:nth-child(10) {
-    width: 11%;
+  .plain-heading {
+    height: 52px;
+    padding: 10px 12px;
+    color: #bbb;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.65px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   th button {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 12px;
+    display: flex;
     align-items: center;
-    gap: 3px;
+    justify-content: flex-start;
+    gap: 4px;
     width: 100%;
     min-height: 52px;
     padding: 10px 12px;
@@ -333,23 +305,20 @@ table {
       outline: none;
     }
 
-    .header-label {
-      min-width: 0;
-      line-height: 1.2;
-      overflow-wrap: normal;
-      text-align: inherit;
-      white-space: normal;
+    &.active-sort {
+      color: #f7b500;
+      background: rgba(247, 181, 0, 0.06);
     }
 
-    .sort-indicator {
-      display: grid;
-      width: 12px;
-      min-width: 12px;
-      height: 14px;
-      margin: 0;
-      place-items: center;
-      color: #f7b500;
+    .header-label {
+      line-height: 1.2;
+      white-space: nowrap;
     }
+
+  }
+
+  th:nth-child(n + 4) button {
+    justify-content: center;
   }
 
   tbody tr {
@@ -479,17 +448,22 @@ table tbody tr.main-character-row {
 }
 
 .icons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: table-cell;
+  vertical-align: middle;
 
   img {
+    display: inline-block;
     width: 22px;
     height: 22px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 3px;
     object-fit: contain;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    vertical-align: middle;
+  }
+
+  img + img {
+    margin-left: 8px;
   }
 }
 
@@ -497,6 +471,107 @@ table tbody tr.main-character-row {
   color: #ffd700;
   font-weight: 700 !important;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.legendary-cell {
+  overflow: visible;
+}
+
+.legendary-item {
+  position: relative;
+  display: inline-grid;
+  margin: 0 2px;
+  place-items: center;
+  vertical-align: middle;
+
+  > img {
+    width: 34px;
+    height: 34px;
+    border: 2px solid #ff8000;
+    border-radius: 5px;
+    background: #15100b;
+    box-shadow: 0 0 8px rgba(255, 128, 0, 0.34);
+    object-fit: cover;
+  }
+
+  &:hover,
+  &:focus-visible {
+    z-index: 80;
+    outline: none;
+
+    > img {
+      border-color: #ffc266;
+      box-shadow: 0 0 13px rgba(255, 128, 0, 0.65);
+    }
+
+    .legendary-tooltip {
+      display: block;
+    }
+  }
+}
+
+.legendary-tooltip {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  z-index: 100;
+  display: none;
+  width: max-content;
+  min-width: 230px;
+  max-width: min(410px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid #766442;
+  border-radius: 5px;
+  background: rgba(8, 8, 12, 0.98);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  transform: translateX(-50%);
+}
+
+.legendary-tooltip-name {
+  display: block;
+  color: #ff8000;
+  font-weight: 700;
+}
+
+.legendary-tooltip-source {
+  display: block;
+  margin-top: 7px;
+  color: #8d8d96;
+  font-size: 0.67rem;
+}
+
+.legendary-tooltip-content {
+  display: block;
+
+  :where(table) {
+    width: 100%;
+  }
+
+  :where(td, th) {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    font-size: inherit;
+    font-weight: inherit;
+    text-align: left;
+    white-space: normal;
+  }
+
+  :where(.q5) { color: #ff8000; }
+  :where(.q2) { color: #1eff00; }
+  :where(.q, .i) { color: #ffd100; }
+  :where(.s1) { color: #fff; }
+  :where(.s2, .s3, .s4) { color: #1eff00; }
+}
+
+.no-legendary {
+  color: #777;
 }
 
 .neon-purple-text {
