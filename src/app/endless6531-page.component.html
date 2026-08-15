@@ -192,6 +192,7 @@
           <td class="player-cell" data-label="Name">
             <a
               class="player-name"
+              [style.--player-class-color]="classColor(player.class)"
               [href]="armoryUrl(player)"
               target="_blank"
               rel="noopener noreferrer"
