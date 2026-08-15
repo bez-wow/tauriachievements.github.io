@@ -113,6 +113,13 @@
   top: 48px;
   display: grid;
   gap: 16px;
+  height: 0;
+
+  > .summary-card {
+    position: absolute;
+    inset: 0 0 auto;
+    width: 100%;
+  }
 }
 
 .summary-card {
@@ -673,6 +680,12 @@ table tbody tr.main-character-row {
     grid-template-columns: 1fr;
     grid-column: 1;
     grid-row: 4;
+    height: auto;
+
+    > .summary-card {
+      position: static;
+      width: auto;
+    }
   }
 }
 
