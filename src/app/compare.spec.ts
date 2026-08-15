@@ -30,7 +30,8 @@ function ranked(overrides: Partial<RankedLadderPlayer> = {}): RankedLadderPlayer
     faction: 'Alliance',
     achievementRank: 1,
     honorableKillRank: 1,
-    ...overrides
+    ...overrides,
+    ilvl: overrides.ilvl ?? 0
   };
 }
 

@@ -29,7 +29,8 @@ function achievement(overrides: Partial<LadderAchievement> = {}): LadderAchievem
     characterAge: '14 years 6 months 21 days',
     isNewCharacter: false,
     faction: 'Alliance',
-    ...overrides
+    ...overrides,
+    ilvl: overrides.ilvl ?? 0
   };
 }
 

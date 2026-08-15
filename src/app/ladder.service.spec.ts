@@ -30,7 +30,8 @@ function makePlayer(overrides: Partial<Player>): Player {
     characterAge: '',
     isNewCharacter: false,
     faction: 'Alliance',
-    ...overrides
+    ...overrides,
+    ilvl: overrides.ilvl ?? 0
   };
 }
 

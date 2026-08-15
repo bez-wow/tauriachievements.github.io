@@ -28,7 +28,8 @@ function makePlayer(overrides: Partial<Player>): Player {
     characterAge: '',
     isNewCharacter: false,
     faction: 'Horde',
-    ...overrides
+    ...overrides,
+    ilvl: overrides.ilvl ?? 0
   };
 }
 
