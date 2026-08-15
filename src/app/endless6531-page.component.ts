@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import competenceOptionalAnalysis from '../guild-analysis/competence-optional.json';
 import endlessAnalysis from '../guild-analysis/endless.json';
@@ -176,6 +176,8 @@ const SORT_COLUMNS = new Set<SortColumn>([
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Endless6531PageComponent {
+  private activeLegendaryTooltip: HTMLElement | null = null;
+
   private readonly guildKey =
     inject(ActivatedRoute).snapshot.data['guild'] as GuildAnalysisKey ?? 'endless';
   private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES.endless;
@@ -344,6 +346,10 @@ export class Endless6531PageComponent {
       return;
     }
 
+    if (this.activeLegendaryTooltip && this.activeLegendaryTooltip !== tooltip) {
+      this.hideLegendaryTooltip(this.activeLegendaryTooltip);
+    }
+
     const viewportPadding = 8;
     const anchorGap = 8;
     tooltip.classList.add('legendary-tooltip--measuring');
@@ -361,6 +367,7 @@ export class Endless6531PageComponent {
     tooltip.style.left = `${Math.max(viewportPadding, Math.min(centeredLeft, maximumLeft))}px`;
     tooltip.classList.remove('legendary-tooltip--measuring');
     tooltip.classList.add('legendary-tooltip--visible');
+    this.activeLegendaryTooltip = tooltip;
   }
 
   hideLegendaryTooltip(tooltip: HTMLElement): void {
@@ -368,6 +375,17 @@ export class Endless6531PageComponent {
       'legendary-tooltip--measuring',
       'legendary-tooltip--visible'
     );
+
+    if (this.activeLegendaryTooltip === tooltip) {
+      this.activeLegendaryTooltip = null;
+    }
+  }
+
+  @HostListener('window:scroll')
+  hideLegendaryTooltipOnScroll(): void {
+    if (this.activeLegendaryTooltip) {
+      this.hideLegendaryTooltip(this.activeLegendaryTooltip);
+    }
   }
 
   selectClass(classId: FilterDropdownValue): void {
