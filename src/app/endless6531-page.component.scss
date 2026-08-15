@@ -94,7 +94,7 @@
 
 .summary-panel {
   grid-column: 2;
-  grid-row: 3;
+  grid-row: 2 / span 2;
   position: sticky;
   top: 48px;
   display: grid;
