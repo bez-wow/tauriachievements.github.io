@@ -22,6 +22,7 @@ export interface PlayerAchievement {
   playedTime: number;
   playedTimeDelta: number;
   playedTimeRankDelta: number;
+  ilvl: number;
   characterAge: string;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';

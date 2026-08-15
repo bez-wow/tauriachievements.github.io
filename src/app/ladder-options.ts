@@ -21,6 +21,7 @@ export const SORT_OPTIONS: ReadonlyArray<LadderSelectOption<LadderSort>> = [
   { value: 'achievementsTotal', label: 'Account Wide Achievements' },
   { value: 'honorableKills', label: 'Honorable Kills' },
   { value: 'playedTime', label: 'Time Played' },
+  { value: 'ilvl', label: 'Item Level' },
   { value: 'appearanceCount', label: 'Appearances' }
 ];
 

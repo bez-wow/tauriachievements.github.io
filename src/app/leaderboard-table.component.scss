@@ -64,7 +64,8 @@
     &:nth-child(7),
     &:nth-child(8),
     &:nth-child(9),
-    &:nth-child(10) {
+    &:nth-child(10),
+    &:nth-child(11) {
       text-align: center;
     }
   }
@@ -92,7 +93,8 @@
     &:nth-child(7),
     &:nth-child(8),
     &:nth-child(9),
-    &:nth-child(10) {
+    &:nth-child(10),
+    &:nth-child(11) {
       text-align: center;
       font-weight: 500;
     }
@@ -653,6 +655,21 @@
     display: none;
   }
 
+  .wow-table th:nth-child(11),
+  .wow-table td:nth-child(11) {
+    display: none;
+  }
+
+  .wow-table.sort-item-level th:nth-child(6),
+  .wow-table.sort-item-level td:nth-child(6) {
+    display: none;
+  }
+
+  .wow-table.sort-item-level th:nth-child(10),
+  .wow-table.sort-item-level td:nth-child(10) {
+    display: table-cell;
+  }
+
   .wow-table.sort-achievements-total th:nth-child(6),
   .wow-table.sort-achievements-total td:nth-child(6) {
     display: none;
@@ -688,8 +705,8 @@
     display: none;
   }
 
-  .wow-table.sort-appearances th:nth-child(10),
-  .wow-table.sort-appearances td:nth-child(10) {
+  .wow-table.sort-appearances th:nth-child(11),
+  .wow-table.sort-appearances td:nth-child(11) {
     display: table-cell;
   }
 

@@ -111,6 +111,7 @@ function generatePlayerSnapshot() {
         canComparePlayedTime && previousPlayedTimeRank && currentPlayedTimeRank
           ? previousPlayedTimeRank - currentPlayedTimeRank
           : 0,
+        player.ilvl,
       ];
 
       return serializedPlayer;

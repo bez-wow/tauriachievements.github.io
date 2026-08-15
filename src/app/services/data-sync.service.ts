@@ -93,7 +93,8 @@ export class DataSyncService {
       achievementsTotalRankDelta = 0,
       playedTime = 0,
       playedTimeDelta = 0,
-      playedTimeRankDelta = 0
+      playedTimeRankDelta = 0,
+      ilvl = 0
     ] = row;
 
     const realm = snapshot.r[realmIndex];
@@ -123,6 +124,7 @@ export class DataSyncService {
       playedTime,
       playedTimeDelta,
       playedTimeRankDelta,
+      ilvl,
       characterAge,
       isNewCharacter,
       faction: snapshot.f[factionIndex] ?? 'Horde'

@@ -1,6 +1,6 @@
 import { PlayerAchievement } from './models/achievement.model';
 
-export type LadderSort = 'achievementPoints' | 'achievementsTotal' | 'honorableKills' | 'playedTime' | 'appearanceCount';
+export type LadderSort = 'achievementPoints' | 'achievementsTotal' | 'honorableKills' | 'playedTime' | 'appearanceCount' | 'ilvl';
 
 export interface LadderFilterState {
   sort: LadderSort;

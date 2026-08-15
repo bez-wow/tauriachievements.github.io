@@ -41,6 +41,7 @@ export function mapLadderPlayersToView(
       playedTime: player.playedTime,
       playedTimeDelta: player.playedTimeDelta,
       playedTimeRankDelta: player.playedTimeRankDelta,
+      ilvl: player.ilvl,
       characterAge: player.characterAge,
       isNewCharacter: player.isNewCharacter,
       faction: player.faction,

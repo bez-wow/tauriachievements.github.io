@@ -116,6 +116,7 @@ function parsePlayersCsv(csvText) {
       hasAchievementsTotal,
       playedTime: toNumber(getField(row, index, "PlayedTime")),
       hasPlayedTime,
+      ilvl: toNumber(getField(row, index, "ilvl")),
       characterAge: getField(row, index, "CharacterAge"),
       faction: getField(row, index, "Faction") || "Horde",
     });

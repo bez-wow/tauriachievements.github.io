@@ -26,6 +26,7 @@ export interface LadderAchievement {
   playedTime: number;
   playedTimeDelta: number;
   playedTimeRankDelta: number;
+  ilvl: number;
   characterAge: string;
   isNewCharacter: boolean;
   faction: 'Horde' | 'Alliance';
@@ -48,6 +49,7 @@ interface LadderIndexes {
   honorableKills: IndexedLadderPlayer[];
   playedTime: IndexedLadderPlayer[];
   appearanceCount: IndexedLadderPlayer[];
+  ilvl: IndexedLadderPlayer[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -110,6 +112,17 @@ export class LadderService {
     pageSize: number = 1000
   ): Observable<LadderAchievement[]> {
     return this.getRankedPlayers('playedTime', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
+  }
+
+  getItemLevel(
+    realm?: string,
+    faction?: string,
+    playerClass?: number,
+    searchTerm?: string,
+    pageNumber: number = 1,
+    pageSize: number = 1000
+  ): Observable<LadderAchievement[]> {
+    return this.getRankedPlayers('ilvl', realm, faction, playerClass, searchTerm, pageNumber, pageSize);
   }
 
   getRankedPlayer(name: string, realm: string): Observable<RankedLadderPlayer | undefined> {
@@ -249,6 +262,8 @@ export class LadderService {
         return { ...view, playedTimeRankDelta: rankDelta };
       case 'appearanceCount':
         return { ...view, appearanceRankDelta: rankDelta };
+      case 'ilvl':
+        return view;
     }
   }
 
@@ -287,7 +302,8 @@ export class LadderService {
       achievementsTotal: [...indexedPlayers].sort((a, b) => this.compareAchievementsTotalPlayers(a.view, b.view)),
       honorableKills: [...indexedPlayers].sort((a, b) => this.compareHonorableKillPlayers(a.view, b.view)),
       playedTime: [...indexedPlayers].sort((a, b) => this.comparePlayedTimePlayers(a.view, b.view)),
-      appearanceCount: [...indexedPlayers].sort((a, b) => this.compareAppearancePlayers(a.view, b.view))
+      appearanceCount: [...indexedPlayers].sort((a, b) => this.compareAppearancePlayers(a.view, b.view)),
+      ilvl: [...indexedPlayers].sort((a, b) => this.compareItemLevelPlayers(a.view, b.view))
     };
 
     this.indexedSource = players;
@@ -395,6 +411,7 @@ export class LadderService {
         playedTime: player.playedTime,
         playedTimeDelta: player.playedTimeDelta,
         playedTimeRankDelta: player.playedTimeRankDelta,
+        ilvl: player.ilvl,
         characterAge: player.characterAge,
         isNewCharacter: player.isNewCharacter,
         faction: (player.faction || 'Horde') as 'Horde' | 'Alliance'
@@ -469,6 +486,18 @@ export class LadderService {
 
     if (right.honorableKills !== left.honorableKills) {
       return right.honorableKills - left.honorableKills;
+    }
+
+    return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
+  }
+
+  private compareItemLevelPlayers(left: LadderAchievement, right: LadderAchievement): number {
+    if (right.ilvl !== left.ilvl) {
+      return right.ilvl - left.ilvl;
+    }
+
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
     }
 
     return this.getPlayerKey(left).localeCompare(this.getPlayerKey(right));
@@ -584,6 +613,8 @@ export class LadderService {
         return (left, right) => this.comparePreviousPlayedTimePlayers(left.view, right.view);
       case 'appearanceCount':
         return (left, right) => this.comparePreviousAppearancePlayers(left.view, right.view);
+      case 'ilvl':
+        return (left, right) => this.compareItemLevelPlayers(left.view, right.view);
     }
   }
 

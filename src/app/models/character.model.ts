@@ -29,7 +29,8 @@ export type SerializedPlayerRecord = [
   achievementsTotalRankDelta?: number,
   playedTime?: number,
   playedTimeDelta?: number,
-  playedTimeRankDelta?: number
+  playedTimeRankDelta?: number,
+  ilvl?: number
 ];
 
 export interface PlayerSnapshot {
@@ -61,6 +62,7 @@ export interface Player {
   playedTime: number;
   playedTimeDelta: number;
   playedTimeRankDelta: number;
+  ilvl: number;
   characterAge: string;
   isNewCharacter: boolean;
   faction: string;

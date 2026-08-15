@@ -151,6 +151,8 @@ export class LadderPageStore {
         return this.ladderService.getPlaytime.bind(this.ladderService);
       case 'appearanceCount':
         return this.ladderService.getAppearances.bind(this.ladderService);
+      case 'ilvl':
+        return this.ladderService.getItemLevel.bind(this.ladderService);
     }
   }
 
