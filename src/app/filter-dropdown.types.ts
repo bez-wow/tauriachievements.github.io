@@ -4,4 +4,5 @@ export interface FilterDropdownOption<TValue extends FilterDropdownValue = Filte
   value: TValue;
   label: string;
   icon?: string;
+  color?: string;
 }

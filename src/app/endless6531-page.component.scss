@@ -72,6 +72,7 @@
     minmax(125px, 0.75fr)
     minmax(125px, 0.75fr)
     minmax(125px, 0.75fr)
+    minmax(125px, 0.75fr)
     auto;
   align-items: end;
   gap: 12px;
@@ -91,24 +92,15 @@
 .roster-filters {
   grid-column: 1;
   grid-row: 1;
+  overflow: visible;
 }
 
 .roster-filters--standard {
-  grid-template-columns: repeat(2, minmax(125px, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(125px, 1fr)) auto;
 }
 
 .class-filter {
-  margin-bottom: 15px;
-
-  label {
-    display: block;
-    margin-bottom: 7px;
-    color: #b48a45;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-  }
+  margin: 0;
 }
 
 .role-filter {

@@ -2,6 +2,7 @@
   class="dropdown"
   [class.open]="isOpen"
   [class.has-icons]="showIcons"
+  [class.compact]="compact"
   [class.has-selection]="highlightWhenSelected && hasSelectedValue">
   <button
     #trigger
@@ -24,7 +25,7 @@
         class="option-icon" />
       <span *ngIf="!hasSelectedIcon" class="option-icon placeholder"></span>
     </ng-container>
-    <span class="option-label">{{ displaySelectedLabel }}</span>
+    <span class="option-label" [style.color]="displaySelectedColor">{{ displaySelectedLabel }}</span>
   </button>
 
   <div
@@ -52,7 +53,7 @@
           class="option-icon" />
         <span *ngIf="!option.icon" class="option-icon placeholder"></span>
       </ng-container>
-      <span class="option-label">{{ option.label }}</span>
+      <span class="option-label" [style.color]="option.color">{{ option.label }}</span>
     </button>
   </div>
 </div>

@@ -11,6 +11,9 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { formatPlayedTime } from './played-time';
 import { UpdateBarComponent } from './update-bar.component';
+import { FilterDropdownComponent } from './filter-dropdown.component';
+import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
+import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 
 interface GuildAnalysisPlayer {
   name: string;
@@ -154,7 +157,8 @@ const SORT_COLUMNS = new Set<SortColumn>([
 @Component({
   selector: 'app-endless6531-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent],
+  imports: [CommonModule, UpdateBarComponent, FilterDropdownComponent],
+  providers: [FilterDropdownCoordinatorService],
   templateUrl: './endless6531-page.component.html',
   styleUrls: ['./endless6531-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -202,11 +206,33 @@ export class Endless6531PageComponent {
 
     return left.localeCompare(right, undefined, { sensitivity: 'base' });
   });
+  readonly guildRankFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
+    { value: undefined, label: 'All ranks' },
+    ...this.guildRanks.map((rank) => ({ value: rank, label: rank }))
+  ];
+  readonly combatRoleFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
+    { value: undefined, label: 'All combat roles' },
+    { value: 'Tank', label: 'Tank' },
+    { value: 'Heal', label: 'Heal' },
+    { value: 'Ranged', label: 'Ranged' },
+    { value: 'Melee', label: 'Melee' }
+  ];
   readonly raidCharacters = signal<ReadonlySet<string>>(new Set());
   private readonly characterRoles = this.buildCharacterRoles();
   private readonly mainCharactersByAlt = this.buildMainCharactersByAlt();
 
   readonly classCounts = this.buildClassCounts();
+  readonly classFilterOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
+    { value: undefined, label: 'All Classes' },
+    ...this.classCounts
+      .map((entry) => ({
+        value: entry.id,
+        label: entry.name,
+        icon: getClassIconPath(entry.id),
+        color: CLASS_COLORS[entry.id] ?? '#ffffff'
+      }))
+      .sort((left, right) => left.label.localeCompare(right.label))
+  ];
 
   constructor() {
     this.applySort();
@@ -340,10 +366,12 @@ export class Endless6531PageComponent {
     );
   }
 
-  selectClass(classId: string): void {
+  selectClass(classId: FilterDropdownValue): void {
     const parsedClassId = Number(classId);
     this.selectedClassId.set(
-      classId && Number.isInteger(parsedClassId) ? parsedClassId : null
+      classId !== undefined && classId !== '' && Number.isInteger(parsedClassId)
+        ? parsedClassId
+        : null
     );
     this.applySort();
   }
@@ -355,12 +383,12 @@ export class Endless6531PageComponent {
     this.applySort();
   }
 
-  selectGuildRank(rank: string): void {
-    this.selectedGuildRank.set(rank);
+  selectGuildRank(rank: FilterDropdownValue): void {
+    this.selectedGuildRank.set(typeof rank === 'string' ? rank : '');
     this.applySort();
   }
 
-  selectCombatRole(role: string): void {
+  selectCombatRole(role: FilterDropdownValue): void {
     this.selectedCombatRole.set(
       role === 'Tank' || role === 'Heal' || role === 'Ranged' || role === 'Melee'
         ? role

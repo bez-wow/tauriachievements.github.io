@@ -40,33 +40,40 @@
 
       <div class="guild-rank-filter">
         <label for="guild-rank-filter">Guild rank</label>
-        <span class="main-character-select">
-          <select
-            id="guild-rank-filter"
-            [value]="selectedGuildRank()"
-            (change)="selectGuildRank($any($event.target).value)">
-            <option value="">All ranks</option>
-            <option *ngFor="let guildRank of guildRanks" [value]="guildRank">
-              {{ guildRank }}
-            </option>
-          </select>
-        </span>
+        <app-filter-dropdown
+          dropdownId="guild-rank-dropdown"
+          triggerId="guild-rank-filter"
+          ariaLabel="Filter by guild rank"
+          [options]="guildRankFilterOptions"
+          [selectedValue]="selectedGuildRank() || undefined"
+          [compact]="true"
+          (selectionChange)="selectGuildRank($event)" />
+      </div>
+
+      <div class="class-filter">
+        <label for="class-filter">Class</label>
+        <app-filter-dropdown
+          dropdownId="guild-class-filter"
+          triggerId="class-filter"
+          ariaLabel="Filter by class"
+          [options]="classFilterOptions"
+          [selectedValue]="selectedClassId() ?? undefined"
+          [showIcons]="true"
+          [highlightWhenSelected]="true"
+          [compact]="true"
+          (selectionChange)="selectClass($event)" />
       </div>
 
       <div class="combat-role-filter">
         <label for="combat-role-filter">Combat role</label>
-        <span class="main-character-select">
-          <select
-            id="combat-role-filter"
-            [value]="selectedCombatRole()"
-            (change)="selectCombatRole($any($event.target).value)">
-            <option value="">All combat roles</option>
-            <option value="Tank">Tank</option>
-            <option value="Heal">Heal</option>
-            <option value="Ranged">Ranged</option>
-            <option value="Melee">Melee</option>
-          </select>
-        </span>
+        <app-filter-dropdown
+          dropdownId="combat-role-dropdown"
+          triggerId="combat-role-filter"
+          ariaLabel="Filter by combat role"
+          [options]="combatRoleFilterOptions"
+          [selectedValue]="selectedCombatRole() || undefined"
+          [compact]="true"
+          (selectionChange)="selectCombatRole($event)" />
       </div>
 
       <button class="reset-filters" type="button" (click)="resetFilters()">
@@ -76,21 +83,6 @@
 
     <aside class="summary-panel" aria-label="Guild roster summary">
       <section class="summary-card">
-        <div class="class-filter">
-          <label for="class-filter">Filter by class</label>
-          <span class="main-character-select">
-            <select
-              id="class-filter"
-              [value]="selectedClassId() ?? ''"
-              (change)="selectClass($any($event.target).value)">
-              <option value="">All classes</option>
-              <option *ngFor="let entry of classCounts" [value]="entry.id">
-                {{ entry.name }}
-              </option>
-            </select>
-          </span>
-        </div>
-
         <div class="class-list">
           <div class="class-row" *ngFor="let entry of classCounts">
             <img [src]="getClassIconPath(entry.id)" [alt]="entry.name" />

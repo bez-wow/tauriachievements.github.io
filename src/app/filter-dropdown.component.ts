@@ -33,6 +33,7 @@ export class FilterDropdownComponent {
   @Input() selectedIcon?: string;
   @Input() showIcons = false;
   @Input() highlightWhenSelected = false;
+  @Input() compact = false;
 
   @Output() readonly selectionChange = new EventEmitter<FilterDropdownValue>();
 
@@ -52,6 +53,10 @@ export class FilterDropdownComponent {
 
   get displaySelectedIcon(): string | undefined {
     return this.selectedIcon ?? this.selectedOption?.icon;
+  }
+
+  get displaySelectedColor(): string | undefined {
+    return this.selectedOption?.color;
   }
 
   get hasSelectedIcon(): boolean {
