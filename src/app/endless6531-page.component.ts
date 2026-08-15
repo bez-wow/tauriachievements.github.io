@@ -20,6 +20,7 @@ interface GuildAnalysisPlayer {
   race: number;
   gender: number;
   class: number;
+  guildRank?: number | null;
   guildRankName?: string | null;
   specialization?: string | null;
   playedTime: number;
@@ -40,7 +41,13 @@ interface GuildAnalysisLegendary {
 interface GuildAnalysis {
   timestamp: string;
   guild?: GuildAnalysisMetadata;
+  ranks?: GuildAnalysisRank[];
   players: GuildAnalysisPlayer[];
+}
+
+interface GuildAnalysisRank {
+  order: number;
+  name: string;
 }
 
 interface GuildAnalysisMetadata {
@@ -118,7 +125,7 @@ const CLASS_COLORS: Readonly<Record<number, string>> = {
   12: '#a330c9'
 };
 
-const GUILD_RANK_ORDER = [
+const LEGACY_GUILD_RANK_ORDER = [
   'Guild Master',
   'Officer',
   'Officer Alt',
@@ -131,11 +138,11 @@ const GUILD_RANK_ORDER = [
 
 function guildRankOrderIndex(rankName: string): number {
   const normalizedRankName = rankName.trim().toLocaleLowerCase();
-  const rankIndex = GUILD_RANK_ORDER.findIndex(
+  const rankIndex = LEGACY_GUILD_RANK_ORDER.findIndex(
     (rank) => rank.toLocaleLowerCase() === normalizedRankName
   );
 
-  return rankIndex === -1 ? GUILD_RANK_ORDER.length : rankIndex;
+  return rankIndex === -1 ? LEGACY_GUILD_RANK_ORDER.length : rankIndex;
 }
 
 type SortColumn =
@@ -174,6 +181,12 @@ export class Endless6531PageComponent {
   private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES.endless;
   private readonly analysis = this.guild.analysis;
   private readonly sourcePlayers = this.analysis.players;
+  private readonly guildRankOrderByName = new Map(
+    (this.analysis.ranks ?? []).map((rank) => [
+      rank.name.trim().toLocaleLowerCase(),
+      rank.order
+    ])
+  );
 
   readonly guildName = this.analysis.guild?.name ?? this.guild.name;
   readonly realmName = this.analysis.guild?.realm ?? this.guild.realm;
@@ -198,20 +211,7 @@ export class Endless6531PageComponent {
   readonly selectedCharacterRole = signal<CharacterRole | 'all'>('all');
   readonly selectedGuildRank = signal('');
   readonly selectedCombatRole = signal<CombatRole | ''>('');
-  readonly guildRanks = [...new Set(
-    this.sourcePlayers
-      .map((player) => player.guildRankName?.trim())
-      .filter((rank): rank is string => Boolean(rank))
-  )].sort((left, right) => {
-    const leftIndex = guildRankOrderIndex(left);
-    const rightIndex = guildRankOrderIndex(right);
-
-    if (leftIndex !== GUILD_RANK_ORDER.length || rightIndex !== GUILD_RANK_ORDER.length) {
-      return leftIndex - rightIndex;
-    }
-
-    return left.localeCompare(right, undefined, { sensitivity: 'base' });
-  });
+  readonly guildRanks = this.buildGuildRanks();
   readonly guildRankFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
     { value: undefined, label: 'All ranks' },
     ...this.guildRanks.map((rank) => ({ value: rank, label: rank }))
@@ -460,6 +460,36 @@ export class Endless6531PageComponent {
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
   }
 
+  private buildGuildRanks(): string[] {
+    const playerRankNames = [...new Set(
+      this.sourcePlayers
+        .map((player) => player.guildRankName?.trim())
+        .filter((rank): rank is string => Boolean(rank))
+    )];
+    const playerRankNamesByKey = new Map(
+      playerRankNames.map((rank) => [rank.toLocaleLowerCase(), rank])
+    );
+    const exportedRanks = (this.analysis.ranks ?? [])
+      .filter((rank) => rank.name.trim().length > 0)
+      .sort((left, right) => left.order - right.order || left.name.localeCompare(right.name))
+      .map((rank) => playerRankNamesByKey.get(rank.name.trim().toLocaleLowerCase()) ?? rank.name.trim());
+    const exportedRankKeys = new Set(exportedRanks.map((rank) => rank.toLocaleLowerCase()));
+    const unlistedPlayerRanks = playerRankNames
+      .filter((rank) => !exportedRankKeys.has(rank.toLocaleLowerCase()))
+      .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }));
+
+    if (exportedRanks.length > 0) {
+      return [...exportedRanks, ...unlistedPlayerRanks];
+    }
+
+    return playerRankNames.sort((left, right) => {
+      const leftIndex = guildRankOrderIndex(left);
+      const rightIndex = guildRankOrderIndex(right);
+      return leftIndex - rightIndex
+        || left.localeCompare(right, undefined, { sensitivity: 'base' });
+    });
+  }
+
   private applySort(): void {
     const column = this.sortColumn();
     const multiplier = this.sortDirection() === 'asc' ? 1 : -1;
@@ -529,11 +559,17 @@ export class Endless6531PageComponent {
       case 'name':
         return player.name;
       case 'guildRankName':
+        if (Number.isInteger(player.guildRank)) {
+          return player.guildRank as number;
+        }
+
         if (!player.guildRankName) {
           return null;
         }
 
-        return guildRankOrderIndex(player.guildRankName);
+        return this.guildRankOrderByName.get(
+          player.guildRankName.trim().toLocaleLowerCase()
+        ) ?? guildRankOrderIndex(player.guildRankName);
       default:
         return player[column];
     }
