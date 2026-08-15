@@ -105,6 +105,19 @@
   gap: 8px;
 }
 
+.dropdown.compact .dropdown-menu {
+  max-height: none;
+  overflow-y: visible;
+  gap: 3px;
+  padding: 6px;
+}
+
+.dropdown.compact .dropdown-option {
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 9px;
+}
+
 .dropdown-trigger.no-icon .option-icon.placeholder,
 .dropdown-option.no-icon .option-icon.placeholder {
   display: none;
