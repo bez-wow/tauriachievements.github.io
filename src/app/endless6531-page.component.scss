@@ -496,7 +496,7 @@ table tbody tr.main-character-row {
 
   &:hover,
   &:focus-visible {
-    z-index: 80;
+    z-index: 2000;
     outline: none;
 
     > img {
@@ -504,17 +504,12 @@ table tbody tr.main-character-row {
       box-shadow: 0 0 13px rgba(255, 128, 0, 0.65);
     }
 
-    .legendary-tooltip {
-      display: block;
-    }
   }
 }
 
 .legendary-tooltip {
-  position: absolute;
-  bottom: calc(100% + 9px);
-  left: 50%;
-  z-index: 100;
+  position: fixed;
+  z-index: 2001;
   display: none;
   width: min(330px, calc(100vw - 24px));
   padding: 7px 8px;
@@ -527,7 +522,15 @@ table tbody tr.main-character-row {
   line-height: 1.35;
   text-align: left;
   white-space: normal;
-  transform: translateX(-50%);
+}
+
+.legendary-tooltip--measuring {
+  display: block;
+  visibility: hidden;
+}
+
+.legendary-tooltip--visible {
+  display: block;
 }
 
 .legendary-tooltip-name {

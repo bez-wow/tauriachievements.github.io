@@ -286,6 +286,41 @@ export class Endless6531PageComponent {
       .replace(/<br\s*\/?>Sell Price:.*?(?=<\/td>)/is, '');
   }
 
+  showLegendaryTooltip(
+    event: MouseEvent | FocusEvent,
+    tooltip: HTMLElement
+  ): void {
+    const anchor = event.currentTarget as HTMLElement | null;
+    if (!anchor) {
+      return;
+    }
+
+    const viewportPadding = 8;
+    const anchorGap = 8;
+    tooltip.classList.add('legendary-tooltip--measuring');
+
+    const anchorRect = anchor.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const preferredTop = anchorRect.top - tooltipRect.height - anchorGap;
+    const fallbackTop = anchorRect.bottom + anchorGap;
+    const maximumTop = window.innerHeight - tooltipRect.height - viewportPadding;
+    const top = preferredTop >= viewportPadding ? preferredTop : fallbackTop;
+    const centeredLeft = anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2;
+    const maximumLeft = window.innerWidth - tooltipRect.width - viewportPadding;
+
+    tooltip.style.top = `${Math.max(viewportPadding, Math.min(top, maximumTop))}px`;
+    tooltip.style.left = `${Math.max(viewportPadding, Math.min(centeredLeft, maximumLeft))}px`;
+    tooltip.classList.remove('legendary-tooltip--measuring');
+    tooltip.classList.add('legendary-tooltip--visible');
+  }
+
+  hideLegendaryTooltip(tooltip: HTMLElement): void {
+    tooltip.classList.remove(
+      'legendary-tooltip--measuring',
+      'legendary-tooltip--visible'
+    );
+  }
+
   selectClass(classId: string): void {
     const parsedClassId = Number(classId);
     this.selectedClassId.set(

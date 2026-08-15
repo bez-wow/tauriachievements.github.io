@@ -223,9 +223,13 @@
                 [href]="legendaryUrl(item)"
                 target="_blank"
                 rel="noopener noreferrer"
+                (mouseenter)="showLegendaryTooltip($event, tooltip)"
+                (mouseleave)="hideLegendaryTooltip(tooltip)"
+                (focus)="showLegendaryTooltip($event, tooltip)"
+                (blur)="hideLegendaryTooltip(tooltip)"
                 [attr.aria-label]="item.name + ' (opens on TauriShoot)'">
                 <img [src]="item.icon" [alt]="item.name" loading="lazy" />
-                <span class="legendary-tooltip" role="tooltip">
+                <span #tooltip class="legendary-tooltip" role="tooltip">
                   <span *ngIf="!item.tooltipHtml" class="legendary-tooltip-name">{{ item.name }}</span>
                   <span *ngIf="item.tooltipHtml" class="legendary-tooltip-content" [innerHTML]="legendaryTooltipHtml(item.tooltipHtml)"></span>
                   <span class="legendary-tooltip-source">View on TauriShoot</span>
