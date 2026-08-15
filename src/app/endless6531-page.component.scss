@@ -328,6 +328,7 @@ table {
   }
 
   td {
+    height: 56px;
     padding: 11px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.035);
     font-size: 0.9rem;
@@ -753,6 +754,7 @@ table tbody tr.main-character-row {
 
     td {
       display: grid;
+      height: auto;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 8px;
