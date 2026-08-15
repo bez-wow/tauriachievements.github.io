@@ -5,6 +5,16 @@
 
 <main class="endless-page">
   <div class="page-content">
+    <header class="guild-page-hero">
+      <p>{{ realmName }}</p>
+      <div class="guild-title-row">
+        <span aria-hidden="true"></span>
+        <h1>{{ guildName }}</h1>
+        <span aria-hidden="true"></span>
+      </div>
+      <strong>Guild Statistics</strong>
+    </header>
+
     <section
       class="summary-card character-groups roster-filters"
       [class.roster-filters--standard]="!showMainAltCharacters">
