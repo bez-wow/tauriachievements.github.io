@@ -1,6 +1,5 @@
 <app-update-bar
-  [lastEdited]="lastEdited()"
-  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+  [showLastUpdated]="false" />
 
 <div class="nightmare-banner">
   <img
@@ -29,9 +28,22 @@
         <h2>{{ boss.name }}</h2>
       </header>
       <ol class="guild-ranking">
-        <li *ngFor="let guild of boss.guilds; let rank = index; trackBy: trackGuild" [class.empty]="!guild">
+        <li *ngFor="let kill of boss.guilds; let rank = index; trackBy: trackGuild" [class.empty]="!kill.guild">
           <span class="rank">{{ rank + 1 }}</span>
-          <span class="guild-name">{{ guild || 'Available' }}</span>
+          <span class="kill-details">
+            <span class="guild-name">{{ kill.guild || 'Available' }}</span>
+            <span class="kill-meta" *ngIf="kill.realm || kill.date || kill.time">
+              <span
+                class="realm-badge"
+                *ngIf="kill.realm">
+                {{ kill.realm }}
+              </span>
+              <time *ngIf="kill.date" [attr.datetime]="kill.time ? kill.date + 'T' + kill.time : kill.date">
+                {{ formatKillDate(kill.date) }}<ng-container *ngIf="kill.time"> · {{ kill.time }}</ng-container>
+              </time>
+              <time *ngIf="!kill.date && kill.time">{{ kill.time }}</time>
+            </span>
+          </span>
         </li>
       </ol>
     </article>

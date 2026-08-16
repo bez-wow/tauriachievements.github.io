@@ -3,18 +3,26 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
 import { UpdateBarComponent } from './update-bar.component';
 
 type BossKey = 'nythendra' | 'ursoc' | 'elerethe-renferal' | 'ilgynoth' |
   'dragons-of-nightmare' | 'cenarius' | 'xavius';
-type EmeraldNightmareDataset = Record<BossKey, string[]>;
+type RealmName = 'Tauri' | 'Evermoon' | 'WoD';
+
+interface GuildKill {
+  guild: string;
+  realm?: RealmName;
+  date?: string;
+  time?: string;
+}
+
+type EmeraldNightmareDataset = Partial<Record<BossKey, GuildKill[]>>;
 
 interface BossView {
   key: BossKey;
   name: string;
   iconUrl: string;
-  guilds: string[];
+  guilds: GuildKill[];
 }
 
 const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
@@ -38,23 +46,13 @@ const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
 export class EmeraldNightmarePageComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly lastUpdatedService = inject(LadderLastUpdatedService);
 
   readonly bosses = signal<BossView[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
 
   ngOnInit(): void {
     this.loadData();
-    this.lastUpdatedService.getLastUpdated().pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(lastUpdated => {
-        if (lastUpdated) {
-          this.lastEdited.set(lastUpdated.date);
-          this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
-        }
-      });
   }
 
   retryLoad(): void {
@@ -69,10 +67,26 @@ export class EmeraldNightmarePageComponent implements OnInit {
     return index;
   }
 
+  formatKillDate(date: string | undefined): string {
+    if (!date) {
+      return '';
+    }
+
+    const parsed = new Date(`${date}T00:00:00Z`);
+    return Number.isNaN(parsed.getTime())
+      ? date
+      : new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC'
+      }).format(parsed);
+  }
+
   private loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.http.get<Partial<EmeraldNightmareDataset>>(`EmeraldNightmare.json?v=${Date.now()}`)
+    this.http.get<EmeraldNightmareDataset>(`EmeraldNightmare.json?v=${Date.now()}`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: data => {
@@ -90,7 +104,15 @@ export class EmeraldNightmarePageComponent implements OnInit {
       });
   }
 
-  private fiveSlots(guilds: string[] | undefined): string[] {
-    return Array.from({ length: 5 }, (_, index) => guilds?.[index]?.trim() ?? '');
+  private fiveSlots(guilds: GuildKill[] | undefined): GuildKill[] {
+    return Array.from({ length: 5 }, (_, index) => {
+      const kill = guilds?.[index];
+      return {
+        guild: kill?.guild?.trim() ?? '',
+        realm: kill?.realm,
+        date: kill?.date?.trim() || undefined,
+        time: kill?.time?.trim() || undefined
+      };
+    });
   }
 }

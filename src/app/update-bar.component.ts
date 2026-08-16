@@ -14,6 +14,7 @@ export class UpdateBarComponent {
   @Input() lastEdited?: Date;
   @Input() lastEditedTimeZoneLabel = 'Local time';
   @Input() lastEditedTimeZone?: string;
+  @Input() showLastUpdated = true;
 
   protected readonly isNavOpen = signal(false);
 

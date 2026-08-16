@@ -31,7 +31,7 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding: 68px 24px 72px;
+  padding: 32px 24px 28px;
   background:
     linear-gradient(180deg, rgba(16, 0, 5, .78), rgba(3, 0, 5, .97)),
     radial-gradient(circle at 50% 5%, rgba(255, 51, 19, .34), transparent 36%),
@@ -96,12 +96,12 @@
   transform: translateY(-5px);
 }
 
-.boss-header { display: flex; min-height: 70px; align-items: center; gap: 12px; padding: 11px 12px; border-bottom: 1px solid rgba(255, 86, 51, .27); background: linear-gradient(110deg, rgba(143, 12, 36, .28), rgba(255, 65, 22, .06) 55%, rgba(83, 7, 94, .18)); }
-.boss-header h2 { color: #fff5ed; font-family: Georgia, serif; font-size: 1.05rem; line-height: 1.16; letter-spacing: .035em; text-shadow: 0 2px 4px #000, 0 0 12px rgba(255, 68, 36, .62); }
-.boss-icon-frame { width: 48px; height: 48px; flex: 0 0 48px; overflow: hidden; border: 2px solid #cf3d27; border-radius: 6px; box-shadow: 0 0 5px #ff6a35, 0 0 16px rgba(221, 24, 35, .55); background: #170308; }
+.boss-header { display: flex; min-height: 78px; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid rgba(255, 86, 51, .27); background: linear-gradient(110deg, rgba(143, 12, 36, .28), rgba(255, 65, 22, .06) 55%, rgba(83, 7, 94, .18)); }
+.boss-header h2 { color: #fff5ed; font-family: Georgia, serif; font-size: 1.18rem; line-height: 1.16; letter-spacing: .035em; text-shadow: 0 2px 4px #000, 0 0 12px rgba(255, 68, 36, .62); }
+.boss-icon-frame { width: 54px; height: 54px; flex: 0 0 54px; overflow: hidden; border: 2px solid #cf3d27; border-radius: 6px; box-shadow: 0 0 5px #ff6a35, 0 0 16px rgba(221, 24, 35, .55); background: #170308; }
 .boss-icon { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); }
-.guild-ranking { padding: 7px 11px 12px; list-style: none; }
-.guild-ranking li { display: grid; grid-template-columns: 28px 1fr; align-items: center; min-height: 32px; border-bottom: 1px solid rgba(255, 96, 65, .1); font-size: .82rem; }
+.guild-ranking { padding: 9px 13px 14px; list-style: none; }
+.guild-ranking li { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: start; min-height: 48px; padding: 6px 0; border-bottom: 1px solid rgba(255, 96, 65, .1); font-size: .96rem; }
 .guild-ranking li:last-child { border: 0; }
 .rank { color: #d85b45; font-weight: 900; text-shadow: 0 0 8px rgba(255, 57, 30, .46); }
 .guild-ranking li:nth-child(1) .rank { color: #ffd15c; text-shadow: 0 0 10px rgba(255, 167, 20, .72); }
@@ -109,6 +109,9 @@
 .guild-ranking li:nth-child(3) .rank { color: #d88753; text-shadow: 0 0 8px rgba(210, 96, 37, .52); }
 .guild-name { overflow: hidden; color: #f3e6e3; font-weight: 650; letter-spacing: .015em; text-overflow: ellipsis; white-space: nowrap; }
 .guild-ranking .empty .guild-name { color: #805a5e; font-style: italic; font-weight: 500; }
+.kill-details { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.kill-meta { display: flex; min-width: 0; align-items: center; gap: 7px; color: #aa9295; font-size: .75rem; line-height: 1.1; }
+.realm-badge { color: #b9aaac; font-weight: 600; }
 
 .feedback { min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 .feedback button { padding: 9px 15px; border: 1px solid #e94a31; border-radius: 5px; background: #2b0710; color: #fff0e8; cursor: pointer; box-shadow: 0 0 16px rgba(221, 32, 31, .24); }
@@ -120,7 +123,7 @@
 }
 
 @media (max-width: 850px) {
-  .nightmare-page { padding: 62px 14px 34px; background-attachment: scroll; }
+  .nightmare-page { padding: 32px 14px 28px; background-attachment: scroll; }
   .raid-map { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 680px; }
 }
 
