@@ -18,13 +18,13 @@ interface BossView {
 }
 
 const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
-  { key: 'nythendra', name: 'Nythendra', iconUrl: 'assets/realm-first-guild-achievements/inv_misc_head_dragon_blue.png' },
-  { key: 'ilgynoth', name: "Il'gynoth", iconUrl: 'assets/realm-first-guild-achievements/achievement_boss_yoggsaron_01.png' },
-  { key: 'elerethe-renferal', name: 'Elerethe', iconUrl: 'assets/realm-first-guild-achievements/achievement_moguraid_06.png' },
-  { key: 'ursoc', name: 'Ursoc', iconUrl: 'assets/realm-first-guild-achievements/inv_trinket_naxxramas06.png' },
-  { key: 'dragons-of-nightmare', name: 'Dragons', iconUrl: 'assets/realm-first-guild-achievements/achievment_boss_madnessofdeathwing.png' },
-  { key: 'cenarius', name: 'Cenarius', iconUrl: 'assets/realm-first-guild-achievements/achievement_reputation_argentcrusader.png' },
-  { key: 'xavius', name: 'Xavius', iconUrl: 'assets/realm-first-guild-achievements/achievement_emeraldnightmare_xavius.png' }
+  { key: 'nythendra', name: 'Nythendra', iconUrl: 'assets/emerald-nightmare/01-nythendra.png' },
+  { key: 'ilgynoth', name: "Il'gynoth", iconUrl: "assets/emerald-nightmare/02-il'gunoth.png" },
+  { key: 'elerethe-renferal', name: 'Elerethe', iconUrl: 'assets/emerald-nightmare/03-elerethe.png' },
+  { key: 'ursoc', name: 'Ursoc', iconUrl: 'assets/emerald-nightmare/04-ursoc.png' },
+  { key: 'dragons-of-nightmare', name: 'Dragons', iconUrl: 'assets/emerald-nightmare/05-dragons-of-nightmare.png' },
+  { key: 'cenarius', name: 'Cenarius', iconUrl: 'assets/emerald-nightmare/06-cenarius.png' },
+  { key: 'xavius', name: 'Xavius', iconUrl: 'assets/emerald-nightmare/07-xavious.png' }
 ];
 
 @Component({
