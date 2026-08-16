@@ -80,6 +80,18 @@ export const routes: Routes = [
     data: { guild: 'outlaws' }
   },
   {
+    path: 'impaired-c18e7b42',
+    loadComponent: () => import('./endless6531-page.component')
+      .then(module => module.Endless6531PageComponent),
+    data: { guild: 'impaired' }
+  },
+  {
+    path: 'impact-94fd2a61',
+    loadComponent: () => import('./endless6531-page.component')
+      .then(module => module.Endless6531PageComponent),
+    data: { guild: 'impact' }
+  },
+  {
     path: 'six-seven-d74a9e3c',
     loadComponent: () => import('./endless6531-page.component')
       .then(module => module.Endless6531PageComponent),
