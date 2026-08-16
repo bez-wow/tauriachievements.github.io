@@ -30,7 +30,6 @@
 .nightmare-page {
   position: relative;
   overflow: hidden;
-  min-height: 100vh;
   width: 100%;
   padding: 68px 24px 72px;
   background:
@@ -100,7 +99,7 @@
 .boss-header { display: flex; min-height: 70px; align-items: center; gap: 12px; padding: 11px 12px; border-bottom: 1px solid rgba(255, 86, 51, .27); background: linear-gradient(110deg, rgba(143, 12, 36, .28), rgba(255, 65, 22, .06) 55%, rgba(83, 7, 94, .18)); }
 .boss-header h2 { color: #fff5ed; font-family: Georgia, serif; font-size: 1.05rem; line-height: 1.16; letter-spacing: .035em; text-shadow: 0 2px 4px #000, 0 0 12px rgba(255, 68, 36, .62); }
 .boss-icon-frame { width: 48px; height: 48px; flex: 0 0 48px; overflow: hidden; border: 2px solid #cf3d27; border-radius: 6px; box-shadow: 0 0 5px #ff6a35, 0 0 16px rgba(221, 24, 35, .55); background: #170308; }
-.boss-icon { width: 100%; height: 100%; object-fit: cover; }
+.boss-icon { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); }
 .guild-ranking { padding: 7px 11px 12px; list-style: none; }
 .guild-ranking li { display: grid; grid-template-columns: 28px 1fr; align-items: center; min-height: 32px; border-bottom: 1px solid rgba(255, 96, 65, .1); font-size: .82rem; }
 .guild-ranking li:last-child { border: 0; }
