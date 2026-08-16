@@ -1,0 +1,134 @@
+:host { display: block; width: 100%; }
+
+.nightmare-banner {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding-top: 36px;
+  line-height: 0;
+  background: #050705;
+}
+
+.nightmare-banner::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #7c1028 15%, #ff3b17 50%, #7c1028 85%, transparent);
+  box-shadow: 0 0 18px #e52615, 0 0 42px rgba(187, 13, 43, .85);
+}
+
+.nightmare-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: -9vw;
+}
+
+.nightmare-page {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  width: 100%;
+  padding: 68px 24px 72px;
+  background:
+    linear-gradient(180deg, rgba(16, 0, 5, .78), rgba(3, 0, 5, .97)),
+    radial-gradient(circle at 50% 5%, rgba(255, 51, 19, .34), transparent 36%),
+    radial-gradient(circle at 12% 42%, rgba(145, 0, 51, .24), transparent 30%),
+    radial-gradient(circle at 88% 60%, rgba(100, 8, 136, .2), transparent 32%),
+    url('https://www.buffed.de/screenshots/1280x/2016/09/WoW-Smaragdgruener-Alptraum-buffed.jpg') center / cover fixed;
+  color: #f2eee9;
+}
+
+.nightmare-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(115deg, transparent 0 90px, rgba(255, 55, 25, .025) 91px 92px),
+    linear-gradient(90deg, rgba(0, 0, 0, .45), transparent 18% 82%, rgba(0, 0, 0, .45));
+}
+
+.raid-map {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  align-items: start;
+  gap: 18px;
+  width: min(1800px, 100%);
+  margin: 0 auto;
+}
+
+.boss-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid rgba(255, 91, 54, .52);
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(40, 4, 13, .98), rgba(8, 2, 10, .98) 62%, rgba(26, 3, 31, .98));
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, .68),
+    0 0 20px rgba(211, 19, 39, .14),
+    inset 0 1px 0 rgba(255, 181, 141, .13),
+    inset 0 0 28px rgba(116, 0, 27, .18);
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+
+.boss-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff9b57, #ff351c, transparent);
+  box-shadow: 0 0 14px #f1271c;
+}
+
+.boss-card:hover {
+  z-index: 2;
+  border-color: rgba(255, 117, 65, .88);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, .72), 0 0 27px rgba(239, 30, 32, .32), inset 0 0 35px rgba(125, 0, 31, .24);
+  transform: translateY(-5px);
+}
+
+.boss-header { display: flex; min-height: 70px; align-items: center; gap: 12px; padding: 11px 12px; border-bottom: 1px solid rgba(255, 86, 51, .27); background: linear-gradient(110deg, rgba(143, 12, 36, .28), rgba(255, 65, 22, .06) 55%, rgba(83, 7, 94, .18)); }
+.boss-header h2 { color: #fff5ed; font-family: Georgia, serif; font-size: 1.05rem; line-height: 1.16; letter-spacing: .035em; text-shadow: 0 2px 4px #000, 0 0 12px rgba(255, 68, 36, .62); }
+.boss-icon-frame { width: 48px; height: 48px; flex: 0 0 48px; overflow: hidden; border: 2px solid #cf3d27; border-radius: 6px; box-shadow: 0 0 5px #ff6a35, 0 0 16px rgba(221, 24, 35, .55); background: #170308; }
+.boss-icon { width: 100%; height: 100%; object-fit: cover; }
+.guild-ranking { padding: 7px 11px 12px; list-style: none; }
+.guild-ranking li { display: grid; grid-template-columns: 28px 1fr; align-items: center; min-height: 32px; border-bottom: 1px solid rgba(255, 96, 65, .1); font-size: .82rem; }
+.guild-ranking li:last-child { border: 0; }
+.rank { color: #d85b45; font-weight: 900; text-shadow: 0 0 8px rgba(255, 57, 30, .46); }
+.guild-ranking li:nth-child(1) .rank { color: #ffd15c; text-shadow: 0 0 10px rgba(255, 167, 20, .72); }
+.guild-ranking li:nth-child(2) .rank { color: #d9d8df; text-shadow: 0 0 8px rgba(224, 217, 255, .48); }
+.guild-ranking li:nth-child(3) .rank { color: #d88753; text-shadow: 0 0 8px rgba(210, 96, 37, .52); }
+.guild-name { overflow: hidden; color: #f3e6e3; font-weight: 650; letter-spacing: .015em; text-overflow: ellipsis; white-space: nowrap; }
+.guild-ranking .empty .guild-name { color: #805a5e; font-style: italic; font-weight: 500; }
+
+.feedback { min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.feedback button { padding: 9px 15px; border: 1px solid #e94a31; border-radius: 5px; background: #2b0710; color: #fff0e8; cursor: pointer; box-shadow: 0 0 16px rgba(221, 32, 31, .24); }
+.spinner { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,.15); border-top-color: #ff4e2d; border-radius: 50%; box-shadow: 0 0 18px rgba(255, 44, 25, .38); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1450px) {
+  .raid-map { grid-template-columns: repeat(4, minmax(190px, 1fr)); }
+}
+
+@media (max-width: 850px) {
+  .nightmare-page { padding: 62px 14px 34px; background-attachment: scroll; }
+  .raid-map { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 680px; }
+}
+
+@media (max-width: 640px) {
+  .nightmare-banner { padding-top: 30px; }
+}
+
+@media (max-width: 520px) {
+  .raid-map { grid-template-columns: 1fr; max-width: 360px; }
+}

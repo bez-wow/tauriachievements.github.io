@@ -1,0 +1,41 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<div class="nightmare-banner">
+  <img
+    src="assets/emerald-nightmare-the-race-to.png"
+    alt="Emerald Nightmare: The Race To"
+    fetchpriority="high" />
+</div>
+
+<main class="nightmare-page">
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>The Nightmare is taking shape...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="retryLoad()">Try again</button>
+  </section>
+
+  <section class="raid-map" *ngIf="!isLoading() && !loadError()" aria-label="Emerald Nightmare boss rankings">
+    <article class="boss-card" *ngFor="let boss of bosses(); trackBy: trackBoss">
+      <header class="boss-header">
+        <span class="boss-icon-frame">
+          <img [src]="boss.iconUrl" [alt]="boss.name + ' icon'" class="boss-icon" />
+        </span>
+        <h2>{{ boss.name }}</h2>
+      </header>
+      <ol class="guild-ranking">
+        <li *ngFor="let guild of boss.guilds; let rank = index; trackBy: trackGuild" [class.empty]="!guild">
+          <span class="rank">{{ rank + 1 }}</span>
+          <span class="guild-name">{{ guild || 'Available' }}</span>
+        </li>
+      </ol>
+    </article>
+  </section>
+</main>
+
+<app-back-to-top-button />

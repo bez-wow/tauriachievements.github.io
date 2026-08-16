@@ -28,6 +28,11 @@ export const routes: Routes = [
     component: GuildRealmFirstsPageComponent
   },
   {
+    path: 'emerald-nightmare',
+    loadComponent: () => import('./emerald-nightmare-page.component')
+      .then(module => module.EmeraldNightmarePageComponent)
+  },
+  {
     path: 'guild-realm-firsts',
     redirectTo: 'raid-history',
     pathMatch: 'full'
