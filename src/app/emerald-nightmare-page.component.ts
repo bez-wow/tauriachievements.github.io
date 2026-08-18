@@ -7,7 +7,7 @@ import { UpdateBarComponent } from './update-bar.component';
 
 type BossKey = 'nythendra' | 'ursoc' | 'elerethe-renferal' | 'ilgynoth' |
   'dragons-of-nightmare' | 'cenarius' | 'xavius';
-type RealmName = 'Tauri' | 'Evermoon' | 'WoD';
+type RealmName = 'realm-name';
 
 interface GuildKill {
   guild: string;
