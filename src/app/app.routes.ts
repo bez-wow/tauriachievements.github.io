@@ -74,6 +74,12 @@ export const routes: Routes = [
     data: { guild: 'competence-optional' }
   },
   {
+    path: 'entropy-3e8f1a62',
+    loadComponent: () => import('./endless6531-page.component')
+      .then(module => module.Endless6531PageComponent),
+    data: { guild: 'entropy' }
+  },
+  {
     path: 'outlaws-6b31f0ad',
     loadComponent: () => import('./endless6531-page.component')
       .then(module => module.Endless6531PageComponent),

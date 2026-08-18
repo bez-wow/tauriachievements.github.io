@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import competenceOptionalAnalysis from '../guild-analysis/competence-optional.json';
 import endlessAnalysis from '../guild-analysis/endless.json';
 import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
+import entropyAnalysis from '../guild-analysis/entropy.json';
 import impairedAnalysis from '../guild-analysis/impaired.json';
 import impactAnalysis from '../guild-analysis/impact.json';
 import outlawsAnalysis from '../guild-analysis/outlaws.json';
@@ -59,7 +60,7 @@ interface GuildAnalysisMetadata {
   faction: 'Alliance' | 'Horde' | 'Unknown';
 }
 
-type GuildAnalysisKey = 'endless' | 'competence-optional' | 'impaired' | 'impact' | 'outlaws' | 'six-seven' | 'temerite';
+type GuildAnalysisKey = 'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'outlaws' | 'six-seven' | 'temerite';
 
 interface GuildAnalysisConfig {
   name: string;
@@ -77,6 +78,11 @@ const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = 
     name: 'Competence Optional',
     realm: 'Evermoon',
     analysis: competenceOptionalAnalysis as GuildAnalysis
+  },
+  'entropy': {
+    name: 'Entropy',
+    realm: 'Evermoon',
+    analysis: entropyAnalysis as GuildAnalysis
   },
   'impaired': {
     name: 'Impaired',
