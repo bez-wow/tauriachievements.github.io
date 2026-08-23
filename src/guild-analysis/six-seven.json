@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-23 16:19:34 CET",
+  "timestamp": "2026-08-23 17:53:35 CET",
   "guild": {
     "name": "Six Seven",
     "realm": "Evermoon",
@@ -48,9 +48,9 @@
       "guildRank": 5,
       "guildRankName": "Veteran",
       "specialization": "Elemental",
-      "playedTime": 631348,
+      "playedTime": 631552,
       "achievementPoints": 1065,
-      "nightfallenReputation": 17925,
+      "nightfallenReputation": 18675,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 3,
@@ -98,7 +98,7 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Enhancement",
-      "playedTime": 9126804,
+      "playedTime": 9130681,
       "achievementPoints": 14000,
       "nightfallenReputation": 13675,
       "nightfallenReputationMaximum": 21000,
@@ -273,14 +273,14 @@
       "guildRank": 5,
       "guildRankName": "Veteran",
       "specialization": "Assassination",
-      "playedTime": 1887307,
+      "playedTime": 1891642,
       "achievementPoints": 2495,
-      "nightfallenReputation": 474,
+      "nightfallenReputation": 694,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 23,
-      "itemLevel": 849.5,
+      "itemLevel": 849.81,
       "legendaries": [
         {
           "id": 137030,
@@ -298,14 +298,14 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Vengeance",
-      "playedTime": 727070,
+      "playedTime": 729424,
       "achievementPoints": 1075,
-      "nightfallenReputation": 11250,
+      "nightfallenReputation": 11425,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
       "artifactTraits": 20,
-      "itemLevel": 855.31,
+      "itemLevel": 855.63,
       "legendaries": [
         {
           "id": 132444,
@@ -341,6 +341,31 @@
       ]
     },
     {
+      "name": "Mistre\u00DF",
+      "race": 1,
+      "gender": 1,
+      "class": 9,
+      "guildRank": 6,
+      "guildRankName": "Member",
+      "specialization": "Affliction",
+      "playedTime": 1135535,
+      "achievementPoints": 3495,
+      "nightfallenReputation": 7001,
+      "nightfallenReputationMaximum": 12000,
+      "artifactWeapon": "Ulthalesh, the Deadwind Harvester",
+      "artifactRelics": 3,
+      "artifactTraits": 17,
+      "itemLevel": 841.6,
+      "legendaries": [
+        {
+          "id": 132457,
+          "name": "Power Cord of Lethtendris",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_belt_30.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EPower Cord of Lethtendris\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003ECloth\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E181 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 Intellect\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B849 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,849)\u0022\u003E1.42%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1529 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1529)\u0022\u003E3.6%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=205753\u0022 class=\u0022q2\u0022\u003ECasting Unstable Affliction on a target who is not already affected by Unstable Affliction has a 25% chance to refund the Soul Shard cost.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c9\u0022\u003EWarlock\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Lethtendris constructed a device to siphon Dire Maul\u0027s overwhelming corrupt power for herself.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E46\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E42\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
       "name": "Lockrito",
       "race": 22,
       "gender": 1,
@@ -348,7 +373,7 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Destruction",
-      "playedTime": 351093,
+      "playedTime": 351123,
       "achievementPoints": 825,
       "nightfallenReputation": 6975,
       "nightfallenReputationMaximum": 12000,
@@ -391,31 +416,6 @@
       ]
     },
     {
-      "name": "Mistre\u00DF",
-      "race": 1,
-      "gender": 1,
-      "class": 9,
-      "guildRank": 6,
-      "guildRankName": "Member",
-      "specialization": "Affliction",
-      "playedTime": 1132287,
-      "achievementPoints": 3495,
-      "nightfallenReputation": 6094,
-      "nightfallenReputationMaximum": 12000,
-      "artifactWeapon": "Ulthalesh, the Deadwind Harvester",
-      "artifactRelics": 3,
-      "artifactTraits": 17,
-      "itemLevel": 841.6,
-      "legendaries": [
-        {
-          "id": 132457,
-          "name": "Power Cord of Lethtendris",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_belt_30.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EPower Cord of Lethtendris\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003ECloth\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E181 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 Intellect\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B849 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,849)\u0022\u003E1.42%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1529 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1529)\u0022\u003E3.6%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=205753\u0022 class=\u0022q2\u0022\u003ECasting Unstable Affliction on a target who is not already affected by Unstable Affliction has a 25% chance to refund the Soul Shard cost.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c9\u0022\u003EWarlock\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Lethtendris constructed a device to siphon Dire Maul\u0027s overwhelming corrupt power for herself.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E46\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E42\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
       "name": "Mit\u00E1",
       "race": 1,
       "gender": 1,
@@ -423,7 +423,7 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Windwalker",
-      "playedTime": 153608,
+      "playedTime": 156583,
       "achievementPoints": 855,
       "nightfallenReputation": 4680,
       "nightfallenReputationMaximum": 12000,
@@ -448,8 +448,8 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Restoration",
-      "playedTime": 2517966,
-      "achievementPoints": 3925,
+      "playedTime": 2523543,
+      "achievementPoints": 3935,
       "nightfallenReputation": 4325,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
@@ -623,7 +623,7 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Guardian",
-      "playedTime": 419469,
+      "playedTime": 419564,
       "achievementPoints": 1010,
       "nightfallenReputation": 1100,
       "nightfallenReputationMaximum": 12000,
@@ -741,7 +741,7 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Holy",
-      "playedTime": 287333,
+      "playedTime": 287365,
       "achievementPoints": 675,
       "nightfallenReputation": 5850,
       "nightfallenReputationMaximum": 6000,
@@ -809,7 +809,7 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Holy",
-      "playedTime": 165372,
+      "playedTime": 171978,
       "achievementPoints": 660,
       "nightfallenReputation": 3650,
       "nightfallenReputationMaximum": 6000,
@@ -852,14 +852,14 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Windwalker",
-      "playedTime": 1026101,
+      "playedTime": 1027532,
       "achievementPoints": 2400,
       "nightfallenReputation": 3571,
       "nightfallenReputationMaximum": 6000,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 17,
-      "itemLevel": 849.94,
+      "itemLevel": 849.63,
       "legendaries": [
         {
           "id": 137019,
@@ -888,24 +888,6 @@
       "legendaries": []
     },
     {
-      "name": "Forestdust",
-      "race": 4,
-      "gender": 1,
-      "class": 12,
-      "guildRank": 6,
-      "guildRankName": "Member",
-      "specialization": "Havoc",
-      "playedTime": 1001407,
-      "achievementPoints": 2265,
-      "nightfallenReputation": 2775,
-      "nightfallenReputationMaximum": 6000,
-      "artifactWeapon": "Twinblades of the Deceiver",
-      "artifactRelics": 2,
-      "artifactTraits": 13,
-      "itemLevel": 799.5,
-      "legendaries": []
-    },
-    {
       "name": "Mally",
       "race": 11,
       "gender": 1,
@@ -913,9 +895,9 @@
       "guildRank": 6,
       "guildRankName": "Member",
       "specialization": "Frost",
-      "playedTime": 3555971,
+      "playedTime": 3556488,
       "achievementPoints": 6770,
-      "nightfallenReputation": 2350,
+      "nightfallenReputation": 3175,
       "nightfallenReputationMaximum": 6000,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
@@ -929,6 +911,24 @@
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EShard of the Exodar\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2867 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2867)\u0022\u003E4.78%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1593 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1593)\u0022\u003E3.75%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207970\u0022 class=\u0022q2\u0022\u003EYour Time Warp does not cause Temporal Displacement on yourself and is not affected by Temporal Displacement or similar effects on yourself.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c8\u0022\u003EMage\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The draenei capital city is able to transcend dimensions and even warp time itself. What could a sliver of its power do in the hands of a mere mortal?\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E6\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E97\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
+    },
+    {
+      "name": "Forestdust",
+      "race": 4,
+      "gender": 1,
+      "class": 12,
+      "guildRank": 6,
+      "guildRankName": "Member",
+      "specialization": "Havoc",
+      "playedTime": 1002126,
+      "achievementPoints": 2265,
+      "nightfallenReputation": 2775,
+      "nightfallenReputationMaximum": 6000,
+      "artifactWeapon": "Twinblades of the Deceiver",
+      "artifactRelics": 2,
+      "artifactTraits": 13,
+      "itemLevel": 799.5,
+      "legendaries": []
     },
     {
       "name": "Sequester",
@@ -1053,6 +1053,31 @@
       "legendaries": []
     },
     {
+      "name": "Luala",
+      "race": 11,
+      "gender": 1,
+      "class": 7,
+      "guildRank": 6,
+      "guildRankName": "Member",
+      "specialization": "Restoration",
+      "playedTime": 113757,
+      "achievementPoints": 705,
+      "nightfallenReputation": 150,
+      "nightfallenReputationMaximum": 6000,
+      "artifactWeapon": "Sharas\u0027dal, Scepter of Tides",
+      "artifactRelics": 2,
+      "artifactTraits": 15,
+      "itemLevel": 846.94,
+      "legendaries": [
+        {
+          "id": 132452,
+          "name": "Sephuz\u0027s Secret",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_149.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ESephuz\u0027s Secret\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B1274 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1274)\u0022\u003E3%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B3185 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,3185)\u0022\u003E5.31%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208051\u0022 class=\u0022q2\u0022\u003EGain 10% increased movement speed and 2% Haste. Successfully applying a loss of control effect to an enemy, interrupting an enemy, or dispelling any target increases this effect to 10% increased movement speed and 12% Haste for 10 sec. This increase may occur once every 30 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Intangibility is a curious concept. The word suggests some magical ability, but in the physical world, it simply means the power to be here or there, now or later.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E47\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E82\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
       "name": "Feetpicsonof",
       "race": 4,
       "gender": 1,
@@ -1105,31 +1130,6 @@
       "artifactTraits": 13,
       "itemLevel": 830.44,
       "legendaries": []
-    },
-    {
-      "name": "Luala",
-      "race": 11,
-      "gender": 1,
-      "class": 7,
-      "guildRank": 6,
-      "guildRankName": "Member",
-      "specialization": "Restoration",
-      "playedTime": 113368,
-      "achievementPoints": 695,
-      "nightfallenReputation": 2400,
-      "nightfallenReputationMaximum": 3000,
-      "artifactWeapon": "Sharas\u0027dal, Scepter of Tides",
-      "artifactRelics": 2,
-      "artifactTraits": 14,
-      "itemLevel": 846.31,
-      "legendaries": [
-        {
-          "id": 132452,
-          "name": "Sephuz\u0027s Secret",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_149.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ESephuz\u0027s Secret\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B1274 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1274)\u0022\u003E3%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B3185 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,3185)\u0022\u003E5.31%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208051\u0022 class=\u0022q2\u0022\u003EGain 10% increased movement speed and 2% Haste. Successfully applying a loss of control effect to an enemy, interrupting an enemy, or dispelling any target increases this effect to 10% increased movement speed and 12% Haste for 10 sec. This increase may occur once every 30 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Intangibility is a curious concept. The word suggests some magical ability, but in the physical world, it simply means the power to be here or there, now or later.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E47\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E82\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
     },
     {
       "name": "Vezhar",
@@ -1361,15 +1361,15 @@
       "class": 4,
       "guildRank": 5,
       "guildRankName": "Veteran",
-      "specialization": "Assassination",
-      "playedTime": 10461789,
+      "specialization": "Subtlety",
+      "playedTime": 10462915,
       "achievementPoints": 12685,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
-      "artifactWeapon": "The Kingslayers",
+      "artifactWeapon": "Fangs of the Devourer",
       "artifactRelics": 3,
       "artifactTraits": 22,
-      "itemLevel": 855.56,
+      "itemLevel": 850.63,
       "legendaries": [
         {
           "id": 137021,
