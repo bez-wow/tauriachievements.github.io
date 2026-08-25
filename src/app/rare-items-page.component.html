@@ -1,0 +1,86 @@
+<main class="rare-items-page">
+  <section class="rare-items-header">
+    <p class="eyebrow">Collector's archive</p>
+    <h1>Rare Item Holders</h1>
+    <p class="intro">Choose a rare item to see every known character who owns it.</p>
+
+    <div class="filter-row">
+      <label class="item-picker">
+        <span>Rare item</span>
+        <select
+          [disabled]="isLoading() || !!loadError()"
+          [value]="selectedItemId() ?? ''"
+          (change)="selectItem($event)">
+          <option value="">Select an item...</option>
+          <option *ngFor="let item of dataset()?.items" [value]="item.id">{{ item.name }}</option>
+        </select>
+      </label>
+
+      <label class="realm-picker">
+        <span>Realm</span>
+        <select
+          [disabled]="isLoading() || !!loadError()"
+          [value]="selectedRealm()"
+          (change)="selectRealm($event)">
+          <option value="all">All realms</option>
+          <option value="Evermoon">Evermoon</option>
+          <option value="Tauri">Tauri</option>
+          <option value="WoD">WoD</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Loading the archive...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="retryLoad()">Try again</button>
+  </section>
+
+  <section class="selection-prompt" *ngIf="!isLoading() && !loadError() && !selectedItem()">
+    Select an item above to view its owners.
+  </section>
+
+  <section class="results" *ngIf="selectedItem() as item">
+    <div class="results-heading">
+      <div>
+        <p class="eyebrow">Selected item</p>
+        <h2>{{ item.name }}</h2>
+      </div>
+      <strong>{{ matchingCharacters().length | number }} characters</strong>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Character</th>
+            <th>Realm</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let character of matchingCharacters(); let index = index; trackBy: trackCharacter">
+            <td>{{ index + 1 }}</td>
+            <td>
+              <a
+                [href]="getArmoryUrl(character.name, character.realm)"
+                [style.color]="getCharacterClassColor(character)"
+                target="_blank"
+                rel="noopener noreferrer">
+                {{ character.name }}
+              </a>
+            </td>
+            <td>{{ character.realm }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<app-back-to-top-button />

@@ -62,6 +62,11 @@ export const routes: Routes = [
     component: ComparePageComponent
   },
   {
+    path: 'k7m2q9v4x8p3n6z',
+    loadComponent: () => import('./rare-items-page.component')
+      .then(module => module.RareItemsPageComponent)
+  },
+  {
     path: 'endless-f8c2a91d',
     loadComponent: () => import('./endless6531-page.component')
       .then(module => module.Endless6531PageComponent),
