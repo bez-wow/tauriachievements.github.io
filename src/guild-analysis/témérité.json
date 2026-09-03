@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-03 08:22:53 CET",
+  "timestamp": "2026-09-03 20:10:17 CET",
   "guild": {
     "name": "T\u00E9m\u00E9rit\u00E9",
     "realm": "Evermoon",
@@ -73,13 +73,13 @@
       "guildRank": 8,
       "guildRankName": "Test",
       "specialization": "Windwalker",
-      "playedTime": 1101341,
-      "achievementPoints": 1740,
-      "nightfallenReputation": 15250,
+      "playedTime": 1115717,
+      "achievementPoints": 1750,
+      "nightfallenReputation": 16575,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
-      "artifactTraits": 26,
+      "artifactTraits": 27,
       "itemLevel": 859,
       "legendaries": [
         {
@@ -334,9 +334,9 @@
       "guildRank": 6,
       "guildRankName": "Reroll",
       "specialization": "Balance",
-      "playedTime": 591821,
+      "playedTime": 593314,
       "achievementPoints": 1500,
-      "nightfallenReputation": 6150,
+      "nightfallenReputation": 6225,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Scythe of Elune",
       "artifactRelics": 3,
@@ -354,6 +354,31 @@
           "name": "Promise of Elune, the Moon Goddess",
           "icon": "https://legion-static.tauri.hu/images/icons/large/inv_boots_leather_raiddruid_j_01.png",
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EPromise of Elune, the Moon Goddess\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFeet\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E276 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208283\u0022 class=\u0022q2\u0022\u003ELunar Strike and Solar Wrath deal 8% increased damage and grant Power of Elune, increasing the healing of your next Regrowth by 0% and reducing its cast time by 8%, stacking up to $208284u times.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 95 / 95\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c11\u0022\u003EDruid\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022When others receive life and energy from you, you too shall receive life and energy from me.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E67\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E40\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E53\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Unb\u00F8undfury",
+      "race": 10,
+      "gender": 1,
+      "class": 12,
+      "guildRank": 8,
+      "guildRankName": "Test",
+      "specialization": "Havoc",
+      "playedTime": 467287,
+      "achievementPoints": 935,
+      "nightfallenReputation": 5600,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Twinblades of the Deceiver",
+      "artifactRelics": 3,
+      "artifactTraits": 21,
+      "itemLevel": 849.44,
+      "legendaries": [
+        {
+          "id": 137038,
+          "name": "Anger of the Half-Giants",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_60pvp_ring1a.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EAnger of the Half-Giants\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2867 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2867)\u0022\u003E4.78%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1593 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1593)\u0022\u003E3.75%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208827\u0022 class=\u0022q2\u0022\u003EDemon\u0027s Bite generates an additional 1 to 14 Fury.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c12\u0022\u003EDemon Hunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Those oversized Vrykul are not the first thing you want to run into in Northrend. Try the undead of Borean Tundra instead.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E53\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E57\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -389,31 +414,6 @@
       ]
     },
     {
-      "name": "Unb\u00F8undfury",
-      "race": 10,
-      "gender": 1,
-      "class": 12,
-      "guildRank": 8,
-      "guildRankName": "Test",
-      "specialization": "Havoc",
-      "playedTime": 460376,
-      "achievementPoints": 935,
-      "nightfallenReputation": 4675,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "Twinblades of the Deceiver",
-      "artifactRelics": 3,
-      "artifactTraits": 21,
-      "itemLevel": 849.44,
-      "legendaries": [
-        {
-          "id": 137038,
-          "name": "Anger of the Half-Giants",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_60pvp_ring1a.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EAnger of the Half-Giants\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2867 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2867)\u0022\u003E4.78%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1593 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1593)\u0022\u003E3.75%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208827\u0022 class=\u0022q2\u0022\u003EDemon\u0027s Bite generates an additional 1 to 14 Fury.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c12\u0022\u003EDemon Hunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Those oversized Vrykul are not the first thing you want to run into in Northrend. Try the undead of Borean Tundra instead.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E53\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E57\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
       "name": "Pretrosacre",
       "race": 10,
       "gender": 0,
@@ -421,13 +421,13 @@
       "guildRank": 4,
       "guildRankName": "Ancien",
       "specialization": "Retribution",
-      "playedTime": 648571,
-      "achievementPoints": 1945,
+      "playedTime": 650642,
+      "achievementPoints": 1965,
       "nightfallenReputation": 4025,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
-      "artifactTraits": 23,
+      "artifactTraits": 24,
       "itemLevel": 858.19,
       "legendaries": [
         {
@@ -577,7 +577,7 @@
       "guildRank": 4,
       "guildRankName": "Ancien",
       "specialization": "Brewmaster",
-      "playedTime": 344880,
+      "playedTime": 345028,
       "achievementPoints": 1375,
       "nightfallenReputation": 7400,
       "nightfallenReputationMaximum": 12000,
@@ -602,9 +602,9 @@
       "guildRank": 9,
       "guildRankName": "nv",
       "specialization": "Vengeance",
-      "playedTime": 170795,
+      "playedTime": 171768,
       "achievementPoints": 710,
-      "nightfallenReputation": 6600,
+      "nightfallenReputation": 6675,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
@@ -695,6 +695,37 @@
       ]
     },
     {
+      "name": "Jeanv\u00E0ljean",
+      "race": 2,
+      "gender": 0,
+      "class": 3,
+      "guildRank": 1,
+      "guildRankName": "CO-GM",
+      "specialization": "Beast Mastery",
+      "playedTime": 642841,
+      "achievementPoints": 1850,
+      "nightfallenReputation": 4900,
+      "nightfallenReputationMaximum": 12000,
+      "artifactWeapon": "Titanstrike",
+      "artifactRelics": 3,
+      "artifactTraits": 21,
+      "itemLevel": 852.94,
+      "legendaries": [
+        {
+          "id": 137101,
+          "name": "Call of the Wild",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_bracer_36b.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ECall of the Wild\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWrist\u003C/td\u003E\u003Cth\u003EMail\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E218 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1340 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B764 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,764)\u0022\u003E1.8%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=206332\u0022 class=\u0022q2\u0022\u003EReduces the cooldown of all Aspects by -35%.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c3\u0022\u003EHunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Hunters have a powerful connection to the wild - the ability to call upon the animal aspects to empower themselves and to befriend even the wildest of beasts.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E46\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E13\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E59\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        },
+        {
+          "id": 137382,
+          "name": "The Apex Predator\u0027s Claw",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_100.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EThe Apex Predator\u0027s Claw\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2867 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2867)\u0022\u003E4.78%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1593 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1593)\u0022\u003E2.66%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=212329\u0022 class=\u0022q2\u0022\u003EYour pet gains the passive abilities of all pet specializations and deals 5% increased damage.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c3\u0022\u003EHunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The claw once belonged to Byakko, king of the beasts, famed companion to Wotan, the Master Hunter of the Winterskorn.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E56\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E58\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E84\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
       "name": "Jackopal",
       "race": 10,
       "gender": 1,
@@ -716,31 +747,6 @@
           "name": "Liadrin\u0027s Fury Unleashed",
           "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_61.png",
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ELiadrin\u0027s Fury Unleashed\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2548 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2548)\u0022\u003E4.25%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1911 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1911)\u0022\u003E4.5%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208408\u0022 class=\u0022q2\u0022\u003EWhile Avenging Wrath is active, you gain 0 Holy Power every 25 days1 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c2\u0022\u003EPaladin\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022We were betrayed by the man we called our prince. I pledge the blades of my Blood Knights to the defeat of Kil\u0027jaeden and the restoration of Silvermoon. We will fight beside you, A\u0027dal.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E57\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E64\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E69\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
-      "name": "Jeanv\u00E0ljean",
-      "race": 2,
-      "gender": 0,
-      "class": 3,
-      "guildRank": 1,
-      "guildRankName": "CO-GM",
-      "specialization": "Beast Mastery",
-      "playedTime": 641500,
-      "achievementPoints": 1845,
-      "nightfallenReputation": 4150,
-      "nightfallenReputationMaximum": 12000,
-      "artifactWeapon": "Titanstrike",
-      "artifactRelics": 3,
-      "artifactTraits": 21,
-      "itemLevel": 849.81,
-      "legendaries": [
-        {
-          "id": 137382,
-          "name": "The Apex Predator\u0027s Claw",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_100.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EThe Apex Predator\u0027s Claw\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2867 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2867)\u0022\u003E4.78%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1593 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1593)\u0022\u003E2.66%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=212329\u0022 class=\u0022q2\u0022\u003EYour pet gains the passive abilities of all pet specializations and deals 5% increased damage.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c3\u0022\u003EHunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The claw once belonged to Byakko, king of the beasts, famed companion to Wotan, the Master Hunter of the Winterskorn.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E56\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E58\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E84\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -777,7 +783,7 @@
       "guildRank": 6,
       "guildRankName": "Reroll",
       "specialization": "Protection",
-      "playedTime": 137055,
+      "playedTime": 137167,
       "achievementPoints": 725,
       "nightfallenReputation": 2425,
       "nightfallenReputationMaximum": 12000,
@@ -951,6 +957,31 @@
       ]
     },
     {
+      "name": "Veonity",
+      "race": 10,
+      "gender": 1,
+      "class": 4,
+      "guildRank": 6,
+      "guildRankName": "Reroll",
+      "specialization": "Assassination",
+      "playedTime": 336242,
+      "achievementPoints": 865,
+      "nightfallenReputation": 5850,
+      "nightfallenReputationMaximum": 6000,
+      "artifactWeapon": "The Kingslayers",
+      "artifactRelics": 3,
+      "artifactTraits": 17,
+      "itemLevel": 848.75,
+      "legendaries": [
+        {
+          "id": 137030,
+          "name": "Duskwalker\u0027s Footpads",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_boots_leather_8.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EDuskwalker\u0027s Footpads\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFeet\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E276 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208895\u0022 class=\u0022q2\u0022\u003EThe remaining cooldown on Vendetta is reduced by 1 sec for every 65 Energy you expend.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 95 / 95\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c4\u0022\u003ERogue\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022If an SI:7 agent like Caelvana has you in her sights, you\u0027d better run. You better run far, and you better do it quickly.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E69\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E16\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E60\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
       "name": "Louesse",
       "race": 10,
       "gender": 1,
@@ -976,31 +1007,6 @@
       ]
     },
     {
-      "name": "Veonity",
-      "race": 10,
-      "gender": 1,
-      "class": 4,
-      "guildRank": 6,
-      "guildRankName": "Reroll",
-      "specialization": "Assassination",
-      "playedTime": 331847,
-      "achievementPoints": 865,
-      "nightfallenReputation": 5800,
-      "nightfallenReputationMaximum": 6000,
-      "artifactWeapon": "The Kingslayers",
-      "artifactRelics": 3,
-      "artifactTraits": 17,
-      "itemLevel": 848.75,
-      "legendaries": [
-        {
-          "id": 137030,
-          "name": "Duskwalker\u0027s Footpads",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_boots_leather_8.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EDuskwalker\u0027s Footpads\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFeet\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E276 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208895\u0022 class=\u0022q2\u0022\u003EThe remaining cooldown on Vendetta is reduced by 1 sec for every 65 Energy you expend.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 95 / 95\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c4\u0022\u003ERogue\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022If an SI:7 agent like Caelvana has you in her sights, you\u0027d better run. You better run far, and you better do it quickly.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E69\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E16\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E60\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
       "name": "Dampdecay",
       "race": 6,
       "gender": 0,
@@ -1008,7 +1014,7 @@
       "guildRank": 6,
       "guildRankName": "Reroll",
       "specialization": "Blood",
-      "playedTime": 157814,
+      "playedTime": 157880,
       "achievementPoints": 755,
       "nightfallenReputation": 5675,
       "nightfallenReputationMaximum": 6000,
@@ -1208,7 +1214,7 @@
       "guildRank": 6,
       "guildRankName": "Reroll",
       "specialization": "Protection",
-      "playedTime": 143707,
+      "playedTime": 143899,
       "achievementPoints": 825,
       "nightfallenReputation": 1550,
       "nightfallenReputationMaximum": 6000,
@@ -1233,7 +1239,7 @@
       "guildRank": 6,
       "guildRankName": "Reroll",
       "specialization": "Vengeance",
-      "playedTime": 136217,
+      "playedTime": 136313,
       "achievementPoints": 745,
       "nightfallenReputation": 1175,
       "nightfallenReputationMaximum": 6000,
@@ -1552,15 +1558,21 @@
       "guildRank": 7,
       "guildRankName": "Membre",
       "specialization": "Mistweaver",
-      "playedTime": 810020,
-      "achievementPoints": 1780,
+      "playedTime": 810310,
+      "achievementPoints": 1790,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Sheilun, Staff of the Mists",
       "artifactRelics": 3,
       "artifactTraits": 22,
-      "itemLevel": 850.19,
+      "itemLevel": 853.94,
       "legendaries": [
+        {
+          "id": 138879,
+          "name": "Ovyd\u0027s Winter Wrap",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_belt_leather_raiddruid_i_01.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EOvyd\u0027s Winter Wrap\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E226 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1019)\u0022\u003E2.4%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1359)\u0022\u003E2.27%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=217634\u0022 class=\u0022q2\u0022\u003EEach time Enveloping Mist heals, its healing bonus has a 50% chance to spread to an injured ally within 30 yds.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c10\u0022\u003EMonk\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The philosopher Ovyd is recounted in history as one of the few Vrykul that spurned the sword, opting instead to use the spoken word.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E47\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E83\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E87\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        },
         {
           "id": 137028,
           "name": "Ei\u0027thas, Lunar Glides of Eramas",
@@ -1577,7 +1589,7 @@
       "guildRank": 8,
       "guildRankName": "Test",
       "specialization": "Unholy",
-      "playedTime": 966700,
+      "playedTime": 969045,
       "achievementPoints": 1945,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
@@ -1608,8 +1620,8 @@
       "guildRank": 8,
       "guildRankName": "Test",
       "specialization": "Assassination",
-      "playedTime": 3641743,
-      "achievementPoints": 5425,
+      "playedTime": 3644428,
+      "achievementPoints": 5435,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "The Kingslayers",
