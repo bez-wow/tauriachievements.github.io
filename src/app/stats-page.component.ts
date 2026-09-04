@@ -10,7 +10,8 @@ import {
   inject,
   signal
 } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   ArcElement,
@@ -25,9 +26,8 @@ import {
   Tooltip
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
-import { Player } from './models/character.model';
+import { ServerStatsService, ServerStatsSnapshot } from './services/server-stats.service';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -54,11 +54,7 @@ const RACE_NAMES: Record<number, string> = {
   24: 'Pandaren', 25: 'Pandaren (H)', 26: 'Pandaren (A)'
 };
 
-const AP_BREAKS = [0, 1000, 3000, 6000, 10000, 15000, 20000, Infinity];
-const AP_LABELS = ['<1k', '1k–3k', '3k–6k', '6k–10k', '10k–15k', '15k–20k', '20k+'];
-
-const HK_BREAKS = [0, 1000, 5000, 10000, 25000, 50000, 100000, Infinity];
-const HK_LABELS = ['<1k', '1k–5k', '5k–10k', '10k–25k', '25k–50k', '50k–100k', '100k+'];
+const UNKNOWN_CLASS_COLOR = '#888';
 
 export interface ServerStats {
   totalPlayers: number;
@@ -85,95 +81,38 @@ export interface ServerStats {
   realmCounts: number[];
 }
 
-export function computeStats(players: Player[]): ServerStats {
-  if (!players.length) {
-    return emptyStats();
-  }
-
-  const factionMap = new Map<string, number>();
-  const classMap = new Map<number, number>();
-  const raceMap = new Map<number, number>();
-  const guildMap = new Map<string, number>();
-  const realmMap = new Map<string, number>();
-
-  let totalAP = 0;
-  let maxAP = 0;
-  let totalHK = 0;
-  let maxHK = 0;
-  let guildedCount = 0;
-
-  const apBuckets = new Array<number>(AP_LABELS.length).fill(0);
-  const hkBuckets = new Array<number>(HK_LABELS.length).fill(0);
-
-  for (const p of players) {
-    factionMap.set(p.faction, (factionMap.get(p.faction) ?? 0) + 1);
-    classMap.set(p.class, (classMap.get(p.class) ?? 0) + 1);
-    raceMap.set(p.race, (raceMap.get(p.race) ?? 0) + 1);
-    realmMap.set(p.realm, (realmMap.get(p.realm) ?? 0) + 1);
-
-    if (p.guild) {
-      guildedCount++;
-      const key = `${p.guild} (${p.realm})`;
-      guildMap.set(key, (guildMap.get(key) ?? 0) + 1);
-    }
-
-    totalAP += p.achievementPoints;
-    if (p.achievementPoints > maxAP) maxAP = p.achievementPoints;
-    totalHK += p.honorableKills;
-    if (p.honorableKills > maxHK) maxHK = p.honorableKills;
-
-    for (let i = AP_BREAKS.length - 2; i >= 0; i--) {
-      if (p.achievementPoints >= AP_BREAKS[i]) {
-        apBuckets[i]++;
-        break;
-      }
-    }
-
-    for (let i = HK_BREAKS.length - 2; i >= 0; i--) {
-      if (p.honorableKills >= HK_BREAKS[i]) {
-        hkBuckets[i]++;
-        break;
-      }
-    }
-  }
-
-  const sortedClasses = [...classMap.entries()].sort((a, b) => b[1] - a[1]);
-  const sortedRaces = [...raceMap.entries()].sort((a, b) => b[1] - a[1]);
-  const sortedGuilds = [...guildMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  const sortedRealms = [...realmMap.entries()].sort((a, b) => b[1] - a[1]);
-
-  const factionOrder = ['Horde', 'Alliance', 'Neutral'];
-  const sortedFactions = factionOrder
-    .filter((f) => factionMap.has(f))
-    .concat([...factionMap.keys()].filter((f) => !factionOrder.includes(f)));
-
+/**
+ * Maps the precomputed aggregates onto the shape the template and charts consume,
+ * attaching the class and race names and the class colors that live in this layer.
+ */
+export function toServerStats(snapshot: ServerStatsSnapshot): ServerStats {
   return {
-    totalPlayers: players.length,
-    guildedPlayers: guildedCount,
-    uniqueGuilds: guildMap.size,
-    avgAchievementPoints: Math.round(totalAP / players.length),
-    maxAchievementPoints: maxAP,
-    avgHonorableKills: Math.round(totalHK / players.length),
-    maxHonorableKills: maxHK,
-    factionLabels: sortedFactions,
-    factionCounts: sortedFactions.map((f) => factionMap.get(f) ?? 0),
-    classLabels: sortedClasses.map(([id]) => CLASS_NAMES[id] ?? `Class ${id}`),
-    classCounts: sortedClasses.map(([, c]) => c),
-    classColors: sortedClasses.map(([id]) => CLASS_COLORS[id] ?? '#888'),
-    raceLabels: sortedRaces.map(([id]) => RACE_NAMES[id] ?? `Race ${id}`),
-    raceCounts: sortedRaces.map(([, c]) => c),
-    guildLabels: sortedGuilds.map(([name]) => name),
-    guildCounts: sortedGuilds.map(([, c]) => c),
-    apBucketLabels: AP_LABELS,
-    apBucketCounts: apBuckets,
-    hkBucketLabels: HK_LABELS,
-    hkBucketCounts: hkBuckets,
-    realmLabels: sortedRealms.map(([r]) => r),
-    realmCounts: sortedRealms.map(([, c]) => c)
+    totalPlayers: snapshot.totalPlayers,
+    guildedPlayers: snapshot.guildedPlayers,
+    uniqueGuilds: snapshot.uniqueGuilds,
+    avgAchievementPoints: snapshot.avgAchievementPoints,
+    maxAchievementPoints: snapshot.maxAchievementPoints,
+    avgHonorableKills: snapshot.avgHonorableKills,
+    maxHonorableKills: snapshot.maxHonorableKills,
+    factionLabels: snapshot.factions.map((faction) => faction.name),
+    factionCounts: snapshot.factions.map((faction) => faction.count),
+    classLabels: snapshot.classes.map((entry) => CLASS_NAMES[entry.id] ?? `Class ${entry.id}`),
+    classCounts: snapshot.classes.map((entry) => entry.count),
+    classColors: snapshot.classes.map((entry) => CLASS_COLORS[entry.id] ?? UNKNOWN_CLASS_COLOR),
+    raceLabels: snapshot.races.map((entry) => RACE_NAMES[entry.id] ?? `Race ${entry.id}`),
+    raceCounts: snapshot.races.map((entry) => entry.count),
+    guildLabels: snapshot.guilds.map((guild) => guild.name),
+    guildCounts: snapshot.guilds.map((guild) => guild.count),
+    apBucketLabels: snapshot.apBucketLabels,
+    apBucketCounts: snapshot.apBucketCounts,
+    hkBucketLabels: snapshot.hkBucketLabels,
+    hkBucketCounts: snapshot.hkBucketCounts,
+    realmLabels: snapshot.realms.map((realm) => realm.name),
+    realmCounts: snapshot.realms.map((realm) => realm.count)
   };
 }
 
-function emptyStats(): ServerStats {
+export function emptyStats(): ServerStats {
   return {
     totalPlayers: 0, guildedPlayers: 0, uniqueGuilds: 0,
     avgAchievementPoints: 0, maxAchievementPoints: 0,
@@ -182,8 +121,8 @@ function emptyStats(): ServerStats {
     classLabels: [], classCounts: [], classColors: [],
     raceLabels: [], raceCounts: [],
     guildLabels: [], guildCounts: [],
-    apBucketLabels: AP_LABELS, apBucketCounts: new Array<number>(AP_LABELS.length).fill(0),
-    hkBucketLabels: HK_LABELS, hkBucketCounts: new Array<number>(HK_LABELS.length).fill(0),
+    apBucketLabels: [], apBucketCounts: [],
+    hkBucketLabels: [], hkBucketCounts: [],
     realmLabels: [], realmCounts: []
   };
 }
@@ -197,7 +136,7 @@ function emptyStats(): ServerStats {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatsPageComponent {
-  private readonly dataSyncService = inject(DataSyncService);
+  private readonly serverStatsService = inject(ServerStatsService);
   private readonly ladderLastUpdatedService = inject(LadderLastUpdatedService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly chartInstances = new Map<string, Chart>();
@@ -209,10 +148,8 @@ export class StatsPageComponent {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
 
-  private readonly players = toSignal(this.dataSyncService.getPlayers(), { initialValue: [] as Player[] });
-
-  readonly stats = computed(() => computeStats(this.players()));
-  readonly hasData = computed(() => this.players().length > 0);
+  readonly stats = signal<ServerStats>(emptyStats());
+  readonly hasData = computed(() => this.stats().totalPlayers > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());
   readonly showContent = computed(() => this.hasData());
@@ -246,29 +183,19 @@ export class StatsPageComponent {
   }
 
   syncData(): void {
-    this.loadError.set(undefined);
-    this.isLoading.set(true);
-    void this.dataSyncService.ensureCompleteData().then(() => {
-      this.isLoading.set(false);
-    }).catch((err: unknown) => {
-      console.error('Stats sync failed:', err);
-      this.loadError.set('Could not load statistics. Please try again.');
-      this.isLoading.set(false);
-    });
+    void this.initData();
   }
 
   private async initData(): Promise<void> {
-    if (this.dataSyncService.getCurrentPlayers().length > 0) {
-      this.isLoading.set(false);
-      return;
-    }
+    this.loadError.set(undefined);
+    this.isLoading.set(true);
 
     try {
-      await this.dataSyncService.ensureCompleteData();
-      this.isLoading.set(false);
+      this.stats.set(toServerStats(await firstValueFrom(this.serverStatsService.getServerStats())));
     } catch (err) {
-      console.error('Failed to load stats data:', err);
+      console.error('Failed to load server statistics:', err);
       this.loadError.set('Could not load statistics. Please try again.');
+    } finally {
       this.isLoading.set(false);
     }
   }
