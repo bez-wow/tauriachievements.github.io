@@ -34,7 +34,8 @@
 
   <div class="ladder-feedback loading" *ngIf="showLoadingState()">
     <div class="feedback-spinner" aria-hidden="true"></div>
-    <h2>Loading ladder...</h2>
+    <h2>{{ loadingTitle() }}</h2>
+    <p *ngIf="loadingHint()">{{ loadingHint() }}</p>
   </div>
 
   <div class="ladder-feedback error" *ngIf="showErrorState()">
@@ -51,7 +52,7 @@
   </div>
 
   <app-leaderboard-table
-    *ngIf="players().length > 0"
+    *ngIf="players().length > 0 && !showLoadingState()"
     [players]="players()"
     [currentSort]="currentSort()" />
 </div>

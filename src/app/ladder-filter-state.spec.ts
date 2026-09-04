@@ -4,6 +4,7 @@ import {
   DEFAULT_LADDER_FILTER_STATE,
   areLadderFilterStatesEqual,
   parseLadderFilterState,
+  requiresCompleteLadderDataset,
   toLadderQueryParams
 } from './ladder-filter-state';
 
@@ -132,5 +133,43 @@ describe('areLadderFilterStatesEqual', () => {
     expect(areLadderFilterStatesEqual(DEFAULT_LADDER_FILTER_STATE, { ...DEFAULT_LADDER_FILTER_STATE })).toBe(true);
     expect(areLadderFilterStatesEqual(DEFAULT_LADDER_FILTER_STATE, { ...DEFAULT_LADDER_FILTER_STATE, playerClass: 2 })).toBe(false);
     expect(areLadderFilterStatesEqual(DEFAULT_LADDER_FILTER_STATE, { ...DEFAULT_LADDER_FILTER_STATE, search: 'x' })).toBe(false);
+  });
+});
+
+describe('requiresCompleteLadderDataset', () => {
+  it('serves the default view from the head snapshot', () => {
+    expect(requiresCompleteLadderDataset(DEFAULT_LADDER_FILTER_STATE)).toBe(false);
+  });
+
+  it('serves every page size from the head snapshot', () => {
+    for (const pageSize of [100, 500, 1000]) {
+      expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, pageSize })).toBe(false);
+    }
+  });
+
+  it('needs every player for a search, which can match anyone on the server', () => {
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, search: 'yolko' })).toBe(true);
+  });
+
+  it('ignores a search of only whitespace', () => {
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, search: '   ' })).toBe(false);
+  });
+
+  it('needs every player for any sort the head was not selected on', () => {
+    const otherSorts = ['achievementsTotal', 'honorableKills', 'playedTime', 'appearanceCount', 'ilvl'] as const;
+
+    for (const sort of otherSorts) {
+      expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, sort })).toBe(true);
+    }
+  });
+
+  it('needs every player for a cohort filter, whose ranks are recomputed within the cohort', () => {
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, realm: 'Tauri' })).toBe(true);
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, faction: 'Horde' })).toBe(true);
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, playerClass: 8 })).toBe(true);
+  });
+
+  it('treats a class of 0 as a real filter rather than an absent one', () => {
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, playerClass: 0 })).toBe(true);
   });
 });

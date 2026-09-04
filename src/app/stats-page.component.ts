@@ -248,7 +248,7 @@ export class StatsPageComponent {
   syncData(): void {
     this.loadError.set(undefined);
     this.isLoading.set(true);
-    void this.dataSyncService.syncData().then(() => {
+    void this.dataSyncService.ensureCompleteData().then(() => {
       this.isLoading.set(false);
     }).catch((err: unknown) => {
       console.error('Stats sync failed:', err);
@@ -264,7 +264,7 @@ export class StatsPageComponent {
     }
 
     try {
-      await this.dataSyncService.syncData();
+      await this.dataSyncService.ensureCompleteData();
       this.isLoading.set(false);
     } catch (err) {
       console.error('Failed to load stats data:', err);

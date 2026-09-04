@@ -58,10 +58,16 @@ export class AchievementLadderComponent implements OnInit {
   readonly lastEdited = this.ladderPageStore.lastEdited;
   readonly lastEditedTimeZoneLabel = this.ladderPageStore.lastEditedTimeZoneLabel;
   readonly hasSourcePlayers = this.ladderPageStore.hasSourcePlayers;
-  readonly showLoadingState = computed(() => this.isLoading() && !this.hasSourcePlayers());
+  readonly isAwaitingCompleteDataset = this.ladderPageStore.isAwaitingCompleteDataset;
+  readonly showLoadingState = computed(() => (this.isLoading() && !this.hasSourcePlayers()) || this.isAwaitingCompleteDataset());
   readonly showErrorState = computed(() => !this.isLoading() && !!this.loadError() && !this.hasSourcePlayers());
   readonly showEmptyState = computed(() => !this.showLoadingState() && !this.showErrorState() && this.players().length === 0);
-  readonly showRefreshingBanner = computed(() => this.isLoading() && this.hasSourcePlayers());
+  readonly showRefreshingBanner = computed(() => this.isLoading() && this.hasSourcePlayers() && !this.isAwaitingCompleteDataset());
+  readonly loadingTitle = computed(() => this.isAwaitingCompleteDataset() ? 'Loading every character...' : 'Loading ladder...');
+  readonly loadingHint = computed(() =>
+    this.isAwaitingCompleteDataset()
+      ? 'Searching, filtering and the other rankings cover the whole server, so the full roster is on its way.'
+      : '');
   readonly showErrorBanner = computed(() => !!this.loadError() && this.hasSourcePlayers());
   readonly hasSearchQuery = computed(() => this.searchTerm().trim().length > 0);
   readonly hasActiveFilters = computed(() => !!this.currentRealm() || !!this.currentFaction() || this.currentClass() !== undefined);

@@ -65,6 +65,25 @@ export function areLadderFilterStatesEqual(previous: LadderFilterState, current:
     && previous.search === current.search;
 }
 
+/**
+ * Whether answering this view needs every player, or whether the head snapshot is enough.
+ *
+ * The head holds the top slice of the achievement-point ranking, so it can only serve the
+ * unfiltered, unsearched achievement-point view. Every other case reads outside it:
+ * another sort orders players the head never selected on, a search can match anyone on the
+ * server, and a realm/faction/class filter re-ranks within its cohort, which needs the whole
+ * cohort to be correct.
+ *
+ * Page size is not a factor - the largest option is 1000, far inside the head slice.
+ */
+export function requiresCompleteLadderDataset(state: LadderFilterState): boolean {
+  return state.sort !== 'achievementPoints'
+    || state.realm !== undefined
+    || state.faction !== undefined
+    || state.playerClass !== undefined
+    || state.search.trim().length > 0;
+}
+
 export function toLadderQueryParams(state: LadderFilterState): Params {
   const normalizedSearch = state.search.trim();
 

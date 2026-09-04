@@ -181,7 +181,7 @@ export class ComparePageComponent implements OnInit {
     this.loadError.set(undefined);
 
     try {
-      await this.dataSyncService.syncData();
+      await this.dataSyncService.ensureCompleteData();
       this.isLoading.set(false);
       this.applyQueryParams(this.route.snapshot.queryParamMap);
     } catch (error) {

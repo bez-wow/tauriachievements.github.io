@@ -7,6 +7,8 @@ const {
   compareAchievementPoints,
   compareHonorableKills,
   compareAppearances,
+  buildHeadSnapshot,
+  HEAD_PLAYER_COUNT,
 } = require("./generate-player-snapshot");
 
 function ranked(name, achievementPoints, honorableKills, realm = "Tauri", appearanceCount = 0) {
@@ -98,4 +100,73 @@ test("compareHonorableKills ranks by honorable kills first", () => {
 test("compareAppearances ranks by appearance count first", () => {
   assert.ok(compareAppearances(ranked("A", 0, 0, "Tauri", 1000), ranked("B", 99999, 99999, "Tauri", 500)) < 0);
   assert.ok(compareAppearances(ranked("A", 1000, 0, "Tauri", 500), ranked("B", 200, 99999, "Tauri", 500)) < 0);
+});
+
+function headFixture() {
+  // Deliberately out of rank order, so a head built by slicing the source array
+  // rather than by rank would fail these assertions.
+  const rows = [
+    ranked("Mid", 900, 0),
+    ranked("Top", 1000, 0),
+    ranked("Bottom", 100, 0),
+    ranked("Second", 950, 0),
+  ];
+
+  return {
+    rows,
+    snapshot: {
+      v: 2,
+      r: ["Tauri"],
+      f: ["Alliance"],
+      // Stand-ins for serialized rows; buildHeadSnapshot only reorders them.
+      p: rows.map((row) => [row.name, row.achievementPoints]),
+    },
+    ranks: buildRankMap(rows, compareAchievementPoints),
+  };
+}
+
+test("buildHeadSnapshot keeps the globally top-ranked players in global rank order", () => {
+  const { rows, snapshot, ranks } = headFixture();
+
+  const head = buildHeadSnapshot(snapshot, rows, ranks);
+
+  assert.deepEqual(head.p.map((row) => row[0]), ["Top", "Second", "Mid", "Bottom"]);
+});
+
+test("buildHeadSnapshot records the full player count so the app knows the head is a slice", () => {
+  const { rows, snapshot, ranks } = headFixture();
+
+  assert.equal(buildHeadSnapshot(snapshot, rows, ranks).t, 4);
+});
+
+test("buildHeadSnapshot copies the realm and faction lists whole", () => {
+  const { rows, snapshot, ranks } = headFixture();
+
+  const head = buildHeadSnapshot(snapshot, rows, ranks);
+
+  // Index columns must resolve identically in both files, or upgrading from the head
+  // to the full snapshot would remap every player's realm and faction.
+  assert.deepEqual(head.r, snapshot.r);
+  assert.deepEqual(head.f, snapshot.f);
+  assert.equal(head.v, snapshot.v);
+});
+
+test("buildHeadSnapshot drops players ranked past the cap", () => {
+  const rows = [];
+  for (let index = 0; index < HEAD_PLAYER_COUNT + 25; index++) {
+    rows.push(ranked(`P${index}`, HEAD_PLAYER_COUNT + 25 - index, 0));
+  }
+
+  const snapshot = { v: 2, r: ["Tauri"], f: ["Alliance"], p: rows.map((row) => [row.name]) };
+  const head = buildHeadSnapshot(snapshot, rows, buildRankMap(rows, compareAchievementPoints));
+
+  assert.equal(head.p.length, HEAD_PLAYER_COUNT);
+  assert.equal(head.t, HEAD_PLAYER_COUNT + 25);
+  assert.equal(head.p[0][0], "P0");
+});
+
+test("a head smaller than the cap holds everyone", () => {
+  const { rows, snapshot, ranks } = headFixture();
+
+  assert.equal(buildHeadSnapshot(snapshot, rows, ranks).p.length, rows.length);
 });

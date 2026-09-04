@@ -52,7 +52,7 @@ export class GuildPresencePageStore {
     }
 
     try {
-      await this.dataSyncService.syncData();
+      await this.dataSyncService.ensureCompleteData();
       this.loadError.set(undefined);
     } catch (error) {
       console.error('Failed to sync guild presence data:', error);

@@ -7,7 +7,15 @@ const sourcePath = path.join(__dirname, "..", "src", "Players.csv");
 const lastUpdatedPath = path.join(__dirname, "..", "src", "lastUpdated.txt");
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.snapshot.json");
+const headOutputPath = path.join(outputDir, "players.head.snapshot.json");
 const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
+
+// The ladder's default view is "top of the achievement-point ranking, unfiltered,
+// at most 1000 rows". That answer lives entirely in the highest-ranked slice, so we
+// publish it as a separate file the app can paint from while the full set streams in
+// behind it. Anything else the user asks for - a search, another sort, a realm or
+// class filter - needs every player and triggers a load of players.snapshot.json.
+const HEAD_PLAYER_COUNT = 25000;
 
 function generatePlayerSnapshot() {
   if (!fs.existsSync(sourcePath)) {
@@ -120,9 +128,44 @@ function generatePlayerSnapshot() {
 
   fs.mkdirSync(outputDir, { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(snapshot));
+  fs.writeFileSync(
+    headOutputPath,
+    JSON.stringify(buildHeadSnapshot(snapshot, normalizedRows, currentAchievementRanks))
+  );
 
-  const sizeKb = (fs.statSync(outputPath).size / 1024).toFixed(1);
-  console.log(`Generated ${path.relative(process.cwd(), outputPath)} (${sizeKb} kB)`);
+  logGeneratedFile(outputPath);
+  logGeneratedFile(headOutputPath);
+}
+
+// The head holds the globally top-ranked players in global rank order, so the first
+// page of the default view is byte-identical to what the full snapshot would produce.
+// Realm and faction lists are copied whole: the index columns must resolve the same
+// way in both files, or an upgrade to the full set would silently remap every row.
+function buildHeadSnapshot(snapshot, normalizedRows, achievementRanks) {
+  const rankedEntries = [];
+
+  for (let index = 0; index < normalizedRows.length; index++) {
+    const rank = achievementRanks.get(getPlayerKey(normalizedRows[index]));
+
+    if (rank && rank <= HEAD_PLAYER_COUNT) {
+      rankedEntries.push({ index, rank });
+    }
+  }
+
+  rankedEntries.sort((left, right) => left.rank - right.rank);
+
+  return {
+    v: snapshot.v,
+    r: snapshot.r,
+    f: snapshot.f,
+    t: snapshot.p.length,
+    p: rankedEntries.map((entry) => snapshot.p[entry.index]),
+  };
+}
+
+function logGeneratedFile(filePath) {
+  const sizeKb = (fs.statSync(filePath).size / 1024).toFixed(1);
+  console.log(`Generated ${path.relative(process.cwd(), filePath)} (${sizeKb} kB)`);
 }
 
 function loadPreviousSnapshotPlayers(currentDayKey) {
@@ -333,6 +376,8 @@ if (require.main === module) {
 
 module.exports = {
   generatePlayerSnapshot,
+  buildHeadSnapshot,
+  HEAD_PLAYER_COUNT,
   getNameClassKey,
   getPlayerKey,
   buildRankMap,

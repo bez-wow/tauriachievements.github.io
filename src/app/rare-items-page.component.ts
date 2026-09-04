@@ -115,7 +115,7 @@ export class RareItemsPageComponent implements OnInit {
 
     forkJoin({
       dataset: this.http.get<RareItemsDataset>(`RareItems.json?v=${Date.now()}`),
-      playerSync: from(this.dataSyncService.syncData())
+      playerSync: from(this.dataSyncService.ensureCompleteData())
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

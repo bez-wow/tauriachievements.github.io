@@ -1,7 +1,11 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, catchError, combineLatest, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
-import { DEFAULT_LADDER_FILTER_STATE, areLadderFilterStatesEqual } from './ladder-filter-state';
+import {
+  DEFAULT_LADDER_FILTER_STATE,
+  areLadderFilterStatesEqual,
+  requiresCompleteLadderDataset
+} from './ladder-filter-state';
 import { mapLadderPlayersToView } from './ladder-player-view.mapper';
 import { LadderAchievement, LadderService } from './ladder.service';
 import { LadderFilterState, LadderPlayerView } from './ladder.types';
@@ -36,11 +40,20 @@ export class LadderPageStore {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly hasSourcePlayers = computed(() => this.sourcePlayerCount() > 0);
+  readonly isDatasetComplete = signal(this.dataSyncService.isCurrentDatasetComplete());
+  private readonly needsCompleteDataset = signal(requiresCompleteLadderDataset(DEFAULT_LADDER_FILTER_STATE));
+
+  /**
+   * The head slice cannot answer this view yet. Results computed against it would be
+   * plausible but wrong, so the page shows its loading state rather than publishing them.
+   */
+  readonly isAwaitingCompleteDataset = computed(() => this.needsCompleteDataset() && !this.isDatasetComplete());
 
   constructor() {
     this.bindSourcePlayers();
     this.bindSyncProgress();
     this.bindFilteredPlayers();
+    this.bindDatasetCompleteness();
   }
 
   initialize(): void {
@@ -55,6 +68,13 @@ export class LadderPageStore {
 
   setFilterState(state: LadderFilterState): void {
     this.filterState$.next(state);
+    this.needsCompleteDataset.set(requiresCompleteLadderDataset(state));
+
+    // Before initialize() the upgrade is folded into the first load instead, so a deep
+    // link straight to a search or a sort costs one request rather than two.
+    if (this.initialized && this.needsCompleteDataset() && !this.isDatasetComplete()) {
+      void this.syncData();
+    }
   }
 
   async syncData(): Promise<void> {
@@ -67,7 +87,12 @@ export class LadderPageStore {
     }
 
     try {
-      await this.dataSyncService.syncData();
+      if (this.needsCompleteDataset()) {
+        await this.dataSyncService.ensureCompleteData();
+      } else {
+        await this.dataSyncService.syncData();
+      }
+
       this.loadError.set(undefined);
     } catch (error) {
       console.error('Failed to sync data:', error);
@@ -75,6 +100,14 @@ export class LadderPageStore {
       this.isLoading.set(false);
       this.syncMessage.set('');
     }
+  }
+
+  private bindDatasetCompleteness(): void {
+    this.dataSyncService.isDatasetComplete().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((isComplete) => {
+      this.isDatasetComplete.set(isComplete);
+    });
   }
 
   private bindSourcePlayers(): void {

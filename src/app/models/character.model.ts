@@ -38,6 +38,8 @@ export interface PlayerSnapshot {
   r: string[];
   f: string[];
   p: SerializedPlayerRecord[];
+  /** Total players on the server. Present only on the head snapshot, where `p` is a slice. */
+  t?: number;
 }
 
 export interface Player {

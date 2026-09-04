@@ -124,7 +124,7 @@ export class NewRareCharactersPageComponent implements OnInit {
     this.loadError.set(undefined);
 
     forkJoin({
-      sync: from(this.dataSyncService.syncData()),
+      sync: from(this.dataSyncService.ensureCompleteData()),
       rareAchievementsDataset: this.rareAchievementsService.getRareAchievements(),
       lastUpdated: this.ladderLastUpdatedService.getLastUpdated()
     }).pipe(
