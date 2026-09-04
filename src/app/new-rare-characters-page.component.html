@@ -3,7 +3,7 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <div class="new-rare-container">
-  <section class="new-rare-summary" *ngIf="!isLoading() && !loadError()">
+  <section class="new-rare-summary" *ngIf="!isLoading() && !loadError() && !showEmptyState()">
     <div>
       <h1>New Rare Characters</h1>
       <p>{{ newRareCharacterCount() | number }} found in the latest scan</p>
@@ -22,8 +22,13 @@
   </div>
 
   <div class="new-rare-feedback empty" *ngIf="showEmptyState()">
-    <h2>No new rare characters found</h2>
-    <p>The latest scan did not add any new characters with a Season Gladiator title, Gladiator mount, or Realm First.</p>
+    <div class="empty-state-icon" aria-hidden="true">
+      <span></span>
+    </div>
+    <div class="empty-state-status">Latest scan complete</div>
+    <h1>New Rare Characters</h1>
+    <h2>No new discoveries this time</h2>
+    <p>No newly scanned characters were found with a Season Gladiator title, Gladiator mount, or Realm First achievement.</p>
   </div>
 
   <div class="wow-table-scroll" *ngIf="newRareCharacterCount() > 0">
