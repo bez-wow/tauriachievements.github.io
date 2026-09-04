@@ -14,12 +14,6 @@
       </div>
       <div class="history-table-wrap" *ngIf="achievementMovers.length > 0; else emptyAchievementMovers">
         <table class="history-table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Achievements Gained</th>
-            </tr>
-          </thead>
           <tbody>
             <tr *ngFor="let mover of achievementMovers; trackBy: trackMover">
               <td>
@@ -74,12 +68,6 @@
       </div>
       <div class="history-table-wrap" *ngIf="honorableKillMovers.length > 0; else emptyHonorableKillMovers">
         <table class="history-table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Honorable Kills Gained</th>
-            </tr>
-          </thead>
           <tbody>
             <tr *ngFor="let mover of honorableKillMovers; trackBy: trackMover">
               <td>
@@ -134,12 +122,6 @@
       </div>
       <div class="history-table-wrap" *ngIf="playedTimeMovers.length > 0; else emptyPlayedTimeMovers">
         <table class="history-table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Played Time Gained</th>
-            </tr>
-          </thead>
           <tbody>
             <tr *ngFor="let mover of playedTimeMovers; trackBy: trackMover">
               <td>
@@ -194,12 +176,6 @@
       </div>
       <div class="history-table-wrap" *ngIf="appearanceMovers.length > 0; else emptyAppearanceMovers">
         <table class="history-table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Appearances Gained</th>
-            </tr>
-          </thead>
           <tbody>
             <tr *ngFor="let mover of appearanceMovers; trackBy: trackMover">
               <td>
