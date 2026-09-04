@@ -36,6 +36,13 @@ test("a legacy scan without AppearanceCount is used as a baseline, not a gain", 
   assert.deepEqual(computeTopMoversForSnapshots(current, previous, "appearanceCount"), []);
 });
 
+test("a zero appearance count followed by a positive count is used as a baseline", () => {
+  const previous = [player("RecoveredData", 0)];
+  const current = [player("RecoveredData", 374)];
+
+  assert.deepEqual(computeTopMoversForSnapshots(current, previous, "appearanceCount"), []);
+});
+
 test("played time movers track and order time gained between scans", () => {
   const previous = [
     { ...player("SmallGain", 100), playedTime: 1000, hasPlayedTime: true },

@@ -181,6 +181,15 @@ function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetri
       continue;
     }
 
+    // A zero count can mean the appearance data was unavailable during the
+    // previous scan. Treat the next positive count as a baseline instead of
+    // reporting the character's entire collection as a one-day gain.
+    if (sortMetric === "appearanceCount"
+      && previousPlayer.appearanceCount === 0
+      && player.appearanceCount > 0) {
+      continue;
+    }
+
     if (sortMetric === "playedTime" && !previousPlayer.hasPlayedTime) {
       continue;
     }
