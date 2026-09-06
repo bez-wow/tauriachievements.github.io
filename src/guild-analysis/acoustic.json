@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-05 08:53:34 CET",
+  "timestamp": "2026-09-06 09:30:23 CET",
   "guild": {
     "name": "acoustic",
     "realm": "Evermoon",
@@ -36,9 +36,9 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Protection",
-      "playedTime": 731870,
-      "achievementPoints": 1570,
-      "nightfallenReputation": 18075,
+      "playedTime": 733417,
+      "achievementPoints": 1580,
+      "nightfallenReputation": 20375,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Scale of the Earth-Warder",
       "artifactRelics": 3,
@@ -67,7 +67,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Balance",
-      "playedTime": 1701935,
+      "playedTime": 1703242,
       "achievementPoints": 2465,
       "nightfallenReputation": 17850,
       "nightfallenReputationMaximum": 21000,
@@ -123,7 +123,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Vengeance",
-      "playedTime": 458820,
+      "playedTime": 459012,
       "achievementPoints": 2985,
       "nightfallenReputation": 14950,
       "nightfallenReputationMaximum": 21000,
@@ -143,6 +143,31 @@
           "name": "Cloak of Fel Flames",
           "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_cape_09.png",
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ECloak of Fel Flames\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EBack\u003C/td\u003E\u003Cth\u003ECloth\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E161 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1340 Agility\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1019)\u0022\u003E2.4%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B764 Versatility\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,40,764)\u0022\u003E0%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=217735\u0022 class=\u0022q2\u0022\u003EYou take 0% reduced magic damage while Immolation Aura is active.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EClasses: \u003Cspan class=\u0022c12\u0022\u003EDemon Hunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Appearing like any other found in the molten depths, this one appears to burn with a greater purpose.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E68\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E13\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E84\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Astarossa",
+      "race": 8,
+      "gender": 0,
+      "class": 11,
+      "guildRank": 2,
+      "guildRankName": "Autistic",
+      "specialization": "Feral",
+      "playedTime": 4776948,
+      "achievementPoints": 4565,
+      "nightfallenReputation": 13725,
+      "nightfallenReputationMaximum": 21000,
+      "artifactWeapon": "Fangs of Ashamane",
+      "artifactRelics": 3,
+      "artifactTraits": 25,
+      "itemLevel": 850.69,
+      "legendaries": [
+        {
+          "id": 137040,
+          "name": "Chatoyant Signet",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_ring_firelands_2.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EChatoyant Signet\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2548 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2548)\u0022\u003E4.25%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1911 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1911)\u0022\u003E4.5%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207523\u0022 class=\u0022q2\u0022\u003EIncreases your Energy regeneration by 5% and maximum Energy by 100 while in Cat Form.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c11\u0022\u003EDruid\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The fire within Leyara enchants this signet. You can feel that she has finally found peace.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E95\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E56\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -179,8 +204,8 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Protection",
-      "playedTime": 4066466,
-      "achievementPoints": 6620,
+      "playedTime": 4066661,
+      "achievementPoints": 6630,
       "nightfallenReputation": 13349,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Truthguard",
@@ -193,31 +218,6 @@
           "name": "Tyr\u0027s Hand of Faith",
           "icon": "https://legion-static.tauri.hu/images/icons/large/inv_glove_plate_panda_b_01blue.png",
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ETyr\u0027s Hand of Faith\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EHands\u003C/td\u003E\u003Cth\u003EPlate\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E487 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Strength or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1529 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1529)\u0022\u003E2.55%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B849 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,849)\u0022\u003E2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=206380\u0022 class=\u0022q2\u0022\u003EReduces the cooldown of Lay on Hands by -70%.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c2\u0022\u003EPaladin\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022After losing his hand to the massive proto-dragon Galakrond, Jotun forged Tyr a new one.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E58\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E96\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
-      "name": "Astarossa",
-      "race": 8,
-      "gender": 0,
-      "class": 11,
-      "guildRank": 2,
-      "guildRankName": "Autistic",
-      "specialization": "Feral",
-      "playedTime": 4765445,
-      "achievementPoints": 4545,
-      "nightfallenReputation": 12725,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "Fangs of Ashamane",
-      "artifactRelics": 3,
-      "artifactTraits": 24,
-      "itemLevel": 850.69,
-      "legendaries": [
-        {
-          "id": 137040,
-          "name": "Chatoyant Signet",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_ring_firelands_2.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EChatoyant Signet\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2548 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2548)\u0022\u003E4.25%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1911 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1911)\u0022\u003E4.5%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207523\u0022 class=\u0022q2\u0022\u003EIncreases your Energy regeneration by 5% and maximum Energy by 100 while in Cat Form.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c11\u0022\u003EDruid\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The fire within Leyara enchants this signet. You can feel that she has finally found peace.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E95\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E56\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -254,9 +254,9 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Enhancement",
-      "playedTime": 2147705,
-      "achievementPoints": 6180,
-      "nightfallenReputation": 6075,
+      "playedTime": 2149674,
+      "achievementPoints": 6195,
+      "nightfallenReputation": 7175,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
@@ -303,31 +303,6 @@
       ]
     },
     {
-      "name": "D\u00EBspacito",
-      "race": 10,
-      "gender": 0,
-      "class": 12,
-      "guildRank": 2,
-      "guildRankName": "Autistic",
-      "specialization": "Havoc",
-      "playedTime": 614444,
-      "achievementPoints": 1530,
-      "nightfallenReputation": 4650,
-      "nightfallenReputationMaximum": 21000,
-      "artifactWeapon": "Twinblades of the Deceiver",
-      "artifactRelics": 3,
-      "artifactTraits": 22,
-      "itemLevel": 852.75,
-      "legendaries": [
-        {
-          "id": 137090,
-          "name": "Mo\u0027arg Bionic Stabilizers",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_plate_raiddeathknightmythic_o_01bracer.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EMo\u0027arg Bionic Stabilizers\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWrist\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E176 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1340 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1147 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1147)\u0022\u003E1.91%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B637 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,637)\u0022\u003E1.06%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208826\u0022 class=\u0022q2\u0022\u003EThrow Glaive deals 25% increased damage for each enemy hit.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c12\u0022\u003EDemon Hunter\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022If you can stabilize a saw you can stabilize a glaive.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E47\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E66\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E38\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
       "name": "Giitano",
       "race": 2,
       "gender": 0,
@@ -366,7 +341,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Windwalker",
-      "playedTime": 1340168,
+      "playedTime": 1340747,
       "achievementPoints": 2885,
       "nightfallenReputation": 3125,
       "nightfallenReputationMaximum": 21000,
@@ -397,14 +372,14 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Unholy",
-      "playedTime": 1041996,
-      "achievementPoints": 1960,
-      "nightfallenReputation": 9400,
+      "playedTime": 1051798,
+      "achievementPoints": 1980,
+      "nightfallenReputation": 9525,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Apocalypse",
       "artifactRelics": 3,
       "artifactTraits": 22,
-      "itemLevel": 853.19,
+      "itemLevel": 853.5,
       "legendaries": [
         {
           "id": 132452,
@@ -447,7 +422,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Vengeance",
-      "playedTime": 817197,
+      "playedTime": 821633,
       "achievementPoints": 2275,
       "nightfallenReputation": 3700,
       "nightfallenReputationMaximum": 12000,
@@ -472,7 +447,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Marksmanship",
-      "playedTime": 397355,
+      "playedTime": 398909,
       "achievementPoints": 2145,
       "nightfallenReputation": 2675,
       "nightfallenReputationMaximum": 12000,
@@ -522,7 +497,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Havoc",
-      "playedTime": 144718,
+      "playedTime": 145054,
       "achievementPoints": 635,
       "nightfallenReputation": 5600,
       "nightfallenReputationMaximum": 6000,
@@ -547,7 +522,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Blood",
-      "playedTime": 717395,
+      "playedTime": 719864,
       "achievementPoints": 2170,
       "nightfallenReputation": 5100,
       "nightfallenReputationMaximum": 6000,
@@ -597,8 +572,8 @@
       "guildRank": 1,
       "guildRankName": "Nigga",
       "specialization": "Discipline",
-      "playedTime": 281242,
-      "achievementPoints": 1070,
+      "playedTime": 282075,
+      "achievementPoints": 1080,
       "nightfallenReputation": 2550,
       "nightfallenReputationMaximum": 6000,
       "artifactWeapon": "Light\u0027s Wrath",
@@ -621,15 +596,15 @@
       "class": 5,
       "guildRank": 4,
       "guildRankName": "Initiate",
-      "specialization": "Shadow",
-      "playedTime": 323478,
-      "achievementPoints": 585,
-      "nightfallenReputation": 1375,
+      "specialization": "Holy",
+      "playedTime": 344689,
+      "achievementPoints": 625,
+      "nightfallenReputation": 1675,
       "nightfallenReputationMaximum": 6000,
-      "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
+      "artifactWeapon": "T\u0027uure, Beacon of the Naaru",
       "artifactRelics": 2,
-      "artifactTraits": 11,
-      "itemLevel": 792.6,
+      "artifactTraits": 12,
+      "itemLevel": 793.6,
       "legendaries": []
     },
     {
@@ -676,15 +651,22 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Mistweaver",
-      "playedTime": 719644,
+      "playedTime": 719801,
       "achievementPoints": 4000,
       "nightfallenReputation": 650,
       "nightfallenReputationMaximum": 6000,
       "artifactWeapon": "Sheilun, Staff of the Mists",
       "artifactRelics": 2,
       "artifactTraits": 14,
-      "itemLevel": 842.5,
-      "legendaries": []
+      "itemLevel": 845.31,
+      "legendaries": [
+        {
+          "id": 137073,
+          "name": "Unison Spaulders",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_shoulder_leather_legionquest100_b_01.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EUnison Spaulders\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EShoulder\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E301 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1529 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1529)\u0022\u003E3.6%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B849 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,849)\u0022\u003E1.42%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=212123\u0022 class=\u0022q2\u0022\u003ESoothing Mist heals a second injured ally within 15 yds for 50% of the amount healed.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 115 / 115\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c10\u0022\u003EMonk\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Every place you\u0027ve ever imagined- it is real. It is a fictional city in your mind and you know every corner of it. Your mind is a world. Each of us is a place.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E71\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E71\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E45\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
     },
     {
       "name": "Alarrion",
@@ -759,6 +741,31 @@
       "legendaries": []
     },
     {
+      "name": "Laklok",
+      "race": 8,
+      "gender": 0,
+      "class": 11,
+      "guildRank": 2,
+      "guildRankName": "Autistic",
+      "specialization": "Restoration",
+      "playedTime": 179224,
+      "achievementPoints": 880,
+      "nightfallenReputation": 1850,
+      "nightfallenReputationMaximum": 3000,
+      "artifactWeapon": "G\u0027Hanir, the Mother Tree",
+      "artifactRelics": 2,
+      "artifactTraits": 17,
+      "itemLevel": 845,
+      "legendaries": [
+        {
+          "id": 137078,
+          "name": "The Dark Titan\u0027s Advice",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_belt_leather_raidrogue_l_01.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EThe Dark Titan\u0027s Advice\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E226 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1359 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1359)\u0022\u003E2.27%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1019 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1019)\u0022\u003E2.4%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207271\u0022 class=\u0022q2\u0022\u003ELifebloom\u0027s final healing is increased by 200% and Lifebloom\u0027s periodic healing has a 5% chance heal for its final healing amount.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c11\u0022\u003EDruid\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Patience, young one, and you someday will have it all.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E41\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E47\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
       "name": "Ihatefoids",
       "race": 2,
       "gender": 1,
@@ -792,24 +799,6 @@
       "artifactRelics": 2,
       "artifactTraits": 1,
       "itemLevel": 786.44,
-      "legendaries": []
-    },
-    {
-      "name": "Laklok",
-      "race": 8,
-      "gender": 0,
-      "class": 11,
-      "guildRank": 2,
-      "guildRankName": "Autistic",
-      "specialization": "Restoration",
-      "playedTime": 162190,
-      "achievementPoints": 750,
-      "nightfallenReputation": 1350,
-      "nightfallenReputationMaximum": 3000,
-      "artifactWeapon": "G\u0027Hanir, the Mother Tree",
-      "artifactRelics": 2,
-      "artifactTraits": 16,
-      "itemLevel": 828.06,
       "legendaries": []
     },
     {
@@ -863,7 +852,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Subtlety",
-      "playedTime": 55398,
+      "playedTime": 55506,
       "achievementPoints": 405,
       "nightfallenReputation": 1000,
       "nightfallenReputationMaximum": 3000,
@@ -899,14 +888,14 @@
       "guildRank": 1,
       "guildRankName": "Nigga",
       "specialization": "Windwalker",
-      "playedTime": 122675,
-      "achievementPoints": 690,
+      "playedTime": 128158,
+      "achievementPoints": 715,
       "nightfallenReputation": 800,
       "nightfallenReputationMaximum": 3000,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 2,
-      "artifactTraits": 15,
-      "itemLevel": 824.69,
+      "artifactTraits": 16,
+      "itemLevel": 827.81,
       "legendaries": []
     },
     {
@@ -917,7 +906,7 @@
       "guildRank": 1,
       "guildRankName": "Nigga",
       "specialization": "Havoc",
-      "playedTime": 354756,
+      "playedTime": 354766,
       "achievementPoints": 1065,
       "nightfallenReputation": 550,
       "nightfallenReputationMaximum": 3000,
@@ -1095,8 +1084,8 @@
       "guildRank": 1,
       "guildRankName": "Nigga",
       "specialization": "Brewmaster",
-      "playedTime": 2229997,
-      "achievementPoints": 2965,
+      "playedTime": 2245994,
+      "achievementPoints": 2975,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Fu Zan, the Wanderer\u0027s Companion",
@@ -1126,7 +1115,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Subtlety",
-      "playedTime": 835999,
+      "playedTime": 837817,
       "achievementPoints": 1475,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
@@ -1157,7 +1146,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Windwalker",
-      "playedTime": 593763,
+      "playedTime": 594691,
       "achievementPoints": 1330,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
@@ -1175,37 +1164,6 @@
       ]
     },
     {
-      "name": "Retart",
-      "race": 6,
-      "gender": 0,
-      "class": 2,
-      "guildRank": 2,
-      "guildRankName": "Autistic",
-      "specialization": "Protection",
-      "playedTime": 1364786,
-      "achievementPoints": 2290,
-      "nightfallenReputation": 0,
-      "nightfallenReputationMaximum": 1000,
-      "artifactWeapon": "Truthguard",
-      "artifactRelics": 3,
-      "artifactTraits": 29,
-      "itemLevel": 857.44,
-      "legendaries": [
-        {
-          "id": 137086,
-          "name": "Chain of Thrayn",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_belt_leather_firelandsdruid_d_01.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EChain of Thrayn\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003EPlate\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E438 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Strength or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B849 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,849)\u0022\u003E1.42%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1529 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1529)\u0022\u003E3.6%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=206338\u0022 class=\u0022q2\u0022\u003EAvenging Wrath increases healing done by an additional 50% and increases damage done by an additional 10%.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c2\u0022\u003EPaladin\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The prayer of an ancient Valhalas champion resonates through the links: \u0027If you stand in the light, you will never stand alone.\u0027\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E46\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E98\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E73\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        },
-        {
-          "id": 137070,
-          "name": "Tyelca, Ferren Marcus\u0027s Stature",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_pants_plate_raidwarrior_n_01.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ETyelca, Ferren Marcus\u0027s Stature\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003ELegs\u003C/td\u003E\u003Cth\u003EPlate\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E682 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B3573 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B2382 [Strength or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1359 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1359)\u0022\u003E2.27%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1812 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1812)\u0022\u003E3.02%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207614\u0022 class=\u0022q2\u0022\u003EAvenger\u0027s Shield deals 20% increased damage and jumps to 2 additional targets.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 145 / 145\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c2\u0022\u003EPaladin\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Power comes from strength, and true strength comes from strong legs bolting you to the ground.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E94\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E79\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E52\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
       "name": "Uglyfriend",
       "race": 2,
       "gender": 1,
@@ -1213,13 +1171,13 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Destruction",
-      "playedTime": 9898424,
+      "playedTime": 9916967,
       "achievementPoints": 14665,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
-      "artifactTraits": 27,
+      "artifactTraits": 28,
       "itemLevel": 856.2,
       "legendaries": [
         {
@@ -1244,7 +1202,7 @@
       "guildRank": 2,
       "guildRankName": "Autistic",
       "specialization": "Retribution",
-      "playedTime": 1722118,
+      "playedTime": 1727735,
       "achievementPoints": 4695,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
@@ -1287,14 +1245,14 @@
       "guildRank": 1,
       "guildRankName": "Nigga",
       "specialization": "Holy",
-      "playedTime": 119959,
+      "playedTime": 120214,
       "achievementPoints": 520,
       "nightfallenReputation": null,
       "nightfallenReputationMaximum": null,
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 0,
       "artifactTraits": 1,
-      "itemLevel": 795.81,
+      "itemLevel": 799.56,
       "legendaries": []
     }
   ]
