@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
@@ -25,6 +25,14 @@ interface BossView {
   guilds: GuildKill[];
 }
 
+interface CountdownView {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+  isReleased: boolean;
+}
+
 const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
   { key: 'nythendra', name: 'Nythendra', iconUrl: 'assets/emerald-nightmare/01-nythendra.png' },
   { key: 'ilgynoth', name: "Il'gynoth", iconUrl: "assets/emerald-nightmare/02-il'gunoth.png" },
@@ -34,6 +42,10 @@ const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
   { key: 'cenarius', name: 'Cenarius', iconUrl: 'assets/emerald-nightmare/06-cenarius.png' },
   { key: 'xavius', name: 'Xavius', iconUrl: 'assets/emerald-nightmare/07-xavious.png' }
 ];
+
+/** Mythic release: 26 September 2026, 09:00 server time (CEST = UTC+2). */
+const MYTHIC_RELEASE_MS = Date.UTC(2026, 8, 26, 7, 0, 0);
+const MYTHIC_RELEASE_ISO = '2026-09-26T09:00:00+02:00';
 
 @Component({
   selector: 'app-emerald-nightmare-page',
@@ -51,8 +63,20 @@ export class EmeraldNightmarePageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
 
+  readonly releaseIso = MYTHIC_RELEASE_ISO;
+  readonly countdown = signal<CountdownView>(this.computeCountdown(Date.now()));
+  readonly countdownLabel = computed(() => {
+    const { days, hours, minutes, isReleased } = this.countdown();
+    return isReleased
+      ? 'Mythic Emerald Nightmare is live.'
+      : `Mythic Emerald Nightmare opens in ${+days} days, ${+hours} hours and ${+minutes} minutes.`;
+  });
+
+  private countdownTimer?: ReturnType<typeof setInterval>;
+
   ngOnInit(): void {
     this.loadData();
+    this.startCountdown();
   }
 
   retryLoad(): void {
@@ -81,6 +105,54 @@ export class EmeraldNightmarePageComponent implements OnInit {
         year: 'numeric',
         timeZone: 'UTC'
       }).format(parsed);
+  }
+
+  private startCountdown(): void {
+    this.tickCountdown();
+
+    if (this.countdown().isReleased) {
+      return;
+    }
+
+    this.countdownTimer = setInterval(() => this.tickCountdown(), 1000);
+    this.destroyRef.onDestroy(() => this.stopCountdown());
+  }
+
+  private tickCountdown(): void {
+    const next = this.computeCountdown(Date.now());
+    this.countdown.set(next);
+
+    if (next.isReleased) {
+      this.stopCountdown();
+    }
+  }
+
+  private stopCountdown(): void {
+    if (this.countdownTimer !== undefined) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = undefined;
+    }
+  }
+
+  private computeCountdown(now: number): CountdownView {
+    const remaining = MYTHIC_RELEASE_MS - now;
+
+    if (remaining <= 0) {
+      return { days: '00', hours: '00', minutes: '00', seconds: '00', isReleased: true };
+    }
+
+    const totalSeconds = Math.floor(remaining / 1000);
+    return {
+      days: this.pad(Math.floor(totalSeconds / 86400)),
+      hours: this.pad(Math.floor(totalSeconds / 3600) % 24),
+      minutes: this.pad(Math.floor(totalSeconds / 60) % 60),
+      seconds: this.pad(totalSeconds % 60),
+      isReleased: false
+    };
+  }
+
+  private pad(value: number): string {
+    return String(value).padStart(2, '0');
   }
 
   private loadData(): void {
