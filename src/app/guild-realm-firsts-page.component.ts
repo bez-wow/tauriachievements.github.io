@@ -82,7 +82,7 @@ const EXPANSION_GROUPS_BY_START_ACHIEVEMENT = new Map<string, GuildRealmFirstExp
   ]
 ]);
 
-const LEGION_RELEASE_LABEL = 'Legion 15. July';
+const LEGION_RELEASE_LABEL = '23. Sept';
 const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
 
 @Component({
