@@ -254,6 +254,62 @@
   text-align: center;
 }
 
+.nav-drawer-soon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.nav-drawer-section-title {
+  padding: 0 6px 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.nav-drawer-soon-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px dashed rgba(247, 181, 0, 0.24);
+  background: rgba(247, 181, 0, 0.045);
+  color: #9aa1ad;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  cursor: default;
+}
+
+.nav-drawer-soon-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-drawer-soon-badge {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(247, 181, 0, 0.34);
+  background: rgba(247, 181, 0, 0.12);
+  color: #ffe28a;
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .update-bar-text {
   justify-self: center;
   z-index: 1;
