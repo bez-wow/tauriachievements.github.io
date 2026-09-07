@@ -1,0 +1,34 @@
+<section class="mythic-countdown" role="timer" [attr.aria-label]="countdownLabel()">
+  <p class="countdown-eyebrow">Mythic Emerald Nightmare unlocks in</p>
+
+  <div class="countdown-clock" *ngIf="!countdown().isReleased; else nightmareAwake" aria-hidden="true">
+    <div class="countdown-unit">
+      <span class="countdown-value">{{ countdown().days }}</span>
+      <span class="countdown-label">Days</span>
+    </div>
+    <span class="countdown-colon">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-value">{{ countdown().hours }}</span>
+      <span class="countdown-label">Hours</span>
+    </div>
+    <span class="countdown-colon">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-value">{{ countdown().minutes }}</span>
+      <span class="countdown-label">Minutes</span>
+    </div>
+    <span class="countdown-colon">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-value">{{ countdown().seconds }}</span>
+      <span class="countdown-label">Seconds</span>
+    </div>
+  </div>
+
+  <ng-template #nightmareAwake>
+    <p class="countdown-live">The Nightmare is awake</p>
+  </ng-template>
+
+  <p class="countdown-target">
+    <time [attr.datetime]="releaseIso">23 September 2026 &middot; 09:00</time>
+    <span class="countdown-zone">server time (CEST)</span>
+  </p>
+</section>
