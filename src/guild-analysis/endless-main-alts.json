@@ -17,19 +17,27 @@
     "Xyhoprogue"
   ],
   "Zerololq": [
-    "Zerolul",
-    "Zerolulq",
-    "Borsodidrjay",
-    "Zerololqt",
+    {
+      "name": "Zerolul",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Zerololqt",
+      "wantsToRaid": true
+    },
     "Zxro",
-    "Zerobaka",
-    "Zerouwu"
+    "Zerobaka"
   ],
   "Wxz": [
-    "Íllìðäñgøðx",
-    "Wzd",
-    "Wazdx",
-    "Wazx"
+    {
+      "name": "Wzd",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Wazdx",
+      "wantsToRaid": true
+    },
+    "Íllìðäñgøðx"
   ],
   "Csodafa": [
     {
@@ -64,9 +72,18 @@
     "Hesingxd"
   ],
   "Rewright": [
-    "Rewrxght",
-    "Wazakutyám",
-    "Rewríght"
+    {
+      "name": "Rewrxght",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Wazakutyám",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Rewríght",
+      "wantsToRaid": true
+    }
   ],
   "Trelhy": [
     ""
@@ -125,12 +142,13 @@
     ""
   ],
   "Skoghunt": [
-    "Skogstokig",
-    "Skogslamx",
-    "Skogmagus"
+    ""
   ],
   "Voidspriest": [
-    "Voidsdudu"
+    {
+      "name": "Voidsdudu",
+      "wantsToRaid": true
+    }
   ],
   "Zyxxa": [
     ""
@@ -166,7 +184,10 @@
     ""
   ],
   "ßehro": [
-    "Doelen"
+    {
+      "name": "Doelen",
+      "wantsToRaid": true
+    }
   ],
   "Azrathiel": [
     ""
@@ -183,9 +204,6 @@
   ],
   "Olcsojatek": [
     "Mocsarpuna"
-  ],
-  "Samdaren": [
-    "Shamalam"
   ],
   "Caisbro": [
     ""
@@ -225,7 +243,10 @@
     ""
   ],
   "Murungló": [
-    "Murunglo"
+    {
+      "name": "Murunglo",
+      "wantsToRaid": true
+    }
   ],
   "Seniorkatze": [
     ""
@@ -243,9 +264,15 @@
     ""
   ],
   "Vityax": [
+    {
+      "name": "Vityaxq",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Vityamx",
+      "wantsToRaid": true
+    },
     "Vityatm",
-    "Vityamx",
-    "Vityaxq",
     "Vityatx"
   ],
   "Zerreff": [
@@ -295,12 +322,24 @@
     "Clenpaw"
   ],
   "Wëävën": [
-    "Jäb",
-    "Iïke",
-    "Iike"
+    {
+      "name": "Jäb",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Iïke",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Iike",
+      "wantsToRaid": true
+    }
   ],
   "Neexdh": [
-    "Neexmage"
+    {
+      "name": "Neexmage",
+      "wantsToRaid": true
+    }
   ],
   "Geevcheet": [
     ""

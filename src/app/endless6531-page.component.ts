@@ -461,11 +461,8 @@ export class Endless6531PageComponent {
   }
 
   isSelectedMainCharacter(player: GuildAnalysisPlayer): boolean {
-    return player.name.localeCompare(
-      this.selectedMainCharacter(),
-      undefined,
-      { sensitivity: 'base' }
-    ) === 0;
+    return player.name.toLocaleLowerCase()
+      === this.selectedMainCharacter().toLocaleLowerCase();
   }
 
   characterRole(player: GuildAnalysisPlayer): CharacterRole {
