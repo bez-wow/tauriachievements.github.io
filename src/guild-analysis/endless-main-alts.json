@@ -32,18 +32,30 @@
     "Wazx"
   ],
   "Csodafa": [
-    "Urtrik",
+    {
+      "name": "Urtrik",
+      "wantsToRaid": true
+    },
     "Babjin"
   ],
   "Dom": [
-    "Domtwo"
+    {
+      "name": "Domtwo",
+      "wantsToRaid": true
+    }
   ],
   "Drekmoon": [
     ""
   ],
   "Exa": [
-    "Exà",
-    "Exå"
+    {
+      "name": "Exà",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Exå",
+      "wantsToRaid": true
+    }
   ],
   "Hesxng": [
     "Hêsing",
@@ -76,14 +88,19 @@
     ""
   ],
   "Dazerx": [
-    "Killapete"
+    {
+      "name": "Killapete",
+      "wantsToRaid": true
+    }
   ],
   "Diaara": [
     "Diaarawl"
   ],
   "Gamêrgirl": [
-    "Blackhuntr",
-    "Blackyng"
+    {
+      "name": "Blackhuntr",
+      "wantsToRaid": true
+    }
   ],
   "Hoofsham": [
     ""
@@ -134,7 +151,10 @@
     ""
   ],
   "Garvellr": [
-    "Garvellzs"
+    {
+      "name": "Garvellzs",
+      "wantsToRaid": true
+    }
   ],
   "Imerik": [
     ""
@@ -173,8 +193,8 @@
   "Damne": [
     ""
   ],
-  "Frog": [
-    "Wesleysnipez"
+  "Wesleysnipez": [
+    ""
   ],
   "Ginqq": [
     ""
@@ -195,7 +215,11 @@
     ""
   ],
   "Arthazzmage": [
-    "Arthazzdh"
+    "Arthazzdh",
+    {
+      "name": "Arthazzdh",
+      "wantsToRaid": true
+    }
   ],
   "Flokesz": [
     ""
@@ -228,8 +252,14 @@
     ""
   ],
   "Moisttotem": [
-    "Moistdruid",
-    "Moistpriest"
+    {
+      "name": "Moistdruid",
+      "wantsToRaid": true
+    },
+    {
+      "name": "Moistpriest",
+      "wantsToRaid": true
+    }
   ],
   "Angelwing": [
     ""
