@@ -39,6 +39,7 @@ import {
   sortRoster,
   upgradeCutoffs
 } from './mythic-plus';
+import { MythicPlusPreviewComponent } from './mythic-plus-preview.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
 import { specIconFor } from './mythic-plus-stats';
 import { UpdateBarComponent } from './update-bar.component';
@@ -139,7 +140,7 @@ function toRunView(
 @Component({
   selector: 'app-mythic-plus-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent, MythicPlusPreviewComponent],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -154,6 +155,12 @@ export class MythicPlusPageComponent implements OnInit {
 
   readonly roleLabels = ROLE_LABELS;
   readonly cutoffMarks = UPGRADE_CUTOFFS.filter(cutoff => cutoff.percent < 100);
+
+  /**
+   * Pre-season lock: blurs the sample data behind a countdown to the Mythic+ launch.
+   * Set to false once real keystone data is in.
+   */
+  readonly previewLocked = true;
 
   readonly dataset = signal<MythicPlusDataset | undefined>(undefined);
   readonly isLoading = signal(true);

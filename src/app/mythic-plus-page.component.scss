@@ -7,6 +7,13 @@
   color: #e0e0e0;
 }
 
+// Pre-season preview: the sample data only shows through as a soft blur behind the countdown.
+// `inert` on the element also keeps it out of reach of clicks, hover tooltips and the keyboard.
+.mplus-page.preview-blurred {
+  filter: blur(2.5px);
+  user-select: none;
+}
+
 // Dungeon picker — scopes both the chart and the leaderboard below it. `auto-fit` stretches the tiles
 // evenly across the full width (one row on desktop) and wraps them into even rows on small screens.
 .dungeon-picker {

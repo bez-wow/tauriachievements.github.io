@@ -1,0 +1,28 @@
+<div class="preview-veil">
+  <section class="preview-card" role="timer" [attr.aria-label]="label()">
+    <p class="preview-eyebrow">Legion Season 1 · Mythic+</p>
+    <h2 class="preview-title">{{ countdown().isReleased ? 'Mythic+ is live' : 'Mythic+ keys unlock in' }}</h2>
+
+    <div class="preview-clock" *ngIf="!countdown().isReleased" aria-hidden="true">
+      <ng-container *ngFor="let unit of units(); let last = last">
+        <div class="preview-unit">
+          <span class="preview-value">{{ unit.value }}</span>
+          <span class="preview-label">{{ unit.label }}</span>
+        </div>
+        <span class="preview-colon" *ngIf="!last">:</span>
+      </ng-container>
+    </div>
+
+    <p class="preview-target">
+      <time [attr.datetime]="releaseIso">16 September 2026 · 09:00</time>
+      <span class="preview-zone">server time (CEST)</span>
+    </p>
+
+    <p class="preview-note">
+      {{ countdown().isReleased
+        ? 'The first runs are being collected, and the leaderboard opens soon.'
+        : 'A sneak peek of what is waiting: real runs and rankings appear once the season starts.' }}
+    </p>
+    <p class="preview-aside">Given the fact that Tauri will provide API endpoints :)</p>
+  </section>
+</div>
