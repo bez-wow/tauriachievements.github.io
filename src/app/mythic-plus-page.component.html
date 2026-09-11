@@ -1,0 +1,279 @@
+<app-update-bar
+  [showLastUpdated]="false" />
+
+<main class="mplus-page">
+  <h1 class="visually-hidden">Mythic+ Leaderboard</h1>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Charging the keystones...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="retryLoad()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError()">
+    <nav class="dungeon-picker" aria-label="Filter runs by dungeon">
+      <button
+        type="button"
+        class="dungeon-tile"
+        [class.active]="!selectedDungeon()"
+        [attr.aria-pressed]="!selectedDungeon()"
+        (click)="selectDungeon(undefined)">
+        <span class="dungeon-tile-all" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <rect x="3" y="3" width="8" height="8" rx="1.5" />
+            <rect x="13" y="3" width="8" height="8" rx="1.5" />
+            <rect x="3" y="13" width="8" height="8" rx="1.5" />
+            <rect x="13" y="13" width="8" height="8" rx="1.5" />
+          </svg>
+        </span>
+        <span>ALL</span>
+      </button>
+      <button
+        *ngFor="let dungeon of dungeons(); trackBy: trackDungeon"
+        type="button"
+        class="dungeon-tile"
+        [class.active]="selectedDungeon()?.id === dungeon.id"
+        [attr.aria-pressed]="selectedDungeon()?.id === dungeon.id"
+        [attr.aria-label]="dungeon.name"
+        [title]="dungeon.name"
+        (click)="selectDungeon(dungeon.id)">
+        <img [src]="dungeon.icon" alt="" loading="lazy" />
+        <span>{{ dungeon.shortName }}</span>
+      </button>
+    </nav>
+
+    <app-mythic-plus-spec-chart
+      class="spec-chart"
+      [runs]="dungeonRuns()"
+      [scopeLabel]="selectedDungeon()?.name ?? 'All dungeons'"
+      [seasonName]="dataset()?.season?.name ?? ''" />
+
+    <div class="toolbar" #leaderboard>
+      <div class="toolbar-title">
+        <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
+        <span *ngIf="selectedDungeonTimer() as timer">Timer {{ timer }}</span>
+      </div>
+    </div>
+
+    <div class="pager-row">
+      <ng-container *ngTemplateOutlet="pager; context: { $implicit: false }"></ng-container>
+      <label class="player-search">
+        <span class="visually-hidden">Search runs by player name</span>
+        <input
+          type="search"
+          placeholder="Search player..."
+          autocomplete="off"
+          [value]="search()"
+          (input)="onSearch($event)" />
+      </label>
+    </div>
+
+    <div class="table-scroll">
+      <table class="runs-table">
+        <caption class="visually-hidden">Mythic+ runs ranked by score</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="col-toggle"><span class="visually-hidden">Details</span></th>
+            <th scope="col">Rank</th>
+            <th scope="col">Dungeon</th>
+            <th scope="col">Level</th>
+            <th scope="col">Time</th>
+            <th scope="col">Affixes</th>
+            <th scope="col" class="col-member">
+              <span class="role-heading">
+                Tank
+                <span class="role-icon tank" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z" /></svg>
+                </span>
+              </span>
+            </th>
+            <th scope="col" class="col-member">
+              <span class="role-heading">
+                Healer
+                <span class="role-icon healer" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z" /></svg>
+                </span>
+              </span>
+            </th>
+            <th scope="col" class="col-dps">
+              <span class="role-heading">
+                DPS
+                <span class="role-icon dps" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false"><path d="M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z" /></svg>
+                </span>
+              </span>
+            </th>
+            <th scope="col">Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let row of pagedRows(); let odd = odd; trackBy: trackRow">
+            <tr
+              class="run-row"
+              [class.alt]="odd"
+              [class.expanded]="isExpanded(row.id)"
+              [class.depleted]="row.upgrades === 0"
+              (click)="toggleRun(row.id)">
+              <td class="col-toggle">
+                <button
+                  type="button"
+                  class="row-toggle"
+                  [attr.aria-expanded]="isExpanded(row.id)"
+                  [attr.aria-controls]="'run-details-' + row.id"
+                  [attr.aria-label]="(isExpanded(row.id) ? 'Hide' : 'Show') + ' details for rank ' + row.rank"
+                  (click)="$event.stopPropagation(); toggleRun(row.id)">
+                  <span class="caret" aria-hidden="true"></span>
+                </button>
+              </td>
+              <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+              <td class="col-dungeon" [title]="row.dungeon.name">{{ row.dungeon.shortName }}</td>
+              <td class="col-level">
+                <span class="level">
+                  <span class="level-value">+{{ row.keyLevel }}</span>
+                  <span class="level-star" *ngIf="row.upgrades > 0" title="Timed">★<span class="visually-hidden"> timed</span></span>
+                </span>
+              </td>
+              <td class="col-time" [title]="row.upgrades === 0 ? 'Over time' : ''">{{ row.clearTime }}</td>
+              <td class="col-affixes">
+                <span class="affix" *ngFor="let affix of row.affixes">
+                  <span class="affix-icon"><img [src]="affix.icon" [alt]="affix.name" loading="lazy" /></span>
+                  <span class="affix-tooltip" aria-hidden="true">{{ affix.name }}</span>
+                </span>
+              </td>
+              <td class="col-member">
+                <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.tank }"></ng-container>
+              </td>
+              <td class="col-member">
+                <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.healer }"></ng-container>
+              </td>
+              <td class="col-dps">
+                <ng-container *ngFor="let member of row.dps; trackBy: trackMember">
+                  <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: member }"></ng-container>
+                </ng-container>
+              </td>
+              <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+            </tr>
+
+            <tr class="details-row" *ngIf="isExpanded(row.id)" [id]="'run-details-' + row.id">
+              <td colspan="10">
+                <div class="run-details">
+                  <section class="details-summary">
+                    <img class="details-dungeon-icon" [src]="row.dungeon.icon" alt="" />
+                    <div>
+                      <h2>{{ row.dungeon.name }} <span class="details-level">+{{ row.keyLevel }}</span></h2>
+                      <p class="details-result" [class.depleted]="row.upgrades === 0">
+                        {{ row.upgrades > 0 ? 'Timed, keystone upgraded +' + row.upgrades : 'Depleted, finished over time' }}
+                      </p>
+                      <p class="details-date">
+                        Completed
+                        <time [attr.datetime]="row.completedAt">{{ row.completedAt | date:'EEE, d MMM y · HH:mm' }}</time>
+                      </p>
+                    </div>
+                  </section>
+
+                  <section class="details-affixes">
+                    <h3>Affixes</h3>
+                    <ul class="affix-list">
+                      <li *ngFor="let affix of row.affixes">
+                        <img [src]="affix.icon" alt="" loading="lazy" />
+                        <span><strong>{{ affix.name }}</strong>{{ affix.description }}</span>
+                      </li>
+                    </ul>
+                  </section>
+
+                  <section class="details-timer">
+                    <h3>Timer</h3>
+                    <p class="timer-values">
+                      <strong>{{ row.clearClock }}</strong>
+                      <span class="timer-of">of {{ row.timerClock }}</span>
+                      <span class="timer-delta" [class.over]="row.upgrades === 0">{{ row.timerDelta }}</span>
+                    </p>
+                    <div class="timer-bar" aria-hidden="true">
+                      <span class="timer-fill" [class.over]="row.upgrades === 0" [style.width.%]="row.timerPercent"></span>
+                      <span class="timer-mark" *ngFor="let mark of cutoffMarks" [style.left.%]="mark.percent"></span>
+                    </div>
+                    <p class="timer-cutoffs">
+                      <span *ngFor="let cutoff of row.cutoffs">+{{ cutoff.upgrades }} within {{ cutoff.time }}</span>
+                    </p>
+                  </section>
+
+                  <section class="details-roster">
+                    <h3>Group</h3>
+                    <ul class="roster-list">
+                      <li
+                        class="roster-card"
+                        *ngFor="let member of row.roster; trackBy: trackMember"
+                        [attr.data-role]="member.role">
+                        <span class="roster-role">{{ roleLabels[member.role] }}</span>
+                        <span class="roster-identity">
+                          <img [src]="member.classIcon" [alt]="member.className" />
+                          <img [src]="member.raceIcon" alt="" />
+                          <a
+                            [href]="member.armoryUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            [style.color]="member.color">{{ member.name }}</a>
+                        </span>
+                        <span class="roster-meta">{{ member.spec }} {{ member.className }}</span>
+                        <span class="roster-meta" *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
+                        <span class="roster-ilvl" *ngIf="member.itemLevel">{{ member.itemLevel | number:'1.0-0' }} item level</span>
+                      </li>
+                    </ul>
+                  </section>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr class="empty-row" *ngIf="pagedRows().length === 0">
+            <td colspan="10">{{ emptyMessage() }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />
+
+<ng-template #pager let-atBottom>
+  <nav class="pager" [class.pager-bottom]="atBottom" aria-label="Leaderboard pages">
+    <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(1, atBottom)">
+      <span aria-hidden="true">«</span> First
+    </button>
+    <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1, atBottom)">
+      <span aria-hidden="true">‹</span> Prev
+    </button>
+    <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1, atBottom)">
+      Next <span aria-hidden="true">›</span>
+    </button>
+    <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(totalPages(), atBottom)">
+      Last <span aria-hidden="true">»</span>
+    </button>
+    <span class="pager-status">
+      Page {{ currentPage() }} of {{ totalPages() }} · {{ filteredRows().length }} {{ filteredRows().length === 1 ? 'run' : 'runs' }}
+    </span>
+  </nav>
+</ng-template>
+
+<ng-template #memberLink let-member>
+  <a
+    *ngIf="member"
+    class="member-link"
+    [href]="member.armoryUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    [style.color]="member.color"
+    [attr.aria-label]="member.name + ', ' + member.spec + ' ' + member.className"
+    (click)="$event.stopPropagation()">{{ member.name }}<span class="member-tooltip" aria-hidden="true">
+      <img [src]="member.classIcon" alt="" />
+      <span class="member-tooltip-spec" *ngIf="member.specIcon"><img [src]="member.specIcon" alt="" /></span>
+      <span>{{ member.spec }} {{ member.className }}</span>
+    </span></a>
+</ng-template>

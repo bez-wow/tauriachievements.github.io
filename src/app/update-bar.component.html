@@ -171,11 +171,15 @@
   <section class="nav-drawer-soon" aria-label="Coming soon">
     <span class="nav-drawer-section-title gold-text">Coming Soon</span>
 
-    <div class="nav-drawer-soon-item">
+    <a
+      class="nav-drawer-soon-item"
+      routerLink="/mythic-plus"
+      routerLinkActive="active"
+      (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">🗝️</span>
       <span class="nav-drawer-soon-label">M+ Leaderboard</span>
       <span class="nav-drawer-soon-badge">Soon&trade;</span>
-    </div>
+    </a>
 
     <div class="nav-drawer-soon-item">
       <span class="nav-drawer-icon" aria-hidden="true">📖</span>

@@ -1,0 +1,190 @@
+$plot-height: 180px;
+
+:host { display: block; }
+
+.chart-card {
+  padding: 12px 16px 8px;
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.chart-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.chart-heading {
+  min-width: 0;
+
+  h2 { color: #fff; font-size: 1rem; line-height: 1.3; }
+}
+
+.chart-subtitle { color: #9a9a9a; font-size: .75rem; line-height: 1.4; }
+
+.chart-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+
+  button {
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { color: #fff; }
+    &.active { background: #2e2716; color: #f7b500; }
+    &:focus-visible { outline: 2px solid #f7b500; outline-offset: 1px; }
+  }
+}
+
+.chart-scroll { overflow-x: auto; }
+
+// Only the value labels need room above the plot: tooltips open beside the bar, so the
+// scroll container (which also clips vertically) never cuts them off.
+.chart {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  min-width: 760px;
+  padding: 22px 4px 2px 0;
+}
+
+.y-axis {
+  position: relative;
+  height: $plot-height;
+
+  span {
+    position: absolute;
+    right: 8px;
+    color: #8a8a8a;
+    font-size: .68rem;
+    font-variant-numeric: tabular-nums;
+    transform: translateY(50%);
+  }
+}
+
+.plot { position: relative; display: flex; justify-content: space-around; gap: 8px; }
+
+.gridlines {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: $plot-height;
+  pointer-events: none;
+
+  span { position: absolute; right: 0; left: 0; height: 1px; background: #2a2a2a; }
+  span:first-child { background: #484848; }
+}
+
+.class-group { display: flex; min-width: 76px; flex-direction: column; align-items: center; }
+
+.bars { display: flex; height: $plot-height; align-items: flex-end; }
+
+// 22px hit target around a 20px bar: the side padding doubles as the 2px gap between bars.
+.bar-slot {
+  position: relative;
+  display: flex;
+  width: 22px;
+  height: 100%;
+  align-items: flex-end;
+  padding: 0 1px;
+  border-radius: 4px 4px 0 0;
+
+  // The hover `filter` makes the bar its own stacking context, which would trap the tooltip beneath
+  // every bar painted after it — so lift the whole slot above its neighbours while it's active.
+  &:hover, &:focus-visible { z-index: 3; }
+  &:hover .bar { filter: brightness(1.2); }
+  &:hover .tooltip, &:focus-visible .tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+}
+
+.bar {
+  position: relative;
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  transition: height .25s ease;
+
+  // An unplayed spec keeps a hairline stub so its slot still reads as a spec.
+  &.empty { height: 2px !important; background: #3a3a3a !important; }
+}
+
+.bar-value {
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  color: #e0e0e0;
+  font-size: .68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+// Opens beside the bar, level with its top: rightwards in the left half of the chart, leftwards in the right half.
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: calc(100% + 6px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
+  color: #bdbdbd;
+  font-size: .72rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease;
+
+  strong { color: #fff; font-size: .9rem; }
+}
+
+.flip .tooltip { right: calc(100% + 6px); left: auto; }
+.tooltip-meta { color: #8a8a8a; font-size: .68rem; }
+
+.spec-icons {
+  display: flex;
+  margin-top: 4px;
+
+  img, .icon-placeholder { width: 20px; height: 20px; margin: 0 1px; border-radius: 3px; }
+  img.empty { opacity: .35; filter: grayscale(1); }
+}
+
+.icon-placeholder { background: #2a2a2a; }
+
+.class-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+  color: #e0e0e0;
+  font-size: .7rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+
+  img { width: 16px; height: 16px; margin-bottom: 1px; border-radius: 3px; }
+}
+
+.class-share { color: #8a8a8a; font-weight: 400; font-variant-numeric: tabular-nums; }
+
+.chart-empty { padding: 40px 0; color: #9a9a9a; text-align: center; }

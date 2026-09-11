@@ -33,6 +33,11 @@ export const routes: Routes = [
       .then(module => module.EmeraldNightmarePageComponent)
   },
   {
+    path: 'mythic-plus',
+    loadComponent: () => import('./mythic-plus-page.component')
+      .then(module => module.MythicPlusPageComponent)
+  },
+  {
     path: 'guild-realm-firsts',
     redirectTo: 'raid-history',
     pathMatch: 'full'

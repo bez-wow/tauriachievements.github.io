@@ -287,6 +287,31 @@
   cursor: default;
 }
 
+// A "coming soon" entry that can already be opened as a preview.
+a.nav-drawer-soon-item {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba(247, 181, 0, 0.5);
+    background: rgba(247, 181, 0, 0.09);
+    color: #e6e9ee;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f7b500;
+    outline-offset: 2px;
+  }
+
+  &.active {
+    border-style: solid;
+    border-color: rgba(247, 181, 0, 0.55);
+    color: #ffe28a;
+  }
+}
+
 .nav-drawer-soon-label {
   flex: 1 1 auto;
   min-width: 0;

@@ -1,0 +1,91 @@
+<section class="chart-card" aria-labelledby="spec-chart-title">
+  <header class="chart-header">
+    <div class="chart-heading">
+      <h2 id="spec-chart-title">Spec Popularity<ng-container *ngIf="seasonName()"> · {{ seasonName() }}</ng-container></h2>
+      <p class="chart-subtitle">{{ subtitle() }}</p>
+    </div>
+
+    <div class="chart-filters">
+      <div class="segmented" role="group" aria-label="Filter by role">
+        <button
+          *ngFor="let option of roleOptions"
+          type="button"
+          [class.active]="role() === option.value"
+          [attr.aria-pressed]="role() === option.value"
+          (click)="role.set(option.value)">{{ option.label }}</button>
+      </div>
+      <div class="segmented" role="group" aria-label="How characters are counted">
+        <button
+          *ngFor="let option of countOptions"
+          type="button"
+          [class.active]="countMode() === option.value"
+          [attr.aria-pressed]="countMode() === option.value"
+          (click)="countMode.set(option.value)">{{ option.label }}</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-scroll" *ngIf="popularity().total > 0; else emptyChart">
+    <div class="chart">
+      <div class="y-axis" aria-hidden="true">
+        <span *ngFor="let line of gridlines()" [style.bottom.%]="line.position">{{ line.value }}%</span>
+      </div>
+
+      <div class="plot">
+        <div class="gridlines" aria-hidden="true">
+          <span *ngFor="let line of gridlines()" [style.bottom.%]="line.position"></span>
+        </div>
+
+        <div
+          class="class-group"
+          *ngFor="let group of groups(); let index = index; trackBy: trackGroup"
+          [class.flip]="index >= groups().length / 2">
+          <div class="bars">
+            <div
+              class="bar-slot"
+              *ngFor="let spec of group.specs; trackBy: trackSpec"
+              role="img"
+              tabindex="0"
+              [attr.aria-label]="spec.spec + ' ' + group.className + ': ' + spec.shareLabel + ', ' + spec.count + ' of ' + popularity().total + ' ' + unitLabel()">
+              <span
+                class="bar"
+                [class.empty]="spec.count === 0"
+                [style.height.%]="spec.heightPercent"
+                [style.background-color]="group.color">
+                <span class="bar-value" *ngIf="spec.showValue">{{ spec.shareLabel }}</span>
+                <span class="tooltip" aria-hidden="true">
+                  <strong>{{ spec.shareLabel }}</strong>
+                  <span>{{ spec.spec }} {{ group.className }}</span>
+                  <span class="tooltip-meta">{{ spec.count }} of {{ popularity().total }} {{ unitLabel() }}</span>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="spec-icons" aria-hidden="true">
+            <ng-container *ngFor="let spec of group.specs; trackBy: trackSpec">
+              <img
+                *ngIf="spec.icon; else iconPlaceholder"
+                [src]="spec.icon"
+                alt=""
+                [title]="spec.spec"
+                [class.empty]="spec.count === 0"
+                loading="lazy" />
+              <ng-template #iconPlaceholder><span class="icon-placeholder" [title]="spec.spec"></span></ng-template>
+            </ng-container>
+          </div>
+
+          <div class="class-label">
+            <img [src]="group.classIcon" alt="" />
+            <span>{{ group.className }}</span>
+            <span class="class-share">{{ group.shareLabel }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyChart>
+    <p class="chart-empty">No runs match these filters yet.</p>
+  </ng-template>
+</section>
