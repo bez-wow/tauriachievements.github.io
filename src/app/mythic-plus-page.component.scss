@@ -10,7 +10,7 @@
 // Pre-season preview: the sample data only shows through as a soft blur behind the countdown.
 // `inert` on the element also keeps it out of reach of clicks, hover tooltips and the keyboard.
 .mplus-page.preview-blurred {
-  filter: blur(2.5px);
+  filter: blur(.75px);
   user-select: none;
 }
 
