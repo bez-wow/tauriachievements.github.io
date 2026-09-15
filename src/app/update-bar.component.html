@@ -38,6 +38,19 @@
 
     <div class="update-bar-actions">
       <a
+        class="paypal-link"
+        href="https://www.paypal.com/paypalme/HunorTotBagi"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Support via PayPal"
+        title="Support via PayPal">
+        <svg class="paypal-logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <path class="paypal-logo-back" d="M10.4 5.5h14.2c8.4 0 13.1 4.2 11.8 11.4-1.5 8.5-7.6 12.3-15.7 12.3h-4.1l-2.1 13.3H6.8L10.4 5.5Z"/>
+          <path class="paypal-logo-front" d="M18.2 16.5h13.1c7.1 0 10.8 3.9 9.6 10.1-1.4 7.2-6.6 10.6-13.7 10.6h-3.8l-1.5 9.3h-7.6l4-25.3c.4-2.7 1.8-4.7 3.9-4.7Zm5.1 6.2-1.4 8.4h4.5c3.7 0 6.3-1.4 6.9-4.6.5-2.6-1.3-3.8-4.6-3.8h-5.4Z"/>
+        </svg>
+        <span class="paypal-link-text">PayPal</span>
+      </a>
+      <a
         class="discord-link"
         href="https://discord.gg/JMHnDmh2bP"
         target="_blank"
@@ -186,6 +199,18 @@
       <span class="nav-drawer-soon-label">Raid Logs</span>
       <span class="nav-drawer-soon-badge">Soon&trade;</span>
     </div>
+  </section>
+
+  <section class="nav-drawer-support" aria-label="Support">
+    <span class="nav-drawer-section-title gold-text">Support</span>
+    <a
+      class="nav-drawer-link nav-drawer-support-link"
+      routerLink="/support"
+      routerLinkActive="active"
+      (click)="closeNav()">
+      <span class="nav-drawer-icon" aria-hidden="true">&#10084;&#65039;</span>
+      <span>Support the Website</span>
+    </a>
   </section>
 </aside>
 
