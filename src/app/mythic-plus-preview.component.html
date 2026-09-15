@@ -1,7 +1,7 @@
 <div class="preview-veil">
   <section class="preview-card" role="timer" [attr.aria-label]="label()">
-    <p class="preview-eyebrow">Legion Season 1 · Mythic+</p>
-    <h2 class="preview-title">{{ countdown().isReleased ? 'Mythic+ is live' : 'Mythic+ keys unlock in' }}</h2>
+    <p class="preview-eyebrow">{{ embedded ? 'Mythic+ keys unlock in' : 'Legion Season 1 · Mythic+' }}</p>
+    <h2 class="preview-title" *ngIf="!embedded || countdown().isReleased">{{ countdown().isReleased ? 'Mythic+ is live' : 'Mythic+ keys unlock in' }}</h2>
 
     <div class="preview-clock" *ngIf="!countdown().isReleased" aria-hidden="true">
       <ng-container *ngFor="let unit of units(); let last = last">

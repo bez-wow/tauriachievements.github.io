@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, computed } from '@angular/core';
 import { createCountdown } from './countdown';
 
 /** Mythic+ Season 1 opens: 16 September 2026, 09:00 server time (CEST = UTC+2). */
@@ -12,9 +12,12 @@ const MYTHIC_PLUS_RELEASE_ISO = '2026-09-16T09:00:00+02:00';
   imports: [CommonModule],
   templateUrl: './mythic-plus-preview.component.html',
   styleUrls: ['./mythic-plus-preview.component.scss'],
+  host: { '[class.embedded]': 'embedded' },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusPreviewComponent {
+  @Input() embedded = false;
+
   readonly releaseIso = MYTHIC_PLUS_RELEASE_ISO;
   readonly countdown = createCountdown(Date.parse(MYTHIC_PLUS_RELEASE_ISO));
 

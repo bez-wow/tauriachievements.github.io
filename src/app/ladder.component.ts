@@ -21,6 +21,7 @@ import {
 import { LadderPageStore } from './ladder-page.store';
 import { LeaderboardTableComponent } from './leaderboard-table.component';
 import { MythicCountdownComponent } from './mythic-countdown.component';
+import { MythicPlusPreviewComponent } from './mythic-plus-preview.component';
 import { LadderFilterState, LadderSort } from './ladder.types';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -29,7 +30,7 @@ import { UpdateBarComponent } from './update-bar.component';
   templateUrl: './ladder.component.html',
   styleUrls: ['./ladder.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, MythicCountdownComponent, FilterBarComponent, LeaderboardTableComponent, BackToTopButtonComponent],
+  imports: [CommonModule, UpdateBarComponent, MythicCountdownComponent, MythicPlusPreviewComponent, FilterBarComponent, LeaderboardTableComponent, BackToTopButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LadderPageStore]
 })
