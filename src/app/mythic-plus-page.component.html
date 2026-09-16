@@ -1,10 +1,7 @@
 <app-update-bar
   [showLastUpdated]="false" />
 
-<main
-  class="mplus-page"
-  [class.preview-blurred]="previewLocked"
-  [attr.inert]="previewLocked ? '' : null">
+<main class="mplus-page">
   <h1 class="visually-hidden">Mythic+ Leaderboard</h1>
 
   <section class="feedback" *ngIf="isLoading()">
@@ -242,8 +239,6 @@
     <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
   </ng-container>
 </main>
-
-<app-mythic-plus-preview *ngIf="previewLocked" />
 
 <app-back-to-top-button />
 
