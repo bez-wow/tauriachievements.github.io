@@ -4,8 +4,33 @@
 
 <div class="stats-container">
   <header class="stats-header">
-    <h1 class="stats-title">Tauri by the Numbers</h1>
-    <p class="stats-subtitle">Server-wide statistics across all tracked characters</p>
+    <div class="stats-filters" aria-label="Statistics filters">
+      <button
+        type="button"
+        class="stats-filter-reset"
+        [disabled]="!filtersActive()"
+        (click)="resetFilters()">
+        Reset
+      </button>
+
+      <label class="stats-filter">
+        <select
+          aria-label="Filter statistics by realm"
+          [value]="selectedRealm()"
+          (change)="selectRealm($event)">
+          <option *ngFor="let realm of realmOptions" [value]="realm">{{ realm }}</option>
+        </select>
+      </label>
+
+      <label class="stats-filter">
+        <select
+          aria-label="Filter statistics by level"
+          [value]="selectedLevel()"
+          (change)="selectLevel($event)">
+          <option *ngFor="let level of levelOptions" [value]="level">{{ level }}</option>
+        </select>
+      </label>
+    </div>
   </header>
 
   <div class="stats-feedback loading" *ngIf="showLoading()">
@@ -21,6 +46,22 @@
   </div>
 
   <ng-container *ngIf="showContent()">
+
+    <div class="charts-grid">
+      <article class="chart-panel">
+        <h2 class="chart-title">Class Distribution</h2>
+        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
+          <canvas #classCanvas></canvas>
+        </div>
+      </article>
+
+      <article class="chart-panel">
+        <h2 class="chart-title">Race Popularity</h2>
+        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
+          <canvas #raceCanvas></canvas>
+        </div>
+      </article>
+    </div>
 
     <div class="stats-top">
       <div class="stats-summary">
@@ -51,23 +92,6 @@
       <span class="realm-pill" *ngFor="let realm of stats().realmLabels; let i = index">
         {{ realm }}: <strong>{{ stats().realmCounts[i] | number }}</strong>
       </span>
-    </div>
-
-    <div class="charts-grid">
-      <article class="chart-panel">
-        <h2 class="chart-title">Class Distribution</h2>
-        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
-          <canvas #classCanvas></canvas>
-        </div>
-      </article>
-
-      <article class="chart-panel">
-        <h2 class="chart-title">Race Popularity</h2>
-        <div class="chart-canvas-wrap chart-canvas-wrap--hbar">
-          <canvas #raceCanvas></canvas>
-        </div>
-      </article>
-
     </div>
 
   </ng-container>

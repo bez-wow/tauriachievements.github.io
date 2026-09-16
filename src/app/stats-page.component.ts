@@ -27,7 +27,11 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
-import { ServerStatsService, ServerStatsSnapshot } from './services/server-stats.service';
+import {
+  ServerStatsService,
+  ServerStatsSnapshot,
+  ServerStatsSnapshotCollection
+} from './services/server-stats.service';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -55,6 +59,12 @@ const RACE_NAMES: Record<number, string> = {
 };
 
 const UNKNOWN_CLASS_COLOR = '#888';
+
+export const STATS_REALM_OPTIONS = ['All realms', 'Evermoon', 'Tauri', 'WoD'] as const;
+export const STATS_LEVEL_OPTIONS = ['All levels', '110', '100', '90', '80'] as const;
+
+export type StatsRealmFilter = typeof STATS_REALM_OPTIONS[number];
+export type StatsLevelFilter = typeof STATS_LEVEL_OPTIONS[number];
 
 export interface ServerStats {
   totalPlayers: number;
@@ -142,11 +152,19 @@ export class StatsPageComponent {
   private readonly chartInstances = new Map<string, Chart>();
   private renderPending = false;
   private viewReady = signal(false);
+  private statsSnapshots?: ServerStatsSnapshotCollection;
 
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
+  readonly realmOptions = STATS_REALM_OPTIONS;
+  readonly levelOptions = STATS_LEVEL_OPTIONS;
+  readonly selectedRealm = signal<StatsRealmFilter>('All realms');
+  readonly selectedLevel = signal<StatsLevelFilter>('All levels');
+  readonly filtersActive = computed(() =>
+    this.selectedRealm() !== 'All realms' || this.selectedLevel() !== 'All levels'
+  );
 
   readonly stats = signal<ServerStats>(emptyStats());
   readonly hasData = computed(() => this.stats().totalPlayers > 0);
@@ -186,18 +204,45 @@ export class StatsPageComponent {
     void this.initData();
   }
 
+  selectRealm(event: Event): void {
+    this.selectedRealm.set((event.target as HTMLSelectElement).value as StatsRealmFilter);
+    this.applySelectedStats();
+  }
+
+  selectLevel(event: Event): void {
+    this.selectedLevel.set((event.target as HTMLSelectElement).value as StatsLevelFilter);
+    this.applySelectedStats();
+  }
+
+  resetFilters(): void {
+    this.selectedRealm.set('All realms');
+    this.selectedLevel.set('All levels');
+    this.applySelectedStats();
+  }
+
   private async initData(): Promise<void> {
     this.loadError.set(undefined);
     this.isLoading.set(true);
 
     try {
-      this.stats.set(toServerStats(await firstValueFrom(this.serverStatsService.getServerStats())));
+      this.statsSnapshots = await firstValueFrom(this.serverStatsService.getServerStats());
+      this.applySelectedStats();
     } catch (err) {
       console.error('Failed to load server statistics:', err);
       this.loadError.set('Could not load statistics. Please try again.');
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private applySelectedStats(): void {
+    if (!this.statsSnapshots) return;
+
+    const realm = this.selectedRealm() === 'All realms' ? '*' : this.selectedRealm();
+    const level = this.selectedLevel() === 'All levels' ? '*' : this.selectedLevel();
+    const snapshot = this.statsSnapshots.filters[`${realm}|${level}`];
+
+    this.stats.set(snapshot ? toServerStats(snapshot) : emptyStats());
   }
 
   private loadLastUpdated(): void {

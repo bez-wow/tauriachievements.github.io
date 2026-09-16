@@ -106,6 +106,7 @@ function parsePlayersCsv(csvText) {
       race: toNumber(getField(row, index, "Race")),
       gender: toNumber(getField(row, index, "Gender")),
       playerClass: toNumber(getField(row, index, "Class")),
+      level: toNumber(getField(row, index, "Level")),
       realm,
       guild: getField(row, index, "Guild"),
       achievementPoints: toNumber(getField(row, index, "AchievementPoints")),

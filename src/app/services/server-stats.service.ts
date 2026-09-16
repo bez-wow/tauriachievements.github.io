@@ -38,15 +38,20 @@ export interface ServerStatsSnapshot {
   hkBucketCounts: number[];
 }
 
+export interface ServerStatsSnapshotCollection {
+  version: 2;
+  filters: Record<string, ServerStatsSnapshot>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ServerStatsService {
   private readonly http = inject(HttpClient);
 
-  private readonly stats$ = this.http.get<ServerStatsSnapshot>('assets/data/stats.snapshot.json').pipe(
+  private readonly stats$ = this.http.get<ServerStatsSnapshotCollection>('assets/data/stats.snapshot.json').pipe(
     shareReplay({ bufferSize: 1, refCount: false })
   );
 
-  getServerStats(): Observable<ServerStatsSnapshot> {
+  getServerStats(): Observable<ServerStatsSnapshotCollection> {
     return this.stats$;
   }
 }

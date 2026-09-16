@@ -2,6 +2,15 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { parsePlayersCsv } = require("./player-data-utils");
 
+test("parsePlayersCsv reads character level", () => {
+  const [player] = parsePlayersCsv([
+    '"Name","Race","Gender","Class","Level","Realm","Guild","AchievementPoints","HonorableKills","Faction"',
+    '"Tester",1,0,2,110,"Tauri","",100,20,"Alliance"',
+  ].join("\n"));
+
+  assert.equal(player.level, 110);
+});
+
 test("parsePlayersCsv reads appearance counts when the column exists", () => {
   const [player] = parsePlayersCsv([
     '"Name","Race","Gender","Class","Realm","Guild","AchievementPoints","HonorableKills","Faction","AppearanceCount"',

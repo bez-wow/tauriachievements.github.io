@@ -11,21 +11,71 @@
 }
 
 .stats-header {
-  margin-bottom: 20px;
-  text-align: center;
+  margin-bottom: 10px;
 }
 
-.stats-title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  color: #f7f7fa;
-  margin-bottom: 6px;
+.stats-filters {
+  display: grid;
+  grid-template-columns: auto repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.stats-subtitle {
-  color: #9fa6b4;
-  font-size: 0.9rem;
+.stats-filter-reset {
+  min-width: 88px;
+  padding: 9px 16px;
+  border: 1px solid rgba(247, 181, 0, 0.38);
+  border-radius: 8px;
+  background: rgba(247, 181, 0, 0.08);
+  color: #f7b500;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, opacity 0.18s;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(247, 181, 0, 0.7);
+    background: rgba(247, 181, 0, 0.14);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: #f7b500;
+    box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.14);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.stats-filter {
+  display: flex;
+  min-width: 0;
+
+  select {
+    width: 100%;
+    padding: 9px 34px 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #19191f;
+    color: #e0e0e0;
+    font: inherit;
+    font-size: 0.84rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+
+    &:hover {
+      border-color: rgba(247, 181, 0, 0.35);
+    }
+
+    &:focus-visible {
+      border-color: #f7b500;
+      box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.14);
+    }
+  }
 }
 
 .stat-card,
@@ -202,6 +252,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  margin-bottom: 12px;
 }
 
 .chart-panel {
@@ -261,6 +312,10 @@
 }
 
 @media (max-width: 768px) {
+  .stats-filters {
+    grid-template-columns: 1fr;
+  }
+
   .charts-grid {
     grid-template-columns: 1fr;
   }
@@ -273,10 +328,6 @@
 @media (max-width: 640px) {
   .stats-container {
     padding: 46px 12px 24px;
-  }
-
-  .stats-title {
-    font-size: 1.4rem;
   }
 
   .stat-value {
