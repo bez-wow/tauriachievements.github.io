@@ -2,6 +2,7 @@ import { ParamMap, Params } from '@angular/router';
 import { CLASS_OPTIONS, REALM_OPTIONS } from './ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
+  KEYSTONE_MASTER_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS
 } from './rare-achievement-groups';
@@ -36,6 +37,7 @@ const VALID_CLASSES = new Set<number>(CLASS_OPTIONS.map((option) => option.id));
 const VALID_NUMERIC_ACHIEVEMENT_IDS = new Set<number>([
   ...R1_GLADIATOR_OPTIONS.map((option) => option.value),
   ...GLADIATOR_MOUNT_OPTIONS.map((option) => option.value),
+  ...KEYSTONE_MASTER_OPTIONS.map((option) => option.value),
   ...RATED_BATTLEGROUND_OPTIONS.map((option) => option.value)
 ]);
 

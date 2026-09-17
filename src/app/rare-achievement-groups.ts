@@ -1,6 +1,13 @@
 import { FilterDropdownOption } from './filter-dropdown.types';
 
 export const SCARAB_LORD_ACHIEVEMENT_ID = 416;
+export const KEYSTONE_MASTER_ACHIEVEMENT_ID = 11162;
+export const REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID = 11224;
+
+export const KEYSTONE_MASTER_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
+  { value: KEYSTONE_MASTER_ACHIEVEMENT_ID, label: 'Keystone Master' },
+  { value: REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID, label: 'Realm First! Keystone Master' }
+];
 
 export const R1_GLADIATOR_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
   { value: 8666, label: 'S15 - Prideful Gladiator' },
@@ -56,6 +63,7 @@ export const RATED_BATTLEGROUND_OPTIONS: ReadonlyArray<FilterDropdownOption<numb
 ];
 
 export const REALM_FIRST_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
+  { value: REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID, label: 'Realm First! Keystone Master' },
   { value: 3117, label: "Realm First! Death's Demise" },
   { value: 3259, label: 'Realm First! Celestial Defender' },
   { value: 6433, label: 'Realm First! Challenge Conqueror: Gold' },

@@ -17,8 +17,7 @@ import {
 import { RareAchievementsService } from './rare-achievements.service';
 import {
   RareAchievementCharacter,
-  RareAchievementsDataset,
-  RareAchievementSummary
+  RareAchievementsDataset
 } from './rare-achievements.types';
 import { Player } from './models/character.model';
 import { DataSyncService } from './services/data-sync.service';
@@ -44,7 +43,9 @@ interface NewRareCharacterView {
   rareAchievementNames: ReadonlyArray<string>;
 }
 
-type RareDiscoveryCategory = 'gladiatorTitle' | 'gladiatorMount' | 'realmFirst';
+type RareDiscoveryCategory = 'gladiatorTitle' | 'gladiatorMount' | 'realmFirst' | 'keystoneMaster';
+
+const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11162, 11224]);
 
 @Component({
   selector: 'app-new-rare-characters-page',
@@ -157,15 +158,12 @@ export class NewRareCharactersPageComponent implements OnInit {
       return undefined;
     }
 
-    const summary = summarizeRareAchievements(character, achievementNamesById);
-    if (!this.hasTrackedRareDiscovery(summary)) {
-      return undefined;
-    }
-
     const rareAchievementNames = this.collectRareDiscoveryAchievementNames(character, achievementNamesById);
     if (rareAchievementNames.length === 0) {
       return undefined;
     }
+
+    const summary = summarizeRareAchievements(character, achievementNamesById);
 
     return {
       rank: 0,
@@ -185,14 +183,6 @@ export class NewRareCharactersPageComponent implements OnInit {
       realmFirstCount: summary?.realmFirstCount ?? 0,
       rareAchievementNames
     };
-  }
-
-  private hasTrackedRareDiscovery(summary: RareAchievementSummary | undefined): boolean {
-    return !!summary && (
-      summary.gladiatorTitleCount > 0
-      || summary.gladiatorMountCount > 0
-      || summary.realmFirstCount > 0
-    );
   }
 
   private collectRareDiscoveryAchievementNames(
@@ -219,6 +209,10 @@ export class NewRareCharactersPageComponent implements OnInit {
   }
 
   private getRareDiscoveryCategory(achievementId: number): RareDiscoveryCategory | undefined {
+    if (KEYSTONE_MASTER_ACHIEVEMENT_IDS.has(achievementId)) {
+      return 'keystoneMaster';
+    }
+
     if (GLADIATOR_TITLE_IDS.has(achievementId)) {
       return 'gladiatorTitle';
     }
@@ -236,14 +230,16 @@ export class NewRareCharactersPageComponent implements OnInit {
 
   private getRareDiscoveryCategoryRank(category: RareDiscoveryCategory | undefined): number {
     switch (category) {
-      case 'gladiatorTitle':
+      case 'keystoneMaster':
         return 0;
-      case 'gladiatorMount':
+      case 'gladiatorTitle':
         return 1;
-      case 'realmFirst':
+      case 'gladiatorMount':
         return 2;
-      default:
+      case 'realmFirst':
         return 3;
+      default:
+        return 4;
     }
   }
 

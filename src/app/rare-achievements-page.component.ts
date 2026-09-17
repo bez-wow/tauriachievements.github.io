@@ -10,6 +10,7 @@ import { FilterDropdownOption } from './filter-dropdown.types';
 import { CLASS_OPTIONS, REALM_OPTIONS } from './ladder-options';
 import {
   GLADIATOR_MOUNT_OPTIONS,
+  KEYSTONE_MASTER_OPTIONS,
   REALM_FIRST_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS,
@@ -50,7 +51,7 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 
 type CharacterFaction = 'Alliance' | 'Horde';
 type CountRankingMetric = 'gladiatorTitleCount' | 'gladiatorMountCount';
-type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes';
+type AchievementDropdownKey = 'r1Gladiators' | 'gladiatorMounts' | 'ratedBattlegroundHeroes' | 'keystoneMasters';
 type AdditionalFilterDropdownKey = 'realm' | 'class';
 
 interface RareAchievementMatchView {
@@ -135,6 +136,14 @@ const ACHIEVEMENT_DROPDOWN_DEFINITIONS: ReadonlyArray<AchievementDropdownDefinit
       { value: ALL_RATED_BATTLEGROUND_TITLES_FILTER_VALUE, label: 'All Rated Battleground Titles' },
       ...RATED_BATTLEGROUND_OPTIONS
     ]
+  },
+  {
+    key: 'keystoneMasters',
+    placeholderLabel: 'Choose Keystone Master achievement',
+    dropdownId: 'rareAchievementKeystoneMasters',
+    triggerId: 'rareAchievementKeystoneMastersTrigger',
+    ariaLabel: 'Choose a Keystone Master achievement',
+    options: KEYSTONE_MASTER_OPTIONS
   }
 ];
 const GROUPED_ACHIEVEMENT_LABELS = new Map<AchievementFilterValue, string>([
