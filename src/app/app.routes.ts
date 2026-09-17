@@ -89,6 +89,12 @@ export const routes: Routes = [
     data: { guild: 'competence-optional' }
   },
   {
+    path: 'miracle-6e2d8f14',
+    loadComponent: () => import('./endless6531-page.component')
+      .then(module => module.Endless6531PageComponent),
+    data: { guild: 'miracle' }
+  },
+  {
     path: 'entropy-3e8f1a62',
     loadComponent: () => import('./endless6531-page.component')
       .then(module => module.Endless6531PageComponent),

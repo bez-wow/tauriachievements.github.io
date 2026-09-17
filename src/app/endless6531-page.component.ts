@@ -7,6 +7,7 @@ import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import entropyAnalysis from '../guild-analysis/entropy.json';
 import impairedAnalysis from '../guild-analysis/impaired.json';
 import impactAnalysis from '../guild-analysis/impact.json';
+import miracleAnalysis from '../guild-analysis/miracle.json';
 import outlawsAnalysis from '../guild-analysis/outlaws.json';
 import sixSevenAnalysis from '../guild-analysis/six-seven.json';
 import temeriteAnalysis from '../guild-analysis/témérité.json';
@@ -60,7 +61,7 @@ interface GuildAnalysisMetadata {
   faction: 'Alliance' | 'Horde' | 'Unknown';
 }
 
-type GuildAnalysisKey = 'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'outlaws' | 'six-seven' | 'temerite';
+type GuildAnalysisKey = 'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'miracle' | 'outlaws' | 'six-seven' | 'temerite';
 
 interface GuildAnalysisConfig {
   name: string;
@@ -93,6 +94,11 @@ const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = 
     name: 'Impact',
     realm: 'Evermoon',
     analysis: impactAnalysis as GuildAnalysis
+  },
+  'miracle': {
+    name: 'Miracle',
+    realm: 'Evermoon',
+    analysis: miracleAnalysis as GuildAnalysis
   },
   'outlaws': {
     name: 'Outlaws',
