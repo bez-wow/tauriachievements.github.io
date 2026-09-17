@@ -27,7 +27,9 @@
           aria-label="Filter statistics by level"
           [value]="selectedLevel()"
           (change)="selectLevel($event)">
-          <option *ngFor="let level of levelOptions" [value]="level">{{ level }}</option>
+          <option *ngFor="let level of levelOptions" [value]="level">
+            {{ level === 'All levels' ? level : 'lvl ' + level }}
+          </option>
         </select>
       </label>
     </div>

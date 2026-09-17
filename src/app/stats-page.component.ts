@@ -61,7 +61,8 @@ const RACE_NAMES: Record<number, string> = {
 const UNKNOWN_CLASS_COLOR = '#888';
 
 export const STATS_REALM_OPTIONS = ['All realms', 'Evermoon', 'Tauri', 'WoD'] as const;
-export const STATS_LEVEL_OPTIONS = ['All levels', '110', '100', '90', '80'] as const;
+export const STATS_LEVEL_OPTIONS = ['110', '100', '90', '80', 'All levels'] as const;
+export const DEFAULT_STATS_LEVEL = '110' as const;
 
 export type StatsRealmFilter = typeof STATS_REALM_OPTIONS[number];
 export type StatsLevelFilter = typeof STATS_LEVEL_OPTIONS[number];
@@ -161,9 +162,9 @@ export class StatsPageComponent {
   readonly realmOptions = STATS_REALM_OPTIONS;
   readonly levelOptions = STATS_LEVEL_OPTIONS;
   readonly selectedRealm = signal<StatsRealmFilter>('All realms');
-  readonly selectedLevel = signal<StatsLevelFilter>('All levels');
+  readonly selectedLevel = signal<StatsLevelFilter>(DEFAULT_STATS_LEVEL);
   readonly filtersActive = computed(() =>
-    this.selectedRealm() !== 'All realms' || this.selectedLevel() !== 'All levels'
+    this.selectedRealm() !== 'All realms' || this.selectedLevel() !== DEFAULT_STATS_LEVEL
   );
 
   readonly stats = signal<ServerStats>(emptyStats());
@@ -216,7 +217,7 @@ export class StatsPageComponent {
 
   resetFilters(): void {
     this.selectedRealm.set('All realms');
-    this.selectedLevel.set('All levels');
+    this.selectedLevel.set(DEFAULT_STATS_LEVEL);
     this.applySelectedStats();
   }
 
