@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, computed } from '@angular/core';
 import { createCountdown } from './countdown';
 
-/** Mythic release: 23 September 2026, 09:00 server time (CEST = UTC+2). */
-const MYTHIC_RELEASE_MS = Date.UTC(2026, 8, 23, 7, 0, 0);
-const MYTHIC_RELEASE_ISO = '2026-09-23T09:00:00+02:00';
+/** Mythic release: 23 September 2026, 18:00 server time (CEST = UTC+2). */
+const MYTHIC_RELEASE_MS = Date.UTC(2026, 8, 23, 16, 0, 0);
+const MYTHIC_RELEASE_ISO = '2026-09-23T18:00:00+02:00';
 
 @Component({
   selector: 'app-mythic-countdown',
