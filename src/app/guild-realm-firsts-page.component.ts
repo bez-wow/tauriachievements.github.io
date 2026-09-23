@@ -27,6 +27,8 @@ interface GuildRealmFirstCellView {
   guild: string | null;
   videoUrl: string;
   hasVideo: boolean;
+  isUpcoming: boolean;
+  isUnclaimed: boolean;
 }
 
 interface GuildRealmFirstExpansionView {
@@ -46,7 +48,7 @@ interface GuildRealmFirstAchievementView {
 
 const EXPANSION_GROUPS_BY_START_ACHIEVEMENT = new Map<string, GuildRealmFirstExpansionView>([
   [
-    'Realm First! Xavius',
+    'Realm First! Helya',
     {
       name: 'Legion',
       logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/Legionlogo.png?width=180'
@@ -135,12 +137,15 @@ export class GuildRealmFirstsPageComponent implements OnInit {
         const result = achievement.results?.[realm];
         const guild = this.normalizeGuild(result?.guild);
         const videoUrl = this.normalizeVideoUrl(result?.youtubeVideoUrl);
+        const normalizedGuildStatus = guild?.toLowerCase();
 
         return {
           realm,
           guild,
           videoUrl,
-          hasVideo: guild !== null && videoUrl.length > 0
+          hasVideo: guild !== null && videoUrl.length > 0,
+          isUpcoming: normalizedGuildStatus === 'upcoming',
+          isUnclaimed: normalizedGuildStatus === 'unclaimed'
         };
       });
 

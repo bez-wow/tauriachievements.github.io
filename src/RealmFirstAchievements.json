@@ -7,6 +7,28 @@
   ],
   "achievements": [
     {
+      "name": "Realm First! Helya",
+      "iconUrl": "assets/realm-first-guild-achievements/helya.png",
+      "results": {
+        "Evermoon": {
+          "guild": "Upcoming",
+          "youtubeVideoUrl": ""
+        },
+        "Tauri": {
+          "guild": "Upcoming",
+          "youtubeVideoUrl": ""
+        },
+        "WoD": {
+          "guild": "Upcoming",
+          "youtubeVideoUrl": ""
+        },
+        "Reborn": {
+          "guild": "-",
+          "youtubeVideoUrl": ""
+        }
+      }
+    },
+    {
       "name": "Realm First! Xavius",
       "iconUrl": "assets/realm-first-guild-achievements/achievement_emeraldnightmare_xavius.png",
       "results": {
@@ -15,15 +37,15 @@
           "youtubeVideoUrl": ""
         },
         "Tauri": {
-          "guild": "-",
+          "guild": "Unclaimed",
           "youtubeVideoUrl": ""
         },
         "WoD": {
-          "guild": "-",
+          "guild": "Unclaimed",
           "youtubeVideoUrl": ""
         },
         "Reborn": {
-          "guild": null,
+          "guild": "-",
           "youtubeVideoUrl": ""
         }
       }

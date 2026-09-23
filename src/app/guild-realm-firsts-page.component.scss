@@ -256,6 +256,29 @@
   min-width: 0;
 }
 
+.realm-cell.is-upcoming .guild-name,
+.realm-cell.is-unclaimed .guild-name {
+  padding: 3px 8px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.realm-cell.is-upcoming .guild-name {
+  border-color: rgba(104, 181, 255, 0.42);
+  background: rgba(49, 118, 181, 0.16);
+  color: #8dccff;
+}
+
+.realm-cell.is-unclaimed .guild-name {
+  border-color: rgba(255, 174, 76, 0.42);
+  background: rgba(184, 105, 28, 0.16);
+  color: #ffc16f;
+}
+
 .guild-emote {
   display: inline-block;
   width: 28px;
@@ -458,6 +481,30 @@
   .mobile-guild-link > span:first-child {
     min-width: 0;
     overflow-wrap: anywhere;
+  }
+
+  .mobile-realm-result.is-upcoming .mobile-guild-name,
+  .mobile-realm-result.is-unclaimed .mobile-guild-name {
+    align-self: flex-start;
+    padding: 3px 8px;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .mobile-realm-result.is-upcoming .mobile-guild-name {
+    border-color: rgba(104, 181, 255, 0.42);
+    background: rgba(49, 118, 181, 0.16);
+    color: #8dccff;
+  }
+
+  .mobile-realm-result.is-unclaimed .mobile-guild-name {
+    border-color: rgba(255, 174, 76, 0.42);
+    background: rgba(184, 105, 28, 0.16);
+    color: #ffc16f;
   }
 
   .mobile-guild-link {

@@ -67,7 +67,9 @@
                 *ngFor="let cell of row.cells; trackBy: trackCell"
                 class="realm-cell"
                 [class.is-empty]="!cell.guild"
-                [class.has-video]="cell.hasVideo">
+                [class.has-video]="cell.hasVideo"
+                [class.is-upcoming]="cell.isUpcoming"
+                [class.is-unclaimed]="cell.isUnclaimed">
                 <a
                   *ngIf="cell.guild && cell.hasVideo; else guildNameCell"
                   class="guild-video-link"
@@ -137,7 +139,9 @@
               *ngFor="let cell of row.cells; trackBy: trackCell"
               class="mobile-realm-result"
               [class.is-empty]="!cell.guild"
-              [class.has-video]="cell.hasVideo">
+              [class.has-video]="cell.hasVideo"
+              [class.is-upcoming]="cell.isUpcoming"
+              [class.is-unclaimed]="cell.isUnclaimed">
               <span class="mobile-realm-label">{{ cell.realm }}</span>
 
               <a
