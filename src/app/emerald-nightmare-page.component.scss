@@ -72,27 +72,28 @@
   box-shadow: 0 0 18px #e52615;
 }
 
-.timeline-scroll { overflow-x: auto; scrollbar-color: #a92a2e #12060a; scrollbar-width: thin; }
+.timeline-scroll { overflow-x: auto; scrollbar-width: none; }
+.timeline-scroll::-webkit-scrollbar { display: none; }
 .timeline-scroll:focus-visible { outline: 2px solid #ff744b; outline-offset: -3px; }
 .timeline-board { min-width: 1400px; }
-.timeline-axis { display: grid; grid-template-columns: 190px minmax(0, 1fr); min-height: 48px; border-bottom: 1px solid rgba(255, 255, 255, .08); background: rgba(0, 0, 0, .2); }
-.axis-corner { display: flex; align-items: center; padding-left: 24px; border-right: 1px solid rgba(255, 96, 65, .11); color: #8f777c; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.axis-scale { position: relative; margin: 0 28px; }
+.timeline-axis { display: grid; grid-template-columns: 165px minmax(0, 1fr); min-height: 48px; border-bottom: 1px solid rgba(255, 255, 255, .08); background: rgba(0, 0, 0, .2); }
+.axis-corner { display: flex; align-items: center; padding-left: 16px; border-right: 1px solid rgba(255, 96, 65, .11); color: #8f777c; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.axis-scale { position: relative; }
 .axis-scale::after { content: ''; position: absolute; right: 0; bottom: 8px; left: 0; height: 1px; background: rgba(255, 255, 255, .15); }
 .axis-hour { position: absolute; bottom: 15px; color: #bda6aa; font-size: .75rem; font-weight: 750; font-variant-numeric: tabular-nums; transform: translateX(-50%); }
 .axis-hour:first-child { transform: none; }
 .axis-hour:last-child { transform: translateX(-100%); }
-.guild-lane { display: grid; grid-template-columns: 190px minmax(0, 1fr); }
+.guild-lane { display: grid; grid-template-columns: 165px minmax(0, 1fr); }
 
 .guild-lane { min-height: 104px; border-bottom: 1px solid rgba(255, 255, 255, .055); transition: background .18s ease; }
 .guild-lane:last-child { border-bottom: 0; }
 .guild-lane:hover { background: rgba(255, 255, 255, .025); }
-.guild-summary { display: flex; min-width: 0; align-items: center; padding: 16px 16px 16px 24px; border-right: 1px solid rgba(255, 96, 65, .11); }
+.guild-summary { display: flex; min-width: 0; align-items: center; padding: 16px; border-right: 1px solid rgba(255, 96, 65, .11); }
 .guild-summary-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .guild-summary-copy strong { overflow: hidden; color: #f1e7e4; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
 .guild-summary-copy small { color: #927a7f; font-size: .78rem; line-height: 1.4; }
 
-.lane-checkpoints { position: relative; min-width: 0; margin: 0 28px; }
+.lane-checkpoints { position: relative; min-width: 0; }
 .lane-track,
 .lane-progress { position: absolute; top: 46px; height: 2px; pointer-events: none; }
 .lane-track { right: 0; left: 0; background: #352127; }
