@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { MythicCountdownComponent } from './mythic-countdown.component';
 import { UpdateBarComponent } from './update-bar.component';
 
 type BossKey = 'nythendra' | 'ursoc' | 'elerethe-renferal' | 'ilgynoth' |
@@ -39,7 +38,7 @@ const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
 @Component({
   selector: 'app-emerald-nightmare-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, MythicCountdownComponent, BackToTopButtonComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
   templateUrl: './emerald-nightmare-page.component.html',
   styleUrls: ['./emerald-nightmare-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
