@@ -74,7 +74,14 @@
 
 .timeline-scroll { overflow-x: auto; scrollbar-color: #a92a2e #12060a; scrollbar-width: thin; }
 .timeline-scroll:focus-visible { outline: 2px solid #ff744b; outline-offset: -3px; }
-.timeline-board { min-width: 1110px; }
+.timeline-board { min-width: 1400px; }
+.timeline-axis { display: grid; grid-template-columns: 190px minmax(0, 1fr); min-height: 48px; border-bottom: 1px solid rgba(255, 255, 255, .08); background: rgba(0, 0, 0, .2); }
+.axis-corner { display: flex; align-items: center; padding-left: 24px; border-right: 1px solid rgba(255, 96, 65, .11); color: #8f777c; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.axis-scale { position: relative; margin: 0 28px; }
+.axis-scale::after { content: ''; position: absolute; right: 0; bottom: 8px; left: 0; height: 1px; background: rgba(255, 255, 255, .15); }
+.axis-hour { position: absolute; bottom: 15px; color: #bda6aa; font-size: .75rem; font-weight: 750; font-variant-numeric: tabular-nums; transform: translateX(-50%); }
+.axis-hour:first-child { transform: none; }
+.axis-hour:last-child { transform: translateX(-100%); }
 .guild-lane { display: grid; grid-template-columns: 190px minmax(0, 1fr); }
 
 .guild-lane { min-height: 104px; border-bottom: 1px solid rgba(255, 255, 255, .055); transition: background .18s ease; }
@@ -85,19 +92,22 @@
 .guild-summary-copy strong { overflow: hidden; color: #f1e7e4; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
 .guild-summary-copy small { color: #927a7f; font-size: .78rem; line-height: 1.4; }
 
-.lane-checkpoints { position: relative; display: grid; grid-template-columns: repeat(7, minmax(125px, 1fr)); align-items: center; }
+.lane-checkpoints { position: relative; min-width: 0; margin: 0 28px; }
 .lane-track,
 .lane-progress { position: absolute; top: 46px; height: 2px; pointer-events: none; }
-.lane-track { right: 7.143%; left: 7.143%; background: #352127; }
-.lane-progress { left: 7.143%; background: linear-gradient(90deg, color-mix(in srgb, var(--guild-color) 60%, #ff432b), var(--guild-color)); box-shadow: 0 0 8px color-mix(in srgb, var(--guild-color) 55%, transparent); }
-.checkpoint { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 6px; color: #735e62; }
+.lane-track { right: 0; left: 0; background: #352127; }
+.lane-progress { background: linear-gradient(90deg, color-mix(in srgb, var(--guild-color) 60%, #ff432b), var(--guild-color)); box-shadow: 0 0 8px color-mix(in srgb, var(--guild-color) 55%, transparent); }
+.hour-gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, .065); pointer-events: none; }
+.checkpoint { position: absolute; top: 27px; z-index: 1; display: flex; min-width: 48px; flex-direction: column; align-items: center; gap: 6px; color: #735e62; transform: translateX(-50%); transition: z-index .15s ease, transform .15s ease; }
+.checkpoint:hover { z-index: 5; transform: translateX(-50%) scale(1.08); }
+.checkpoint.pending { display: none; }
 .checkpoint-node { display: grid; width: 38px; height: 38px; place-items: center; overflow: hidden; border: 2px solid #483038; border-radius: 50%; background: #10070a; color: #694e54; font-size: .7rem; font-weight: 900; box-shadow: 0 0 0 4px #0e0509; }
 .checkpoint-node img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.8); }
 .checkpoint.killed .checkpoint-node { border-color: var(--guild-color); box-shadow: 0 0 0 4px #0e0509, 0 0 15px color-mix(in srgb, var(--guild-color) 48%, transparent); }
 .checkpoint time,
 .checkpoint-waiting { min-height: 17px; color: #7c676a; font-size: .8rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .checkpoint.killed time { color: var(--guild-color); font-weight: 800; }
-.split-time { position: absolute; top: -10px; left: 0; z-index: 2; padding: 3px 7px; border: 1px solid rgba(255, 255, 255, .13); border-radius: 8px; background: #16090d; color: #b69da2; font-size: .72rem; font-weight: 800; line-height: 1.1; transform: translateX(-50%); white-space: nowrap; }
+.split-time { position: absolute; top: -22px; left: 50%; z-index: 2; padding: 3px 7px; border: 1px solid rgba(255, 255, 255, .13); border-radius: 8px; background: #16090d; color: #b69da2; font-size: .72rem; font-weight: 800; line-height: 1.1; transform: translateX(-50%); white-space: nowrap; }
 
 .raid-map {
   position: relative;

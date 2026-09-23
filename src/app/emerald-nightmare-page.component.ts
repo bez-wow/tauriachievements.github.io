@@ -27,6 +27,7 @@ interface TimelineCheckpoint {
   boss: BossView;
   kill?: GuildKill;
   timestamp?: number;
+  positionPercent?: number;
   splitMinutes?: number;
 }
 
@@ -35,6 +36,8 @@ interface GuildTimeline {
   color: string;
   completed: number;
   totalMinutes?: number;
+  progressStart?: number;
+  progressWidth?: number;
   checkpoints: TimelineCheckpoint[];
 }
 
@@ -51,6 +54,8 @@ const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
 const GUILD_COLORS = ['#ffb347', '#8ce6ff', '#d69cff', '#ff7897', '#91e58b', '#ffd86b', '#74a8ff'];
 const TIMELINE_EXCLUDED_GUILDS = new Set(['cara máxima', 'nfa']);
 const TIMELINE_DATE = '2026-09-23';
+const TIMELINE_START_HOUR = 18;
+const TIMELINE_END_HOUR = 22;
 
 @Component({
   selector: 'app-emerald-nightmare-page',
@@ -67,6 +72,13 @@ export class EmeraldNightmarePageComponent implements OnInit {
   readonly bosses = signal<BossView[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
+  readonly timelineHours = Array.from(
+    { length: TIMELINE_END_HOUR - TIMELINE_START_HOUR + 1 },
+    (_, index) => ({
+      label: `${TIMELINE_START_HOUR + index}:00`,
+      position: (index / (TIMELINE_END_HOUR - TIMELINE_START_HOUR)) * 100
+    })
+  );
   readonly guildTimelines = computed<GuildTimeline[]>(() => {
     const bosses = this.bosses();
     const guildNames = new Map<string, string>();
@@ -98,9 +110,20 @@ export class EmeraldNightmarePageComponent implements OnInit {
           previousTimestamp = timestamp;
         }
 
-        return { boss, kill, timestamp, splitMinutes };
+        return {
+          boss,
+          kill,
+          timestamp,
+          positionPercent: timestamp !== undefined ? this.timelinePosition(timestamp) : undefined,
+          splitMinutes
+        };
       });
       const completed = checkpoints.filter(checkpoint => checkpoint.kill).length;
+      const positions = checkpoints
+        .map(checkpoint => checkpoint.positionPercent)
+        .filter((position): position is number => position !== undefined);
+      const progressStart = positions.length ? Math.min(...positions) : undefined;
+      const progressEnd = positions.length ? Math.max(...positions) : undefined;
 
       return {
         guild,
@@ -108,6 +131,10 @@ export class EmeraldNightmarePageComponent implements OnInit {
         completed,
         totalMinutes: firstTimestamp !== undefined && lastTimestamp !== undefined && completed > 1
           ? Math.round((lastTimestamp - firstTimestamp) / 60000)
+          : undefined,
+        progressStart,
+        progressWidth: progressStart !== undefined && progressEnd !== undefined
+          ? Math.max(0, progressEnd - progressStart)
           : undefined,
         checkpoints
       };
@@ -207,6 +234,12 @@ export class EmeraldNightmarePageComponent implements OnInit {
 
     const timestamp = Date.parse(`${this.normaliseDate(kill.date)}T${kill.time}:00+02:00`);
     return Number.isNaN(timestamp) ? undefined : timestamp;
+  }
+
+  private timelinePosition(timestamp: number): number {
+    const start = Date.parse(`${TIMELINE_DATE}T${TIMELINE_START_HOUR.toString().padStart(2, '0')}:00:00+02:00`);
+    const duration = (TIMELINE_END_HOUR - TIMELINE_START_HOUR) * 60 * 60 * 1000;
+    return Math.min(100, Math.max(0, ((timestamp - start) / duration) * 100));
   }
 
   private looksLikeDate(value: string): boolean {

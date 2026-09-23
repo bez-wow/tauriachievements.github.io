@@ -22,6 +22,17 @@
   <section class="progression-timeline" *ngIf="!isLoading() && !loadError()" aria-label="Guild progression timeline">
     <div class="timeline-scroll" tabindex="0" aria-label="Scrollable guild progression timeline">
       <div class="timeline-board">
+        <div class="timeline-axis" aria-hidden="true">
+          <span class="axis-corner">Guild</span>
+          <div class="axis-scale">
+            <span
+              class="axis-hour"
+              *ngFor="let hour of timelineHours"
+              [style.left.%]="hour.position">
+              {{ hour.label }}
+            </span>
+          </div>
+        </div>
         <article
           class="guild-lane"
           *ngFor="let timeline of guildTimelines(); trackBy: trackTimelineGuild"
@@ -37,14 +48,21 @@
           </header>
 
           <div class="lane-checkpoints">
+            <span
+              class="hour-gridline"
+              *ngFor="let hour of timelineHours"
+              aria-hidden="true"
+              [style.left.%]="hour.position"></span>
             <div class="lane-track" aria-hidden="true"></div>
             <div
               class="lane-progress"
               aria-hidden="true"
-              [style.width.%]="timeline.completed > 1 ? ((timeline.completed - 1) / (bosses().length - 1)) * 85.714 : 0"></div>
+              [style.left.%]="timeline.progressStart"
+              [style.width.%]="timeline.progressWidth"></div>
             <div
               class="checkpoint"
               *ngFor="let checkpoint of timeline.checkpoints; let checkpointIndex = index"
+              [style.left.%]="checkpoint.positionPercent"
               [class.killed]="checkpoint.kill"
               [class.pending]="!checkpoint.kill"
               [attr.title]="checkpoint.kill ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time : checkpoint.boss.name + ' not recorded'">
