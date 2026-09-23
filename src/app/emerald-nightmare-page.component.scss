@@ -108,7 +108,8 @@
 .checkpoint time,
 .checkpoint-waiting { min-height: 17px; color: #7c676a; font-size: .8rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .checkpoint.killed time { color: var(--guild-color); font-weight: 800; }
-.split-time { position: absolute; top: -22px; left: 50%; z-index: 2; padding: 3px 7px; border: 1px solid rgba(255, 255, 255, .13); border-radius: 8px; background: #16090d; color: #b69da2; font-size: .72rem; font-weight: 800; line-height: 1.1; transform: translateX(-50%); white-space: nowrap; }
+.split-time { position: absolute; top: 46px; z-index: 2; padding: 3px 7px; border: 1px solid rgba(255, 255, 255, .13); border-radius: 8px; background: #16090d; color: #b69da2; font-size: .72rem; font-weight: 800; line-height: 1.1; transform: translate(-50%, -50%); white-space: nowrap; }
+.split-time.hidden { display: none; }
 
 .raid-map {
   position: relative;
