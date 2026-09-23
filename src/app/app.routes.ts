@@ -67,11 +67,6 @@ export const routes: Routes = [
     component: ComparePageComponent
   },
   {
-    path: 'support',
-    loadComponent: () => import('./support-page.component')
-      .then(module => module.SupportPageComponent)
-  },
-  {
     path: 'k7m2q9v4x8p3n6z',
     loadComponent: () => import('./rare-items-page.component')
       .then(module => module.RareItemsPageComponent)
