@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
 import { UpdateBarComponent } from './update-bar.component';
 
 interface GuildRealmFirstResult {
@@ -97,14 +96,11 @@ const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
 })
 export class GuildRealmFirstsPageComponent implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly lastUpdatedService = inject(LadderLastUpdatedService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly dataset = signal<GuildRealmFirstDataset | null>(null);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  readonly lastEdited = signal<Date | undefined>(undefined);
-  readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly legionReleaseLabel = LEGION_RELEASE_LABEL;
   readonly pogchampEmoteUrl = POGCHAMP_EMOTE_URL;
   readonly realms = computed(() => this.dataset()?.realms ?? []);
@@ -178,17 +174,6 @@ export class GuildRealmFirstsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadGuildRealmFirsts();
-
-    this.lastUpdatedService.getLastUpdated().pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe((lastUpdated) => {
-      if (!lastUpdated) {
-        return;
-      }
-
-      this.lastEdited.set(lastUpdated.date);
-      this.lastEditedTimeZoneLabel.set(lastUpdated.timeZoneLabel);
-    });
   }
 
   retryLoad(): void {
