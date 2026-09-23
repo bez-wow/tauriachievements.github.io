@@ -50,6 +50,7 @@ const BOSS_DETAILS: ReadonlyArray<Omit<BossView, 'guilds'>> = [
 
 const GUILD_COLORS = ['#ffb347', '#8ce6ff', '#d69cff', '#ff7897', '#91e58b', '#ffd86b', '#74a8ff'];
 const TIMELINE_EXCLUDED_GUILDS = new Set(['cara máxima', 'nfa']);
+const TIMELINE_DATE = '2026-09-23';
 
 @Component({
   selector: 'app-emerald-nightmare-page',
@@ -71,7 +72,7 @@ export class EmeraldNightmarePageComponent implements OnInit {
     const guildNames = new Map<string, string>();
 
     bosses.forEach(boss => boss.guilds.forEach(kill => {
-      if (kill.guild) {
+      if (kill.guild && kill.date === TIMELINE_DATE) {
         guildNames.set(kill.guild.toLocaleLowerCase(), kill.guild);
       }
     }));
@@ -83,7 +84,9 @@ export class EmeraldNightmarePageComponent implements OnInit {
       let firstTimestamp: number | undefined;
       let lastTimestamp: number | undefined;
       const checkpoints = bosses.map(boss => {
-        const kill = boss.guilds.find(candidate => candidate.guild.toLocaleLowerCase() === guild.toLocaleLowerCase());
+        const kill = boss.guilds.find(candidate =>
+          candidate.date === TIMELINE_DATE &&
+          candidate.guild.toLocaleLowerCase() === guild.toLocaleLowerCase());
         const timestamp = kill ? this.killTimestamp(kill) : undefined;
         const splitMinutes = timestamp !== undefined && previousTimestamp !== undefined
           ? Math.max(0, Math.round((timestamp - previousTimestamp) / 60000))
