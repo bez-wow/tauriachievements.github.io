@@ -51,6 +51,54 @@
     linear-gradient(90deg, rgba(0, 0, 0, .45), transparent 18% 82%, rgba(0, 0, 0, .45));
 }
 
+.progression-timeline {
+  position: relative;
+  z-index: 1;
+  width: min(1500px, 100%);
+  margin: 0 auto 34px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 91, 54, .42);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(30, 3, 11, .96), rgba(6, 2, 9, .98) 65%, rgba(24, 3, 29, .96));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 195, 153, .1);
+}
+
+.progression-timeline::before {
+  content: '';
+  position: absolute;
+  inset: 0 12% auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffad62, #ff351c, transparent);
+  box-shadow: 0 0 18px #e52615;
+}
+
+.timeline-scroll { overflow-x: auto; scrollbar-color: #a92a2e #12060a; scrollbar-width: thin; }
+.timeline-scroll:focus-visible { outline: 2px solid #ff744b; outline-offset: -3px; }
+.timeline-board { min-width: 1110px; }
+.guild-lane { display: grid; grid-template-columns: 190px minmax(0, 1fr); }
+
+.guild-lane { min-height: 104px; border-bottom: 1px solid rgba(255, 255, 255, .055); transition: background .18s ease; }
+.guild-lane:last-child { border-bottom: 0; }
+.guild-lane:hover { background: rgba(255, 255, 255, .025); }
+.guild-summary { display: flex; min-width: 0; align-items: center; padding: 16px 16px 16px 24px; border-right: 1px solid rgba(255, 96, 65, .11); }
+.guild-summary-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.guild-summary-copy strong { overflow: hidden; color: #f1e7e4; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+.guild-summary-copy small { color: #927a7f; font-size: .78rem; line-height: 1.4; }
+
+.lane-checkpoints { position: relative; display: grid; grid-template-columns: repeat(7, minmax(125px, 1fr)); align-items: center; }
+.lane-track,
+.lane-progress { position: absolute; top: 46px; height: 2px; pointer-events: none; }
+.lane-track { right: 7.143%; left: 7.143%; background: #352127; }
+.lane-progress { left: 7.143%; background: linear-gradient(90deg, color-mix(in srgb, var(--guild-color) 60%, #ff432b), var(--guild-color)); box-shadow: 0 0 8px color-mix(in srgb, var(--guild-color) 55%, transparent); }
+.checkpoint { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 6px; color: #735e62; }
+.checkpoint-node { display: grid; width: 38px; height: 38px; place-items: center; overflow: hidden; border: 2px solid #483038; border-radius: 50%; background: #10070a; color: #694e54; font-size: .7rem; font-weight: 900; box-shadow: 0 0 0 4px #0e0509; }
+.checkpoint-node img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.8); }
+.checkpoint.killed .checkpoint-node { border-color: var(--guild-color); box-shadow: 0 0 0 4px #0e0509, 0 0 15px color-mix(in srgb, var(--guild-color) 48%, transparent); }
+.checkpoint time,
+.checkpoint-waiting { min-height: 17px; color: #7c676a; font-size: .8rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.checkpoint.killed time { color: var(--guild-color); font-weight: 800; }
+.split-time { position: absolute; top: -10px; left: 0; z-index: 2; padding: 3px 7px; border: 1px solid rgba(255, 255, 255, .13); border-radius: 8px; background: #16090d; color: #b69da2; font-size: .72rem; font-weight: 800; line-height: 1.1; transform: translateX(-50%); white-space: nowrap; }
+
 .raid-map {
   position: relative;
   z-index: 1;

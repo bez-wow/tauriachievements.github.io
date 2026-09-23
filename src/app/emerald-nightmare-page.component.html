@@ -19,6 +19,55 @@
     <button type="button" (click)="retryLoad()">Try again</button>
   </section>
 
+  <section class="progression-timeline" *ngIf="!isLoading() && !loadError()" aria-label="Guild progression timeline">
+    <div class="timeline-scroll" tabindex="0" aria-label="Scrollable guild progression timeline">
+      <div class="timeline-board">
+        <article
+          class="guild-lane"
+          *ngFor="let timeline of guildTimelines(); trackBy: trackTimelineGuild"
+          [style.--guild-color]="timeline.color">
+          <header class="guild-summary">
+            <span class="guild-summary-copy">
+              <strong>{{ timeline.guild }}</strong>
+              <small>
+                {{ timeline.completed }}/{{ bosses().length }} bosses
+                <ng-container *ngIf="timeline.totalMinutes !== undefined"> &middot; {{ formatDuration(timeline.totalMinutes) }}</ng-container>
+              </small>
+            </span>
+          </header>
+
+          <div class="lane-checkpoints">
+            <div class="lane-track" aria-hidden="true"></div>
+            <div
+              class="lane-progress"
+              aria-hidden="true"
+              [style.width.%]="timeline.completed > 1 ? ((timeline.completed - 1) / (bosses().length - 1)) * 85.714 : 0"></div>
+            <div
+              class="checkpoint"
+              *ngFor="let checkpoint of timeline.checkpoints; let checkpointIndex = index"
+              [class.killed]="checkpoint.kill"
+              [class.pending]="!checkpoint.kill"
+              [attr.title]="checkpoint.kill ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time : checkpoint.boss.name + ' not recorded'">
+              <span class="split-time" *ngIf="checkpointIndex > 0 && checkpoint.splitMinutes !== undefined">
+                +{{ formatDuration(checkpoint.splitMinutes) }}
+              </span>
+              <span class="checkpoint-node">
+                <img *ngIf="checkpoint.kill" [src]="checkpoint.boss.iconUrl" alt="" aria-hidden="true" />
+                <span *ngIf="!checkpoint.kill" aria-hidden="true">?</span>
+              </span>
+              <time
+                *ngIf="checkpoint.kill"
+                [attr.datetime]="checkpoint.kill.date + 'T' + checkpoint.kill.time">
+                {{ checkpoint.kill.time }}
+              </time>
+              <span class="checkpoint-waiting" *ngIf="!checkpoint.kill">—</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <section class="raid-map" *ngIf="!isLoading() && !loadError()" aria-label="Emerald Nightmare boss rankings">
     <article class="boss-card" *ngFor="let boss of bosses(); trackBy: trackBoss">
       <header class="boss-header">
@@ -39,7 +88,7 @@
                 {{ kill.realm }}
               </span>
               <time *ngIf="kill.date" [attr.datetime]="kill.time ? kill.date + 'T' + kill.time : kill.date">
-                {{ formatKillDate(kill.date) }}<ng-container *ngIf="kill.time"> · {{ kill.time }}</ng-container>
+                {{ formatKillDate(kill.date) }}<ng-container *ngIf="kill.time"> &middot; {{ kill.time }}</ng-container>
               </time>
               <time *ngIf="!kill.date && kill.time">{{ kill.time }}</time>
             </span>
