@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
+import { getGuildArmoryUrl } from '../utils/armory';
 
 type BossKey = 'nythendra' | 'ursoc' | 'elerethe-renferal' | 'ilgynoth' |
   'dragons-of-nightmare' | 'cenarius' | 'xavius';
@@ -57,6 +58,14 @@ const TIMELINE_DATE = '2026-09-23';
 const TIMELINE_START_HOUR = 18;
 const TIMELINE_END_HOUR = 22;
 const TIMELINE_HOUR_POSITIONS = [0, 25, 50, 75, 100] as const;
+const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
+  'competence optional': 'Evermoon',
+  miracle: 'Evermoon',
+  endless: 'Evermoon',
+  outlaws: 'Tauri',
+  'cara máxima': 'Evermoon',
+  nfa: 'Evermoon'
+};
 
 @Component({
   selector: 'app-emerald-nightmare-page',
@@ -163,6 +172,10 @@ export class EmeraldNightmarePageComponent implements OnInit {
 
   trackTimelineGuild(index: number, timeline: GuildTimeline): string {
     return timeline.guild;
+  }
+
+  guildArmoryUrl(guild: string): string {
+    return getGuildArmoryUrl(guild, TIMELINE_GUILD_REALMS[guild.toLocaleLowerCase()] ?? 'Evermoon');
   }
 
   formatDuration(minutes: number | undefined): string {
