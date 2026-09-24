@@ -28,7 +28,6 @@ interface TimelineCheckpoint {
   kill?: GuildKill;
   timestamp?: number;
   positionPercent?: number;
-  splitPositionPercent?: number;
   splitMinutes?: number;
 }
 
@@ -56,11 +55,8 @@ const GUILD_COLORS = ['#ffb347', '#8ce6ff', '#d69cff', '#ff7897', '#91e58b', '#f
 const TIMELINE_EXCLUDED_GUILDS = new Set(['cara máxima', 'nfa']);
 const TIMELINE_DATE = '2026-09-23';
 const TIMELINE_START_HOUR = 18;
-const TIMELINE_START_MINUTE = 8;
 const TIMELINE_END_HOUR = 22;
-// More space is reserved for the busier opening hours of the race.
-const TIMELINE_HOUR_POSITIONS = [0, 42, 72, 88, 100] as const;
-const TIMELINE_TIME_BOUNDARIES = [18 * 60 + 8, 19 * 60, 20 * 60, 21 * 60, 22 * 60] as const;
+const TIMELINE_HOUR_POSITIONS = [0, 25, 50, 75, 100] as const;
 
 @Component({
   selector: 'app-emerald-nightmare-page',
@@ -78,16 +74,8 @@ export class EmeraldNightmarePageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly timelineHours = [
-    { label: '18:08', position: TIMELINE_HOUR_POSITIONS[0] },
-    {
-      label: '18:30',
-      position: TIMELINE_HOUR_POSITIONS[0] +
-        ((18 * 60 + 30 - TIMELINE_TIME_BOUNDARIES[0]) /
-          (TIMELINE_TIME_BOUNDARIES[1] - TIMELINE_TIME_BOUNDARIES[0])) *
-        (TIMELINE_HOUR_POSITIONS[1] - TIMELINE_HOUR_POSITIONS[0])
-    },
+    { label: '18:00', position: TIMELINE_HOUR_POSITIONS[0] },
     { label: '19:00', position: TIMELINE_HOUR_POSITIONS[1] },
-    { label: '19:30', position: (TIMELINE_HOUR_POSITIONS[1] + TIMELINE_HOUR_POSITIONS[2]) / 2 },
     { label: '20:00', position: TIMELINE_HOUR_POSITIONS[2] },
     { label: '21:00', position: TIMELINE_HOUR_POSITIONS[3] },
     { label: '22:00', position: TIMELINE_HOUR_POSITIONS[4] }
@@ -117,9 +105,6 @@ export class EmeraldNightmarePageComponent implements OnInit {
         const splitMinutes = timestamp !== undefined && previousTimestamp !== undefined
           ? Math.max(0, Math.round((timestamp - previousTimestamp) / 60000))
           : undefined;
-        const splitPositionPercent = timestamp !== undefined && previousTimestamp !== undefined
-          ? (this.timelinePosition(previousTimestamp) + positionPercent!) / 2
-          : undefined;
 
         if (timestamp !== undefined) {
           firstTimestamp ??= timestamp;
@@ -132,7 +117,6 @@ export class EmeraldNightmarePageComponent implements OnInit {
           kill,
           timestamp,
           positionPercent,
-          splitPositionPercent,
           splitMinutes
         };
       });
@@ -189,6 +173,10 @@ export class EmeraldNightmarePageComponent implements OnInit {
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return hours ? `${hours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
+  }
+
+  formatSplitDuration(minutes: number | undefined): string {
+    return minutes === undefined ? '' : `+${minutes} min`;
   }
 
   formatKillDate(date: string | undefined): string {
@@ -255,25 +243,9 @@ export class EmeraldNightmarePageComponent implements OnInit {
   }
 
   private timelinePosition(timestamp: number): number {
-    const start = Date.parse(
-      `${TIMELINE_DATE}T${TIMELINE_START_HOUR.toString().padStart(2, '0')}:${TIMELINE_START_MINUTE.toString().padStart(2, '0')}:00+02:00`
-    );
-    const timelineMinute = Math.min(
-      TIMELINE_TIME_BOUNDARIES.at(-1)!,
-      Math.max(TIMELINE_TIME_BOUNDARIES[0], TIMELINE_TIME_BOUNDARIES[0] + (timestamp - start) / 60000)
-    );
-    const segmentIndex = Math.min(
-      TIMELINE_TIME_BOUNDARIES.length - 2,
-      TIMELINE_TIME_BOUNDARIES.findIndex((boundary, index) =>
-        index > 0 && timelineMinute <= boundary) - 1
-    );
-    const segmentStart = TIMELINE_TIME_BOUNDARIES[segmentIndex];
-    const segmentEnd = TIMELINE_TIME_BOUNDARIES[segmentIndex + 1];
-    const positionStart = TIMELINE_HOUR_POSITIONS[segmentIndex];
-    const positionEnd = TIMELINE_HOUR_POSITIONS[segmentIndex + 1];
-
-    return positionStart +
-      ((timelineMinute - segmentStart) / (segmentEnd - segmentStart)) * (positionEnd - positionStart);
+    const start = Date.parse(`${TIMELINE_DATE}T${TIMELINE_START_HOUR.toString().padStart(2, '0')}:00:00+02:00`);
+    const duration = (TIMELINE_END_HOUR - TIMELINE_START_HOUR) * 60 * 60 * 1000;
+    return Math.min(100, Math.max(0, ((timestamp - start) / duration) * 100));
   }
 
   private looksLikeDate(value: string): boolean {

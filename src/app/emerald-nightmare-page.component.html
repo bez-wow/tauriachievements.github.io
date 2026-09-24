@@ -59,23 +59,21 @@
               aria-hidden="true"
               [style.left.%]="timeline.progressStart"
               [style.width.%]="timeline.progressWidth"></div>
-            <span
-              class="split-time"
-              *ngFor="let checkpoint of timeline.checkpoints"
-              [style.left.%]="checkpoint.splitPositionPercent"
-              [class.hidden]="checkpoint.splitMinutes === undefined">
-              +{{ formatDuration(checkpoint.splitMinutes) }}
-            </span>
             <div
               class="checkpoint"
               *ngFor="let checkpoint of timeline.checkpoints"
               [style.left.%]="checkpoint.positionPercent"
               [class.killed]="checkpoint.kill"
               [class.pending]="!checkpoint.kill"
-              [attr.title]="checkpoint.kill ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time : checkpoint.boss.name + ' not recorded'">
+              [attr.aria-label]="checkpoint.kill
+                ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time
+                : checkpoint.boss.name + ' not recorded'">
               <span class="checkpoint-node">
                 <img *ngIf="checkpoint.kill" [src]="checkpoint.boss.iconUrl" alt="" aria-hidden="true" />
                 <span *ngIf="!checkpoint.kill" aria-hidden="true">?</span>
+              </span>
+              <span class="boss-hover-tooltip" *ngIf="checkpoint.splitMinutes !== undefined">
+                {{ formatSplitDuration(checkpoint.splitMinutes) }}
               </span>
               <time
                 *ngIf="checkpoint.kill"
