@@ -78,7 +78,7 @@
 .timeline-board { min-width: 1400px; }
 .timeline-axis { display: grid; grid-template-columns: 190px minmax(0, 1fr); min-height: 48px; border-bottom: 1px solid rgba(255, 255, 255, .08); background: rgba(0, 0, 0, .2); }
 .axis-corner { display: flex; align-items: center; padding-left: 16px; border-right: 1px solid rgba(255, 96, 65, .11); color: #8f777c; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.axis-scale { position: relative; }
+.axis-scale { position: relative; margin: 0 16px; }
 .axis-scale::after { content: ''; position: absolute; right: 0; bottom: 8px; left: 0; height: 1px; background: rgba(255, 255, 255, .15); }
 .axis-hour { position: absolute; bottom: 15px; color: #bda6aa; font-size: .75rem; font-weight: 750; font-variant-numeric: tabular-nums; transform: translateX(-50%); }
 .axis-hour:first-child { transform: none; }
@@ -93,7 +93,7 @@
 .guild-summary-copy strong { overflow: hidden; color: #f1e7e4; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
 .guild-summary-copy small { color: #927a7f; font-size: .84rem; line-height: 1.4; }
 
-.lane-checkpoints { position: relative; min-width: 0; }
+.lane-checkpoints { position: relative; min-width: 0; margin: 0 16px; }
 .lane-track,
 .lane-progress { position: absolute; top: 46px; height: 2px; pointer-events: none; }
 .lane-track { right: 0; left: 0; background: #352127; }
