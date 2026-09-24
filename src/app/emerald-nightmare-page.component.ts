@@ -30,6 +30,7 @@ interface TimelineCheckpoint {
   timestamp?: number;
   positionPercent?: number;
   splitMinutes?: number;
+  isFirstKill: boolean;
 }
 
 interface GuildTimeline {
@@ -110,6 +111,7 @@ export class EmeraldNightmarePageComponent implements OnInit {
           candidate.date === TIMELINE_DATE &&
           candidate.guild.toLocaleLowerCase() === guild.toLocaleLowerCase());
         const timestamp = kill ? this.killTimestamp(kill) : undefined;
+        const firstGuild = boss.guilds.find(candidate => candidate.guild)?.guild;
         const positionPercent = timestamp !== undefined ? this.timelinePosition(timestamp) : undefined;
         const splitMinutes = timestamp !== undefined && previousTimestamp !== undefined
           ? Math.max(0, Math.round((timestamp - previousTimestamp) / 60000))
@@ -126,7 +128,8 @@ export class EmeraldNightmarePageComponent implements OnInit {
           kill,
           timestamp,
           positionPercent,
-          splitMinutes
+          splitMinutes,
+          isFirstKill: !!kill && firstGuild?.toLocaleLowerCase() === guild.toLocaleLowerCase()
         };
       });
       const completed = checkpoints.filter(checkpoint => checkpoint.kill).length;

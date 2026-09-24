@@ -72,6 +72,7 @@
               *ngFor="let checkpoint of timeline.checkpoints"
               [style.left.%]="checkpoint.positionPercent"
               [class.killed]="checkpoint.kill"
+              [class.realm-first]="checkpoint.isFirstKill"
               [class.pending]="!checkpoint.kill"
               [attr.aria-label]="checkpoint.kill
                 ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time
@@ -80,6 +81,7 @@
                 <img *ngIf="checkpoint.kill" [src]="checkpoint.boss.iconUrl" alt="" aria-hidden="true" />
                 <span *ngIf="!checkpoint.kill" aria-hidden="true">?</span>
               </span>
+              <span class="realm-first-badge" *ngIf="checkpoint.isFirstKill" aria-label="Realm first">♛</span>
               <span class="boss-hover-tooltip" *ngIf="checkpoint.splitMinutes !== undefined">
                 {{ formatSplitDuration(checkpoint.splitMinutes) }}
               </span>

@@ -107,8 +107,10 @@
 .checkpoint-node { display: grid; width: 38px; height: 38px; place-items: center; overflow: hidden; border: 2px solid #483038; border-radius: 50%; background: #10070a; color: #694e54; font-size: .7rem; font-weight: 900; box-shadow: 0 0 0 4px #0e0509; }
 .checkpoint-node img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.8); }
 .checkpoint.killed .checkpoint-node { border-color: var(--guild-color); box-shadow: 0 0 0 4px #0e0509, 0 0 15px color-mix(in srgb, var(--guild-color) 48%, transparent); }
+.checkpoint.realm-first .checkpoint-node { border-color: #ffd45e; box-shadow: 0 0 0 4px #0e0509, 0 0 8px #ffd45e, 0 0 19px rgba(255, 173, 32, .72); }
+.realm-first-badge { position: absolute; top: -9px; left: calc(50% + 9px); z-index: 4; display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid #ffe78c; border-radius: 50%; background: linear-gradient(145deg, #8d4500, #261000); box-shadow: 0 2px 7px #000, 0 0 8px rgba(255, 193, 54, .72); color: #ffe477; font-size: .7rem; line-height: 1; text-shadow: 0 1px 2px #000; pointer-events: none; }
 .boss-hover-tooltip { position: absolute; top: -25px; left: 50%; z-index: 8; padding: 4px 7px; border: 1px solid rgba(255, 255, 255, .18); border-radius: 6px; background: #16090d; box-shadow: 0 5px 14px rgba(0, 0, 0, .45); color: #f0d9dc; font-size: .72rem; font-weight: 800; line-height: 1; opacity: 0; pointer-events: none; transform: translateX(-50%); white-space: nowrap; }
-.checkpoint-node:hover + .boss-hover-tooltip { opacity: 1; }
+.checkpoint-node:hover ~ .boss-hover-tooltip { opacity: 1; }
 .checkpoint time,
 .checkpoint-waiting { min-height: 17px; color: #7c676a; font-size: .8rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .checkpoint.killed time { color: var(--guild-color); font-weight: 800; }
