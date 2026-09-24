@@ -61,6 +61,8 @@ const TIMELINE_DATE = '2026-09-23';
 const TIMELINE_START_HOUR = 18;
 const TIMELINE_END_HOUR = 22;
 const TIMELINE_DURATION_MINUTES = (TIMELINE_END_HOUR - TIMELINE_START_HOUR) * 60;
+const PLAYBACK_START_MINUTE = 10;
+const THREE_MINUTE_PLAYBACK_START = 60;
 const TIMELINE_HOUR_POSITIONS = [0, 25, 50, 75, 100] as const;
 const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
   'competence optional': 'Evermoon',
@@ -214,12 +216,13 @@ export class EmeraldNightmarePageComponent implements OnInit {
     }
 
     if (this.playbackMinute() >= TIMELINE_DURATION_MINUTES) {
-      this.playbackMinute.set(0);
+      this.playbackMinute.set(PLAYBACK_START_MINUTE);
     }
 
     this.isPlaying.set(true);
     this.playbackTimer = setInterval(() => {
-      const nextMinute = this.playbackMinute() + 1;
+      const currentMinute = this.playbackMinute();
+      const nextMinute = currentMinute + (currentMinute >= THREE_MINUTE_PLAYBACK_START ? 3 : 1);
       if (nextMinute >= TIMELINE_DURATION_MINUTES) {
         this.playbackMinute.set(TIMELINE_DURATION_MINUTES);
         this.stopPlayback();
