@@ -246,6 +246,10 @@ export class EmeraldNightmarePageComponent implements OnInit {
     return timeline.guild;
   }
 
+  trackCheckpoint(index: number, checkpoint: TimelineCheckpoint): BossKey {
+    return checkpoint.boss.key;
+  }
+
   guildArmoryUrl(guild: string): string {
     return getGuildArmoryUrl(guild, TIMELINE_GUILD_REALMS[guild.toLocaleLowerCase()] ?? 'Evermoon');
   }

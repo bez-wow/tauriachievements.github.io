@@ -110,9 +110,10 @@
 .lane-track,
 .lane-progress { position: absolute; top: 46px; height: 2px; pointer-events: none; }
 .lane-track { right: 0; left: 0; background: #352127; }
-.lane-progress { background: linear-gradient(90deg, color-mix(in srgb, var(--guild-color) 60%, #ff432b), var(--guild-color)); box-shadow: 0 0 8px color-mix(in srgb, var(--guild-color) 55%, transparent); }
+.lane-progress { background: linear-gradient(90deg, color-mix(in srgb, var(--guild-color) 60%, #ff432b), var(--guild-color)); box-shadow: 0 0 8px color-mix(in srgb, var(--guild-color) 55%, transparent); transition: left .4s ease, width .4s ease; }
 .hour-gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, .065); pointer-events: none; }
 .checkpoint { position: absolute; top: 27px; z-index: 1; display: flex; min-width: 48px; flex-direction: column; align-items: center; gap: 6px; color: #735e62; transform: translateX(-50%); transition: z-index .15s ease, transform .15s ease; }
+.checkpoint.killed { animation: boss-reveal .48s cubic-bezier(.2, .85, .3, 1.2) both; }
 .checkpoint:hover { z-index: 5; transform: translateX(-50%) scale(1.08); }
 .checkpoint.pending { display: none; }
 .checkpoint-node { display: grid; width: 38px; height: 38px; place-items: center; overflow: hidden; border: 2px solid #483038; border-radius: 50%; background: #10070a; color: #694e54; font-size: .7rem; font-weight: 900; box-shadow: 0 0 0 4px #0e0509; }
@@ -125,6 +126,17 @@
 .checkpoint time,
 .checkpoint-waiting { min-height: 17px; color: #7c676a; font-size: .8rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .checkpoint.killed time { color: var(--guild-color); font-weight: 800; }
+
+@keyframes boss-reveal {
+  0% { opacity: 0; transform: translateX(-50%) scale(.45); filter: brightness(1.8); }
+  68% { opacity: 1; transform: translateX(-50%) scale(1.12); filter: brightness(1.25); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); filter: brightness(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkpoint.killed { animation: none; }
+  .lane-progress { transition: none; }
+}
 .raid-map {
   position: relative;
   z-index: 1;

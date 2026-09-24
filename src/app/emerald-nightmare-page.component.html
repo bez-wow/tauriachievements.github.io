@@ -87,7 +87,7 @@
               [style.width.%]="timeline.progressWidth"></div>
             <div
               class="checkpoint"
-              *ngFor="let checkpoint of timeline.checkpoints"
+              *ngFor="let checkpoint of timeline.checkpoints; trackBy: trackCheckpoint"
               [style.left.%]="checkpoint.positionPercent"
               [class.killed]="checkpoint.kill && checkpoint.isVisible"
               [class.realm-first]="checkpoint.isFirstKill && checkpoint.isVisible"
