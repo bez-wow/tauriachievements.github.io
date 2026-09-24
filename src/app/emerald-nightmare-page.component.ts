@@ -237,6 +237,11 @@ export class EmeraldNightmarePageComponent implements OnInit {
     this.playbackMinute.set(Math.min(TIMELINE_DURATION_MINUTES, Math.max(0, value)));
   }
 
+  resetPlayback(): void {
+    this.stopPlayback();
+    this.playbackMinute.set(TIMELINE_DURATION_MINUTES);
+  }
+
   trackBoss(index: number, boss: BossView): BossKey {
     return boss.key;
   }
