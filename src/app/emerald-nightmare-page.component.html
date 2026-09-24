@@ -20,6 +20,23 @@
   </section>
 
   <section class="progression-timeline" *ngIf="!isLoading() && !loadError()" aria-label="Guild progression timeline">
+    <div class="race-playback" aria-label="Race playback controls">
+      <button type="button" class="playback-button" (click)="togglePlayback()">
+        <span aria-hidden="true">{{ isPlaying() ? 'Ⅱ' : '▶' }}</span>
+        {{ playbackButtonLabel() }}
+      </button>
+      <time class="playback-clock">{{ playbackTimeLabel() }}</time>
+      <input
+        class="playback-slider"
+        type="range"
+        min="0"
+        max="240"
+        step="1"
+        [value]="playbackMinute()"
+        (input)="seekPlayback($event)"
+        aria-label="Race time from 18:00 to 22:00" />
+      <span class="playback-range" aria-hidden="true">18:00–22:00</span>
+    </div>
     <div class="timeline-scroll" tabindex="0" aria-label="Scrollable guild progression timeline">
       <div class="timeline-board">
         <div class="timeline-axis" aria-hidden="true">
@@ -36,6 +53,7 @@
         <article
           class="guild-lane"
           *ngFor="let timeline of guildTimelines(); trackBy: trackTimelineGuild"
+          [class.leader]="timeline.isLeader"
           [style.--guild-color]="timeline.color">
           <header class="guild-summary">
             <span class="guild-summary-copy">
@@ -71,26 +89,26 @@
               class="checkpoint"
               *ngFor="let checkpoint of timeline.checkpoints"
               [style.left.%]="checkpoint.positionPercent"
-              [class.killed]="checkpoint.kill"
-              [class.realm-first]="checkpoint.isFirstKill"
-              [class.pending]="!checkpoint.kill"
+              [class.killed]="checkpoint.kill && checkpoint.isVisible"
+              [class.realm-first]="checkpoint.isFirstKill && checkpoint.isVisible"
+              [class.pending]="!checkpoint.kill || !checkpoint.isVisible"
               [attr.aria-label]="checkpoint.kill
                 ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time
                 : checkpoint.boss.name + ' not recorded'">
               <span class="checkpoint-node">
-                <img *ngIf="checkpoint.kill" [src]="checkpoint.boss.iconUrl" alt="" aria-hidden="true" />
-                <span *ngIf="!checkpoint.kill" aria-hidden="true">?</span>
+                <img *ngIf="checkpoint.kill && checkpoint.isVisible" [src]="checkpoint.boss.iconUrl" alt="" aria-hidden="true" />
+                <span *ngIf="!checkpoint.kill || !checkpoint.isVisible" aria-hidden="true">?</span>
               </span>
-              <span class="realm-first-badge" *ngIf="checkpoint.isFirstKill" aria-label="Realm first">♛</span>
-              <span class="boss-hover-tooltip" *ngIf="checkpoint.splitMinutes !== undefined">
+              <span class="realm-first-badge" *ngIf="checkpoint.isFirstKill && checkpoint.isVisible" aria-label="Realm first">♛</span>
+              <span class="boss-hover-tooltip" *ngIf="checkpoint.splitMinutes !== undefined && checkpoint.isVisible">
                 {{ formatSplitDuration(checkpoint.splitMinutes) }}
               </span>
               <time
-                *ngIf="checkpoint.kill"
+                *ngIf="checkpoint.kill && checkpoint.isVisible"
                 [attr.datetime]="checkpoint.kill.date + 'T' + checkpoint.kill.time">
                 {{ checkpoint.kill.time }}
               </time>
-              <span class="checkpoint-waiting" *ngIf="!checkpoint.kill">—</span>
+              <span class="checkpoint-waiting" *ngIf="!checkpoint.kill || !checkpoint.isVisible">—</span>
             </div>
           </div>
         </article>

@@ -72,6 +72,14 @@
   box-shadow: 0 0 18px #e52615;
 }
 
+.race-playback { position: relative; z-index: 2; display: grid; grid-template-columns: auto 64px minmax(180px, 1fr) auto; align-items: center; gap: 14px; min-height: 58px; padding: 10px 18px; border-bottom: 1px solid rgba(255, 91, 54, .2); background: linear-gradient(90deg, rgba(50, 5, 16, .72), rgba(12, 3, 10, .9)); }
+.playback-button { display: inline-flex; min-width: 92px; align-items: center; justify-content: center; gap: 8px; padding: 8px 13px; border: 1px solid rgba(255, 111, 70, .68); border-radius: 7px; background: linear-gradient(145deg, #4d0b17, #24050c); color: #fff0e8; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; box-shadow: 0 0 14px rgba(225, 37, 29, .18); }
+.playback-button:hover { border-color: #ff8a5d; background: linear-gradient(145deg, #671020, #30060f); }
+.playback-button:focus-visible { outline: 2px solid #ff9a73; outline-offset: 2px; }
+.playback-clock { color: #ffb08f; font-size: .92rem; font-weight: 900; font-variant-numeric: tabular-nums; text-align: center; text-shadow: 0 0 10px rgba(255, 77, 42, .4); }
+.playback-slider { width: 100%; height: 4px; margin: 0; accent-color: #ff4f32; cursor: pointer; }
+.playback-range { color: #876e73; font-size: .72rem; font-variant-numeric: tabular-nums; }
+
 .timeline-scroll { overflow-x: auto; scrollbar-width: none; }
 .timeline-scroll::-webkit-scrollbar { display: none; }
 .timeline-scroll:focus-visible { outline: 2px solid #ff744b; outline-offset: -3px; }
@@ -93,6 +101,9 @@
 .timeline-guild-link { color: inherit; text-decoration: none; }
 .timeline-guild-link:hover { color: var(--guild-color); text-decoration: underline; text-underline-offset: 3px; }
 .timeline-guild-link:focus-visible { border-radius: 2px; outline: 2px solid var(--guild-color); outline-offset: 3px; }
+.guild-lane .timeline-guild-link { transition: color .18s ease, text-shadow .18s ease; }
+.guild-lane.leader .timeline-guild-link { color: #ffd45e; text-shadow: 0 0 7px rgba(255, 186, 47, .8), 0 0 15px rgba(255, 95, 30, .4); }
+.guild-lane.leader .guild-summary { background: linear-gradient(90deg, rgba(255, 177, 39, .09), transparent); }
 .guild-summary-copy small { color: #927a7f; font-size: .84rem; line-height: 1.4; }
 
 .lane-checkpoints { position: relative; min-width: 0; margin: 0 16px; }
@@ -194,6 +205,8 @@
 
 @media (max-width: 640px) {
   .nightmare-banner { padding-top: 30px; }
+  .race-playback { grid-template-columns: auto 56px minmax(120px, 1fr); gap: 9px; padding-inline: 12px; }
+  .playback-range { display: none; }
 }
 
 @media (max-width: 520px) {

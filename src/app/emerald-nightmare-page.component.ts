@@ -31,12 +31,14 @@ interface TimelineCheckpoint {
   positionPercent?: number;
   splitMinutes?: number;
   isFirstKill: boolean;
+  isVisible: boolean;
 }
 
 interface GuildTimeline {
   guild: string;
   color: string;
   completed: number;
+  isLeader: boolean;
   totalMinutes?: number;
   progressStart?: number;
   progressWidth?: number;
@@ -58,6 +60,7 @@ const TIMELINE_EXCLUDED_GUILDS = new Set(['cara máxima', 'nfa']);
 const TIMELINE_DATE = '2026-09-23';
 const TIMELINE_START_HOUR = 18;
 const TIMELINE_END_HOUR = 22;
+const TIMELINE_DURATION_MINUTES = (TIMELINE_END_HOUR - TIMELINE_START_HOUR) * 60;
 const TIMELINE_HOUR_POSITIONS = [0, 25, 50, 75, 100] as const;
 const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
   'competence optional': 'Evermoon',
@@ -83,6 +86,16 @@ export class EmeraldNightmarePageComponent implements OnInit {
   readonly bosses = signal<BossView[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
+  readonly playbackMinute = signal(TIMELINE_DURATION_MINUTES);
+  readonly isPlaying = signal(false);
+  readonly playbackTimeLabel = computed(() => {
+    const totalMinutes = TIMELINE_START_HOUR * 60 + this.playbackMinute();
+    return `${Math.floor(totalMinutes / 60).toString().padStart(2, '0')}:${(totalMinutes % 60).toString().padStart(2, '0')}`;
+  });
+  readonly playbackButtonLabel = computed(() =>
+    this.isPlaying() ? 'Pause' : this.playbackMinute() >= TIMELINE_DURATION_MINUTES ? 'Replay' : 'Play'
+  );
+  private playbackTimer?: ReturnType<typeof setInterval>;
   readonly timelineHours = [
     { label: '18:00', position: TIMELINE_HOUR_POSITIONS[0] },
     { label: '19:00', position: TIMELINE_HOUR_POSITIONS[1] },
@@ -92,6 +105,8 @@ export class EmeraldNightmarePageComponent implements OnInit {
   ];
   readonly guildTimelines = computed<GuildTimeline[]>(() => {
     const bosses = this.bosses();
+    const playbackTimestamp = Date.parse(`${TIMELINE_DATE}T${TIMELINE_START_HOUR}:00:00+02:00`) +
+      this.playbackMinute() * 60000;
     const guildNames = new Map<string, string>();
 
     bosses.forEach(boss => boss.guilds.forEach(kill => {
@@ -100,12 +115,10 @@ export class EmeraldNightmarePageComponent implements OnInit {
       }
     }));
 
-    return Array.from(guildNames.values())
+    const timelines = Array.from(guildNames.values())
       .filter(guild => !TIMELINE_EXCLUDED_GUILDS.has(guild.toLocaleLowerCase()))
       .map((guild, index) => {
       let previousTimestamp: number | undefined;
-      let firstTimestamp: number | undefined;
-      let lastTimestamp: number | undefined;
       const checkpoints = bosses.map(boss => {
         const kill = boss.guilds.find(candidate =>
           candidate.date === TIMELINE_DATE &&
@@ -113,13 +126,12 @@ export class EmeraldNightmarePageComponent implements OnInit {
         const timestamp = kill ? this.killTimestamp(kill) : undefined;
         const firstGuild = boss.guilds.find(candidate => candidate.guild)?.guild;
         const positionPercent = timestamp !== undefined ? this.timelinePosition(timestamp) : undefined;
+        const isVisible = timestamp !== undefined && timestamp <= playbackTimestamp;
         const splitMinutes = timestamp !== undefined && previousTimestamp !== undefined
           ? Math.max(0, Math.round((timestamp - previousTimestamp) / 60000))
           : undefined;
 
         if (timestamp !== undefined) {
-          firstTimestamp ??= timestamp;
-          lastTimestamp = timestamp;
           previousTimestamp = timestamp;
         }
 
@@ -129,22 +141,31 @@ export class EmeraldNightmarePageComponent implements OnInit {
           timestamp,
           positionPercent,
           splitMinutes,
-          isFirstKill: !!kill && firstGuild?.toLocaleLowerCase() === guild.toLocaleLowerCase()
+          isFirstKill: !!kill && firstGuild?.toLocaleLowerCase() === guild.toLocaleLowerCase(),
+          isVisible
         };
       });
-      const completed = checkpoints.filter(checkpoint => checkpoint.kill).length;
+      const visibleCheckpoints = checkpoints.filter(checkpoint => checkpoint.isVisible);
+      const completed = visibleCheckpoints.length;
       const positions = checkpoints
+        .filter(checkpoint => checkpoint.isVisible)
         .map(checkpoint => checkpoint.positionPercent)
         .filter((position): position is number => position !== undefined);
       const progressStart = positions.length ? Math.min(...positions) : undefined;
       const progressEnd = positions.length ? Math.max(...positions) : undefined;
+      const visibleTimestamps = visibleCheckpoints
+        .map(checkpoint => checkpoint.timestamp)
+        .filter((timestamp): timestamp is number => timestamp !== undefined);
+      const visibleFirstTimestamp = visibleTimestamps.at(0);
+      const visibleLastTimestamp = visibleTimestamps.at(-1);
 
       return {
         guild,
         color: GUILD_COLORS[index % GUILD_COLORS.length],
         completed,
-        totalMinutes: firstTimestamp !== undefined && lastTimestamp !== undefined && completed > 1
-          ? Math.round((lastTimestamp - firstTimestamp) / 60000)
+        isLeader: false,
+        totalMinutes: visibleFirstTimestamp !== undefined && visibleLastTimestamp !== undefined && completed > 1
+          ? Math.round((visibleLastTimestamp - visibleFirstTimestamp) / 60000)
           : undefined,
         progressStart,
         progressWidth: progressStart !== undefined && progressEnd !== undefined
@@ -152,17 +173,65 @@ export class EmeraldNightmarePageComponent implements OnInit {
           : undefined,
         checkpoints
       };
-    }).sort((left, right) => right.completed - left.completed ||
-      (left.checkpoints.at(-1)?.timestamp ?? Number.MAX_SAFE_INTEGER) -
-      (right.checkpoints.at(-1)?.timestamp ?? Number.MAX_SAFE_INTEGER));
+    }).sort((left, right) => {
+      const leftFinalKills = left.checkpoints.filter(checkpoint => checkpoint.kill).length;
+      const rightFinalKills = right.checkpoints.filter(checkpoint => checkpoint.kill).length;
+      const leftFinish = left.checkpoints.filter(checkpoint => checkpoint.kill).at(-1)?.timestamp;
+      const rightFinish = right.checkpoints.filter(checkpoint => checkpoint.kill).at(-1)?.timestamp;
+      return rightFinalKills - leftFinalKills ||
+        (leftFinish ?? Number.MAX_SAFE_INTEGER) - (rightFinish ?? Number.MAX_SAFE_INTEGER) ||
+        left.guild.localeCompare(right.guild);
+    });
+
+    const liveStandings = [...timelines].sort((left, right) => {
+      const leftLatest = left.checkpoints.filter(checkpoint => checkpoint.isVisible).at(-1)?.timestamp;
+      const rightLatest = right.checkpoints.filter(checkpoint => checkpoint.isVisible).at(-1)?.timestamp;
+      return right.completed - left.completed ||
+        (leftLatest ?? Number.MAX_SAFE_INTEGER) - (rightLatest ?? Number.MAX_SAFE_INTEGER) ||
+        left.guild.localeCompare(right.guild);
+    });
+    const leaderGuild = liveStandings[0]?.completed ? liveStandings[0].guild : undefined;
+
+    return timelines.map(timeline => ({
+      ...timeline,
+      isLeader: timeline.guild === leaderGuild
+    }));
   });
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.stopPlayback());
     this.loadData();
   }
 
   retryLoad(): void {
     this.loadData();
+  }
+
+  togglePlayback(): void {
+    if (this.isPlaying()) {
+      this.stopPlayback();
+      return;
+    }
+
+    if (this.playbackMinute() >= TIMELINE_DURATION_MINUTES) {
+      this.playbackMinute.set(0);
+    }
+
+    this.isPlaying.set(true);
+    this.playbackTimer = setInterval(() => {
+      const nextMinute = this.playbackMinute() + 1;
+      if (nextMinute >= TIMELINE_DURATION_MINUTES) {
+        this.playbackMinute.set(TIMELINE_DURATION_MINUTES);
+        this.stopPlayback();
+      } else {
+        this.playbackMinute.set(nextMinute);
+      }
+    }, 200);
+  }
+
+  seekPlayback(event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    this.playbackMinute.set(Math.min(TIMELINE_DURATION_MINUTES, Math.max(0, value)));
   }
 
   trackBoss(index: number, boss: BossView): BossKey {
@@ -230,6 +299,14 @@ export class EmeraldNightmarePageComponent implements OnInit {
           this.isLoading.set(false);
         }
       });
+  }
+
+  private stopPlayback(): void {
+    if (this.playbackTimer !== undefined) {
+      clearInterval(this.playbackTimer);
+      this.playbackTimer = undefined;
+    }
+    this.isPlaying.set(false);
   }
 
   private fiveSlots(guilds: GuildKill[] | undefined): GuildKill[] {
