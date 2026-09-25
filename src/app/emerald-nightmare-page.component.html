@@ -22,7 +22,11 @@
   <section class="progression-timeline" *ngIf="!isLoading() && !loadError()" aria-label="Guild progression timeline">
     <div class="race-playback" aria-label="Race playback controls">
       <div class="playback-actions">
-        <button type="button" class="playback-button" (click)="togglePlayback()">
+        <button
+          type="button"
+          class="playback-button"
+          [class.attention]="!isPlaying()"
+          (click)="togglePlayback()">
           <span aria-hidden="true">{{ isPlaying() ? 'Ⅱ' : '▶' }}</span>
           {{ playbackButtonLabel() }}
         </button>

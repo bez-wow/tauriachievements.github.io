@@ -75,7 +75,9 @@
 .race-playback { position: relative; z-index: 2; display: grid; grid-template-columns: auto 64px minmax(180px, 1fr) auto; align-items: center; gap: 14px; min-height: 58px; padding: 10px 18px; border-bottom: 1px solid rgba(255, 91, 54, .2); background: linear-gradient(90deg, rgba(50, 5, 16, .72), rgba(12, 3, 10, .9)); }
 .playback-actions { display: flex; align-items: center; gap: 7px; }
 .playback-button { display: inline-flex; min-width: 92px; align-items: center; justify-content: center; gap: 8px; padding: 8px 13px; border: 1px solid rgba(255, 111, 70, .68); border-radius: 7px; background: linear-gradient(145deg, #4d0b17, #24050c); color: #fff0e8; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; box-shadow: 0 0 14px rgba(225, 37, 29, .18); }
-.playback-button:hover { border-color: #ff8a5d; background: linear-gradient(145deg, #671020, #30060f); }
+.playback-button.attention { animation: replay-glow 1.8s ease-in-out infinite; }
+.playback-button:hover { border-color: #ffad75; background: linear-gradient(145deg, #671020, #30060f); box-shadow: 0 0 9px rgba(255, 135, 57, .95), 0 0 25px rgba(255, 80, 20, .7); }
+.playback-button.attention:hover { animation-play-state: paused; }
 .playback-button:focus-visible { outline: 2px solid #ff9a73; outline-offset: 2px; }
 .playback-reset { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 10px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 7px; background: rgba(255, 255, 255, .035); color: #bca5aa; font: inherit; font-size: .76rem; font-weight: 750; cursor: pointer; }
 .playback-reset:hover { border-color: rgba(255, 154, 115, .55); color: #ffe2d5; }
@@ -137,9 +139,21 @@
   100% { opacity: 1; transform: translateX(-50%) scale(1); filter: brightness(1); }
 }
 
+@keyframes replay-glow {
+  0%, 100% {
+    border-color: rgba(255, 111, 70, .68);
+    box-shadow: 0 0 6px rgba(255, 119, 45, .28), 0 0 14px rgba(225, 37, 29, .16);
+  }
+  50% {
+    border-color: #ffad75;
+    box-shadow: 0 0 10px rgba(255, 145, 65, .95), 0 0 28px rgba(255, 76, 18, .72);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .checkpoint.killed { animation: none; }
   .lane-progress { transition: none; }
+  .playback-button.attention { animation: none; box-shadow: 0 0 12px rgba(255, 119, 45, .58); }
 }
 .raid-map {
   position: relative;
