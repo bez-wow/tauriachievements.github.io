@@ -13,6 +13,7 @@ interface GuildKill {
   realm?: string;
   date?: string;
   time?: string;
+  youtubeUrl?: string;
 }
 
 type EmeraldNightmareDataset = Partial<Record<BossKey, GuildKill[]>>;
@@ -333,7 +334,8 @@ export class EmeraldNightmarePageComponent implements OnInit {
         guild: kill?.guild?.trim() ?? '',
         realm: legacyFields ? undefined : realm,
         date: legacyFields ? this.normaliseDate(realm) : (rawDate ? this.normaliseDate(rawDate) : undefined),
-        time: legacyFields ? rawDate : rawTime
+        time: legacyFields ? rawDate : rawTime,
+        youtubeUrl: kill?.youtubeUrl?.trim() || undefined
       };
     });
   }

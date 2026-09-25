@@ -149,7 +149,7 @@
             <ng-template #availableGuild>
               <span class="guild-name">Available</span>
             </ng-template>
-            <span class="kill-meta" *ngIf="kill.realm || kill.date || kill.time">
+            <span class="kill-meta" *ngIf="kill.realm || kill.date || kill.time || kill.youtubeUrl">
               <span
                 class="realm-badge"
                 *ngIf="kill.realm">
@@ -159,6 +159,19 @@
                 {{ formatKillDate(kill.date) }}<ng-container *ngIf="kill.time"> &middot; {{ kill.time }}</ng-container>
               </time>
               <time *ngIf="!kill.date && kill.time">{{ kill.time }}</time>
+              <a
+                *ngIf="kill.youtubeUrl"
+                class="youtube-link"
+                [href]="kill.youtubeUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="'Watch ' + kill.guild + ' defeat ' + boss.name + ' on YouTube'"
+                title="Watch the kill on YouTube">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" />
+                  <path class="youtube-play" d="m9.6 15.7 6.3-3.7-6.3-3.7v7.4Z" />
+                </svg>
+              </a>
             </span>
           </span>
         </li>

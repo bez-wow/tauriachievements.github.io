@@ -214,6 +214,11 @@
 .guild-card-link { width: fit-content; max-width: 100%; text-decoration: none; }
 .guild-card-link:hover { color: #ff9d76; text-decoration: underline; text-underline-offset: 3px; }
 .guild-card-link:focus-visible { border-radius: 2px; outline: 2px solid #ff744b; outline-offset: 2px; }
+.youtube-link { display: inline-grid; width: 20px; height: 14px; flex: 0 0 20px; align-self: center; place-items: center; color: #ff3b30; line-height: 0; }
+.youtube-link svg { display: block; width: 14px; height: 14px; fill: currentColor; }
+.youtube-link .youtube-play { fill: #fff; }
+.youtube-link:hover { color: #ff6259; }
+.youtube-link:focus-visible { outline: 2px solid #ff8a72; outline-offset: 2px; }
 .guild-ranking .empty .guild-name { color: #805a5e; font-style: italic; font-weight: 500; }
 .kill-details { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
 .kill-meta { display: flex; min-width: 0; align-items: center; gap: 7px; color: #aa9295; font-size: .75rem; line-height: 1.1; }
