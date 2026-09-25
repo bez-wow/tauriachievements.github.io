@@ -17,38 +17,13 @@
   <ng-container *ngIf="showContent()">
     <section class="analysis-grid">
       <article class="activity-panel activity-panel--daily" aria-label="Battleground counts on selected day">
-        <div class="panel-heading bg-count-toolbar">
-          <section class="date-console date-console--inline" aria-label="Battleground day filter">
-            <label class="date-field">
-              <span>Timeline</span>
-              <app-filter-dropdown
-                dropdownId="battlegroundTimeline"
-                triggerId="battlegroundTimelineTrigger"
-                ariaLabel="Battleground timeline"
-                [options]="eraOptions"
-                [selectedValue]="selectedEra()"
-                [compact]="true"
-                (selectionChange)="setSelectedEra($event)" />
-            </label>
-            <label class="date-field">
-              <span>Date</span>
-              <input
-                type="date"
-                [attr.min]="dateBounds()?.min ?? null"
-                [attr.max]="dateBounds()?.max ?? null"
-                [value]="selectedDay()"
-                (input)="setSelectedDay($any($event.target).value)" />
-            </label>
-          </section>
-        </div>
-
         <div class="bg-count-groups">
           <section
             class="bg-count-group"
             *ngFor="let group of stats().battlegroundGroups; trackBy: trackBattlegroundDayGroup">
             <div class="bg-count-group-heading">
               <span>{{ group.label }}</span>
-              <small>{{ group.totalStarts | number }} starts</small>
+              <small>{{ group.totalStarts | number }} {{ group.totalStarts === 1 ? 'start' : 'starts' }}</small>
             </div>
             <div class="bg-count-list">
               <button
@@ -59,7 +34,7 @@
                 *ngFor="let row of group.rows; trackBy: trackBattlegroundRow">
                 <div class="bg-count-main">
                   <span>{{ row.name }}</span>
-                  <strong>{{ row.total | number }} starts</strong>
+                  <strong>{{ row.total | number }} {{ row.total === 1 ? 'start' : 'starts' }}</strong>
                 </div>
               </button>
             </div>
@@ -68,6 +43,29 @@
       </article>
 
       <aside class="analysis-side">
+        <section class="date-console date-console--inline" aria-label="Battleground filters">
+          <label class="date-field">
+            <span>Timeline</span>
+            <app-filter-dropdown
+              dropdownId="battlegroundTimeline"
+              triggerId="battlegroundTimelineTrigger"
+              ariaLabel="Battleground timeline"
+              [options]="eraOptions"
+              [selectedValue]="selectedEra()"
+              [compact]="true"
+              (selectionChange)="setSelectedEra($event)" />
+          </label>
+          <label class="date-field">
+            <span>Date</span>
+            <input
+              type="date"
+              [attr.min]="dateBounds()?.min ?? null"
+              [attr.max]="dateBounds()?.max ?? null"
+              [value]="selectedDay()"
+              (input)="setSelectedDay($any($event.target).value)" />
+          </label>
+        </section>
+
         <article class="activity-panel activity-panel--hourly" aria-label="Hourly battleground volume">
           <div class="panel-heading">
             <div>
@@ -117,15 +115,19 @@
     </section>
 
     <section class="activity-panel" aria-label="Battleground average durations">
-      <div class="panel-heading">
+      <div class="panel-heading duration-heading">
         <div>
           <span
             class="duration-range-label"
             *ngIf="stats().durationRangeStartLabel && stats().durationRangeEndLabel; else durationRangeFallback">
             Data collected from
-            <strong>{{ stats().durationRangeStartLabel }}</strong>
+            <strong>
+              {{ stats().durationRangeStartLabel }}<ng-container *ngIf="selectedEra() === 'legion'"> (Legion release)</ng-container>
+            </strong>
             to
-            <strong>{{ stats().durationRangeEndLabel }}</strong>
+            <strong>
+              {{ stats().durationRangeEndLabel }}<ng-container *ngIf="selectedEra() === 'legion'"> (Today)</ng-container>
+            </strong>
           </span>
           <ng-template #durationRangeFallback>
             <span class="duration-range-label">{{ stats().durationRangeLabel }}</span>
