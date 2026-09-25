@@ -20,6 +20,18 @@
         <div class="panel-heading bg-count-toolbar">
           <section class="date-console date-console--inline" aria-label="Battleground day filter">
             <label class="date-field">
+              <span>Timeline</span>
+              <app-filter-dropdown
+                dropdownId="battlegroundTimeline"
+                triggerId="battlegroundTimelineTrigger"
+                ariaLabel="Battleground timeline"
+                [options]="eraOptions"
+                [selectedValue]="selectedEra()"
+                [compact]="true"
+                (selectionChange)="setSelectedEra($event)" />
+            </label>
+            <label class="date-field">
+              <span>Date</span>
               <input
                 type="date"
                 [attr.min]="dateBounds()?.min ?? null"
@@ -101,42 +113,6 @@
           </div>
         </article>
 
-        <article class="recommendation-panel recommendation-panel--compact" aria-label="Queue time recommendations">
-          <div class="panel-heading">
-            <div>
-              <span class="metric-label">Recommendations</span>
-              <h2>Epic queue windows</h2>
-            </div>
-          </div>
-
-          <div class="recommendation-list">
-            <div
-              class="recommendation-card"
-              *ngFor="let recommendation of stats().queueRecommendations; trackBy: trackQueueRecommendation">
-              <div class="recommendation-main">
-                <div>
-                  <span>{{ recommendation.battlegroundName }}</span>
-                  <strong>{{ recommendation.bestWindowLabel }}</strong>
-                </div>
-              </div>
-              <small>
-                {{ recommendation.bestWindowCount | number }} of {{ recommendation.totalStarts | number }} starts
-                in the best 2-hour
-              </small>
-              <div class="queue-hours" *ngIf="recommendation.topHours.length > 0">
-                <div
-                  class="queue-hour"
-                  *ngFor="let hour of recommendation.topHours; trackBy: trackQueueHour">
-                  <span>{{ hour.label }}</span>
-                  <div class="queue-hour-track" aria-hidden="true">
-                    <span [style.width.%]="hour.totalShare"></span>
-                  </div>
-                  <strong>{{ hour.count | number }}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
       </aside>
     </section>
 

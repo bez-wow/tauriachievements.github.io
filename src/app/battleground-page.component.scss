@@ -34,7 +34,7 @@
 }
 
 .date-console--inline {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   width: 100%;
   padding: 0;
   border: 0;
@@ -75,12 +75,17 @@
       box-shadow: 0 0 0 3px rgba(121, 217, 201, 0.14);
     }
   }
+
 }
 
 .date-console--inline .date-field {
   input {
     min-height: 38px;
   }
+}
+
+.date-console--inline app-filter-dropdown {
+  min-width: 0;
 }
 
 .console-button,

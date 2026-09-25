@@ -7,16 +7,19 @@ import {
   BattlegroundDayRow,
   BattlegroundDurationGroup,
   BattlegroundDurationRow,
+  BattlegroundEra,
   BattlegroundHourlyChartPoint,
-  BattlegroundQueueHour,
-  BattlegroundQueueRecommendation,
   NormalizedBattleground,
   computeBattlegroundStats,
+  filterBattlegroundsByEra,
   formatDuration,
   getCompletedBattlegroundDateBounds,
   normalizeBattlegrounds
 } from './battleground-stats';
 import { BattlegroundCollectorState, BattlegroundsService } from './battlegrounds.service';
+import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
+import { FilterDropdownComponent } from './filter-dropdown.component';
+import { FilterDropdownValue } from './filter-dropdown.types';
 import { UpdateBarComponent } from './update-bar.component';
 
 interface BattlegroundStartEntry {
@@ -39,18 +42,26 @@ interface BattlegroundStartDetails {
   groups: BattlegroundStartGroup[];
 }
 
+const BATTLEGROUND_ERA_OPTIONS: ReadonlyArray<{ value: BattlegroundEra; label: string }> = [
+  { value: 'legion', label: 'Legion' },
+  { value: 'wod-prepatch', label: 'WoD Prepatch' }
+];
+
 @Component({
   selector: 'app-battleground-page',
   templateUrl: './battleground-page.component.html',
   styleUrls: ['./battleground-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BattlegroundPageComponent implements OnInit {
   private readonly battlegroundsService = inject(BattlegroundsService);
 
   readonly battlegrounds = signal(normalizeBattlegrounds([]));
+  readonly selectedEra = signal<BattlegroundEra>('legion');
+  readonly eraOptions = BATTLEGROUND_ERA_OPTIONS;
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedDay = signal('');
@@ -58,13 +69,16 @@ export class BattlegroundPageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
 
-  readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.battlegrounds()));
+  readonly filteredBattlegrounds = computed(() =>
+    filterBattlegroundsByEra(this.battlegrounds(), this.selectedEra())
+  );
+  readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.filteredBattlegrounds()));
   readonly hasData = computed(() => this.battlegrounds().length > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());
   readonly showContent = computed(() => !this.showLoading() && !this.showError() && this.hasData());
   readonly stats = computed(() =>
-    computeBattlegroundStats(this.battlegrounds(), this.selectedDay())
+    computeBattlegroundStats(this.filteredBattlegrounds(), this.selectedDay())
   );
   readonly selectedBattlegroundDetails = computed(() => {
     const name = this.selectedBattlegroundName();
@@ -87,6 +101,16 @@ export class BattlegroundPageComponent implements OnInit {
 
   retryLoad(): void {
     this.loadBattlegrounds();
+  }
+
+  setSelectedEra(value: FilterDropdownValue): void {
+    if (value !== 'legion' && value !== 'wod-prepatch') {
+      return;
+    }
+
+    this.closeBattlegroundStarts();
+    this.selectedEra.set(value);
+    this.initializeDateSelection();
   }
 
   setSelectedDay(value: string): void {
@@ -124,14 +148,6 @@ export class BattlegroundPageComponent implements OnInit {
 
   trackHourlyChartPoint(_index: number, point: BattlegroundHourlyChartPoint): string {
     return point.hour.toString();
-  }
-
-  trackQueueRecommendation(_index: number, recommendation: BattlegroundQueueRecommendation): string {
-    return recommendation.battlegroundName;
-  }
-
-  trackQueueHour(_index: number, hour: BattlegroundQueueHour): string {
-    return hour.hour.toString();
   }
 
   trackDurationRow(_index: number, row: BattlegroundDurationRow): string {
@@ -246,7 +262,7 @@ export class BattlegroundPageComponent implements OnInit {
 
   private buildBattlegroundStartGroups(name: string): BattlegroundStartGroup[] {
     const selectedDay = this.selectedDay();
-    const records = this.battlegrounds()
+    const records = this.filteredBattlegrounds()
       .filter((record) => record.name === name && record.date === selectedDay)
       .sort((left, right) => this.compareStartRecords(left, right));
     const groups = new Map<string, BattlegroundStartGroup>();

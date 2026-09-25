@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BattlegroundRecord,
   computeBattlegroundStats,
+  filterBattlegroundsByEra,
   formatDuration,
   getBattlegroundDateBounds,
   getCompletedBattlegroundDateBounds,
@@ -196,6 +197,20 @@ describe('computeBattlegroundStats', () => {
     expect(stats.durationRows.map((row) => row.name)).not.toContain("Blade's Edge Arena");
   });
 
+  it('does not display arena rows in an Other BGs daily group', () => {
+    const records = normalizeBattlegrounds([
+      ...sampleRecords,
+      { bgName: 'Black Rook Hold Arena', bgStartTime: '2026.06.30 22.00' },
+      { bgName: "Ashamane's Fall", bgStartTime: '2026.06.30 22.10' }
+    ]);
+    const stats = computeBattlegroundStats(records, '2026-06-30');
+
+    expect(stats.battlegroundGroups.map((group) => group.label)).not.toContain('Other BGs');
+    expect(stats.battlegroundGroups.flatMap((group) => group.rows.map((row) => row.name))).not.toContain(
+      'Black Rook Hold Arena'
+    );
+  });
+
   it('recommends queue windows for Alterac Valley and Isle of Conquest from historical starts', () => {
     const records = normalizeBattlegrounds([
       ...sampleRecords,
@@ -218,6 +233,24 @@ describe('computeBattlegroundStats', () => {
     expect(alterac?.bestWindowCount).toBe(3);
     expect(isle?.bestWindowLabel).toBe('14:00-16:00');
     expect(isle?.bestWindowCount).toBe(2);
+  });
+});
+
+describe('filterBattlegroundsByEra', () => {
+  it('starts Legion at 2026-07-15 09:00 and keeps earlier starts in WoD Prepatch', () => {
+    const records = normalizeBattlegrounds([
+      { name: 'Warsong Gulch', startTime: '2026.07.15 08.59' },
+      { name: 'Arathi Basin', startTime: '2026.07.15 09.00' },
+      { name: 'Twin Peaks', startTime: '2026.07.16 07.00' }
+    ]);
+
+    expect(filterBattlegroundsByEra(records, 'wod-prepatch').map((record) => record.name)).toEqual([
+      'Warsong Gulch'
+    ]);
+    expect(filterBattlegroundsByEra(records, 'legion').map((record) => record.name)).toEqual([
+      'Arathi Basin',
+      'Twin Peaks'
+    ]);
   });
 });
 

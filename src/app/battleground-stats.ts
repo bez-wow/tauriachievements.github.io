@@ -30,6 +30,13 @@ export interface BattlegroundDateBounds {
   max: string;
 }
 
+export type BattlegroundEra = 'legion' | 'wod-prepatch';
+
+export const LEGION_BATTLEGROUND_START = {
+  date: '2026-07-15',
+  minuteOfDay: 9 * 60
+} as const;
+
 export interface BattlegroundHourlyTotal {
   hour: number;
   label: string;
@@ -244,6 +251,21 @@ export function getCompletedBattlegroundDateBounds(
   };
 }
 
+export function filterBattlegroundsByEra(
+  records: ReadonlyArray<NormalizedBattleground>,
+  era: BattlegroundEra
+): NormalizedBattleground[] {
+  return records.filter((record) => {
+    const isLegion = record.date > LEGION_BATTLEGROUND_START.date
+      || (
+        record.date === LEGION_BATTLEGROUND_START.date
+        && (record.startMinuteOfDay ?? -1) >= LEGION_BATTLEGROUND_START.minuteOfDay
+      );
+
+    return era === 'legion' ? isLegion : !isLegion;
+  });
+}
+
 export function computeBattlegroundStats(
   records: ReadonlyArray<NormalizedBattleground>,
   selectedDay: string
@@ -400,20 +422,8 @@ function formatDateRangeLabel(bounds: BattlegroundDateBounds | undefined): strin
 
 function buildBattlegroundDayGroups(rows: ReadonlyArray<BattlegroundDayRow>): BattlegroundDayGroup[] {
   const rowsByName = new Map(rows.map((row) => [row.name, row]));
-  const groupedNames = new Set<string>(BATTLEGROUND_DAY_GROUPS.flatMap((group) => [...group.names]));
-  const groups = BATTLEGROUND_DAY_GROUPS
+  return BATTLEGROUND_DAY_GROUPS
     .map((group) => buildBattlegroundDayGroup(group.label, group.names, rowsByName));
-  const otherRows = rows.filter((row) => !groupedNames.has(row.name));
-
-  if (otherRows.length > 0) {
-    groups.push({
-      label: 'Other BGs',
-      totalStarts: otherRows.reduce((total, row) => total + row.total, 0),
-      rows: otherRows
-    });
-  }
-
-  return groups;
 }
 
 function buildBattlegroundDayGroup(
