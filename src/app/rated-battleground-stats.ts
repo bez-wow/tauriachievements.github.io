@@ -147,6 +147,12 @@ export interface RatedTeamSummary {
   members: RatedBattlegroundMember[];
 }
 
+export interface RatedPlayerMatchHistoryEntry {
+  match: RatedBattlegroundMatch;
+  member: RatedBattlegroundMember;
+  won: boolean;
+}
+
 export interface RatedObjectiveValue {
   label: string;
   value: number;

@@ -1,0 +1,90 @@
+<div class="player-history-backdrop" (click)="close()">
+  <section
+    class="player-history-modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="player.name + ' rated battleground history'"
+    (click)="$event.stopPropagation()">
+    <header class="player-history-header">
+      <div class="history-player">
+        <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
+        <div>
+          <span class="eyebrow">Player match history</span>
+          <h2 [style.color]="getClassColor(player.classId)">{{ player.name }}</h2>
+          <p>
+            {{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}
+            <ng-container *ngIf="player.guild"> &lt;{{ player.guild }}&gt;</ng-container>
+            &middot; {{ player.realm }} &middot; {{ getFactionLabel(player.faction) }}
+          </p>
+        </div>
+      </div>
+
+      <div class="history-record">
+        <div><strong>{{ player.games }}</strong><span>Games</span></div>
+        <div><strong class="wins">{{ player.wins }}</strong><span>Wins</span></div>
+        <div><strong class="losses">{{ player.losses }}</strong><span>Losses</span></div>
+        <div><strong>{{ player.winRate | percent:'1.0-0' }}</strong><span>Win rate</span></div>
+      </div>
+
+      <button type="button" class="history-close" aria-label="Close player match history" (click)="close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </button>
+    </header>
+
+    <div class="player-history-body">
+      <div class="history-order-label">
+        <span>Oldest</span>
+        <span>{{ history.length }} recorded appearances</span>
+        <span>Newest</span>
+      </div>
+
+      <ol class="history-timeline">
+        <li *ngFor="let entry of history; let index = index">
+          <div class="history-marker"><span>{{ index + 1 }}</span></div>
+
+          <article class="history-match-card" [class.history-match-card--win]="entry.won">
+            <header>
+              <div>
+                <div class="history-match-meta">
+                  <span [class.win]="entry.won">{{ entry.won ? 'Victory' : 'Defeat' }}</span>
+                  <span>Side {{ entry.member.side + 1 }}</span>
+                </div>
+                <h3>{{ entry.match.mapname }}</h3>
+                <p>{{ formatUnixDateTime(entry.match.starttime) }} &middot; {{ formatDuration(entry.match.length) }}</p>
+              </div>
+              <div class="history-rating">
+                <span>{{ entry.member.personal_rating | number }} rating</span>
+                <strong [class.positive]="entry.member.personal_rating_change > 0" [class.negative]="entry.member.personal_rating_change < 0">
+                  {{ entry.member.personal_rating_change > 0 ? '+' : '' }}{{ entry.member.personal_rating_change }}
+                </strong>
+              </div>
+            </header>
+
+            <div class="history-stat-grid">
+              <div><span>Killing blows</span><strong>{{ entry.member.killing_blows }}</strong></div>
+              <div><span>Deaths</span><strong>{{ entry.member.deaths }}</strong></div>
+              <div><span>Damage</span><strong>{{ formatCompact(entry.member.damage_done) }}</strong></div>
+              <div><span>Healing</span><strong>{{ formatCompact(entry.member.healing_done) }}</strong></div>
+              <div><span>Damage taken</span><strong>{{ formatCompact(entry.member.damage_taken) }}</strong></div>
+              <div><span>Healing taken</span><strong>{{ formatCompact(entry.member.healing_taken) }}</strong></div>
+              <div>
+                <span>MMR</span>
+                <strong>{{ entry.member.mmr_rating | number }}</strong>
+                <small [class.positive]="entry.member.mmr_rating_change > 0" [class.negative]="entry.member.mmr_rating_change < 0">
+                  {{ entry.member.mmr_rating_change > 0 ? '+' : '' }}{{ entry.member.mmr_rating_change }}
+                </small>
+              </div>
+              <div><span>Honor</span><strong>{{ entry.member.honor | number }}</strong></div>
+            </div>
+
+            <div class="history-objectives">
+              <span *ngFor="let objective of getObjectives(entry.match, entry.member)">
+                <strong>{{ objective.value | number }}</strong> {{ objective.label }}
+              </span>
+            </div>
+          </article>
+        </li>
+      </ol>
+    </div>
+  </section>
+</div>

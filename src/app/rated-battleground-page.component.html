@@ -135,7 +135,6 @@
         <div>
           <span class="eyebrow">Cross-match leaderboard</span>
           <h2>Player performance</h2>
-          <p>Characters are joined by realm and GUID, so repeat appearances become one season line.</p>
         </div>
 
         <div class="leaderboard-controls">
@@ -165,19 +164,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let player of rankedPlayers(); let index = index; trackBy: playerTrackKey">
+            <tr
+              class="player-history-trigger"
+              role="button"
+              tabindex="0"
+              [attr.aria-label]="'Open match history for ' + player.name"
+              (click)="openPlayerHistory(player)"
+              (keydown.enter)="openPlayerHistory(player)"
+              (keydown.space)="$event.preventDefault(); openPlayerHistory(player)"
+              *ngFor="let player of rankedPlayers(); let index = index; trackBy: playerTrackKey">
               <td class="rank-cell"><span [class.top-rank]="index < 3">{{ index + 1 }}</span></td>
               <td>
                 <div class="player-cell">
                   <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
                   <div>
                     <div class="player-primary">
-                      <a
-                        [href]="playerArmoryUrl(player)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        [style.color]="getClassColor(player.classId)">{{ player.name }}</a>
-                      <span>{{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}<ng-container *ngIf="player.guild"> · &lt;{{ player.guild }}&gt;</ng-container></span>
+                      <strong
+                        class="player-name"
+                        [style.color]="getClassColor(player.classId)">{{ player.name }}</strong>
+                      <span>{{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}<ng-container *ngIf="player.guild"> &lt;{{ player.guild }}&gt;</ng-container></span>
                     </div>
                     <small>{{ player.realm }} · {{ getFactionLabel(player.faction) }}</small>
                   </div>
@@ -350,5 +355,11 @@
     </section>
   </ng-container>
 </main>
+
+<app-rated-battleground-player-history
+  *ngIf="selectedPlayer() as player"
+  [player]="player"
+  [history]="selectedPlayerHistory()"
+  (closeHistory)="closePlayerHistory()" />
 
 <app-back-to-top-button />

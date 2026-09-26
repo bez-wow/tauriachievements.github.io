@@ -11,6 +11,7 @@ import {
   RatedBattlegroundMember,
   RatedLeaderboardMetric,
   RatedMapSummary,
+  RatedPlayerMatchHistoryEntry,
   RatedPlayerSummary,
   RatedTeamSummary,
   buildRatedBattlegroundAnalytics,
@@ -27,6 +28,7 @@ import {
   metricValue
 } from './rated-battleground-stats';
 import { RatedBattlegroundsService } from './rated-battlegrounds.service';
+import { RatedBattlegroundPlayerHistoryComponent } from './rated-battleground-player-history.component';
 import { UpdateBarComponent } from './update-bar.component';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
@@ -49,7 +51,13 @@ const METRIC_LABELS: Readonly<Record<RatedLeaderboardMetric, string>> = Object.f
   templateUrl: './rated-battleground-page.component.html',
   styleUrls: ['./rated-battleground-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent],
+  imports: [
+    CommonModule,
+    UpdateBarComponent,
+    BackToTopButtonComponent,
+    FilterDropdownComponent,
+    RatedBattlegroundPlayerHistoryComponent
+  ],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -62,6 +70,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly selectedMap = signal('all');
   readonly selectedMetric = signal<RatedLeaderboardMetric>('rating');
   readonly selectedMatchId = signal<number | undefined>(undefined);
+  readonly selectedPlayer = signal<RatedPlayerSummary | undefined>(undefined);
 
   readonly metricOptions = METRIC_OPTIONS;
   readonly allAnalytics = computed(() => buildRatedBattlegroundAnalytics(this.matches()));
@@ -93,6 +102,18 @@ export class RatedBattlegroundPageComponent implements OnInit {
     }
     const winningSide = getWinningSide(match);
     return [buildTeamSummary(match, winningSide), buildTeamSummary(match, winningSide === 0 ? 1 : 0)];
+  });
+  readonly selectedPlayerHistory = computed<RatedPlayerMatchHistoryEntry[]>(() => {
+    const player = this.selectedPlayer();
+    if (!player) {
+      return [];
+    }
+
+    return this.matches()
+      .flatMap(match => match.members
+        .filter(member => member.guid === player.guid && member.realmid === player.realmId)
+        .map(member => ({ match, member, won: member.side === getWinningSide(match) })))
+      .sort((left, right) => left.match.starttime - right.match.starttime || left.match.matchid - right.match.matchid);
   });
   readonly lastEdited = computed(() => {
     const latest = this.matches().at(-1)?.starttime;
@@ -141,6 +162,14 @@ export class RatedBattlegroundPageComponent implements OnInit {
     this.selectedMatchId.set(matchId);
   }
 
+  openPlayerHistory(player: RatedPlayerSummary): void {
+    this.selectedPlayer.set(player);
+  }
+
+  closePlayerHistory(): void {
+    this.selectedPlayer.set(undefined);
+  }
+
   metricLabel(): string {
     return METRIC_LABELS[this.selectedMetric()];
   }
@@ -155,10 +184,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
       return formatCompact(value);
     }
     return Math.round(value).toLocaleString();
-  }
-
-  playerArmoryUrl(player: RatedPlayerSummary): string {
-    return getArmoryUrl(player.name, player.realm);
   }
 
   memberArmoryUrl(member: RatedBattlegroundMember): string {
