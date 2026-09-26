@@ -1,0 +1,365 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  lastEditedTimeZoneLabel="Latest recorded match" />
+
+<main class="rated-shell">
+  <div class="rated-feedback loading" *ngIf="showLoading()">
+    <div class="feedback-spinner" aria-hidden="true"></div>
+    <h2>Reading the rated battleground archive...</h2>
+  </div>
+
+  <div class="rated-feedback error" *ngIf="showError()">
+    <h2>Could not load rated battleground data</h2>
+    <p>{{ loadError() }}</p>
+    <button type="button" class="action-button" (click)="retryLoad()">Try again</button>
+  </div>
+
+  <ng-container *ngIf="showContent()">
+    <section class="season-hero">
+      <div class="season-copy">
+        <div class="season-kicker">
+          <span class="live-dot" aria-hidden="true"></span>
+          Vindictive PvP Season
+        </div>
+        <h1>Rated Battleground Intelligence</h1>
+        <p>
+          Every recorded 10v10 clash, distilled into map trends, team performance,
+          rating movement and player scoreboards.
+        </p>
+        <div class="season-meta">
+          <span>{{ analytics().expansionLabel }}</span>
+          <span>Ranked queue</span>
+          <span>{{ analytics().dateRangeLabel }}</span>
+        </div>
+      </div>
+
+      <div class="season-record">
+        <span>Archive</span>
+        <strong>{{ analytics().matches | number }}</strong>
+        <small>rated matches</small>
+      </div>
+    </section>
+
+    <section class="filter-console" aria-label="Rated battleground filters">
+      <label class="filter-field">
+        <span>Battleground</span>
+        <app-filter-dropdown
+          dropdownId="ratedMapFilter"
+          triggerId="ratedMapFilterTrigger"
+          ariaLabel="Filter by battleground"
+          [options]="mapOptions()"
+          [selectedValue]="selectedMap()"
+          [compact]="true"
+          (selectionChange)="setMap($event)" />
+      </label>
+      <div class="filter-context">
+        <span>{{ analytics().matches | number }} matches in view</span>
+        <small>{{ analytics().uniquePlayers | number }} unique competitors</small>
+      </div>
+    </section>
+
+    <section class="metric-grid" aria-label="Season overview">
+      <article class="metric-card metric-card--gold">
+        <span>Rated matches</span>
+        <strong>{{ analytics().matches | number }}</strong>
+        <small>{{ analytics().playerSlots | number }} player performances</small>
+      </article>
+      <article class="metric-card metric-card--teal">
+        <span>Unique players</span>
+        <strong>{{ analytics().uniquePlayers | number }}</strong>
+        <small>Across {{ analytics().maps.length | number }} battlegrounds</small>
+      </article>
+      <article class="metric-card metric-card--violet">
+        <span>Average battle</span>
+        <strong>{{ formatDuration(analytics().averageDurationMs) }}</strong>
+        <small>{{ formatDuration(analytics().totalDurationMs) }} total combat time</small>
+      </article>
+      <article class="metric-card metric-card--red">
+        <span>Latest match</span>
+        <strong>#{{ matchArchive()[0]?.matchid }}</strong>
+        <small>{{ matchArchive()[0] ? formatUnixDateTime(matchArchive()[0].starttime) : 'Unavailable' }}</small>
+      </article>
+    </section>
+
+    <section class="overview-grid">
+      <article class="panel map-panel">
+        <header class="panel-heading">
+          <div>
+            <span class="eyebrow">Map pool</span>
+            <h2>Battleground breakdown</h2>
+          </div>
+          <span class="panel-note">Map IDs from the source archive</span>
+        </header>
+
+        <div class="map-list">
+          <article class="map-row" *ngFor="let map of analytics().maps; trackBy: mapTrackKey">
+            <div class="map-rank">{{ map.matches }}</div>
+            <div class="map-main">
+              <div class="map-title">
+                <strong>{{ map.name }}</strong>
+                <span>#{{ map.id }}</span>
+              </div>
+              <div class="map-bar" aria-hidden="true">
+                <span [style.width.%]="map.share * 100"></span>
+              </div>
+              <div class="map-meta">
+                <span>{{ map.share | percent:'1.0-0' }} of matches</span>
+                <span>{{ map.uniquePlayers | number }} players</span>
+                <span>Avg {{ formatDuration(map.averageDurationMs) }}</span>
+                <span>{{ formatDuration(map.shortestDurationMs) }}–{{ formatDuration(map.longestDurationMs) }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </article>
+
+      <article class="panel activity-panel">
+        <header class="panel-heading">
+          <div>
+            <span class="eyebrow">Season pulse</span>
+            <h2>Recorded activity</h2>
+          </div>
+        </header>
+
+        <div class="activity-chart" [attr.aria-label]="'Rated matches by day, ' + analytics().dateRangeLabel">
+          <div class="activity-column" *ngFor="let day of analytics().activity">
+            <div class="activity-value">{{ day.matches }}</div>
+            <div class="activity-track">
+              <span [style.height.%]="day.intensity * 100"></span>
+            </div>
+            <strong>{{ day.label }}</strong>
+            <small>{{ day.playerSlots }} slots</small>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel leaderboard-panel">
+      <header class="panel-heading leaderboard-heading">
+        <div>
+          <span class="eyebrow">Cross-match leaderboard</span>
+          <h2>Player performance</h2>
+          <p>Characters are joined by realm and GUID, so repeat appearances become one season line.</p>
+        </div>
+
+        <div class="leaderboard-controls">
+          <label class="search-field">
+            <span class="sr-only">Search players</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+            <input
+              type="search"
+              placeholder="Player, guild, class or spec"
+              [value]="playerSearch()"
+              (input)="setPlayerSearch($any($event.target).value)" />
+          </label>
+          <app-filter-dropdown
+            dropdownId="ratedMetricFilter"
+            triggerId="ratedMetricFilterTrigger"
+            ariaLabel="Choose leaderboard metric"
+            [options]="metricOptions"
+            [selectedValue]="selectedMetric()"
+            [compact]="true"
+            (selectionChange)="setMetric($event)" />
+        </div>
+      </header>
+
+      <div class="table-scroll">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Player</th>
+              <th scope="col">Games</th>
+              <th scope="col">Record</th>
+              <th scope="col">Win rate</th>
+              <th scope="col">Avg / peak MMR</th>
+              <th scope="col">{{ metricLabel() }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let player of rankedPlayers(); let index = index; trackBy: playerTrackKey">
+              <td class="rank-cell"><span [class.top-rank]="index < 3">{{ index + 1 }}</span></td>
+              <td>
+                <div class="player-cell">
+                  <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
+                  <div>
+                    <a
+                      [href]="playerArmoryUrl(player)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      [style.color]="getClassColor(player.classId)">{{ player.name }}</a>
+                    <span>{{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}<ng-container *ngIf="player.guild"> · &lt;{{ player.guild }}&gt;</ng-container></span>
+                    <small>{{ player.realm }} · {{ getFactionLabel(player.faction) }} · {{ formatPlayedTime(player.playedTimeSeconds) }} · {{ player.achievements | number }}/{{ player.achievementsTotal | number }} achievements</small>
+                  </div>
+                </div>
+              </td>
+              <td>{{ player.games }}</td>
+              <td><strong class="wins">{{ player.wins }}W</strong> <span class="losses">{{ player.losses }}L</span></td>
+              <td>{{ player.winRate | percent:'1.0-0' }}</td>
+              <td>{{ player.averageMmr | number:'1.0-0' }} / <strong>{{ player.peakMmr | number }}</strong></td>
+              <td class="metric-cell" [class.metric-cell--negative]="selectedMetric() === 'rating' && player.netRatingChange < 0">
+                {{ playerMetric(player) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" *ngIf="rankedPlayers().length === 0">No players match this search.</div>
+    </section>
+
+    <section class="match-section">
+      <header class="section-heading">
+        <div>
+          <span class="eyebrow">Match explorer</span>
+          <h2>Open every scoreboard</h2>
+          <p>Inspect team totals, objective work, combat throughput, ratings and character context.</p>
+        </div>
+        <span>{{ matchArchive().length }} matches</span>
+      </header>
+
+      <div class="match-tabs" role="list" aria-label="Rated battleground matches">
+        <button
+          type="button"
+          class="match-tab"
+          [class.active]="selectedMatch().matchid === match.matchid"
+          (click)="selectMatch(match.matchid)"
+          *ngFor="let match of matchArchive(); trackBy: matchTrackKey">
+          <span>#{{ match.matchid }}</span>
+          <strong>{{ match.mapname }}</strong>
+          <small>{{ formatUnixDateTime(match.starttime) }}</small>
+        </button>
+      </div>
+
+      <article class="match-detail" *ngIf="selectedMatch() as match">
+        <header class="match-detail-header">
+          <div>
+            <div class="match-badges">
+              <span>Ranked</span>
+              <span>{{ analytics().expansionLabel }}</span>
+              <span>Map #{{ match.mapid }}</span>
+              <span>{{ match.side0 }}v{{ match.side1 }}</span>
+            </div>
+            <h2>{{ match.mapname }}</h2>
+            <p>Match #{{ match.matchid }} · {{ formatUnixDateTime(match.starttime) }} · {{ formatDuration(match.length) }}</p>
+          </div>
+          <div class="match-verdict">
+            <span>Winner</span>
+            <strong>Side {{ match.winner + 1 }}</strong>
+            <small>{{ match.winnermmravg | number }} team MMR</small>
+          </div>
+        </header>
+
+        <div class="team-summary-grid">
+          <article class="team-summary" [class.team-summary--winner]="team.won" *ngFor="let team of selectedTeams()">
+            <header>
+              <div>
+                <span>Side {{ team.side + 1 }}</span>
+                <strong>{{ teamName(team) }}</strong>
+              </div>
+              <b>{{ team.memberCount }} players</b>
+            </header>
+            <div class="team-stat-grid">
+              <div><span>Team MMR</span><strong>{{ team.averageMmr | number }}</strong></div>
+              <div><span>Personal avg</span><strong>{{ team.averagePersonalRating | number }}</strong></div>
+              <div><span>Damage</span><strong>{{ formatCompact(team.damageDone) }}</strong></div>
+              <div><span>Healing</span><strong>{{ formatCompact(team.healingDone) }}</strong></div>
+              <div><span>Killing blows</span><strong>{{ team.killingBlows }}</strong></div>
+              <div><span>Deaths</span><strong>{{ team.deaths }}</strong></div>
+              <div><span>Damage taken</span><strong>{{ formatCompact(team.damageTaken) }}</strong></div>
+              <div><span>Healing taken</span><strong>{{ formatCompact(team.healingTaken) }}</strong></div>
+              <div><span>Honor</span><strong>{{ team.honor | number }}</strong></div>
+            </div>
+          </article>
+        </div>
+
+        <section class="scoreboard" *ngFor="let team of selectedTeams()">
+          <header class="scoreboard-heading" [class.winner]="team.won">
+            <div>
+              <span>Side {{ team.side + 1 }}</span>
+              <strong>{{ team.won ? 'Victory' : 'Defeat' }}</strong>
+            </div>
+            <small>{{ team.averageMmr | number }} average MMR</small>
+          </header>
+
+          <div class="table-scroll">
+            <table class="scoreboard-table">
+              <thead>
+                <tr>
+                  <th scope="col">Player</th>
+                  <th scope="col">K / D</th>
+                  <th scope="col">Damage</th>
+                  <th scope="col">Healing</th>
+                  <th scope="col">Taken / received</th>
+                  <th scope="col">Objectives</th>
+                  <th scope="col">Rating</th>
+                  <th scope="col">MMR</th>
+                  <th scope="col">Honor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let member of team.members; trackBy: memberTrackKey">
+                  <td>
+                    <div class="member-cell">
+                      <div class="member-icons">
+                        <img [src]="getClassIconPath(member['character-minimal-data'].class)" [alt]="getClassName(member['character-minimal-data'].class)" />
+                        <img [src]="raceIcon(member)" alt="" />
+                      </div>
+                      <div>
+                        <a
+                          [href]="memberArmoryUrl(member)"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          [style.color]="getClassColor(member['character-minimal-data'].class)">{{ member['character-minimal-data'].charname }}</a>
+                        <span>{{ getSpec(member.specid).name }} · {{ getSpec(member.specid).role }} · Level {{ member['character-minimal-data'].level }}</span>
+                        <small>
+                          <a
+                            *ngIf="member['character-minimal-data'].guildname; else noGuild"
+                            [href]="guildArmoryUrl(member)"
+                            target="_blank"
+                            rel="noopener noreferrer">&lt;{{ member['character-minimal-data'].guildname }}&gt;</a>
+                          <ng-template #noGuild>No guild</ng-template>
+                          · {{ member.realmName }} (#{{ member.realmid }}) · {{ getFactionLabel(member['character-minimal-data'].faction) }}
+                        </small>
+                        <small>{{ member['character-minimal-data'].achievements | number }}/{{ member['character-minimal-data'].achievements_total | number }} achievements · {{ formatPlayedTime(member['character-minimal-data'].played_time) }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td><strong>{{ member.killing_blows }}</strong> / {{ member.deaths }}</td>
+                  <td><strong>{{ formatCompact(member.damage_done) }}</strong></td>
+                  <td><strong>{{ formatCompact(member.healing_done) }}</strong></td>
+                  <td>
+                    <span class="stacked-value">{{ formatCompact(member.damage_taken) }} dmg</span>
+                    <small>{{ formatCompact(member.healing_taken) }} healing</small>
+                  </td>
+                  <td>
+                    <div class="objective-list">
+                      <span *ngFor="let objective of getObjectives(match, member)">
+                        <strong>{{ objective.value | number }}</strong> {{ objective.label }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="stacked-value">{{ member.personal_rating | number }}</span>
+                    <small [class.positive]="member.personal_rating_change > 0" [class.negative]="member.personal_rating_change < 0">
+                      {{ member.personal_rating_change > 0 ? '+' : '' }}{{ member.personal_rating_change }}
+                    </small>
+                  </td>
+                  <td>
+                    <span class="stacked-value">{{ member.mmr_rating | number }}</span>
+                    <small [class.positive]="member.mmr_rating_change > 0" [class.negative]="member.mmr_rating_change < 0">
+                      {{ member.mmr_rating_change > 0 ? '+' : '' }}{{ member.mmr_rating_change }}
+                    </small>
+                  </td>
+                  <td>{{ member.honor | number }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </article>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

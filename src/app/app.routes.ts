@@ -59,6 +59,11 @@ export const routes: Routes = [
     component: BattlegroundPageComponent
   },
   {
+    path: 'rated-battleground',
+    loadComponent: () => import('./rated-battleground-page.component')
+      .then(module => module.RatedBattlegroundPageComponent)
+  },
+  {
     path: 'ap-chest-looters',
     component: ApChestLootersPageComponent
   },
