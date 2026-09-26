@@ -26,17 +26,14 @@
           Every recorded 10v10 clash, distilled into map trends, team performance,
           rating movement and player scoreboards.
         </p>
-        <div class="season-meta">
-          <span>{{ analytics().expansionLabel }}</span>
-          <span>Ranked queue</span>
-          <span>{{ analytics().dateRangeLabel }}</span>
-        </div>
       </div>
 
-      <div class="season-record">
-        <span>Archive</span>
-        <strong>{{ analytics().matches | number }}</strong>
-        <small>rated matches</small>
+      <div class="season-aside">
+        <div class="season-record">
+          <span>Archive</span>
+          <strong>{{ analytics().matches | number }}</strong>
+          <small>rated matches</small>
+        </div>
       </div>
     </section>
 
@@ -74,10 +71,9 @@
         <strong>{{ formatDuration(analytics().averageDurationMs) }}</strong>
         <small>{{ formatDuration(analytics().totalDurationMs) }} total combat time</small>
       </article>
-      <article class="metric-card metric-card--red">
+      <article class="metric-card metric-card--red metric-card--latest">
         <span>Latest match</span>
-        <strong>#{{ matchArchive()[0]?.matchid }}</strong>
-        <small>{{ matchArchive()[0] ? formatUnixDateTime(matchArchive()[0].starttime) : 'Unavailable' }}</small>
+        <strong>{{ matchArchive()[0] ? formatUnixDateTime(matchArchive()[0].starttime) : 'Unavailable' }}</strong>
       </article>
     </section>
 
@@ -143,15 +139,6 @@
         </div>
 
         <div class="leaderboard-controls">
-          <label class="search-field">
-            <span class="sr-only">Search players</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
-            <input
-              type="search"
-              placeholder="Player, guild, class or spec"
-              [value]="playerSearch()"
-              (input)="setPlayerSearch($any($event.target).value)" />
-          </label>
           <app-filter-dropdown
             dropdownId="ratedMetricFilter"
             triggerId="ratedMetricFilterTrigger"
@@ -169,8 +156,9 @@
             <tr>
               <th scope="col">#</th>
               <th scope="col">Player</th>
-              <th scope="col">Games</th>
-              <th scope="col">Record</th>
+              <th scope="col">Games Played</th>
+              <th scope="col">Wins</th>
+              <th scope="col">Losses</th>
               <th scope="col">Win rate</th>
               <th scope="col">Avg / peak MMR</th>
               <th scope="col">{{ metricLabel() }}</th>
@@ -183,18 +171,21 @@
                 <div class="player-cell">
                   <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
                   <div>
-                    <a
-                      [href]="playerArmoryUrl(player)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      [style.color]="getClassColor(player.classId)">{{ player.name }}</a>
-                    <span>{{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}<ng-container *ngIf="player.guild"> · &lt;{{ player.guild }}&gt;</ng-container></span>
-                    <small>{{ player.realm }} · {{ getFactionLabel(player.faction) }} · {{ formatPlayedTime(player.playedTimeSeconds) }} · {{ player.achievements | number }}/{{ player.achievementsTotal | number }} achievements</small>
+                    <div class="player-primary">
+                      <a
+                        [href]="playerArmoryUrl(player)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [style.color]="getClassColor(player.classId)">{{ player.name }}</a>
+                      <span>{{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}<ng-container *ngIf="player.guild"> · &lt;{{ player.guild }}&gt;</ng-container></span>
+                    </div>
+                    <small>{{ player.realm }} · {{ getFactionLabel(player.faction) }}</small>
                   </div>
                 </div>
               </td>
               <td>{{ player.games }}</td>
-              <td><strong class="wins">{{ player.wins }}W</strong> <span class="losses">{{ player.losses }}L</span></td>
+              <td><strong class="wins">{{ player.wins }}</strong></td>
+              <td><strong class="losses">{{ player.losses }}</strong></td>
               <td>{{ player.winRate | percent:'1.0-0' }}</td>
               <td>{{ player.averageMmr | number:'1.0-0' }} / <strong>{{ player.peakMmr | number }}</strong></td>
               <td class="metric-cell" [class.metric-cell--negative]="selectedMetric() === 'rating' && player.netRatingChange < 0">
@@ -205,7 +196,6 @@
         </table>
       </div>
 
-      <div class="empty-state" *ngIf="rankedPlayers().length === 0">No players match this search.</div>
     </section>
 
     <section class="match-section">
@@ -245,7 +235,7 @@
           </div>
           <div class="match-verdict">
             <span>Winner</span>
-            <strong>Side {{ match.winner + 1 }}</strong>
+            <strong>Side {{ getWinningSide(match) + 1 }}</strong>
             <small>{{ match.winnermmravg | number }} team MMR</small>
           </div>
         </header>
@@ -321,7 +311,6 @@
                           <ng-template #noGuild>No guild</ng-template>
                           · {{ member.realmName }} (#{{ member.realmid }}) · {{ getFactionLabel(member['character-minimal-data'].faction) }}
                         </small>
-                        <small>{{ member['character-minimal-data'].achievements | number }}/{{ member['character-minimal-data'].achievements_total | number }} achievements · {{ formatPlayedTime(member['character-minimal-data'].played_time) }}</small>
                       </div>
                     </div>
                   </td>

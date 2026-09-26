@@ -17,24 +17,24 @@ import {
   buildTeamSummary,
   formatCompact,
   formatDuration,
-  formatPlayedTime,
   formatUnixDateTime,
   getClassColor,
   getClassName,
   getFactionLabel,
   getObjectives,
   getSpec,
+  getWinningSide,
   metricValue
 } from './rated-battleground-stats';
 import { RatedBattlegroundsService } from './rated-battlegrounds.service';
 import { UpdateBarComponent } from './update-bar.component';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
+  { value: 'rating', label: 'Net rating change' },
   { value: 'damage', label: 'Total damage' },
   { value: 'healing', label: 'Total healing' },
   { value: 'kills', label: 'Killing blows' },
   { value: 'honor', label: 'Honor earned' },
-  { value: 'rating', label: 'Net rating change' },
   { value: 'mmr', label: 'Peak MMR' },
   { value: 'games', label: 'Games played' },
   { value: 'wins', label: 'Wins' }
@@ -60,8 +60,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedMap = signal('all');
-  readonly selectedMetric = signal<RatedLeaderboardMetric>('damage');
-  readonly playerSearch = signal('');
+  readonly selectedMetric = signal<RatedLeaderboardMetric>('rating');
   readonly selectedMatchId = signal<number | undefined>(undefined);
 
   readonly metricOptions = METRIC_OPTIONS;
@@ -76,11 +75,8 @@ export class RatedBattlegroundPageComponent implements OnInit {
   });
   readonly analytics = computed(() => buildRatedBattlegroundAnalytics(this.filteredMatches()));
   readonly rankedPlayers = computed(() => {
-    const search = this.playerSearch().trim().toLocaleLowerCase();
     const metric = this.selectedMetric();
     return this.analytics().players
-      .filter(player => !search || [player.name, player.guild, player.realm, getClassName(player.classId), getSpec(player.specId).name]
-        .some(value => value.toLocaleLowerCase().includes(search)))
       .sort((left, right) => metricValue(right, metric) - metricValue(left, metric)
         || right.wins - left.wins
         || left.name.localeCompare(right.name));
@@ -92,7 +88,11 @@ export class RatedBattlegroundPageComponent implements OnInit {
   });
   readonly selectedTeams = computed(() => {
     const match = this.selectedMatch();
-    return match ? [buildTeamSummary(match, match.winner), buildTeamSummary(match, match.winner === 0 ? 1 : 0)] : [];
+    if (!match) {
+      return [];
+    }
+    const winningSide = getWinningSide(match);
+    return [buildTeamSummary(match, winningSide), buildTeamSummary(match, winningSide === 0 ? 1 : 0)];
   });
   readonly lastEdited = computed(() => {
     const latest = this.matches().at(-1)?.starttime;
@@ -109,9 +109,9 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly getFactionLabel = getFactionLabel;
   readonly getSpec = getSpec;
   readonly getObjectives = getObjectives;
+  readonly getWinningSide = getWinningSide;
   readonly formatCompact = formatCompact;
   readonly formatDuration = formatDuration;
-  readonly formatPlayedTime = formatPlayedTime;
   readonly formatUnixDateTime = formatUnixDateTime;
 
   ngOnInit(): void {
@@ -135,10 +135,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
       return;
     }
     this.selectedMetric.set(value as RatedLeaderboardMetric);
-  }
-
-  setPlayerSearch(value: string): void {
-    this.playerSearch.set(value);
   }
 
   selectMatch(matchId: number): void {

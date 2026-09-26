@@ -47,7 +47,7 @@ function match(overrides: Partial<RatedBattlegroundMatch> = {}): RatedBattlegrou
     matchid: 10,
     mapid: 489,
     mapname: 'Warsong Gulch',
-    winner: 0,
+    winner: 1,
     bgtype: 0,
     isranked: true,
     losermmravg: 1400,
@@ -81,7 +81,7 @@ describe('buildRatedBattlegroundAnalytics', () => {
       matchid: 11,
       mapid: 998,
       mapname: 'Temple of Kotmogu',
-      winner: 1,
+      winner: 0,
       starttime: first.starttime + 86_400,
       length: 900_000,
       members: [member({ damage_done: 300 }), member({ guid: 3, side: 1 })]

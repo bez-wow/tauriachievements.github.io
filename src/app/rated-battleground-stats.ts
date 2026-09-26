@@ -284,7 +284,7 @@ export function buildTeamSummary(match: RatedBattlegroundMatch, side: number): R
   const members = match.members
     .filter(member => member.side === side)
     .sort((left, right) => right.damage_done - left.damage_done || left['character-minimal-data'].charname.localeCompare(right['character-minimal-data'].charname));
-  const won = match.winner === side;
+  const won = getWinningSide(match) === side;
 
   return {
     side,
@@ -301,6 +301,11 @@ export function buildTeamSummary(match: RatedBattlegroundMatch, side: number): R
     honor: sum(members, member => member.honor),
     members
   };
+}
+
+/** The API winner flag is one-based/inverted relative to the zero-based member side value. */
+export function getWinningSide(match: Pick<RatedBattlegroundMatch, 'winner'>): number {
+  return match.winner === 1 ? 0 : 1;
 }
 
 export function getObjectives(match: RatedBattlegroundMatch, member: RatedBattlegroundMember): RatedObjectiveValue[] {
@@ -372,7 +377,7 @@ function buildPlayerSummary(
 ): RatedPlayerSummary {
   const latest = appearances[appearances.length - 1]!.member;
   const character = latest['character-minimal-data'];
-  const wins = appearances.filter(({ member, match }) => member.side === match.winner).length;
+  const wins = appearances.filter(({ member, match }) => member.side === getWinningSide(match)).length;
   const mmrValues = appearances.map(({ member }) => member.mmr_rating);
 
   return {
