@@ -130,7 +130,13 @@
       </article>
     </section>
 
-    <section class="panel leaderboard-panel">
+    <app-rated-battleground-view-switcher
+      [selectedView]="selectedView()"
+      [playerCount]="rankedPlayers().length"
+      [matchCount]="matchArchive().length"
+      (viewChange)="setView($event)" />
+
+    <section #leaderboardPanel class="panel leaderboard-panel" *ngIf="selectedView() === 'players'">
       <header class="panel-heading leaderboard-heading">
         <div>
           <span class="eyebrow">Cross-match leaderboard</span>
@@ -172,8 +178,10 @@
               (click)="openPlayerHistory(player)"
               (keydown.enter)="openPlayerHistory(player)"
               (keydown.space)="$event.preventDefault(); openPlayerHistory(player)"
-              *ngFor="let player of rankedPlayers(); let index = index; trackBy: playerTrackKey">
-              <td class="rank-cell"><span [class.top-rank]="index < 3">{{ index + 1 }}</span></td>
+              *ngFor="let player of paginatedPlayers(); let index = index; trackBy: playerTrackKey">
+              <td class="rank-cell">
+                <span [class.top-rank]="playerRank(index) <= 3">{{ playerRank(index) }}</span>
+              </td>
               <td>
                 <div class="player-cell">
                   <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
@@ -201,9 +209,26 @@
         </table>
       </div>
 
+      <footer class="leaderboard-pagination" *ngIf="rankedPlayers().length">
+        <span>
+          Showing {{ leaderboardRangeStart() | number }}–{{ leaderboardRangeEnd() | number }}
+          of {{ rankedPlayers().length | number }} players
+        </span>
+        <div class="pagination-controls" aria-label="Leaderboard pagination">
+          <button
+            type="button"
+            [disabled]="leaderboardPage() === 1"
+            (click)="setLeaderboardPage(leaderboardPage() - 1)">Previous</button>
+          <strong>Page {{ leaderboardPage() }} of {{ leaderboardTotalPages() }}</strong>
+          <button
+            type="button"
+            [disabled]="leaderboardPage() === leaderboardTotalPages()"
+            (click)="setLeaderboardPage(leaderboardPage() + 1)">Next</button>
+        </div>
+      </footer>
     </section>
 
-    <section class="match-section">
+    <section class="match-section" *ngIf="selectedView() === 'matches'">
       <header class="section-heading">
         <div>
           <span class="eyebrow">Match explorer</span>
@@ -220,7 +245,6 @@
           [class.active]="selectedMatch().matchid === match.matchid"
           (click)="selectMatch(match.matchid)"
           *ngFor="let match of matchArchive(); trackBy: matchTrackKey">
-          <span>#{{ match.matchid }}</span>
           <strong>{{ match.mapname }}</strong>
           <small>{{ formatUnixDateTime(match.starttime) }}</small>
         </button>
@@ -232,11 +256,10 @@
             <div class="match-badges">
               <span>Ranked</span>
               <span>{{ analytics().expansionLabel }}</span>
-              <span>Map #{{ match.mapid }}</span>
               <span>{{ match.side0 }}v{{ match.side1 }}</span>
             </div>
             <h2>{{ match.mapname }}</h2>
-            <p>Match #{{ match.matchid }} · {{ formatUnixDateTime(match.starttime) }} · {{ formatDuration(match.length) }}</p>
+            <p>{{ formatUnixDateTime(match.starttime) }} · {{ formatDuration(match.length) }}</p>
           </div>
           <div class="match-verdict">
             <span>Winner</span>
@@ -296,26 +319,17 @@
                 <tr *ngFor="let member of team.members; trackBy: memberTrackKey">
                   <td>
                     <div class="member-cell">
-                      <div class="member-icons">
-                        <img [src]="getClassIconPath(member['character-minimal-data'].class)" [alt]="getClassName(member['character-minimal-data'].class)" />
-                        <img [src]="raceIcon(member)" alt="" />
-                      </div>
+                      <img [src]="getClassIconPath(member['character-minimal-data'].class)" [alt]="getClassName(member['character-minimal-data'].class)" />
                       <div>
-                        <a
-                          [href]="memberArmoryUrl(member)"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          [style.color]="getClassColor(member['character-minimal-data'].class)">{{ member['character-minimal-data'].charname }}</a>
-                        <span>{{ getSpec(member.specid).name }} · {{ getSpec(member.specid).role }} · Level {{ member['character-minimal-data'].level }}</span>
-                        <small>
-                          <a
-                            *ngIf="member['character-minimal-data'].guildname; else noGuild"
-                            [href]="guildArmoryUrl(member)"
-                            target="_blank"
-                            rel="noopener noreferrer">&lt;{{ member['character-minimal-data'].guildname }}&gt;</a>
-                          <ng-template #noGuild>No guild</ng-template>
-                          · {{ member.realmName }} (#{{ member.realmid }}) · {{ getFactionLabel(member['character-minimal-data'].faction) }}
-                        </small>
+                        <div class="player-primary">
+                          <strong
+                            class="player-name"
+                            [style.color]="getClassColor(member['character-minimal-data'].class)">{{ member['character-minimal-data'].charname }}</strong>
+                          <span>
+                            {{ getSpec(member.specid).name }} {{ getClassName(member['character-minimal-data'].class) }}<ng-container *ngIf="member['character-minimal-data'].guildname"> &lt;{{ member['character-minimal-data'].guildname }}&gt;</ng-container>
+                          </span>
+                        </div>
+                        <small>{{ member.realmName }} · {{ getFactionLabel(member['character-minimal-data'].faction) }}</small>
                       </div>
                     </div>
                   </td>

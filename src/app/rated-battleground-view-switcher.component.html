@@ -1,0 +1,18 @@
+<nav class="content-switcher" aria-label="Rated battleground data views">
+  <button
+    type="button"
+    [class.active]="selectedView === 'players'"
+    [attr.aria-pressed]="selectedView === 'players'"
+    (click)="viewChange.emit('players')">
+    <span>Player leaderboard</span>
+    <strong>{{ playerCount.toLocaleString() }}</strong>
+  </button>
+  <button
+    type="button"
+    [class.active]="selectedView === 'matches'"
+    [attr.aria-pressed]="selectedView === 'matches'"
+    (click)="viewChange.emit('matches')">
+    <span>Match explorer</span>
+    <strong>{{ matchCount.toLocaleString() }}</strong>
+  </button>
+</nav>

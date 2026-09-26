@@ -1,6 +1,7 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
+import { CommonModule, Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -29,6 +30,10 @@ import {
 } from './rated-battleground-stats';
 import { RatedBattlegroundsService } from './rated-battlegrounds.service';
 import { RatedBattlegroundPlayerHistoryComponent } from './rated-battleground-player-history.component';
+import {
+  RatedBattlegroundContentView,
+  RatedBattlegroundViewSwitcherComponent
+} from './rated-battleground-view-switcher.component';
 import { UpdateBarComponent } from './update-bar.component';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
@@ -46,6 +51,8 @@ const METRIC_LABELS: Readonly<Record<RatedLeaderboardMetric, string>> = Object.f
   METRIC_OPTIONS.map(option => [option.value, option.label])
 ) as Record<RatedLeaderboardMetric, string>;
 
+const LEADERBOARD_PAGE_SIZE = 25;
+
 @Component({
   selector: 'app-rated-battleground-page',
   templateUrl: './rated-battleground-page.component.html',
@@ -56,13 +63,20 @@ const METRIC_LABELS: Readonly<Record<RatedLeaderboardMetric, string>> = Object.f
     UpdateBarComponent,
     BackToTopButtonComponent,
     FilterDropdownComponent,
-    RatedBattlegroundPlayerHistoryComponent
+    RatedBattlegroundPlayerHistoryComponent,
+    RatedBattlegroundViewSwitcherComponent
   ],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundPageComponent implements OnInit {
+  @ViewChild('leaderboardPanel') private leaderboardPanel?: ElementRef<HTMLElement>;
+
   private readonly service = inject(RatedBattlegroundsService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly matches = signal<RatedBattlegroundMatch[]>([]);
   readonly isLoading = signal(true);
@@ -71,6 +85,9 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly selectedMetric = signal<RatedLeaderboardMetric>('rating');
   readonly selectedMatchId = signal<number | undefined>(undefined);
   readonly selectedPlayer = signal<RatedPlayerSummary | undefined>(undefined);
+  readonly selectedView = signal<RatedBattlegroundContentView>('players');
+  readonly leaderboardPage = signal(1);
+  readonly leaderboardPageSize = LEADERBOARD_PAGE_SIZE;
 
   readonly metricOptions = METRIC_OPTIONS;
   readonly allAnalytics = computed(() => buildRatedBattlegroundAnalytics(this.matches()));
@@ -90,6 +107,19 @@ export class RatedBattlegroundPageComponent implements OnInit {
         || right.wins - left.wins
         || left.name.localeCompare(right.name));
   });
+  readonly leaderboardTotalPages = computed(() => Math.max(1, Math.ceil(this.rankedPlayers().length / LEADERBOARD_PAGE_SIZE)));
+  readonly paginatedPlayers = computed(() => {
+    const page = Math.min(this.leaderboardPage(), this.leaderboardTotalPages());
+    const start = (page - 1) * LEADERBOARD_PAGE_SIZE;
+    return this.rankedPlayers().slice(start, start + LEADERBOARD_PAGE_SIZE);
+  });
+  readonly leaderboardRangeStart = computed(() => this.rankedPlayers().length
+    ? (this.leaderboardPage() - 1) * LEADERBOARD_PAGE_SIZE + 1
+    : 0);
+  readonly leaderboardRangeEnd = computed(() => Math.min(
+    this.leaderboardPage() * LEADERBOARD_PAGE_SIZE,
+    this.rankedPlayers().length
+  ));
   readonly matchArchive = computed(() => [...this.filteredMatches()].sort((left, right) => right.starttime - left.starttime));
   readonly selectedMatch = computed(() => {
     const archive = this.matchArchive();
@@ -136,6 +166,11 @@ export class RatedBattlegroundPageComponent implements OnInit {
   readonly formatUnixDateTime = formatUnixDateTime;
 
   ngOnInit(): void {
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.selectedView.set(params.get('view') === 'matches' ? 'matches' : 'players');
+      });
     this.loadMatches();
   }
 
@@ -149,6 +184,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
     }
     this.selectedMap.set(value);
     this.selectedMatchId.set(undefined);
+    this.leaderboardPage.set(1);
   }
 
   setMetric(value: FilterDropdownValue): void {
@@ -156,6 +192,30 @@ export class RatedBattlegroundPageComponent implements OnInit {
       return;
     }
     this.selectedMetric.set(value as RatedLeaderboardMetric);
+    this.leaderboardPage.set(1);
+  }
+
+  setView(view: RatedBattlegroundContentView): void {
+    this.selectedView.set(view);
+    const viewUrl = this.router.createUrlTree([], {
+      relativeTo: this.route,
+      queryParams: { view: view === 'matches' ? 'matches' : null },
+      queryParamsHandling: 'merge'
+    });
+    this.location.replaceState(this.router.serializeUrl(viewUrl));
+  }
+
+  setLeaderboardPage(page: number): void {
+    const targetPage = Math.min(Math.max(1, page), this.leaderboardTotalPages());
+    if (targetPage === this.leaderboardPage()) {
+      return;
+    }
+    this.leaderboardPage.set(targetPage);
+    requestAnimationFrame(() => this.leaderboardPanel?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
+  playerRank(index: number): number {
+    return (this.leaderboardPage() - 1) * LEADERBOARD_PAGE_SIZE + index + 1;
   }
 
   selectMatch(matchId: number): void {
@@ -184,19 +244,6 @@ export class RatedBattlegroundPageComponent implements OnInit {
       return formatCompact(value);
     }
     return Math.round(value).toLocaleString();
-  }
-
-  memberArmoryUrl(member: RatedBattlegroundMember): string {
-    return getArmoryUrl(member['character-minimal-data'].charname, member.realmName);
-  }
-
-  guildArmoryUrl(member: RatedBattlegroundMember): string {
-    return getGuildArmoryUrl(member['character-minimal-data'].guildname, member.realmName);
-  }
-
-  raceIcon(member: RatedBattlegroundMember): string {
-    const character = member['character-minimal-data'];
-    return `assets/race-icons/${character.race}-${character.gender}.gif`;
   }
 
   teamName(team: RatedTeamSummary): string {
