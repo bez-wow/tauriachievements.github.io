@@ -50,35 +50,35 @@ const EXPANSION_GROUPS_BY_START_ACHIEVEMENT = new Map<string, GuildRealmFirstExp
     'Realm First! Helya',
     {
       name: 'Legion',
-      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/Legionlogo.png?width=180'
+      logoUrl: 'assets/expansion-logos/legion.png'
     }
   ],
   [
     'Realm First! Imperator\'s Fall',
     {
       name: 'Warlords of Draenor',
-      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/WoDLogo.png?width=180'
+      logoUrl: 'assets/expansion-logos/warlords-of-draenor.png'
     }
   ],
   [
     'Realm First! Garrosh Hellscream (25 player)',
     {
       name: 'Mists of Pandaria',
-      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/MoPlogo.png?width=180'
+      logoUrl: 'assets/expansion-logos/mists-of-pandaria.png'
     }
   ],
   [
     'Realm First! Deathwing',
     {
       name: 'Cataclysm',
-      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/Cataclysmlogo.png?width=180'
+      logoUrl: 'assets/expansion-logos/cataclysm.png'
     }
   ],
   [
     'Realm First! Fall of the Lich King',
     {
       name: 'Wrath of the Lich King',
-      logoUrl: 'https://warcraft.wiki.gg/wiki/Special:Redirect/file/WrathLogo.png?width=180'
+      logoUrl: 'assets/expansion-logos/wrath-of-the-lich-king.png'
     }
   ]
 ]);
