@@ -47,7 +47,10 @@ public sealed class MissingPlayerFinderService(
         var playersCsvPath = Path.Combine(frontendSrcDirectory, "Players.csv");
         var rareAchievementsPath = Path.Combine(frontendSrcDirectory, "RareAchievements.json");
         var lastUpdatedPath = Path.Combine(frontendSrcDirectory, "lastUpdated.txt");
-        var retryOutputPath = Path.Combine(_solutionRoot, "MissingPlayersToScan.txt");
+        var retryOutputPath = Path.Combine(
+            ProjectPaths.GetWorkDirectory(_solutionRoot),
+            "MissingPlayersToScan.txt"
+        );
 
         if (!File.Exists(playersCsvPath))
         {

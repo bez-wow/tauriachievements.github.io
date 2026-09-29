@@ -5,7 +5,7 @@ namespace Tauri.Core.Helpers;
 public static class CharacterHelpers
 {
     private const string RealmFirstCharactersFileName = "valid-realm-first-characters.txt";
-    private const string GuildlessCharactersFileName = "guildless-cahracters.txt";
+    private const string GuildlessCharactersFileName = "guildless-characters.txt";
 
     private static readonly Dictionary<string, (string ApiRealm, string DisplayRealm)> Realms = new(
         StringComparer.OrdinalIgnoreCase

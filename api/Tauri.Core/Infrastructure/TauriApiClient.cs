@@ -66,6 +66,7 @@ public sealed class TauriApiClient : ITauriApiClient, IDisposable
         );
 
         string? lastFailure = null;
+        int? lastApiErrorCode = null;
 
         for (var attempt = 1; attempt <= _maxRetryAttempts; attempt++)
         {
@@ -95,8 +96,11 @@ public sealed class TauriApiClient : ITauriApiClient, IDisposable
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    var apiError = await TryReadApiErrorAsync(response, timeoutSource.Token);
+                    lastApiErrorCode = apiError?.Code;
                     lastFailure =
-                        $"API returned {(int)response.StatusCode} {response.ReasonPhrase}";
+                        $"API returned {(int)response.StatusCode} {response.ReasonPhrase}"
+                        + (apiError is { } error ? $" (error {error.Code}: {error.Message})" : "");
                     shouldRetry = IsTransientStatusCode(response.StatusCode);
                     retryDelay = GetRetryDelay(response, attempt);
                 }
@@ -160,7 +164,42 @@ public sealed class TauriApiClient : ITauriApiClient, IDisposable
         Console.Error.WriteLine(
             $"[{endpoint}] Skipping {requestLabel}: {lastFailure ?? "Unknown failure."}"
         );
-        return TauriApiResponseResult.Failure(lastFailure ?? "Unknown failure.");
+        return TauriApiResponseResult.Failure(lastFailure ?? "Unknown failure.", lastApiErrorCode);
+    }
+
+    // Error responses carry a JSON body like {"success":false,"errorcode":13,"errorstring":"guild not found"}.
+    private static async Task<(int Code, string Message)?> TryReadApiErrorAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var document = await JsonDocument.ParseAsync(
+                stream,
+                cancellationToken: cancellationToken
+            );
+
+            if (
+                document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("errorcode", out var codeElement)
+                && codeElement.TryGetInt32(out var code)
+            )
+            {
+                var message = document.RootElement.TryGetProperty(
+                    "errorstring",
+                    out var messageElement
+                )
+                    ? messageElement.GetString()
+                    : null;
+                return (code, message ?? "");
+            }
+        }
+        catch (JsonException) { }
+        catch (IOException) { }
+
+        return null;
     }
 
     public void Dispose()
@@ -210,12 +249,16 @@ public sealed class TauriApiClient : ITauriApiClient, IDisposable
 public readonly record struct TauriApiResponseResult(
     bool Succeeded,
     JsonElement? ResponseElement,
-    string? FailureMessage
+    string? FailureMessage,
+    int? ApiErrorCode = null
 )
 {
+    /// <summary>The API's errorcode for a guild name that does not exist on the realm.</summary>
+    public const int GuildNotFoundErrorCode = 13;
+
     public static TauriApiResponseResult Success(JsonElement responseElement) =>
         new(true, responseElement, null);
 
-    public static TauriApiResponseResult Failure(string failureMessage) =>
-        new(false, null, failureMessage);
+    public static TauriApiResponseResult Failure(string failureMessage, int? apiErrorCode = null) =>
+        new(false, null, failureMessage, apiErrorCode);
 }

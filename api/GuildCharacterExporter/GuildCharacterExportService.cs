@@ -10,11 +10,17 @@ namespace GuildCharacterExporter;
 public sealed class GuildCharacterExportService(
     string solutionRoot,
     TauriApiOptions apiOptions,
-    ITauriApiClient apiClient
+    ITauriApiClient apiClient,
+    int retryRounds = 3,
+    TimeSpan? retryRoundDelay = null
 )
 {
     private const int ProgressInterval = 25;
     private const string RetryFileName = "MissingGuildsToScan.txt";
+
+    // A large batch of "guild not found" answers more likely means the API misbehaved than
+    // that hundreds of guilds disbanded overnight, so pruning is skipped above this share.
+    private const double MaxPrunedGuildShare = 0.05;
 
     private static readonly RealmSource[] RealmSources =
     [
@@ -27,8 +33,17 @@ public sealed class GuildCharacterExportService(
     private readonly TauriApiOptions _apiOptions = apiOptions;
     private readonly ITauriApiClient _apiClient = apiClient;
     private readonly int _guildWorkerCount = Math.Max(4, apiOptions.MaxConcurrentRequests * 2);
+    private readonly int _retryRounds = Math.Max(0, retryRounds);
+    private readonly TimeSpan _retryRoundDelay = retryRoundDelay ?? TimeSpan.FromSeconds(30);
 
-    public async Task<GuildCharacterExportResult> ExportAsync(CancellationToken cancellationToken)
+    /// <param name="retryOnly">
+    /// Scan only the guilds left in the retry file by an earlier run and merge them into the
+    /// existing GuildCharacters.txt, instead of rebuilding it from every known guild.
+    /// </param>
+    public async Task<GuildCharacterExportResult> ExportAsync(
+        bool retryOnly,
+        CancellationToken cancellationToken
+    )
     {
         var guildDataDirectory = Path.Combine(_solutionRoot, "AchievementLadder", "Data", "Guilds");
         if (!Directory.Exists(guildDataDirectory))
@@ -45,49 +60,123 @@ public sealed class GuildCharacterExportService(
             "GuildCharacters",
             "GuildCharacters.txt"
         );
-        var retryOutputPath = Path.Combine(_solutionRoot, RetryFileName);
-        var retryInputGuilds = LoadRetryGuilds(retryOutputPath)
+        var retryOutputPath = Path.Combine(
+            ProjectPaths.GetWorkDirectory(_solutionRoot),
+            RetryFileName
+        );
+        var knownGuilds = LoadGuilds(guildDataDirectory)
             .DistinctBy(guild => (guild.GuildName.ToLowerInvariant(), guild.ApiRealm))
             .ToList();
-        var usedRetryInput = retryInputGuilds.Count > 0;
-        var guilds = usedRetryInput
-            ? retryInputGuilds
-            : LoadGuilds(guildDataDirectory)
+        var guilds = retryOnly
+            ? LoadRetryGuilds(retryOutputPath)
                 .DistinctBy(guild => (guild.GuildName.ToLowerInvariant(), guild.ApiRealm))
-                .ToList();
+                .ToList()
+            : knownGuilds;
 
-        if (usedRetryInput)
+        if (retryOnly && guilds.Count == 0)
         {
-            Console.WriteLine(
-                $"Retry file found with {guilds.Count} guilds. Scanning only {RetryFileName} entries."
+            Console.WriteLine($"{RetryFileName} is empty - nothing to retry.");
+            return new GuildCharacterExportResult(
+                0,
+                LoadExistingCharacterLines(outputPath).Count,
+                0,
+                0,
+                0,
+                outputPath,
+                retryOutputPath,
+                UsedRetryInput: true
             );
         }
-        else if (File.Exists(retryOutputPath))
-        {
-            Console.WriteLine(
-                $"{RetryFileName} has no guilds to retry. Running a full guild scan."
-            );
-        }
 
-        Console.WriteLine($"Scanning {guilds.Count} guilds...");
+        Console.WriteLine(
+            retryOnly
+                ? $"Retry mode: scanning {guilds.Count} guilds from {RetryFileName}..."
+                : $"Scanning {guilds.Count} guilds..."
+        );
         Console.WriteLine(
             $"API settings: concurrency={_apiOptions.MaxConcurrentRequests}, timeout={_apiOptions.RequestTimeoutSeconds}s, retries={_apiOptions.MaxRetryAttempts}"
         );
 
-        var existingCharacterLines = usedRetryInput
+        var existingCharacterLines = retryOnly
             ? LoadExistingCharacterLines(outputPath)
             : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var characterLines = new ConcurrentDictionary<string, byte>(
             existingCharacterLines.Select(line => new KeyValuePair<string, byte>(line, 0)),
             StringComparer.OrdinalIgnoreCase
         );
-        if (usedRetryInput)
+        if (retryOnly)
         {
             Console.WriteLine(
                 $"Loaded {characterLines.Count} existing character rows to merge retry results."
             );
         }
 
+        var deadGuilds = new ConcurrentBag<GuildSource>();
+        var pendingGuilds = guilds;
+
+        for (var round = 0; ; round++)
+        {
+            if (round > 0)
+            {
+                Console.WriteLine(
+                    $"Retry round {round}/{_retryRounds}: {pendingGuilds.Count} guilds failed, retrying in {_retryRoundDelay.TotalSeconds:0}s..."
+                );
+                await Task.Delay(_retryRoundDelay, cancellationToken);
+            }
+
+            pendingGuilds = await ScanGuildsAsync(
+                pendingGuilds,
+                characterLines,
+                deadGuilds,
+                cancellationToken
+            );
+
+            if (pendingGuilds.Count == 0 || round >= _retryRounds)
+            {
+                break;
+            }
+        }
+
+        var orderedRetryGuilds = pendingGuilds
+            .OrderBy(guild => guild.DisplayRealm, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(guild => guild.GuildName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        await WriteRetryGuildsAsync(retryOutputPath, orderedRetryGuilds, cancellationToken);
+
+        var prunedGuildCount = await PruneDeadGuildsAsync(
+            guildDataDirectory,
+            deadGuilds.ToList(),
+            knownGuilds.Count,
+            cancellationToken
+        );
+
+        var orderedLines = characterLines
+            .Keys.OrderBy(line => line, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        await WriteLinesAsync(outputPath, orderedLines, cancellationToken);
+
+        return new GuildCharacterExportResult(
+            guilds.Count,
+            orderedLines.Count,
+            orderedRetryGuilds.Count,
+            deadGuilds.Count,
+            prunedGuildCount,
+            outputPath,
+            retryOutputPath,
+            retryOnly
+        );
+    }
+
+    /// <returns>The guilds that failed for a reason worth retrying.</returns>
+    private async Task<List<GuildSource>> ScanGuildsAsync(
+        IReadOnlyList<GuildSource> guilds,
+        ConcurrentDictionary<string, byte> characterLines,
+        ConcurrentBag<GuildSource> deadGuilds,
+        CancellationToken cancellationToken
+    )
+    {
         var retryGuilds = new ConcurrentBag<GuildSource>();
         var processedGuildCount = 0;
         var progressLock = new Lock();
@@ -102,16 +191,20 @@ public sealed class GuildCharacterExportService(
             async (guild, ct) =>
             {
                 var result = await LoadGuildMembersAsync(_apiClient, guild, ct);
-                if (result.Succeeded)
+                switch (result.Status)
                 {
-                    foreach (var memberName in result.Members)
-                    {
-                        characterLines.TryAdd($"{memberName}-{guild.DisplayRealm}", 0);
-                    }
-                }
-                else
-                {
-                    retryGuilds.Add(guild);
+                    case GuildLoadStatus.Succeeded:
+                        foreach (var memberName in result.Members)
+                        {
+                            characterLines.TryAdd($"{memberName}-{guild.DisplayRealm}", 0);
+                        }
+                        break;
+                    case GuildLoadStatus.NotFound:
+                        deadGuilds.Add(guild);
+                        break;
+                    default:
+                        retryGuilds.Add(guild);
+                        break;
                 }
 
                 var processed = Interlocked.Increment(ref processedGuildCount);
@@ -125,27 +218,73 @@ public sealed class GuildCharacterExportService(
             }
         );
 
-        var orderedRetryGuilds = retryGuilds
-            .OrderBy(guild => guild.DisplayRealm, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(guild => guild.GuildName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        return retryGuilds.ToList();
+    }
 
-        await WriteRetryGuildsAsync(retryOutputPath, orderedRetryGuilds, cancellationToken);
+    /// <summary>
+    /// Removes guilds the API reports as nonexistent from the realm guild lists. A guild that
+    /// is later re-founded under the same name is added back by BattlegroundCollector.
+    /// </summary>
+    private static async Task<int> PruneDeadGuildsAsync(
+        string guildDataDirectory,
+        IReadOnlyList<GuildSource> deadGuilds,
+        int knownGuildCount,
+        CancellationToken cancellationToken
+    )
+    {
+        if (deadGuilds.Count == 0)
+        {
+            return 0;
+        }
 
-        var orderedLines = characterLines
-            .Keys.OrderBy(line => line, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var maxPrunable = (int)(knownGuildCount * MaxPrunedGuildShare);
+        if (deadGuilds.Count > maxPrunable)
+        {
+            Console.Error.WriteLine(
+                $"{deadGuilds.Count} guilds reported as not found, more than the {maxPrunable} allowed per run. Guild lists were left unchanged; check the API and rerun."
+            );
+            return 0;
+        }
 
-        await WriteLinesAsync(outputPath, orderedLines, cancellationToken);
+        var prunedCount = 0;
 
-        return new GuildCharacterExportResult(
-            guilds.Count,
-            orderedLines.Count,
-            orderedRetryGuilds.Count,
-            outputPath,
-            retryOutputPath,
-            usedRetryInput
-        );
+        foreach (var source in RealmSources)
+        {
+            var deadNames = deadGuilds
+                .Where(guild => guild.ApiRealm == source.ApiRealm)
+                .Select(guild => guild.GuildName)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var path = Path.Combine(guildDataDirectory, source.FileName);
+            if (deadNames.Count == 0 || !File.Exists(path))
+            {
+                continue;
+            }
+
+            var keptLines = new List<string>();
+            foreach (var rawLine in File.ReadLines(path, Encoding.UTF8))
+            {
+                var guildName = rawLine.Trim().TrimStart('﻿');
+                if (string.IsNullOrWhiteSpace(guildName))
+                {
+                    continue;
+                }
+
+                if (deadNames.Contains(guildName))
+                {
+                    Console.WriteLine(
+                        $"  - Removed '{guildName}' from {source.FileName} (guild not found)"
+                    );
+                    prunedCount++;
+                    continue;
+                }
+
+                keptLines.Add(guildName);
+            }
+
+            await WriteLinesAsync(path, keptLines, cancellationToken);
+        }
+
+        return prunedCount;
     }
 
     private static IEnumerable<GuildSource> LoadGuilds(string guildDataDirectory)
@@ -258,6 +397,11 @@ public sealed class GuildCharacterExportService(
             cancellationToken
         );
 
+        if (result.ApiErrorCode == TauriApiResponseResult.GuildNotFoundErrorCode)
+        {
+            return GuildLoadResult.NotFound();
+        }
+
         if (!result.Succeeded || result.ResponseElement is not { } response)
         {
             return GuildLoadResult.Failure();
@@ -325,10 +469,23 @@ public sealed class GuildCharacterExportService(
 
     private sealed record GuildSource(string GuildName, string ApiRealm, string DisplayRealm);
 
-    private readonly record struct GuildLoadResult(bool Succeeded, IReadOnlyList<string> Members)
+    private enum GuildLoadStatus
     {
-        public static GuildLoadResult Success(IReadOnlyList<string> members) => new(true, members);
+        Succeeded,
+        NotFound,
+        Failed,
+    }
 
-        public static GuildLoadResult Failure() => new(false, Array.Empty<string>());
+    private readonly record struct GuildLoadResult(
+        GuildLoadStatus Status,
+        IReadOnlyList<string> Members
+    )
+    {
+        public static GuildLoadResult Success(IReadOnlyList<string> members) =>
+            new(GuildLoadStatus.Succeeded, members);
+
+        public static GuildLoadResult NotFound() => new(GuildLoadStatus.NotFound, []);
+
+        public static GuildLoadResult Failure() => new(GuildLoadStatus.Failed, []);
     }
 }

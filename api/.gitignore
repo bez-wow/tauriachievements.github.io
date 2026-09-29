@@ -366,3 +366,8 @@ FodyWeavers.xsd
 /AchievementLadder/appsettings.json
 /.dotnet/
 /RareAchiAndItemScan/Output/
+
+# Local pipeline state: retry queues and run logs (see Run-DailyUpdate.ps1)
+/.work/
+# Rebuilt by GuildCharacterExporter on every run
+/AchievementLadder/Data/GuildCharacters/GuildCharacters.txt

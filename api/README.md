@@ -99,7 +99,8 @@ concurrency, timeouts, and retry behavior; see
 | --- | --- |
 | Build the leaderboard | `dotnet run --project AchievementLadder` |
 | Refresh guild character sources | `dotnet run --project GuildCharacterExporter` |
-| Backfill missing players | `dotnet run --project MissingPlayerFinder` |
+| Rescan only the guilds that failed last time | `dotnet run --project GuildCharacterExporter -- --retry` |
+| Backfill missing players (up to 3 rounds) | `dotnet run --project MissingPlayerFinder` |
 | Validate realm-first characters | `dotnet run --project RealmFirstAchievements` |
 | Collect battlegrounds | `dotnet run --project BattlegroundCollector -- 95874` |
 | Export a ranked guild report | `dotnet run --project Guildkukker -- Evermoon Endless` |
@@ -108,9 +109,26 @@ concurrency, timeouts, and retry behavior; see
 Commands with additional options expose usage through `--help` or document their arguments
 at startup.
 
+## Daily update
+
+`Run-DailyUpdate.cmd` (or `Run-DailyUpdate.ps1`) runs the whole refresh end to end:
+RealmFirstAchievements, BattlegroundCollector, GuildCharacterExporter, AchievementLadder and
+MissingPlayerFinder, then commits every data file as one `sync data` commit and pushes it.
+That commit message triggers the Discord notification, so keep it.
+
+- It stops at the first failed job; resume with `-From <Step>` (for example `-From Ladder`).
+- It refuses to publish when Players.csv shrank by more than 2% against the last commit,
+  which usually means the API was unstable. Override with `-MaxShrinkPercent`.
+- `-NoPush` commits locally without pushing.
+
+Retry queues (`MissingGuildsToScan.txt`, `MissingPlayersToScan.txt`) and run logs live in the
+git-ignored `.work/` folder, and `GuildCharacters.txt` is rebuilt on every run, so there is
+nothing to commit by hand or discard afterwards. Guilds the API reports as not found are removed
+from the guild lists; BattlegroundCollector adds them back if they reappear.
+
 ## Tests and CI
 
-The solution contains 41 focused tests covering:
+The solution contains 47 focused tests covering:
 
 - Rare-achievement parsing across valid, missing, and malformed payloads
 - Item-appearance counting and character mapping, including the Level 10 date
@@ -118,6 +136,7 @@ The solution contains 41 focused tests covering:
 - The Players.csv format: header/row round-trip, escaping, and JSON serialization
 - Atomic file writes, including a failed write leaving the previous file intact
 - Successful and failed character scans through a fake `ITauriApiClient`
+- Guild export retry rounds, retry-only merges, and dead-guild pruning with its safety cap
 
 Run the same Release validation used by CI:
 

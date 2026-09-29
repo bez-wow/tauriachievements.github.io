@@ -46,6 +46,19 @@ public static class ProjectPaths
         return Path.GetFullPath(Path.Combine(solutionRoot, "..", "spa", "src"));
     }
 
+    /// <summary>
+    /// Git-ignored scratch folder for retry queues and run logs that only matter between
+    /// runs on this machine.
+    /// </summary>
+    public static string GetWorkDirectory(string solutionRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(solutionRoot);
+
+        var workDirectory = Path.GetFullPath(Path.Combine(solutionRoot, ".work"));
+        Directory.CreateDirectory(workDirectory);
+        return workDirectory;
+    }
+
     public static string ResolveCharacterBatchFilePath(
         string solutionRoot,
         string projectRoot,

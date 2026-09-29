@@ -54,7 +54,7 @@ public sealed class BattlegroundCollectorService(
         "AchievementLadder",
         "Data",
         "GuildCharacters",
-        "guildless-cahracters.txt"
+        "guildless-characters.txt"
     );
     private readonly string _frontendSrcDirectory = Path.GetFullPath(frontendSrcDirectory);
     private readonly ITauriApiClient _apiClient = apiClient;

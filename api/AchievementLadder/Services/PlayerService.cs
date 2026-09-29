@@ -23,7 +23,10 @@ public class PlayerService(
     public async Task<SyncResult> SyncDataAsync(CancellationToken cancellationToken)
     {
         var solutionRoot = ProjectPaths.FindSolutionRoot(projectRoot);
-        var retryOutputPath = Path.Combine(solutionRoot, "MissingPlayersToScan.txt");
+        var retryOutputPath = Path.Combine(
+            ProjectPaths.GetWorkDirectory(solutionRoot),
+            "MissingPlayersToScan.txt"
+        );
         var rareItems = RareItemCatalog.Load(Path.Combine(projectRoot, "Data", "rare-items.txt"));
         var rareItemsById = rareItems.ToDictionary(item => item.Id);
         var allCharacters = new List<(string Name, string ApiRealm, string DisplayRealm)>();
