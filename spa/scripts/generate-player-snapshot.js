@@ -1,14 +1,17 @@
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
-const { parsePlayersCsv, readTextIfExists } = require("./player-data-utils");
+const {
+  parsePlayersCsv,
+  readGitFile,
+  readPlayersCsvHistory,
+  readTextIfExists,
+} = require("./player-data-utils");
 
 const sourcePath = path.join(__dirname, "..", "src", "Players.csv");
 const lastUpdatedPath = path.join(__dirname, "..", "src", "lastUpdated.txt");
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.snapshot.json");
 const headOutputPath = path.join(outputDir, "players.head.snapshot.json");
-const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 
 // The ladder's default view is "top of the achievement-point ranking, unfiltered,
 // at most 1000 rows". That answer lives entirely in the highest-ranked slice, so we
@@ -180,7 +183,7 @@ function loadPreviousSnapshotPlayers(currentDayKey) {
 
 function getLatestHistoricalSource(currentDayKey) {
   const seenDays = new Set([currentDayKey]);
-  const historyEntries = readGitHistoryEntries();
+  const historyEntries = readPlayersCsvHistory();
 
   for (const entry of historyEntries) {
     const timestamp = normalizeTimestamp(entry.commitTimestamp) ?? new Date().toISOString();
@@ -190,46 +193,12 @@ function getLatestHistoricalSource(currentDayKey) {
       continue;
     }
 
-    return readGitFile(entry.sha, "src/Players.csv");
+    return readGitFile(entry.sha, entry.filePath);
   }
 
   return "";
 }
 
-function readGitHistoryEntries() {
-  try {
-    const output = execFileSync("git", ["log", "--format=%H|%cI", "--", "src/Players.csv"], {
-      cwd: path.join(__dirname, ".."),
-      encoding: "utf8",
-      maxBuffer: GIT_FILE_MAX_BUFFER,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-
-    return output
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [sha, commitTimestamp] = line.split("|");
-        return { sha, commitTimestamp };
-      });
-  } catch {
-    return [];
-  }
-}
-
-function readGitFile(sha, filePath) {
-  try {
-    return execFileSync("git", ["show", `${sha}:${filePath}`], {
-      cwd: path.join(__dirname, ".."),
-      encoding: "utf8",
-      maxBuffer: GIT_FILE_MAX_BUFFER,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-  } catch {
-    return "";
-  }
-}
 
 function buildRankMap(players, compareFn) {
   const ranks = new Map();
@@ -325,7 +294,7 @@ function getNameClassKey(player) {
 function getCurrentSnapshotTimestamp() {
   const candidates = [];
   const lastUpdatedTimestamp = normalizeTimestamp(readTextIfExists(lastUpdatedPath));
-  const latestGitTimestamp = normalizeTimestamp(readGitHistoryEntries()[0]?.commitTimestamp);
+  const latestGitTimestamp = normalizeTimestamp(readPlayersCsvHistory()[0]?.commitTimestamp);
 
   if (lastUpdatedTimestamp) {
     candidates.push(lastUpdatedTimestamp);

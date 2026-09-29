@@ -1,4 +1,11 @@
 const fs = require("fs");
+const path = require("path");
+const { execFileSync } = require("child_process");
+
+const SPA_ROOT = path.join(__dirname, "..");
+const PLAYERS_CSV_PATHSPEC = "src/Players.csv";
+const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
+const COMMIT_LINE_PATTERN = /^([0-9a-f]{40})\|(.+)$/;
 
 function parseCsv(input) {
   const rows = [];
@@ -134,7 +141,78 @@ function readTextIfExists(filePath) {
   return fs.readFileSync(filePath, "utf8");
 }
 
+// Commits that changed Players.csv, newest first. `--follow` keeps the history reaching
+// past renames (the file moved from src/ to spa/src/), and `--name-status` records the
+// repo-root path the file had in each commit, which is what `git show sha:path` needs.
+function readPlayersCsvHistory() {
+  let output;
+  try {
+    output = execFileSync(
+      "git",
+      ["log", "--follow", "--format=%H|%cI", "--name-status", "--", PLAYERS_CSV_PATHSPEC],
+      {
+        cwd: SPA_ROOT,
+        encoding: "utf8",
+        maxBuffer: GIT_FILE_MAX_BUFFER,
+        stdio: ["ignore", "pipe", "ignore"],
+      }
+    );
+  } catch {
+    console.warn("Could not read Players.csv history from git log. Deltas will be empty.");
+    return [];
+  }
+
+  return parseGitHistoryOutput(output);
+}
+
+// A pure rename (R100) carries byte-identical data. Counting it as a snapshot would make
+// the move commit the "latest scan" and compare the data against itself.
+function parseGitHistoryOutput(output) {
+  const entries = [];
+
+  for (const rawLine of output.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) {
+      continue;
+    }
+
+    const commitMatch = COMMIT_LINE_PATTERN.exec(line);
+    if (commitMatch) {
+      entries.push({ sha: commitMatch[1], commitTimestamp: commitMatch[2], filePath: undefined });
+      continue;
+    }
+
+    const current = entries[entries.length - 1];
+    if (current && !current.filePath) {
+      const [status, ...paths] = line.split("\t");
+      current.isPureRename = status === "R100";
+      current.filePath = paths[paths.length - 1];
+    }
+  }
+
+  return entries
+    .filter((entry) => entry.filePath && !entry.isPureRename)
+    .map(({ sha, commitTimestamp, filePath }) => ({ sha, commitTimestamp, filePath }));
+}
+
+function readGitFile(sha, repoFilePath) {
+  try {
+    return execFileSync("git", ["show", `${sha}:${repoFilePath}`], {
+      cwd: SPA_ROOT,
+      encoding: "utf8",
+      maxBuffer: GIT_FILE_MAX_BUFFER,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  } catch {
+    console.warn(`Could not read ${repoFilePath} at ${sha.slice(0, 7)} from git.`);
+    return "";
+  }
+}
+
 module.exports = {
+  parseGitHistoryOutput,
   parsePlayersCsv,
+  readGitFile,
+  readPlayersCsvHistory,
   readTextIfExists,
 };

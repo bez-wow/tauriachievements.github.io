@@ -1,7 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
-const { parsePlayersCsv, readTextIfExists } = require("./player-data-utils");
+const {
+  parsePlayersCsv,
+  readGitFile,
+  readPlayersCsvHistory,
+  readTextIfExists,
+} = require("./player-data-utils");
 
 const sourcePath = path.join(__dirname, "..", "src", "Players.csv");
 const lastUpdatedPath = path.join(__dirname, "..", "src", "lastUpdated.txt");
@@ -9,7 +13,6 @@ const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.history.snapshot.json");
 
 const SNAPSHOT_DAY_LIMIT = 21;
-const GIT_FILE_MAX_BUFFER = 1024 * 1024 * 64;
 
 function generatePlayerHistorySnapshot() {
   const snapshotSources = collectSnapshotSources();
@@ -75,7 +78,7 @@ function collectSnapshotSources() {
 function getHistoricalGitSources(currentDayKey) {
   const sources = [];
   const seenDays = new Set([currentDayKey]);
-  const historyEntries = readGitHistoryEntries();
+  const historyEntries = readPlayersCsvHistory();
 
   for (const entry of historyEntries) {
     if (sources.length >= SNAPSHOT_DAY_LIMIT - 1) {
@@ -93,48 +96,13 @@ function getHistoricalGitSources(currentDayKey) {
       id: entry.sha,
       timestamp,
       dayKey,
-      loadCsvText: () => readGitFile(entry.sha, "src/Players.csv"),
+      loadCsvText: () => readGitFile(entry.sha, entry.filePath),
     });
   }
 
   return sources;
 }
 
-function readGitHistoryEntries() {
-  try {
-    const output = execFileSync("git", ["log", "--format=%H|%cI", "--", "src/Players.csv"], {
-      cwd: path.join(__dirname, ".."),
-      encoding: "utf8",
-      maxBuffer: GIT_FILE_MAX_BUFFER,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-
-    return output
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [sha, commitTimestamp] = line.split("|");
-        return { sha, commitTimestamp };
-      });
-  } catch {
-    console.warn("Skipping history generation from git log. Falling back to the current snapshot only.");
-    return [];
-  }
-}
-
-function readGitFile(sha, filePath) {
-  try {
-    return execFileSync("git", ["show", `${sha}:${filePath}`], {
-      cwd: path.join(__dirname, ".."),
-      encoding: "utf8",
-      maxBuffer: GIT_FILE_MAX_BUFFER,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-  } catch {
-    return "";
-  }
-}
 
 function collectTrackedPlayerKeys(snapshotSources) {
   const trackedKeys = new Set();
@@ -347,7 +315,7 @@ function getPlayerKey(player) {
 function getCurrentSnapshotTimestamp() {
   const candidates = [];
   const lastUpdatedTimestamp = normalizeTimestamp(readTextIfExists(lastUpdatedPath));
-  const latestGitTimestamp = normalizeTimestamp(readGitHistoryEntries()[0]?.commitTimestamp);
+  const latestGitTimestamp = normalizeTimestamp(readPlayersCsvHistory()[0]?.commitTimestamp);
 
   if (lastUpdatedTimestamp) {
     candidates.push(lastUpdatedTimestamp);

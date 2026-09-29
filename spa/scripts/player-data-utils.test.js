@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { parsePlayersCsv } = require("./player-data-utils");
+const { parseGitHistoryOutput, parsePlayersCsv } = require("./player-data-utils");
 
 test("parsePlayersCsv reads character level", () => {
   const [player] = parsePlayersCsv([
@@ -53,4 +53,27 @@ test("parsePlayersCsv marks legacy scans without account-wide achievements or pl
   assert.equal(player.hasAchievementsTotal, false);
   assert.equal(player.playedTime, 0);
   assert.equal(player.hasPlayedTime, false);
+});
+
+test("parseGitHistoryOutput keeps each commit's path and skips pure renames", () => {
+  const moveSha = "a".repeat(40);
+  const syncSha = "c".repeat(40);
+  const oldSha = "b".repeat(40);
+  const entries = parseGitHistoryOutput([
+    `${syncSha}|2026-09-30T18:00:00+02:00`,
+    "",
+    "M\tspa/src/Players.csv",
+    `${moveSha}|2026-09-29T16:36:35+02:00`,
+    "",
+    "R100\tsrc/Players.csv\tspa/src/Players.csv",
+    `${oldSha}|2026-09-28T19:57:39+02:00`,
+    "",
+    "M\tsrc/Players.csv",
+    "",
+  ].join("\n"));
+
+  assert.deepEqual(entries, [
+    { sha: syncSha, commitTimestamp: "2026-09-30T18:00:00+02:00", filePath: "spa/src/Players.csv" },
+    { sha: oldSha, commitTimestamp: "2026-09-28T19:57:39+02:00", filePath: "src/Players.csv" },
+  ]);
 });
