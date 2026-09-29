@@ -150,8 +150,10 @@ public sealed class RareAchievementExtractorTests
         Assert.Empty(result);
     }
 
-    private static IReadOnlyDictionary<int, IReadOnlyDictionary<int, DateOnly>>
-        CreateMatchedDateRequirements(DateOnly requiredDate)
+    private static IReadOnlyDictionary<
+        int,
+        IReadOnlyDictionary<int, DateOnly>
+    > CreateMatchedDateRequirements(DateOnly requiredDate)
     {
         IReadOnlyDictionary<int, DateOnly> pair = new Dictionary<int, DateOnly>
         {

@@ -35,7 +35,9 @@ public static class RareItemCatalog
                 || id <= 0
             )
             {
-                throw new FormatException($"Invalid rare item line: '{rawLine}'. Expected 'Name - ID'.");
+                throw new FormatException(
+                    $"Invalid rare item line: '{rawLine}'. Expected 'Name - ID'."
+                );
             }
 
             var name = line[..separatorIndex].Trim();

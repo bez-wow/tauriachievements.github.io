@@ -41,11 +41,7 @@ public static class RareAchievementExtractor
         {
             if (
                 achievedAchievements.TryGetValue(definition.Id, out var obtainedAt)
-                && MeetsDateRequirements(
-                    definition.Id,
-                    achievedAchievements,
-                    dateRequirements
-                )
+                && MeetsDateRequirements(definition.Id, achievedAchievements, dateRequirements)
             )
             {
                 rareAchievements.Add(new CharacterRareAchievement(definition.Id, obtainedAt));

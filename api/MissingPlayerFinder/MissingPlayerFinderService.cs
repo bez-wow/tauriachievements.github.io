@@ -430,9 +430,7 @@ public sealed class MissingPlayerFinderService(
 
             player.AppearanceCount = appearanceCount;
 
-            var sheetEndpoint = player.Level == 110
-                ? "character-sheet"
-                : "character-sheet-minimal";
+            var sheetEndpoint = player.Level == 110 ? "character-sheet" : "character-sheet-minimal";
             var sheetResponseResult = await apiClient.FetchResponseElementAsync(
                 sheetEndpoint,
                 new { r = target.Character.ApiRealm, n = target.Character.Name },

@@ -7,10 +7,7 @@ public sealed class TauriShootItemClient : IDisposable
 {
     private const string BaseUrl = "https://legion-shoot.tauri.hu/";
     private readonly ConcurrentDictionary<int, Task<LegendaryItem>> _items = new();
-    private readonly HttpClient _httpClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(30),
-    };
+    private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
 
     public Task<LegendaryItem> LoadAsync(
         LegendaryItem fallback,

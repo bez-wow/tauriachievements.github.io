@@ -32,10 +32,7 @@ public static class LegendaryItemParser
             .ToList();
     }
 
-    public static LegendaryItem ParseTooltipXml(
-        string xml,
-        LegendaryItem fallback
-    )
+    public static LegendaryItem ParseTooltipXml(string xml, LegendaryItem fallback)
     {
         var item = XDocument.Parse(xml).Root?.Element("item");
         if (item is null)
@@ -48,9 +45,7 @@ public static class LegendaryItemParser
             : fallback.Id;
         var name = NonEmpty(item.Element("name")?.Value, fallback.Name);
         var iconName = item.Element("icon")?.Value;
-        var icon = string.IsNullOrWhiteSpace(iconName)
-            ? fallback.Icon
-            : MakeIconUrl(iconName);
+        var icon = string.IsNullOrWhiteSpace(iconName) ? fallback.Icon : MakeIconUrl(iconName);
         var tooltipHtml = item.Element("htmlTooltip")?.Value.Trim();
 
         return new LegendaryItem(

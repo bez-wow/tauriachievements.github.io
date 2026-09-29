@@ -695,8 +695,7 @@ public sealed class BattlegroundCollectorService(
         return property.ValueKind switch
         {
             JsonValueKind.True => true,
-            JsonValueKind.String
-                when bool.TryParse(property.GetString(), out var value) => value,
+            JsonValueKind.String when bool.TryParse(property.GetString(), out var value) => value,
             _ => false,
         };
     }

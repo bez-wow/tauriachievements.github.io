@@ -54,11 +54,7 @@ public static class CharacterItemLevelCalculator
             itemCount++;
         }
 
-        return Math.Round(
-            (decimal)itemLevelTotal / itemCount,
-            2,
-            MidpointRounding.AwayFromZero
-        );
+        return Math.Round((decimal)itemLevelTotal / itemCount, 2, MidpointRounding.AwayFromZero);
     }
 
     private static int NormalizeItemLevel(int itemLevel) => itemLevel == 910 ? 895 : itemLevel;

@@ -39,8 +39,12 @@ public sealed class BattlegroundCollectorServiceTests
                 {
                     [100] = Success(MatchJson(100, "Warsong Gulch", isRanked: true, "duplicate")),
                     [101] = Success(MatchJson(101, "Warsong Gulch", isRanked: false, "unranked")),
-                    [102] = Success(MatchJson(102, "Warsong Gulch", isRanked: true, "complete-response")),
-                    [103] = Success(MatchJson(103, "Blade's Edge Arena", isRanked: true, "rated-arena")),
+                    [102] = Success(
+                        MatchJson(102, "Warsong Gulch", isRanked: true, "complete-response")
+                    ),
+                    [103] = Success(
+                        MatchJson(103, "Blade's Edge Arena", isRanked: true, "rated-arena")
+                    ),
                 }
             );
             var collector = new BattlegroundCollectorService(
@@ -65,12 +69,12 @@ public sealed class BattlegroundCollectorServiceTests
 
             using var output = JsonDocument.Parse(await File.ReadAllTextAsync(ratedOutputPath));
             var matches = output.RootElement.EnumerateArray().ToList();
-            Assert.Equal([100, 102], matches.Select(match => match.GetProperty("matchid").GetInt32()));
-            Assert.Equal("existing", matches[0].GetProperty("sentinel").GetString());
             Assert.Equal(
-                "complete-response",
-                matches[1].GetProperty("sentinel").GetString()
+                [100, 102],
+                matches.Select(match => match.GetProperty("matchid").GetInt32())
             );
+            Assert.Equal("existing", matches[0].GetProperty("sentinel").GetString());
+            Assert.Equal("complete-response", matches[1].GetProperty("sentinel").GetString());
             Assert.True(matches[1].GetProperty("nested").GetProperty("preserved").GetBoolean());
         }
         finally
@@ -82,24 +86,19 @@ public sealed class BattlegroundCollectorServiceTests
         }
     }
 
-    private static string MatchJson(
-        int matchId,
-        string mapName,
-        bool isRanked,
-        string sentinel
-    ) =>
+    private static string MatchJson(int matchId, string mapName, bool isRanked, string sentinel) =>
         $$"""
-        {
-          "matchid": {{matchId}},
-          "mapname": "{{mapName}}",
-          "starttime": 1789700000,
-          "length": 600000,
-          "isranked": {{isRanked.ToString().ToLowerInvariant()}},
-          "sentinel": "{{sentinel}}",
-          "nested": { "preserved": true },
-          "members": []
-        }
-        """;
+            {
+              "matchid": {{matchId}},
+              "mapname": "{{mapName}}",
+              "starttime": 1789700000,
+              "length": 600000,
+              "isranked": {{isRanked.ToString().ToLowerInvariant()}},
+              "sentinel": "{{sentinel}}",
+              "nested": { "preserved": true },
+              "members": []
+            }
+            """;
 
     private static TauriApiResponseResult Success(string json) =>
         TauriApiResponseResult.Success(JsonDocument.Parse(json).RootElement.Clone());

@@ -46,8 +46,8 @@ public static class RareScanCatalog
         string
     >
     {
-        {11162, "Keystone Master"},
-        {11224, "Realm First! Keystone Master"},
+        { 11162, "Keystone Master" },
+        { 11224, "Realm First! Keystone Master" },
         // Rank 1 Gladiators
         { 8666, "Prideful Gladiator" },
         { 8643, "Grievous Gladiator" },
@@ -215,23 +215,14 @@ public static class RareScanCatalog
     /// Additional conditions for rare achievements that are only meaningful as a matched set.
     /// Both Cataclysm heroic achievements must exist and have been obtained on 3 May 2015.
     /// </summary>
-    public static readonly IReadOnlyDictionary<int, IReadOnlyDictionary<int, DateOnly>>
-        RareAchievementDateRequirements = new Dictionary<
-            int,
-            IReadOnlyDictionary<int, DateOnly>
-        >
-        {
-            [5116] = new Dictionary<int, DateOnly>
-            {
-                [5116] = MayThird2015,
-                [5108] = MayThird2015,
-            },
-            [5108] = new Dictionary<int, DateOnly>
-            {
-                [5116] = MayThird2015,
-                [5108] = MayThird2015,
-            },
-        };
+    public static readonly IReadOnlyDictionary<
+        int,
+        IReadOnlyDictionary<int, DateOnly>
+    > RareAchievementDateRequirements = new Dictionary<int, IReadOnlyDictionary<int, DateOnly>>
+    {
+        [5116] = new Dictionary<int, DateOnly> { [5116] = MayThird2015, [5108] = MayThird2015 },
+        [5108] = new Dictionary<int, DateOnly> { [5116] = MayThird2015, [5108] = MayThird2015 },
+    };
 
     /// <summary>
     /// Achievement ids whose obtained dates are consumed downstream: the rare achievements

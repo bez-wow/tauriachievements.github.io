@@ -11,10 +11,7 @@ public sealed class RareItemCatalogTests
         try
         {
             var path = Path.Combine(directory.FullName, "rare-items.txt");
-            File.WriteAllText(
-                path,
-                "The Plague Bearer - 22818\nA Name-With-Dashes - 23075\n"
-            );
+            File.WriteAllText(path, "The Plague Bearer - 22818\nA Name-With-Dashes - 23075\n");
 
             var items = RareItemCatalog.Load(path);
 

@@ -138,8 +138,10 @@ public sealed class GuildMemberExportService(
             .GroupBy(member => member.rank)
             .Select(group => new GuildRankExport(
                 group.Key,
-                group.Select(member => member.rank_name?.Trim())
-                    .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name)) ?? $"Rank {group.Key}"
+                group
+                    .Select(member => member.rank_name?.Trim())
+                    .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
+                    ?? $"Rank {group.Key}"
             ))
             .OrderBy(rank => rank.Order)
             .ThenBy(rank => rank.Name, StringComparer.OrdinalIgnoreCase)
@@ -685,7 +687,6 @@ public sealed class GuildMemberExportService(
         public static CharacterDetailsResult Missing =>
             new(false, 0, 0, 0, string.Empty, 0, 0, null, []);
     }
-
 
     private readonly record struct CharacterScanResult(
         ReputationResult Reputation,
