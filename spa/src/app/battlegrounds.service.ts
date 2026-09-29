@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BattlegroundRecord } from './battleground-stats';
+import { DataFileService } from './services/data-file.service';
 
 export interface BattlegroundCollectorState {
   lastScanUtc?: string;
@@ -9,15 +9,16 @@ export interface BattlegroundCollectorState {
 
 @Injectable({ providedIn: 'root' })
 export class BattlegroundsService {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
 
   getBattlegrounds(): Observable<BattlegroundRecord[]> {
-    return this.http.get<BattlegroundRecord[]>(`battlegrounds.json?v=${Date.now()}`).pipe(
+    // Large (10+ MB): fetched per visit rather than kept in memory; the HTTP cache still applies.
+    return this.dataFiles.fetchJson<BattlegroundRecord[]>('battlegrounds.json').pipe(
       map((records) => Array.isArray(records) ? records : [])
     );
   }
 
   getCollectorState(): Observable<BattlegroundCollectorState> {
-    return this.http.get<BattlegroundCollectorState>(`battleground-collector-state.json?v=${Date.now()}`);
+    return this.dataFiles.getJson<BattlegroundCollectorState>('battleground-collector-state.json');
   }
 }

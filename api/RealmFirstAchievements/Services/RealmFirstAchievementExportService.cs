@@ -172,39 +172,13 @@ public sealed class RealmFirstAchievementExportService(
         CancellationToken cancellationToken
     )
     {
-        Directory.CreateDirectory(outputDirectory);
-
         var outputPath = Path.Combine(outputDirectory, ValidCharactersFileName);
-        var temporaryPath = outputPath + ".tmp";
-        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        var content = string.Join(
+            Environment.NewLine,
+            characters.Select(character => $"{character.Name}-{character.DisplayRealm}")
+        );
 
-        await using (
-            var stream = new FileStream(
-                temporaryPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                64 * 1024,
-                useAsync: true
-            )
-        )
-        await using (var writer = new StreamWriter(stream, encoding))
-        {
-            for (var index = 0; index < characters.Count; index++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var character = characters[index];
-
-                await writer.WriteAsync($"{character.Name}-{character.DisplayRealm}");
-
-                if (index < characters.Count - 1)
-                {
-                    await writer.WriteLineAsync();
-                }
-            }
-        }
-
-        File.Move(temporaryPath, outputPath, overwrite: true);
+        await AtomicFile.WriteTextAsync(outputPath, content, cancellationToken);
         return outputPath;
     }
 

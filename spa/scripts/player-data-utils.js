@@ -82,6 +82,19 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// "2019-04-02" -> whole days since 1970-01-01 (UTC), or 0 when unknown. A day count is a
+// third of the size of the date string in the snapshot and needs no parsing in the browser.
+function toEpochDay(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return 0;
+  }
+
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return Number.isNaN(time) ? 0 : Math.round(time / MS_PER_DAY);
+}
+
 function parsePlayersCsv(csvText) {
   const rows = parseCsv(csvText);
   if (rows.length < 2) {
@@ -125,8 +138,8 @@ function parsePlayersCsv(csvText) {
       playedTime: toNumber(getField(row, index, "PlayedTime")),
       hasPlayedTime,
       ilvl: toNumber(getField(row, index, "ilvl")),
-      characterAge: getField(row, index, "CharacterAge"),
-      faction: getField(row, index, "Faction") || "Horde",
+      level10Day: toEpochDay(getField(row, index, "Level10Date")),
+      faction: getField(row, index, "Faction") || "Neutral",
     });
   }
 
@@ -210,6 +223,7 @@ function readGitFile(sha, repoFilePath) {
 }
 
 module.exports = {
+  toEpochDay,
   parseGitHistoryOutput,
   parsePlayersCsv,
   readGitFile,

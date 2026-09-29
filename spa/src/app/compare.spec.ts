@@ -1,37 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import { buildPlayerComparison, getClassColor, getClassName } from './compare';
 import { RankedLadderPlayer } from './ladder.service';
+import { makePlayer } from './testing/player.fixture';
 
 function ranked(overrides: Partial<RankedLadderPlayer> = {}): RankedLadderPlayer {
   return {
-    name: 'Larahh',
-    race: 4,
-    gender: 1,
-    class: 11,
-    realm: 'Tauri',
-    guild: 'Outlaws',
-    achievementPoints: 19325,
-    achievementPointsDelta: 0,
-    achievementRankDelta: 0,
-    honorableKills: 329412,
-    honorableKillsDelta: 0,
-    honorableKillsRankDelta: 0,
-    appearanceCount: 0,
-    appearanceCountDelta: 0,
-    appearanceRankDelta: 0,
-    achievementsTotal: 0,
-    achievementsTotalDelta: 0,
-    achievementsTotalRankDelta: 0,
-    playedTime: 0,
-    playedTimeDelta: 0,
-    playedTimeRankDelta: 0,
-    characterAge: '',
-    isNewCharacter: false,
-    faction: 'Alliance',
+    ...makePlayer({
+      name: 'Larahh',
+      race: 4,
+      gender: 1,
+      class: 11,
+      guild: 'Outlaws',
+      achievementPoints: 19325,
+      honorableKills: 329412
+    }),
     achievementRank: 1,
     honorableKillRank: 1,
-    ...overrides,
-    ilvl: overrides.ilvl ?? 0
+    ...overrides
   };
 }
 

@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl } from '../utils/armory';
+import { DataFileService } from './services/data-file.service';
 
 type BossKey = 'nythendra' | 'ursoc' | 'elerethe-renferal' | 'ilgynoth' |
   'dragons-of-nightmare' | 'cenarius' | 'xavius';
@@ -83,7 +83,7 @@ const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmeraldNightmarePageComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly bosses = signal<BossView[]>([]);
@@ -296,7 +296,7 @@ export class EmeraldNightmarePageComponent implements OnInit {
   private loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.http.get<EmeraldNightmareDataset>(`EmeraldNightmare.json?v=${Date.now()}`)
+    this.dataFiles.getJson<EmeraldNightmareDataset>('EmeraldNightmare.json')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: data => {

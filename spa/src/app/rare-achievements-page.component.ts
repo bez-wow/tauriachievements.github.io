@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, map } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, forkJoin, map } from 'rxjs';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from './filter-dropdown.component';
@@ -14,15 +14,14 @@ import {
   REALM_FIRST_OPTIONS,
   R1_GLADIATOR_OPTIONS,
   RATED_BATTLEGROUND_OPTIONS,
-  SCARAB_LORD_ACHIEVEMENT_ID
+  SCARAB_LORD_ACHIEVEMENT_ID,
+  buildRareAchievementCharacterKey
 } from './rare-achievement-groups';
 import {
-  buildRareAchievementNamesById,
   buildRareAchievementSummaryLabel,
   GLADIATOR_MOUNT_IDS,
   GLADIATOR_TITLE_IDS,
-  RATED_BATTLEGROUND_HERO_IDS,
-  summarizeRareAchievements
+  RATED_BATTLEGROUND_HERO_IDS
 } from './rare-achievement-summary';
 import {
   AchievementFilterValue,
@@ -180,6 +179,7 @@ export class RareAchievementsPageComponent implements OnInit {
   });
 
   readonly dataset = signal<RareAchievementsDataset | null>(null);
+  private readonly summaries = signal<ReadonlyMap<string, RareAchievementSummary>>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedAchievementId = signal<AchievementFilterValue | undefined>(
@@ -234,9 +234,6 @@ export class RareAchievementsPageComponent implements OnInit {
         return 'Obtained';
     }
   });
-  readonly achievementNamesById = computed(() =>
-    buildRareAchievementNamesById(this.dataset()?.achievements ?? [])
-  );
   readonly matchingCharacters = computed<ReadonlyArray<RareAchievementMatchView>>(() => {
     const achievementId = this.selectedAchievementId();
     if (achievementId === undefined) {
@@ -246,10 +243,10 @@ export class RareAchievementsPageComponent implements OnInit {
     const selectedRealm = this.selectedRealm();
     const selectedClassId = this.selectedClassId();
     const normalizedSearchQuery = this.searchQuery().trim().toLowerCase();
-    const achievementNamesById = this.achievementNamesById();
+    const summaries = this.summaries();
 
     return (this.dataset()?.characters ?? [])
-      .map((character) => this.toMatchingCharacterView(character, achievementId, achievementNamesById))
+      .map((character) => this.toMatchingCharacterView(character, achievementId, summaries))
       .filter((character): character is RareAchievementMatchView => character !== undefined)
       .filter((character) => this.matchesAdditionalFilters(character, selectedRealm, selectedClassId, normalizedSearchQuery))
       .sort((left, right) => this.compareCharacters(left, right, achievementId))
@@ -362,11 +359,15 @@ export class RareAchievementsPageComponent implements OnInit {
     this.isLoading.set(true);
     this.loadError.set(undefined);
 
-    this.rareAchievementsService.getRareAchievements().pipe(
+    forkJoin({
+      dataset: this.rareAchievementsService.getRareAchievements(),
+      summaries: this.rareAchievementsService.getRareAchievementIndicators()
+    }).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
-      next: (dataset) => {
+      next: ({ dataset, summaries }) => {
         this.dataset.set(dataset);
+        this.summaries.set(summaries);
         this.lastEdited.set(this.parseDate(dataset.generatedAt));
         this.lastEditedTimeZoneLabel.set(this.getTimeZoneLabel(this.lastEdited()));
         this.isLoading.set(false);
@@ -436,14 +437,14 @@ export class RareAchievementsPageComponent implements OnInit {
   private toMatchingCharacterView(
     character: RareAchievementCharacter,
     achievementId: AchievementFilterValue,
-    achievementNamesById: ReadonlyMap<number, string>
+    summaries: ReadonlyMap<string, RareAchievementSummary>
   ): RareAchievementMatchView | undefined {
     const achievement = this.findCharacterAchievement(character, achievementId);
     if (!achievement) {
       return undefined;
     }
 
-    const rareAchievementSummary = summarizeRareAchievements(character, achievementNamesById);
+    const rareAchievementSummary = summaries.get(buildRareAchievementCharacterKey(character.name, character.realm));
     const countRankingValue = rareAchievementSummary
       ? this.getCountRankingValue(rareAchievementSummary, achievementId)
       : undefined;

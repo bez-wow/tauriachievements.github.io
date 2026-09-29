@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, shareReplay, throwError } from 'rxjs';
 import { buildRareAchievementCharacterKey } from './rare-achievement-groups';
@@ -7,29 +6,34 @@ import {
   RareAchievementSummary,
   RareAchievementsDataset
 } from './rare-achievements.types';
+import { DataFileService } from './services/data-file.service';
 
+/**
+ * RareAchievements.json and the per-character summaries derived from it. Both are loaded
+ * and computed once per session and shared by the Ladder, Rare Achievements and New Rare
+ * Characters pages.
+ */
 @Injectable({ providedIn: 'root' })
 export class RareAchievementsService {
-  private readonly http = inject(HttpClient);
-  private rareAchievementIndicators$?: Observable<Map<string, RareAchievementSummary>>;
+  private readonly dataFiles = inject(DataFileService);
+  private summaries$?: Observable<Map<string, RareAchievementSummary>>;
 
   getRareAchievements(): Observable<RareAchievementsDataset> {
-    return this.http.get<RareAchievementsDataset>(`RareAchievements.json?v=${Date.now()}`);
+    return this.dataFiles.getJson<RareAchievementsDataset>('RareAchievements.json');
   }
 
+  /** Summary per character, keyed by {@link buildRareAchievementCharacterKey}. */
   getRareAchievementIndicators(): Observable<Map<string, RareAchievementSummary>> {
-    if (!this.rareAchievementIndicators$) {
-      this.rareAchievementIndicators$ = this.getRareAchievements().pipe(
-        map((dataset) => this.buildRareAchievementIndicators(dataset)),
-        catchError((error) => {
-          this.rareAchievementIndicators$ = undefined;
-          return throwError(() => error);
-        }),
-        shareReplay(1)
-      );
-    }
+    this.summaries$ ??= this.getRareAchievements().pipe(
+      map((dataset) => this.buildRareAchievementIndicators(dataset)),
+      catchError((error: unknown) => {
+        this.summaries$ = undefined;
+        return throwError(() => error);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
 
-    return this.rareAchievementIndicators$;
+    return this.summaries$;
   }
 
   private buildRareAchievementIndicators(dataset: RareAchievementsDataset): Map<string, RareAchievementSummary> {

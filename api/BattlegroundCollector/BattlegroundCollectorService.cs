@@ -593,23 +593,11 @@ public sealed class BattlegroundCollectorService(
         return newCharacters.Count;
     }
 
-    private static async Task WriteJsonAsync<T>(
+    private static Task WriteJsonAsync<T>(
         string outputPath,
         T value,
         CancellationToken cancellationToken
-    )
-    {
-        var directory = Path.GetDirectoryName(outputPath);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var tempPath = outputPath + ".tmp";
-        var json = JsonSerializer.Serialize(value, JsonOptions);
-        await File.WriteAllTextAsync(tempPath, json, Utf8NoBom, cancellationToken);
-        File.Move(tempPath, outputPath, overwrite: true);
-    }
+    ) => AtomicFile.WriteJsonAsync(outputPath, value, JsonOptions, cancellationToken);
 
     private static int ReadInt(JsonElement parent, string propertyName)
     {

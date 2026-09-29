@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
+import { DataFileService } from './data-file.service';
 
 export interface LadderLastUpdated {
   date: Date;
@@ -9,12 +9,10 @@ export interface LadderLastUpdated {
 
 @Injectable({ providedIn: 'root' })
 export class LadderLastUpdatedService {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
 
   getLastUpdated(): Observable<LadderLastUpdated | null> {
-    const cacheBustedUrl = `lastUpdated.txt?v=${Date.now()}`;
-
-    return this.http.get(cacheBustedUrl, { responseType: 'text' }).pipe(
+    return this.dataFiles.getText('lastUpdated.txt').pipe(
       map((value) => this.parseLastUpdated(value)),
       catchError((error) => {
         console.error('Failed to load lastUpdated.txt:', error);

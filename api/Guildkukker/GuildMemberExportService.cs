@@ -569,8 +569,6 @@ public sealed class GuildMemberExportService(
         CancellationToken cancellationToken
     )
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-        var temporaryPath = outputPath + ".tmp";
         var data = new GuildExport(
             GetCentralEuropeanTimestamp(),
             new GuildMetadata(guildName, realmName, faction),
@@ -601,30 +599,16 @@ public sealed class GuildMemberExportService(
                 .ToList()
         );
 
-        try
-        {
-            await using var stream = File.Create(temporaryPath);
-            await JsonSerializer.SerializeAsync(
-                stream,
-                data,
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = true,
-                },
-                cancellationToken
-            );
-            await stream.FlushAsync(cancellationToken);
-            stream.Close();
-            File.Move(temporaryPath, outputPath, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(temporaryPath))
+        await AtomicFile.WriteJsonAsync(
+            outputPath,
+            data,
+            new JsonSerializerOptions
             {
-                File.Delete(temporaryPath);
-            }
-        }
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true,
+            },
+            cancellationToken
+        );
     }
 
     private static string GetCentralEuropeanTimestamp()

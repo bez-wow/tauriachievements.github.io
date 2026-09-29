@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import {
@@ -8,11 +7,12 @@ import {
   SerializedLadderHistorySnapshot
 } from '../ladder-history.types';
 import { splitLadderHistoryPlayerKey } from '../ladder-history.mapper';
+import { DataFileService } from './data-file.service';
 
 @Injectable({ providedIn: 'root' })
 export class LadderHistoryService {
-  private readonly http = inject(HttpClient);
-  private readonly history$ = this.http.get<SerializedLadderHistorySnapshot>('assets/data/players.history.snapshot.json').pipe(
+  private readonly dataFiles = inject(DataFileService);
+  private readonly history$ = this.dataFiles.fetchJson<SerializedLadderHistorySnapshot>('assets/data/players.history.snapshot.json').pipe(
     map((snapshot) => this.deserializeSnapshot(snapshot)),
     catchError((error) => {
       console.warn('Failed to load ladder history snapshot:', error);
@@ -37,7 +37,6 @@ export class LadderHistoryService {
     return {
       generatedAt: this.parseOptionalDate(snapshot.g),
       snapshots,
-      trackedPlayerCount: snapshot.c ?? 0,
       movers: {
         achievementPoints: (snapshot.m?.a ?? []).map((mover) => this.deserializeMover(mover)),
         honorableKills: (snapshot.m?.h ?? []).map((mover) => this.deserializeMover(mover)),

@@ -11,5 +11,9 @@ public sealed record RareItemDefinition(int Id, string Name);
 public sealed record CharacterRareItemEntry(
     string Name,
     string Realm,
+    int Race,
+    int Gender,
+    int Class,
+    string Guild,
     IReadOnlyList<RareItemDefinition> Items
 );

@@ -1,15 +1,16 @@
 using System.Text.Json;
-using AchievementLadder.Services;
 using Tauri.Core.Infrastructure;
+using Tauri.Core.Models;
 
-namespace AchievementLadder.Tests;
+namespace Tauri.Core.Tests;
 
-public sealed class PlayerServiceTests
+public sealed class CharacterScannerTests
 {
-    private static readonly DateTimeOffset ScanStartedAt = new(2026, 8, 11, 0, 0, 0, TimeSpan.Zero);
+    private static readonly IReadOnlyDictionary<int, RareItemDefinition> NoRareItems =
+        new Dictionary<int, RareItemDefinition>();
 
     [Fact]
-    public async Task FetchCharacterSyncAsync_AllEndpointsSucceed_ReturnsCompletePlayer()
+    public async Task ScanAsync_AllEndpointsSucceed_ReturnsCompletePlayer()
     {
         var client = new FakeTauriApiClient(
             new Dictionary<string, TauriApiResponseResult>
@@ -37,17 +38,17 @@ public sealed class PlayerServiceTests
             }
         );
 
-        var result = await PlayerService.FetchCharacterSyncAsync(
+        var result = await CharacterScanner.ScanAsync(
             client,
             "Examplemage",
             "[EN] Evermoon",
             "Evermoon",
-            ScanStartedAt,
-            new Dictionary<int, Tauri.Core.Models.RareItemDefinition>(),
+            NoRareItems,
+            CharacterScanMode.Full,
             CancellationToken.None
         );
 
-        Assert.True(result.IsFullySuccessful);
+        Assert.True(result.Succeeded);
         Assert.NotNull(result.Player);
         Assert.Equal("Examplemage", result.Player.Name);
         Assert.Equal(3, result.Player.AppearanceCount);
@@ -55,6 +56,7 @@ public sealed class PlayerServiceTests
         Assert.Equal(9000, result.Player.PlayedTime);
         Assert.Equal(321, result.Player.AchievementsTotal);
         Assert.Equal(856m, result.Player.ItemLevel);
+        Assert.Equal(new DateOnly(2020, 1, 1), result.Player.Level10Date);
         Assert.Contains(result.RareAchievements, achievement => achievement.Id == 416);
         Assert.Equal(
             ["character-achievements", "character-itemappearances"],
@@ -63,7 +65,7 @@ public sealed class PlayerServiceTests
     }
 
     [Fact]
-    public async Task FetchCharacterSyncAsync_OwnedRareItems_ReturnsMatches()
+    public async Task ScanAsync_OwnedRareItems_ReturnsMatches()
     {
         var client = new FakeTauriApiClient(
             new Dictionary<string, TauriApiResponseResult>
@@ -74,19 +76,19 @@ public sealed class PlayerServiceTests
                 ),
             }
         );
-        var targets = new Dictionary<int, Tauri.Core.Models.RareItemDefinition>
+        var targets = new Dictionary<int, RareItemDefinition>
         {
             [22818] = new(22818, "The Plague Bearer"),
             [22691] = new(22691, "Corrupted Ashbringer"),
         };
 
-        var result = await PlayerService.FetchCharacterSyncAsync(
+        var result = await CharacterScanner.ScanAsync(
             client,
             "Example",
             "[EN] Evermoon",
             "Evermoon",
-            ScanStartedAt,
             targets,
+            CharacterScanMode.Full,
             CancellationToken.None
         );
 
@@ -96,7 +98,7 @@ public sealed class PlayerServiceTests
     }
 
     [Fact]
-    public async Task FetchCharacterSyncAsync_AchievementRequestFails_StopsWithoutPartialPlayer()
+    public async Task ScanAsync_AchievementRequestFails_StopsWithoutPartialPlayer()
     {
         var client = new FakeTauriApiClient(
             new Dictionary<string, TauriApiResponseResult>
@@ -107,14 +109,14 @@ public sealed class PlayerServiceTests
 
         var result = await FetchAsync(client);
 
-        Assert.False(result.IsFullySuccessful);
+        Assert.False(result.Succeeded);
         Assert.Null(result.Player);
         Assert.Empty(result.RareAchievements);
         Assert.Equal(["character-achievements"], client.RequestedEndpoints);
     }
 
     [Fact]
-    public async Task FetchCharacterSyncAsync_Level110_UsesApiItemLevelWithoutSheetRequest()
+    public async Task ScanAsync_Level110_UsesApiItemLevelWithoutSheetRequest()
     {
         var client = new FakeTauriApiClient(
             new Dictionary<string, TauriApiResponseResult>
@@ -130,7 +132,7 @@ public sealed class PlayerServiceTests
 
         var result = await FetchAsync(client);
 
-        Assert.True(result.IsFullySuccessful);
+        Assert.True(result.Succeeded);
         Assert.Equal(110, result.Player!.Level);
         Assert.Equal(856m, result.Player.ItemLevel);
         Assert.Equal(
@@ -140,7 +142,7 @@ public sealed class PlayerServiceTests
     }
 
     [Fact]
-    public async Task FetchCharacterSyncAsync_MalformedAppearanceResponse_FailsSync()
+    public async Task ScanAsync_MalformedAppearanceResponse_FailsSync()
     {
         var client = new FakeTauriApiClient(
             new Dictionary<string, TauriApiResponseResult>
@@ -152,7 +154,7 @@ public sealed class PlayerServiceTests
 
         var result = await FetchAsync(client);
 
-        Assert.False(result.IsFullySuccessful);
+        Assert.False(result.Succeeded);
         Assert.Null(result.Player);
         Assert.Equal(
             ["character-achievements", "character-itemappearances"],
@@ -160,14 +162,39 @@ public sealed class PlayerServiceTests
         );
     }
 
-    private static Task<PlayerService.CharacterSyncResult> FetchAsync(FakeTauriApiClient client) =>
-        PlayerService.FetchCharacterSyncAsync(
+    [Fact]
+    public async Task ScanAsync_AchievementsOnly_SkipsAppearanceRequest()
+    {
+        var client = new FakeTauriApiClient(
+            new Dictionary<string, TauriApiResponseResult>
+            {
+                ["character-achievements"] = Success("""{ "pts": 100, "Achievements": {} }"""),
+            }
+        );
+
+        var result = await CharacterScanner.ScanAsync(
             client,
             "Example",
             "[EN] Evermoon",
             "Evermoon",
-            ScanStartedAt,
-            new Dictionary<int, Tauri.Core.Models.RareItemDefinition>(),
+            NoRareItems,
+            CharacterScanMode.AchievementsOnly,
+            CancellationToken.None
+        );
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(100, result.Player!.AchievementPoints);
+        Assert.Equal(["character-achievements"], client.RequestedEndpoints);
+    }
+
+    private static Task<CharacterScanResult> FetchAsync(FakeTauriApiClient client) =>
+        CharacterScanner.ScanAsync(
+            client,
+            "Example",
+            "[EN] Evermoon",
+            "Evermoon",
+            NoRareItems,
+            CharacterScanMode.Full,
             CancellationToken.None
         );
 

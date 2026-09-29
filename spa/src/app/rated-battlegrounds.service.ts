@@ -1,14 +1,14 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { RatedBattlegroundMatch, normalizeRatedBattlegrounds } from './rated-battleground-stats';
+import { DataFileService } from './services/data-file.service';
 
 @Injectable({ providedIn: 'root' })
 export class RatedBattlegroundsService {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
 
   getMatches(): Observable<RatedBattlegroundMatch[]> {
-    return this.http.get<unknown>(`rated-battlegrounds.json?v=${Date.now()}`).pipe(
+    return this.dataFiles.getJson<unknown>('rated-battlegrounds.json').pipe(
       map(value => normalizeRatedBattlegrounds(value))
     );
   }

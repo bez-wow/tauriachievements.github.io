@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Text;
 using Tauri.Core.Configuration;
 using Tauri.Core.Helpers;
 using Tauri.Core.Infrastructure;
@@ -23,8 +22,6 @@ public class PlayerService(
 
     public async Task<SyncResult> SyncDataAsync(CancellationToken cancellationToken)
     {
-        var scanStartedAt = DateTimeOffset.UtcNow;
-
         var solutionRoot = ProjectPaths.FindSolutionRoot(projectRoot);
         var retryOutputPath = Path.Combine(solutionRoot, "MissingPlayersToScan.txt");
         var rareItems = RareItemCatalog.Load(Path.Combine(projectRoot, "Data", "rare-items.txt"));
@@ -66,13 +63,13 @@ public class PlayerService(
             },
             async (character, ct) =>
             {
-                var syncResult = await FetchCharacterSyncAsync(
+                var syncResult = await CharacterScanner.ScanAsync(
                     apiClient,
                     character.Name,
                     character.ApiRealm,
                     character.DisplayRealm,
-                    scanStartedAt,
                     rareItemsById,
+                    CharacterScanMode.Full,
                     ct
                 );
 
@@ -94,20 +91,24 @@ public class PlayerService(
                             )
                         );
                     }
+
+                    if (syncResult.RareItems.Count > 0)
+                    {
+                        rareItemEntries.Add(
+                            new CharacterRareItemEntry(
+                                player.Name,
+                                player.Realm,
+                                player.Race,
+                                player.Gender,
+                                player.Class,
+                                player.Guild,
+                                syncResult.RareItems
+                            )
+                        );
+                    }
                 }
 
-                if (syncResult.Player is { } rareItemPlayer && syncResult.RareItems.Count > 0)
-                {
-                    rareItemEntries.Add(
-                        new CharacterRareItemEntry(
-                            rareItemPlayer.Name,
-                            rareItemPlayer.Realm,
-                            syncResult.RareItems
-                        )
-                    );
-                }
-
-                if (!syncResult.IsFullySuccessful)
+                if (!syncResult.Succeeded)
                 {
                     retryCharacters.Add(character);
                 }
@@ -174,7 +175,13 @@ public class PlayerService(
             cancellationToken
         );
 
-        await WriteRetryCharactersAsync(retryOutputPath, orderedRetryCharacters, cancellationToken);
+        await AtomicFile.WriteLinesAsync(
+            retryOutputPath,
+            orderedRetryCharacters.Select(character =>
+                $"{character.Name}-{character.DisplayRealm}"
+            ),
+            cancellationToken
+        );
 
         return new SyncResult(
             orderedPlayers.Count,
@@ -197,113 +204,6 @@ public class PlayerService(
         }
     }
 
-    internal static async Task<CharacterSyncResult> FetchCharacterSyncAsync(
-        ITauriApiClient apiClient,
-        string name,
-        string apiRealm,
-        string displayRealm,
-        DateTimeOffset scanStartedAt,
-        IReadOnlyDictionary<int, RareItemDefinition>? rareItemsById,
-        CancellationToken ct
-    )
-    {
-        var responseResult = await apiClient.FetchResponseElementAsync(
-            "character-achievements",
-            new { r = apiRealm, n = name },
-            $"{name}-{displayRealm}",
-            ct
-        );
-
-        if (!responseResult.Succeeded || responseResult.ResponseElement is not { } response)
-        {
-            return CharacterSyncResult.Failure();
-        }
-
-        var achievements = RareAchievementExtractor.ExtractAchievements(
-            response,
-            RareScanCatalog.DateTrackedAchievementIds
-        );
-        var player = CharacterResponseMapper.CreatePlayer(
-            response,
-            achievements,
-            name,
-            displayRealm,
-            scanStartedAt
-        );
-        var rareAchievements = RareAchievementExtractor.ExtractRareAchievements(
-            achievements,
-            RareScanCatalog.RareAchievementDefinitions,
-            RareScanCatalog.RareAchievementDateRequirements
-        );
-
-        var appearanceResponseResult = await apiClient.FetchResponseElementAsync(
-            "character-itemappearances",
-            new { r = apiRealm, n = name },
-            $"{name}-{displayRealm}",
-            ct
-        );
-
-        if (
-            !appearanceResponseResult.Succeeded
-            || appearanceResponseResult.ResponseElement is not { } appearanceResponse
-            || !ItemAppearanceCounter.TryCountOwned(appearanceResponse, out var appearanceCount)
-        )
-        {
-            return CharacterSyncResult.Failure();
-        }
-
-        player.AppearanceCount = appearanceCount;
-        if (
-            !ItemAppearanceCounter.TryFindOwned(
-                appearanceResponse,
-                rareItemsById ?? new Dictionary<int, RareItemDefinition>(),
-                out var foundRareItems
-            )
-        )
-        {
-            return CharacterSyncResult.Failure();
-        }
-
-        return CharacterSyncResult.Success(player, rareAchievements, foundRareItems);
-    }
-
-    private static async Task WriteRetryCharactersAsync(
-        string outputPath,
-        IReadOnlyList<(string Name, string ApiRealm, string DisplayRealm)> characters,
-        CancellationToken cancellationToken
-    )
-    {
-        var directory = Path.GetDirectoryName(outputPath);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var tempPath = outputPath + ".tmp";
-        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
-        await using (
-            var stream = new FileStream(
-                tempPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                64 * 1024,
-                useAsync: true
-            )
-        )
-        await using (var writer = new StreamWriter(stream, encoding))
-        {
-            foreach (var character in characters)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await writer.WriteLineAsync($"{character.Name}-{character.DisplayRealm}");
-            }
-        }
-
-        File.Move(tempPath, outputPath, overwrite: true);
-    }
-
     private static void WriteProgress(int processed, int total)
     {
         if (total <= 0)
@@ -320,30 +220,6 @@ public class PlayerService(
         var bar = new string('#', filledWidth) + new string('-', ProgressBarWidth - filledWidth);
 
         Console.Write($"\rProgress: [{bar}] {processed}/{total} ({ratio:P1})");
-    }
-
-    internal readonly record struct CharacterSyncResult(
-        Player? Player,
-        IReadOnlyList<CharacterRareAchievement> RareAchievements,
-        IReadOnlyList<RareItemDefinition> RareItems,
-        bool Succeeded
-    )
-    {
-        public bool IsFullySuccessful => Succeeded;
-
-        public static CharacterSyncResult Success(
-            Player player,
-            IReadOnlyList<CharacterRareAchievement> rareAchievements,
-            IReadOnlyList<RareItemDefinition> rareItems
-        ) => new(player, rareAchievements, rareItems, true);
-
-        public static CharacterSyncResult Failure() =>
-            new(
-                null,
-                Array.Empty<CharacterRareAchievement>(),
-                Array.Empty<RareItemDefinition>(),
-                false
-            );
     }
 
     private sealed class CharacterTargetComparer

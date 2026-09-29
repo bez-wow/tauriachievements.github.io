@@ -7,8 +7,9 @@ import {
   requiresCompleteLadderDataset
 } from './ladder-filter-state';
 import { mapLadderPlayersToView } from './ladder-player-view.mapper';
-import { LadderAchievement, LadderService } from './ladder.service';
+import { LadderService } from './ladder.service';
 import { LadderFilterState, LadderPlayerView } from './ladder.types';
+import { Player } from './models/character.model';
 import { RareAchievementSummary } from './rare-achievements.types';
 import { RareAchievementsService } from './rare-achievements.service';
 import { DataSyncService } from './services/data-sync.service';
@@ -157,40 +158,17 @@ export class LadderPageStore {
   }
 
   private getFilteredPlayers(state: LadderFilterState) {
-    const request = this.getSortRequest(state.sort);
-    const players$ = request(
-          state.realm,
-          state.faction,
-          state.playerClass,
-          state.search,
-          1,
-          state.pageSize
-        );
-
-    return players$.pipe(
-      map((players) => players)
-    );
-  }
-
-  private getSortRequest(sort: LadderFilterState['sort']) {
-    switch (sort) {
-      case 'achievementPoints':
-        return this.ladderService.getAchievements.bind(this.ladderService);
-      case 'achievementsTotal':
-        return this.ladderService.getAccountWideAchievements.bind(this.ladderService);
-      case 'honorableKills':
-        return this.ladderService.getHonorableKills.bind(this.ladderService);
-      case 'playedTime':
-        return this.ladderService.getPlaytime.bind(this.ladderService);
-      case 'appearanceCount':
-        return this.ladderService.getAppearances.bind(this.ladderService);
-      case 'ilvl':
-        return this.ladderService.getItemLevel.bind(this.ladderService);
-    }
+    return this.ladderService.getLadder(state.sort, {
+      realm: state.realm,
+      faction: state.faction,
+      playerClass: state.playerClass,
+      search: state.search,
+      limit: state.pageSize
+    });
   }
 
   private mapPlayersForView(
-    players: LadderAchievement[],
+    players: Player[],
     search: string,
     rareAchievementIndicators: ReadonlyMap<string, RareAchievementSummary>
   ): LadderPlayerView[] {

@@ -8,7 +8,8 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { ComparisonResult, ComparisonRow, buildPlayerComparison, getClassColor } from './compare';
-import { LadderAchievement, LadderService, RankedLadderPlayer } from './ladder.service';
+import { LadderService, RankedLadderPlayer } from './ladder.service';
+import { Player } from './models/character.model';
 import { DataSyncService } from './services/data-sync.service';
 import { LadderLastUpdatedService } from './services/ladder-last-updated.service';
 import { UpdateBarComponent } from './update-bar.component';
@@ -39,7 +40,7 @@ export class ComparePageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
 
-  private readonly allPlayers = signal<ReadonlyArray<LadderAchievement>>([]);
+  private readonly allPlayers = signal<ReadonlyArray<Player>>([]);
   readonly slotA = signal<RankedLadderPlayer | undefined>(undefined);
   readonly slotB = signal<RankedLadderPlayer | undefined>(undefined);
   readonly searchA = signal('');
@@ -78,7 +79,7 @@ export class ComparePageComponent implements OnInit {
     }
   }
 
-  selectPlayer(slot: SlotId, player: LadderAchievement): void {
+  selectPlayer(slot: SlotId, player: Player): void {
     this.ladderService.getRankedPlayer(player.name, player.realm).pipe(
       take(1),
       takeUntilDestroyed(this.destroyRef)
@@ -119,7 +120,7 @@ export class ComparePageComponent implements OnInit {
     return row.kind === 'metric' && row.outcome === slot;
   }
 
-  trackSuggestion(_index: number, player: LadderAchievement): string {
+  trackSuggestion(_index: number, player: Player): string {
     return `${player.realm}::${player.name}`;
   }
 
@@ -135,14 +136,14 @@ export class ComparePageComponent implements OnInit {
   private buildSuggestions(
     term: string,
     excluded: RankedLadderPlayer | undefined
-  ): LadderAchievement[] {
+  ): Player[] {
     const normalized = term.trim().toLowerCase();
     if (normalized.length < MIN_SEARCH_LENGTH) {
       return [];
     }
 
     const excludedKey = excluded ? this.playerKey(excluded.realm, excluded.name) : '';
-    const matches: LadderAchievement[] = [];
+    const matches: Player[] = [];
 
     for (const player of this.allPlayers()) {
       if (this.playerKey(player.realm, player.name) === excludedKey) {
@@ -169,7 +170,7 @@ export class ComparePageComponent implements OnInit {
   }
 
   private bindPlayers(): void {
-    this.ladderService.getAchievements(undefined, undefined, undefined, undefined, 1, Number.MAX_SAFE_INTEGER).pipe(
+    this.dataSyncService.getPlayers().pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((players) => {
       this.allPlayers.set(players);

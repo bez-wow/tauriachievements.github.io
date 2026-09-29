@@ -1,6 +1,7 @@
-import { PlayerAchievement } from './models/achievement.model';
+import { Player, PlayerRankingField } from './models/character.model';
 
-export type LadderSort = 'achievementPoints' | 'achievementsTotal' | 'honorableKills' | 'playedTime' | 'appearanceCount' | 'ilvl';
+/** A ladder is ordered by one of the build's rankings. */
+export type LadderSort = PlayerRankingField;
 
 export interface LadderFilterState {
   sort: LadderSort;
@@ -16,7 +17,11 @@ export interface HighlightPart {
   isMatch: boolean;
 }
 
-export interface LadderPlayerView extends PlayerAchievement {
+/** A player as one row of the ladder table: the player plus what the row displays. */
+export interface LadderPlayerView extends Player {
+  rank: number;
+  raceIcon: string;
+  classIcon: string;
   nameParts: HighlightPart[];
   guildParts: HighlightPart[];
   gladiatorTitleCount: number;

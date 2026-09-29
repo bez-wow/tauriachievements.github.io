@@ -304,42 +304,11 @@ public sealed class GuildCharacterExportService(
         }
     }
 
-    private static async Task WriteLinesAsync(
+    private static Task WriteLinesAsync(
         string path,
         IReadOnlyList<string> lines,
         CancellationToken cancellationToken
-    )
-    {
-        var directory = Path.GetDirectoryName(path);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var tempPath = path + ".tmp";
-        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
-        await using (
-            var stream = new FileStream(
-                tempPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                64 * 1024,
-                useAsync: true
-            )
-        )
-        await using (var writer = new StreamWriter(stream, encoding))
-        {
-            foreach (var line in lines)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await writer.WriteLineAsync(line);
-            }
-        }
-
-        File.Move(tempPath, path, overwrite: true);
-    }
+    ) => AtomicFile.WriteLinesAsync(path, lines, cancellationToken);
 
     private static async Task WriteRetryGuildsAsync(
         string path,

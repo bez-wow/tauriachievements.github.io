@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
-import { Player, PlayerSnapshot, SerializedPlayerRecord } from '../models/character.model';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Observable, firstValueFrom, map, shareReplay } from 'rxjs';
+import { Player, PlayerRankings, PlayerSnapshot } from '../models/character.model';
+import { readPlayerSnapshot } from '../models/player-snapshot';
+import { DataFileService } from './data-file.service';
 
 export interface SyncProgress {
   isLoading: boolean;
@@ -10,40 +11,61 @@ export interface SyncProgress {
   message: string;
 }
 
+/** The loaded players, in achievement-point rank order, with the rules for every other ranking. */
+export interface PlayerDataset {
+  players: Player[];
+  rankings: PlayerRankings | undefined;
+}
+
 const HEAD_SNAPSHOT_URL = 'assets/data/players.head.snapshot.json';
 const FULL_SNAPSHOT_URL = 'assets/data/players.snapshot.json';
+const NEW_PLAYERS_SNAPSHOT_URL = 'assets/data/new-players.snapshot.json';
 
 @Injectable({ providedIn: 'root' })
 export class DataSyncService {
-  private players$ = new BehaviorSubject<Player[]>([]);
-  private isComplete$ = new BehaviorSubject<boolean>(false);
-  private totalPlayerCount$ = new BehaviorSubject<number>(0);
-  private syncProgress$ = new BehaviorSubject<SyncProgress>({
+  private readonly dataFiles = inject(DataFileService);
+  private readonly dataset$ = new BehaviorSubject<PlayerDataset>({ players: [], rankings: undefined });
+  private readonly isComplete$ = new BehaviorSubject<boolean>(false);
+  private readonly totalPlayerCount$ = new BehaviorSubject<number>(0);
+  private readonly syncProgress$ = new BehaviorSubject<SyncProgress>({
     isLoading: false,
     current: 0,
     total: 0,
     message: ''
   });
+  private readonly newPlayers$ = this.dataFiles.getJson<PlayerSnapshot>(NEW_PLAYERS_SNAPSHOT_URL).pipe(
+    map((snapshot) => readPlayerSnapshot(snapshot)),
+    shareReplay({ bufferSize: 1, refCount: false })
+  );
 
   // Both stages are deduped by holding onto the in-flight promise: several components
   // ask for data on the same navigation, and without this each one starts its own fetch.
   private headSync?: Promise<void>;
   private completeSync?: Promise<void>;
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.clearObsoleteCacheStorage();
   }
 
+  getDataset(): Observable<PlayerDataset> {
+    return this.dataset$.asObservable();
+  }
+
   getPlayers(): Observable<Player[]> {
-    return this.players$.asObservable();
+    return this.dataset$.pipe(map((dataset) => dataset.players));
+  }
+
+  getCurrentPlayers(): Player[] {
+    return this.dataset$.value.players;
+  }
+
+  /** Characters first seen in the latest scan. A small file of its own, so no full load is needed. */
+  getNewPlayers(): Observable<Player[]> {
+    return this.newPlayers$;
   }
 
   getSyncProgress(): Observable<SyncProgress> {
     return this.syncProgress$.asObservable();
-  }
-
-  getCurrentPlayers(): Player[] {
-    return this.players$.value;
   }
 
   /** True once every player on the server is loaded, false while only the head slice is. */
@@ -91,11 +113,13 @@ export class DataSyncService {
   }
 
   private async runSync(url: string, isComplete: boolean): Promise<void> {
-    const alreadyLoaded = this.players$.value.length;
+    const alreadyLoaded = this.dataset$.value.players.length;
 
     try {
       this.updateProgress(true, 0, this.totalPlayerCount$.value, 'Loading ladder data...');
-      const { players, totalPlayerCount } = await this.loadPlayersFromSnapshot(url);
+      const snapshot = await firstValueFrom(this.dataFiles.fetchJson<PlayerSnapshot>(url));
+      const players = readPlayerSnapshot(snapshot);
+      const totalPlayerCount = snapshot?.t ?? players.length;
 
       // A slower head response must never overwrite the full set that beat it home.
       if (!isComplete && this.isComplete$.value) {
@@ -103,7 +127,7 @@ export class DataSyncService {
       }
 
       this.totalPlayerCount$.next(totalPlayerCount);
-      this.players$.next(players);
+      this.dataset$.next({ players, rankings: snapshot?.k });
       this.isComplete$.next(isComplete);
 
       this.updateProgress(false, players.length, totalPlayerCount, `Sync complete! ${players.length} players loaded.`);
@@ -115,84 +139,8 @@ export class DataSyncService {
     }
   }
 
-  private async loadPlayersFromSnapshot(url: string): Promise<{ players: Player[]; totalPlayerCount: number }> {
-    const snapshot = await firstValueFrom(this.http.get<PlayerSnapshot>(url));
-    if (!snapshot || !Array.isArray(snapshot.p) || !Array.isArray(snapshot.r) || !Array.isArray(snapshot.f)) {
-      return { players: [], totalPlayerCount: 0 };
-    }
-
-    const players = snapshot.p
-      .map((row) => this.deserializePlayer(row, snapshot))
-      .filter((player): player is Player => player !== null);
-
-    return { players, totalPlayerCount: snapshot.t ?? players.length };
-  }
-
   private updateProgress(isLoading: boolean, current: number, total: number, message: string): void {
     this.syncProgress$.next({ isLoading, current, total, message });
-  }
-
-  private deserializePlayer(row: SerializedPlayerRecord, snapshot: PlayerSnapshot): Player | null {
-    const [
-      name,
-      race,
-      gender,
-      playerClass,
-      realmIndex,
-      guild,
-      achievementPoints,
-      honorableKills,
-      factionIndex,
-      achievementPointsDelta = 0,
-      achievementRankDelta = 0,
-      honorableKillsDelta = 0,
-      honorableKillsRankDelta = 0,
-      isNewCharacter = false,
-      appearanceCount = 0,
-      appearanceCountDelta = 0,
-      appearanceRankDelta = 0,
-      characterAge = '',
-      achievementsTotal = 0,
-      achievementsTotalDelta = 0,
-      achievementsTotalRankDelta = 0,
-      playedTime = 0,
-      playedTimeDelta = 0,
-      playedTimeRankDelta = 0,
-      ilvl = 0
-    ] = row;
-
-    const realm = snapshot.r[realmIndex];
-    if (!name || !realm) {
-      return null;
-    }
-
-    return {
-      name,
-      race,
-      gender,
-      class: playerClass,
-      realm,
-      guild: guild ?? '',
-      achievementPoints,
-      achievementPointsDelta,
-      achievementRankDelta,
-      honorableKills,
-      honorableKillsDelta,
-      honorableKillsRankDelta,
-      appearanceCount,
-      appearanceCountDelta,
-      appearanceRankDelta,
-      achievementsTotal,
-      achievementsTotalDelta,
-      achievementsTotalRankDelta,
-      playedTime,
-      playedTimeDelta,
-      playedTimeRankDelta,
-      ilvl,
-      characterAge,
-      isNewCharacter,
-      faction: snapshot.f[factionIndex] ?? 'Horde'
-    };
   }
 
   private clearObsoleteCacheStorage(): void {

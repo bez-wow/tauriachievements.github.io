@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { parseGitHistoryOutput, parsePlayersCsv } = require("./player-data-utils");
+const { parseGitHistoryOutput, parsePlayersCsv, toEpochDay } = require("./player-data-utils");
 
 test("parsePlayersCsv reads character level", () => {
   const [player] = parsePlayersCsv([
@@ -76,4 +76,17 @@ test("parseGitHistoryOutput keeps each commit's path and skips pure renames", ()
     { sha: syncSha, commitTimestamp: "2026-09-30T18:00:00+02:00", filePath: "spa/src/Players.csv" },
     { sha: oldSha, commitTimestamp: "2026-09-28T19:57:39+02:00", filePath: "src/Players.csv" },
   ]);
+});
+
+test("parsePlayersCsv turns Level10Date into a day number and leaves a missing faction Neutral", () => {
+  const [known, unknown] = parsePlayersCsv([
+    '"Name","Race","Gender","Class","Realm","Guild","AchievementPoints","HonorableKills","Faction","Level10Date"',
+    '"Old",1,0,2,"Tauri","",100,20,"Alliance","2019-04-02"',
+    '"Mystery",1,0,2,"Tauri","",100,20,"",""',
+  ].join("\n"));
+
+  assert.equal(known.level10Day, toEpochDay("2019-04-02"));
+  assert.equal(new Date(known.level10Day * 86400000).toISOString().slice(0, 10), "2019-04-02");
+  assert.equal(unknown.level10Day, 0);
+  assert.equal(unknown.faction, "Neutral");
 });

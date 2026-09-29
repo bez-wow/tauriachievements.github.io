@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -42,6 +41,7 @@ import {
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
 import { specIconFor } from './mythic-plus-stats';
 import { UpdateBarComponent } from './update-bar.component';
+import { DataFileService } from './services/data-file.service';
 
 const PAGE_SIZE = 50;
 
@@ -145,7 +145,7 @@ function toRunView(
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusPageComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -300,7 +300,7 @@ export class MythicPlusPageComponent implements OnInit {
   private loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.http.get<MythicPlusDataset>('MythicPlus.json')
+    this.dataFiles.getJson<MythicPlusDataset>('MythicPlus.json')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: data => {

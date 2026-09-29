@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, shareReplay } from 'rxjs';
+import { Observable } from 'rxjs';
+import { DataFileService } from './data-file.service';
 
 /** A counted bucket keyed by a game id, whose display name lives in the view layer. */
 export interface ServerStatsIdCount {
@@ -45,13 +45,9 @@ export interface ServerStatsSnapshotCollection {
 
 @Injectable({ providedIn: 'root' })
 export class ServerStatsService {
-  private readonly http = inject(HttpClient);
-
-  private readonly stats$ = this.http.get<ServerStatsSnapshotCollection>('assets/data/stats.snapshot.json').pipe(
-    shareReplay({ bufferSize: 1, refCount: false })
-  );
+  private readonly dataFiles = inject(DataFileService);
 
   getServerStats(): Observable<ServerStatsSnapshotCollection> {
-    return this.stats$;
+    return this.dataFiles.getJson<ServerStatsSnapshotCollection>('assets/data/stats.snapshot.json');
   }
 }

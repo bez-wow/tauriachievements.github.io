@@ -29,9 +29,13 @@ This project is an effort to bring that experience back in a modern form and mak
 
 ## How it works
 
-`src/Players.csv` remains the source dataset in the repository, but the app itself reads a build-generated JSON snapshot derived from it. The displayed timestamp still comes from `src/lastUpdated.txt`.
+`src/Players.csv` remains the source dataset in the repository. Before every start and build, `scripts/prepare-app.js` parses it once and generates everything the app reads into `src/assets/data/`:
 
-That keeps the site easy to host statically while avoiding CSV parsing work in the browser on every load.
+- `players.snapshot.json` / `players.head.snapshot.json`: every player (or the top 25,000) in achievement-point rank order, with rank and value changes since the previous day's scan. The file names its own columns and ships the ranking rules, so the app never keeps its own copy of either.
+- `new-players.snapshot.json`, `guilds.snapshot.json`, `stats.snapshot.json`, `players.history.snapshot.json`: small precomputed files for the New Rare Characters, Guilds, Stats and Top Gainers pages.
+- `data-manifest.json`: a content hash for every data file. The app loads files as `file?v=<hash>`, so browsers cache each file until it actually changes.
+
+The previous scans come from the git history of `Players.csv`, so the build needs the full history (`fetch-depth: 0` in CI). The displayed timestamp comes from `src/lastUpdated.txt`.
 
 ## Tech stack
 

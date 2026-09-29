@@ -1,47 +1,9 @@
-export interface Character {
-  name: string;
-  realm: string;
-  realmApi: string;
-  realmDisplay: string;
-}
+export type Faction = 'Alliance' | 'Horde' | 'Neutral';
 
-export type SerializedPlayerRecord = [
-  name: string,
-  race: number,
-  gender: number,
-  playerClass: number,
-  realmIndex: number,
-  guild: string,
-  achievementPoints: number,
-  honorableKills: number,
-  factionIndex: number,
-  achievementPointsDelta?: number,
-  achievementRankDelta?: number,
-  honorableKillsDelta?: number,
-  honorableKillsRankDelta?: number,
-  isNewCharacter?: boolean,
-  appearanceCount?: number,
-  appearanceCountDelta?: number,
-  appearanceRankDelta?: number,
-  characterAge?: string,
-  achievementsTotal?: number,
-  achievementsTotalDelta?: number,
-  achievementsTotalRankDelta?: number,
-  playedTime?: number,
-  playedTimeDelta?: number,
-  playedTimeRankDelta?: number,
-  ilvl?: number
-];
-
-export interface PlayerSnapshot {
-  v: 1 | 2;
-  r: string[];
-  f: string[];
-  p: SerializedPlayerRecord[];
-  /** Total players on the server. Present only on the head snapshot, where `p` is a slice. */
-  t?: number;
-}
-
+/**
+ * The one shape of a player in the app. Every page and view works with this type, and
+ * view models extend it (see LadderPlayerView) instead of copying its fields.
+ */
 export interface Player {
   name: string;
   race: number;
@@ -49,29 +11,60 @@ export interface Player {
   class: number;
   realm: string;
   guild: string;
+  faction: Faction;
   achievementPoints: number;
+  honorableKills: number;
+  appearanceCount: number;
+  achievementsTotal: number;
+  playedTime: number;
+  ilvl: number;
+  /** Days since 1970-01-01 (UTC) when the character earned "Level 10"; 0 when unknown. */
+  level10Day: number;
+  /** First seen in this scan: no earlier character had the same name and class. */
+  isNewCharacter: boolean;
   achievementPointsDelta: number;
   achievementRankDelta: number;
-  honorableKills: number;
   honorableKillsDelta: number;
   honorableKillsRankDelta: number;
-  appearanceCount: number;
   appearanceCountDelta: number;
   appearanceRankDelta: number;
-  achievementsTotal: number;
   achievementsTotalDelta: number;
   achievementsTotalRankDelta: number;
-  playedTime: number;
   playedTimeDelta: number;
   playedTimeRankDelta: number;
-  ilvl: number;
-  characterAge: string;
-  isNewCharacter: boolean;
-  faction: string;
 }
 
-export interface Guild {
-  guildName: string;
-  realmApi: string;
-  realmDisplay: string;
+/** The numeric fields a ranking can order players by. */
+export type PlayerRankingField =
+  | 'achievementPoints'
+  | 'honorableKills'
+  | 'appearanceCount'
+  | 'achievementsTotal'
+  | 'playedTime'
+  | 'ilvl';
+
+/**
+ * How each leaderboard orders players: fields compared highest-first, with remaining ties
+ * kept in the snapshot's row order. Defined once by the build (scripts/player-ranking.js)
+ * and shipped inside the snapshot.
+ */
+export type PlayerRankings = Readonly<Record<PlayerRankingField, readonly PlayerRankingField[]>>;
+
+/**
+ * A players file as written by scripts/generate-player-snapshot.js. Rows are in
+ * achievement-point rank order and are read by column name, never by position.
+ */
+export interface PlayerSnapshot {
+  v: number;
+  /** Column names, one per value in each row of `p`. */
+  c: string[];
+  /** Ranking rules. */
+  k: PlayerRankings;
+  /** Realm names; the `realm` column holds an index into this list. */
+  r: string[];
+  /** Faction names; the `faction` column holds an index into this list. */
+  f: string[];
+  /** Total players on the server; larger than `p.length` in the head snapshot. */
+  t: number;
+  p: (string | number)[][];
 }

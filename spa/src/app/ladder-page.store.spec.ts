@@ -45,16 +45,7 @@ class FakeDataSyncService {
 }
 
 function fakeLadderService() {
-  const page = () => of([]);
-
-  return {
-    getAchievements: page,
-    getAccountWideAchievements: page,
-    getHonorableKills: page,
-    getPlaytime: page,
-    getAppearances: page,
-    getItemLevel: page
-  };
+  return { getLadder: () => of([]) };
 }
 
 describe('LadderPageStore dataset escalation', () => {

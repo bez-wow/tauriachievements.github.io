@@ -1,13 +1,12 @@
 using System.Text.Json;
 using Tauri.Core.Infrastructure;
-using Tauri.Core.Models;
 
 namespace Tauri.Core.Tests;
 
 public sealed class CharacterResponseMapperTests
 {
     [Fact]
-    public void CreatePlayer_CompleteResponse_MapsProfileAndCharacterAge()
+    public void CreatePlayer_CompleteResponse_MapsProfileAndLevel10Date()
     {
         var response = Parse(
             """
@@ -28,14 +27,15 @@ public sealed class CharacterResponseMapperTests
         );
         var achievements = new Dictionary<int, DateTimeOffset?>
         {
+            // 01:30 on Jan 2nd at UTC+2 is still Jan 1st in UTC.
             [CharacterResponseMapper.Level10AchievementId] = new DateTimeOffset(
                 2020,
                 1,
+                2,
                 1,
+                30,
                 0,
-                0,
-                0,
-                TimeSpan.Zero
+                TimeSpan.FromHours(2)
             ),
         };
 
@@ -43,8 +43,7 @@ public sealed class CharacterResponseMapperTests
             response,
             achievements,
             "Examplemage",
-            "Evermoon",
-            new DateTimeOffset(2022, 2, 3, 0, 0, 0, TimeSpan.Zero)
+            "Evermoon"
         );
 
         Assert.Equal("Examplemage", player.Name);
@@ -56,7 +55,7 @@ public sealed class CharacterResponseMapperTests
         Assert.Equal(678, player.HonorableKills);
         Assert.Equal("Alliance", player.Faction);
         Assert.Equal("Example Guild", player.Guild);
-        Assert.Equal("2 years 1 months 2 days", player.CharacterAge);
+        Assert.Equal(new DateOnly(2020, 1, 1), player.Level10Date);
         Assert.Equal(9000, player.PlayedTime);
         Assert.Equal(321, player.AchievementsTotal);
         Assert.Equal(856m, player.ItemLevel);
@@ -69,25 +68,13 @@ public sealed class CharacterResponseMapperTests
             Parse("{}"),
             new Dictionary<int, DateTimeOffset?>(),
             "Unknown",
-            "Tauri",
-            DateTimeOffset.UtcNow
+            "Tauri"
         );
 
         Assert.Equal(0, player.Race);
         Assert.Equal(0, player.AchievementPoints);
         Assert.Equal(string.Empty, player.Guild);
-        Assert.Equal(string.Empty, player.CharacterAge);
-    }
-
-    [Fact]
-    public void ApplyMinimalSheet_MissingFields_ResetsValuesToDefaults()
-    {
-        var player = new Player { PlayedTime = 10, AchievementsTotal = 20 };
-
-        CharacterResponseMapper.ApplyMinimalSheet(Parse("{}"), player);
-
-        Assert.Equal(0, player.PlayedTime);
-        Assert.Equal(0, player.AchievementsTotal);
+        Assert.Null(player.Level10Date);
     }
 
     private static JsonElement Parse(string json) => JsonDocument.Parse(json).RootElement.Clone();

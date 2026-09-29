@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+using Tauri.Core.Infrastructure;
 
 namespace EndlessGuildExporter;
 
@@ -56,77 +57,65 @@ internal static class SimpleXlsxWriter
         var hasStyles = styleDefinitions.Count > 0;
         var validations = dataValidations ?? [];
 
-        var directory = Path.GetDirectoryName(outputPath);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var tempPath = outputPath + ".tmp";
-        if (File.Exists(tempPath))
-        {
-            File.Delete(tempPath);
-        }
-
-        await using (
-            var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None)
-        )
-        using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: false))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            await WriteXmlEntryAsync(
-                archive,
-                "[Content_Types].xml",
-                writer => WriteContentTypesAsync(writer, hasStyles),
-                cancellationToken
-            );
-            await WriteXmlEntryAsync(
-                archive,
-                "_rels/.rels",
-                WriteRootRelationshipsAsync,
-                cancellationToken
-            );
-            await WriteXmlEntryAsync(
-                archive,
-                "xl/workbook.xml",
-                writer => WriteWorkbookAsync(writer, sheetName),
-                cancellationToken
-            );
-            await WriteXmlEntryAsync(
-                archive,
-                "xl/_rels/workbook.xml.rels",
-                writer => WriteWorkbookRelationshipsAsync(writer, hasStyles),
-                cancellationToken
-            );
-
-            if (hasStyles)
+        await AtomicFile.WriteAsync(
+            outputPath,
+            async (stream, _) =>
             {
+                using var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true);
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await WriteXmlEntryAsync(
                     archive,
-                    "xl/styles.xml",
-                    writer => WriteStylesAsync(writer, styleDefinitions),
+                    "[Content_Types].xml",
+                    writer => WriteContentTypesAsync(writer, hasStyles),
                     cancellationToken
                 );
-            }
+                await WriteXmlEntryAsync(
+                    archive,
+                    "_rels/.rels",
+                    WriteRootRelationshipsAsync,
+                    cancellationToken
+                );
+                await WriteXmlEntryAsync(
+                    archive,
+                    "xl/workbook.xml",
+                    writer => WriteWorkbookAsync(writer, sheetName),
+                    cancellationToken
+                );
+                await WriteXmlEntryAsync(
+                    archive,
+                    "xl/_rels/workbook.xml.rels",
+                    writer => WriteWorkbookRelationshipsAsync(writer, hasStyles),
+                    cancellationToken
+                );
 
-            await WriteXmlEntryAsync(
-                archive,
-                "xl/worksheets/sheet1.xml",
-                writer =>
-                    WriteWorksheetAsync(
-                        writer,
-                        header,
-                        rows,
-                        styleIndexByKey,
-                        validations,
-                        autoFilterRef
-                    ),
-                cancellationToken
-            );
-        }
+                if (hasStyles)
+                {
+                    await WriteXmlEntryAsync(
+                        archive,
+                        "xl/styles.xml",
+                        writer => WriteStylesAsync(writer, styleDefinitions),
+                        cancellationToken
+                    );
+                }
 
-        File.Move(tempPath, outputPath, overwrite: true);
+                await WriteXmlEntryAsync(
+                    archive,
+                    "xl/worksheets/sheet1.xml",
+                    writer =>
+                        WriteWorksheetAsync(
+                            writer,
+                            header,
+                            rows,
+                            styleIndexByKey,
+                            validations,
+                            autoFilterRef
+                        ),
+                    cancellationToken
+                );
+            },
+            cancellationToken
+        );
     }
 
     private static async Task WriteXmlEntryAsync(

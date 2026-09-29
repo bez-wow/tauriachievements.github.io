@@ -1,37 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { buildHighlightParts, mapLadderPlayersToView } from './ladder-player-view.mapper';
-import { LadderAchievement } from './ladder.service';
+import { Player } from './models/character.model';
+import { makePlayer } from './testing/player.fixture';
 import { RareAchievementSummary } from './rare-achievements.types';
 
-function achievement(overrides: Partial<LadderAchievement> = {}): LadderAchievement {
-  return {
+function achievement(overrides: Partial<Player> = {}): Player {
+  return makePlayer({
     name: 'Larahh',
     race: 4,
     gender: 1,
     class: 11,
-    realm: 'Tauri',
     guild: 'Outlaws',
     achievementPoints: 19325,
-    achievementPointsDelta: 0,
-    achievementRankDelta: 0,
     honorableKills: 329412,
-    honorableKillsDelta: 0,
-    honorableKillsRankDelta: 0,
     appearanceCount: 1234,
-    appearanceCountDelta: 0,
-    appearanceRankDelta: 0,
-    achievementsTotal: 0,
-    achievementsTotalDelta: 0,
-    achievementsTotalRankDelta: 0,
-    playedTime: 0,
-    playedTimeDelta: 0,
-    playedTimeRankDelta: 0,
-    characterAge: '14 years 6 months 21 days',
-    isNewCharacter: false,
-    faction: 'Alliance',
-    ...overrides,
-    ilvl: overrides.ilvl ?? 0
-  };
+    ...overrides
+  });
 }
 
 describe('buildHighlightParts', () => {

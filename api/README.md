@@ -56,10 +56,15 @@ workflow and its output contract.
 4. Sort results deterministically and write them to temporary files.
 5. Atomically publish completed outputs and preserve failures for retry.
 
-The main scan treats a character as one consistent snapshot: achievements, appearances, and
-the minimal character sheet must all succeed before publication. Transient HTTP, network,
-timeout, and invalid-response failures are retried. Unresolved targets are recorded for the
-next run rather than silently discarded.
+The main scan treats a character as one consistent snapshot: the achievements and item-appearance
+requests must both succeed before publication. Every job that produces player rows (the full
+scan and the missing-player backfill) goes through the same `CharacterScanner`, and every
+job that reads or writes Players.csv goes through `PlayerCsvFormat`, so rows cannot differ by
+the job that produced them. Transient HTTP, network, timeout, and invalid-response failures are
+retried. Unresolved targets are recorded for the next run rather than silently discarded.
+
+Players.csv stores the date each character earned "Level 10" (`Level10Date`); the frontend
+derives the character's age from it at display time.
 
 ## Technology
 
@@ -105,14 +110,14 @@ at startup.
 
 ## Tests and CI
 
-The solution contains 28 focused tests covering:
+The solution contains 41 focused tests covering:
 
-- Character-age calculation and date normalization
 - Rare-achievement parsing across valid, missing, and malformed payloads
-- Item-appearance counting and character mapping
+- Item-appearance counting and character mapping, including the Level 10 date
 - Realm normalization
-- CSV escaping and JSON serialization
-- Successful and failed per-character synchronization through a fake `ITauriApiClient`
+- The Players.csv format: header/row round-trip, escaping, and JSON serialization
+- Atomic file writes, including a failed write leaving the previous file intact
+- Successful and failed character scans through a fake `ITauriApiClient`
 
 Run the same Release validation used by CI:
 

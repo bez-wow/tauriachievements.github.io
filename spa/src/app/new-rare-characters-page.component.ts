@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin, from } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { getArmoryUrl, getGuildArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -11,12 +11,12 @@ import {
   buildRareAchievementNamesById,
   GLADIATOR_MOUNT_IDS,
   GLADIATOR_TITLE_IDS,
-  REALM_FIRST_IDS,
-  summarizeRareAchievements
+  REALM_FIRST_IDS
 } from './rare-achievement-summary';
 import { RareAchievementsService } from './rare-achievements.service';
 import {
   RareAchievementCharacter,
+  RareAchievementSummary,
   RareAchievementsDataset
 } from './rare-achievements.types';
 import { Player } from './models/character.model';
@@ -63,6 +63,7 @@ export class NewRareCharactersPageComponent implements OnInit {
 
   readonly players = signal<ReadonlyArray<Player>>([]);
   readonly rareAchievementsDataset = signal<RareAchievementsDataset | undefined>(undefined);
+  private readonly summaries = signal<ReadonlyMap<string, RareAchievementSummary>>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly lastEdited = signal<Date | undefined>(undefined);
@@ -74,14 +75,13 @@ export class NewRareCharactersPageComponent implements OnInit {
     }
 
     const achievementNamesById = buildRareAchievementNamesById(dataset.achievements ?? []);
+    const summaries = this.summaries();
     const newPlayersByKey = new Map(
-      this.players()
-        .filter((player) => player.isNewCharacter)
-        .map((player) => [buildRareAchievementCharacterKey(player.name, player.realm), player] as const)
+      this.players().map((player) => [buildRareAchievementCharacterKey(player.name, player.realm), player] as const)
     );
 
     return (dataset.characters ?? [])
-      .map((character) => this.toNewRareCharacterView(character, newPlayersByKey, achievementNamesById))
+      .map((character) => this.toNewRareCharacterView(character, newPlayersByKey, achievementNamesById, summaries))
       .filter((character): character is NewRareCharacterView => character !== undefined)
       .sort((left, right) => this.compareNewRareCharacters(left, right))
       .map((character, index) => ({
@@ -125,15 +125,17 @@ export class NewRareCharactersPageComponent implements OnInit {
     this.loadError.set(undefined);
 
     forkJoin({
-      sync: from(this.dataSyncService.ensureCompleteData()),
+      newPlayers: this.dataSyncService.getNewPlayers(),
       rareAchievementsDataset: this.rareAchievementsService.getRareAchievements(),
+      summaries: this.rareAchievementsService.getRareAchievementIndicators(),
       lastUpdated: this.ladderLastUpdatedService.getLastUpdated()
     }).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
-      next: ({ rareAchievementsDataset, lastUpdated }) => {
-        this.players.set(this.dataSyncService.getCurrentPlayers());
+      next: ({ newPlayers, rareAchievementsDataset, summaries, lastUpdated }) => {
+        this.players.set(newPlayers);
         this.rareAchievementsDataset.set(rareAchievementsDataset);
+        this.summaries.set(summaries);
         this.lastEdited.set(lastUpdated?.date);
         this.lastEditedTimeZoneLabel.set(lastUpdated?.timeZoneLabel ?? 'Local time');
         this.isLoading.set(false);
@@ -151,7 +153,8 @@ export class NewRareCharactersPageComponent implements OnInit {
   private toNewRareCharacterView(
     character: RareAchievementCharacter,
     newPlayersByKey: ReadonlyMap<string, Player>,
-    achievementNamesById: ReadonlyMap<number, string>
+    achievementNamesById: ReadonlyMap<number, string>,
+    summaries: ReadonlyMap<string, RareAchievementSummary>
   ): NewRareCharacterView | undefined {
     const player = newPlayersByKey.get(buildRareAchievementCharacterKey(character.name, character.realm));
     if (!player) {
@@ -163,7 +166,7 @@ export class NewRareCharactersPageComponent implements OnInit {
       return undefined;
     }
 
-    const summary = summarizeRareAchievements(character, achievementNamesById);
+    const summary = summaries.get(buildRareAchievementCharacterKey(character.name, character.realm));
 
     return {
       rank: 0,

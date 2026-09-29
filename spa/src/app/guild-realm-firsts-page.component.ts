@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { UpdateBarComponent } from './update-bar.component';
+import { DataFileService } from './services/data-file.service';
 
 interface GuildRealmFirstResult {
   guild: string | null;
@@ -95,7 +95,7 @@ const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuildRealmFirstsPageComponent implements OnInit {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly dataset = signal<GuildRealmFirstDataset | null>(null);
@@ -198,7 +198,7 @@ export class GuildRealmFirstsPageComponent implements OnInit {
     this.isLoading.set(true);
     this.loadError.set(undefined);
 
-    this.http.get<GuildRealmFirstDataset>(`RealmFirstAchievements.json?v=${Date.now()}`).pipe(
+    this.dataFiles.getJson<GuildRealmFirstDataset>('RealmFirstAchievements.json').pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (dataset) => {

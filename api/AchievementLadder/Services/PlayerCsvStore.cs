@@ -1,6 +1,5 @@
-﻿using System.Globalization;
-using System.Text;
 using System.Text.Json;
+using Tauri.Core.Infrastructure;
 using Tauri.Core.Models;
 
 namespace AchievementLadder.Services;
@@ -25,58 +24,10 @@ public sealed class PlayerCsvStore
         CancellationToken ct = default
     )
     {
-        Directory.CreateDirectory(_outputDirectory);
-
         var fullPath = Path.Combine(_outputDirectory, relativePath);
-        var tmpPath = fullPath + ".tmp";
-        var utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        var lines = players.Select(PlayerCsvFormat.FormatRow).Prepend(PlayerCsvFormat.Header);
 
-        await using (
-            var stream = new FileStream(
-                tmpPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                64 * 1024,
-                useAsync: true
-            )
-        )
-        await using (var writer = new StreamWriter(stream, utf8))
-        {
-            await writer.WriteLineAsync(
-                "\"Name\",\"Race\",\"Gender\",\"Class\",\"Level\",\"Realm\",\"Guild\",\"AchievementPoints\",\"HonorableKills\",\"Faction\",\"AppearanceCount\",\"CharacterAge\",\"PlayedTime\",\"AchievementsTotal\",\"ilvl\""
-            );
-
-            foreach (var p in players)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                static string Q(string? s) => $"\"{(s ?? string.Empty).Replace("\"", "\"\"")}\"";
-
-                var line = string.Join(
-                    ",",
-                    Q(p.Name),
-                    p.Race.ToString(CultureInfo.InvariantCulture),
-                    p.Gender.ToString(CultureInfo.InvariantCulture),
-                    p.Class.ToString(CultureInfo.InvariantCulture),
-                    p.Level.ToString(CultureInfo.InvariantCulture),
-                    Q(p.Realm),
-                    Q(p.Guild),
-                    p.AchievementPoints.ToString(CultureInfo.InvariantCulture),
-                    p.HonorableKills.ToString(CultureInfo.InvariantCulture),
-                    Q(p.Faction),
-                    p.AppearanceCount.ToString(CultureInfo.InvariantCulture),
-                    Q(p.CharacterAge),
-                    p.PlayedTime.ToString(CultureInfo.InvariantCulture),
-                    p.AchievementsTotal.ToString(CultureInfo.InvariantCulture),
-                    p.ItemLevel?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
-                );
-
-                await writer.WriteLineAsync(line);
-            }
-        }
-
-        File.Move(tmpPath, fullPath, overwrite: true);
+        await AtomicFile.WriteLinesAsync(fullPath, lines, ct);
         return fullPath;
     }
 
@@ -86,29 +37,9 @@ public sealed class PlayerCsvStore
         CancellationToken ct = default
     )
     {
-        Directory.CreateDirectory(_outputDirectory);
-
         var fullPath = Path.Combine(_outputDirectory, relativePath);
-        var tmpPath = fullPath + ".tmp";
-        var utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
-        await using (
-            var stream = new FileStream(
-                tmpPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                4 * 1024,
-                useAsync: true
-            )
-        )
-        await using (var writer = new StreamWriter(stream, utf8))
-        {
-            ct.ThrowIfCancellationRequested();
-            await writer.WriteAsync(content);
-        }
-
-        File.Move(tmpPath, fullPath, overwrite: true);
+        await AtomicFile.WriteTextAsync(fullPath, content, ct);
         return fullPath;
     }
 
@@ -118,27 +49,9 @@ public sealed class PlayerCsvStore
         CancellationToken ct = default
     )
     {
-        Directory.CreateDirectory(_outputDirectory);
-
         var fullPath = Path.Combine(_outputDirectory, relativePath);
-        var tmpPath = fullPath + ".tmp";
 
-        await using (
-            var stream = new FileStream(
-                tmpPath,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                64 * 1024,
-                useAsync: true
-            )
-        )
-        {
-            ct.ThrowIfCancellationRequested();
-            await JsonSerializer.SerializeAsync(stream, value, FrontendJsonOptions, ct);
-        }
-
-        File.Move(tmpPath, fullPath, overwrite: true);
+        await AtomicFile.WriteJsonAsync(fullPath, value, FrontendJsonOptions, ct);
         return fullPath;
     }
 }

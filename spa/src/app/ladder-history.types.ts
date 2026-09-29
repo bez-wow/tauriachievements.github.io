@@ -22,9 +22,8 @@ export type SerializedLadderHistoryMover = [
 ];
 
 export interface SerializedLadderHistorySnapshot {
-  v: 1 | 2 | 3;
+  v: number;
   g: string;
-  c: number;
   s: string[];
   m: {
     a: SerializedLadderHistoryMover[];
@@ -62,7 +61,6 @@ export interface LadderHistoryMoverView {
 export interface LadderHistoryData {
   generatedAt?: Date;
   snapshots: Date[];
-  trackedPlayerCount: number;
   movers: {
     achievementPoints: LadderHistoryMoverView[];
     honorableKills: LadderHistoryMoverView[];

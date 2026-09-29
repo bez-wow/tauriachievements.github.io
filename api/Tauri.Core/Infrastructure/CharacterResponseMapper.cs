@@ -12,8 +12,7 @@ public static class CharacterResponseMapper
         JsonElement response,
         IReadOnlyDictionary<int, DateTimeOffset?> achievements,
         string name,
-        string displayRealm,
-        DateTimeOffset scanStartedAt
+        string displayRealm
     )
     {
         int race = response.TryGetProperty("race", out var value) ? value.GetInt32() : 0;
@@ -40,10 +39,11 @@ public static class CharacterResponseMapper
             ? (value.GetString() ?? string.Empty)
             : string.Empty;
 
-        var level10ObtainedAt = achievements.TryGetValue(Level10AchievementId, out var obtainedAt)
-            ? obtainedAt
-            : null;
-        var characterAge = CharacterAgeCalculator.Format(level10ObtainedAt, scanStartedAt);
+        DateOnly? level10Date =
+            achievements.TryGetValue(Level10AchievementId, out var obtainedAt)
+            && obtainedAt is { } earned
+                ? DateOnly.FromDateTime(earned.UtcDateTime)
+                : null;
 
         return new Player
         {
@@ -57,20 +57,10 @@ public static class CharacterResponseMapper
             AchievementPoints = achievementPoints,
             HonorableKills = honorableKills,
             Faction = faction,
-            CharacterAge = characterAge,
+            Level10Date = level10Date,
             PlayedTime = playedTime,
             AchievementsTotal = achievementsTotal,
             ItemLevel = itemLevel,
         };
-    }
-
-    public static void ApplyMinimalSheet(JsonElement response, Player player)
-    {
-        player.PlayedTime = response.TryGetProperty("played_time", out var value)
-            ? value.GetInt64()
-            : 0;
-        player.AchievementsTotal = response.TryGetProperty("achievements_total", out value)
-            ? value.GetInt32()
-            : 0;
     }
 }

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { UpdateBarComponent } from './update-bar.component';
 import { getArmoryUrl } from '../utils/armory';
+import { DataFileService } from './services/data-file.service';
 
 interface ApChestLooter {
   name: string;
@@ -36,7 +36,7 @@ const CLASS_COLORS: Record<number, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ApChestLootersPageComponent {
-  private readonly http = inject(HttpClient);
+  private readonly dataFiles = inject(DataFileService);
 
   readonly looters = signal<ApChestLooter[]>([]);
   readonly isLoading = signal(true);
@@ -44,7 +44,7 @@ export class ApChestLootersPageComponent {
   readonly getArmoryUrl = getArmoryUrl;
 
   constructor() {
-    this.http.get<ApChestLooter[]>('ap-chest-looters.json').subscribe({
+    this.dataFiles.getJson<ApChestLooter[]>('ap-chest-looters.json').subscribe({
       next: (looters) => {
         this.looters.set([...looters].sort((a, b) => this.sortValue(b.count) - this.sortValue(a.count)));
         this.isLoading.set(false);

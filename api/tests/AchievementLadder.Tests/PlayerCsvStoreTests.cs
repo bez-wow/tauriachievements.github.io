@@ -21,6 +21,7 @@ public sealed class PlayerCsvStoreTests : IDisposable
             Guild = "First line\nSecond line",
             Faction = "Alliance",
             Level = 110,
+            Level10Date = new DateOnly(2019, 4, 2),
             ItemLevel = 883.33m,
         };
 
@@ -30,10 +31,11 @@ public sealed class PlayerCsvStoreTests : IDisposable
         Assert.Contains("\"Mage, \"\"The Great\"\"\"", content);
         Assert.Contains("\"First line\nSecond line\"", content);
         Assert.StartsWith(
-            "\"Name\",\"Race\",\"Gender\",\"Class\",\"Level\",\"Realm\",\"Guild\",\"AchievementPoints\",\"HonorableKills\",\"Faction\",\"AppearanceCount\",\"CharacterAge\",\"PlayedTime\",\"AchievementsTotal\",\"ilvl\"",
+            "\"Name\",\"Race\",\"Gender\",\"Class\",\"Level\",\"Realm\",\"Guild\",\"AchievementPoints\",\"HonorableKills\",\"Faction\",\"AppearanceCount\",\"Level10Date\",\"PlayedTime\",\"AchievementsTotal\",\"ilvl\"",
             content
         );
         Assert.Contains(",0,0,0,110,\"Evermoon\",", content);
+        Assert.Contains(",\"2019-04-02\",", content);
         Assert.EndsWith(",883.33" + Environment.NewLine, content);
     }
 

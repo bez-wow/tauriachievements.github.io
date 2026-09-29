@@ -218,7 +218,7 @@ export class LeaderboardTableComponent {
   }
 
   getCharacterAge(player: LadderPlayerView): string {
-    return formatCharacterAge(player.characterAge);
+    return formatCharacterAge(player.level10Day);
   }
 
   showPlayerTooltip(event: MouseEvent | FocusEvent, tooltip: string): void {

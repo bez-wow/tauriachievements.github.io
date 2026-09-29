@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin, from } from 'rxjs';
 import { getArmoryUrl } from '../utils/armory';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { DataSyncService } from './services/data-sync.service';
+import { DataFileService } from './services/data-file.service';
 
 interface RareItem {
   id: number;
@@ -15,6 +13,10 @@ interface RareItem {
 interface RareItemCharacter {
   name: string;
   realm: string;
+  race: number;
+  gender: number;
+  class: number;
+  guild: string;
   items: ReadonlyArray<RareItem>;
 }
 
@@ -50,14 +52,12 @@ const CLASS_COLORS: Readonly<Record<number, string>> = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RareItemsPageComponent implements OnInit {
-  private readonly http = inject(HttpClient);
-  private readonly dataSyncService = inject(DataSyncService);
+  private readonly dataFiles = inject(DataFileService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly dataset = signal<RareItemsDataset | undefined>(undefined);
   readonly selectedItemId = signal<number | undefined>(undefined);
   readonly selectedRealm = signal<RealmFilter>('all');
-  readonly playerClasses = signal<ReadonlyMap<string, number>>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
 
@@ -105,28 +105,18 @@ export class RareItemsPageComponent implements OnInit {
   }
 
   getCharacterClassColor(character: RareItemCharacter): string {
-    const classId = this.playerClasses().get(this.buildCharacterKey(character.name, character.realm));
-    return classId === undefined ? '#b7df86' : (CLASS_COLORS[classId] ?? '#b7df86');
+    return CLASS_COLORS[character.class] ?? '#b7df86';
   }
 
   private loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
 
-    forkJoin({
-      dataset: this.http.get<RareItemsDataset>(`RareItems.json?v=${Date.now()}`),
-      playerSync: from(this.dataSyncService.ensureCompleteData())
-    })
+    this.dataFiles.getJson<RareItemsDataset>('RareItems.json')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ dataset }) => {
+        next: (dataset) => {
           this.dataset.set(dataset);
-          this.playerClasses.set(new Map(
-            this.dataSyncService.getCurrentPlayers().map(player => [
-              this.buildCharacterKey(player.name, player.realm),
-              player.class
-            ])
-          ));
           this.isLoading.set(false);
         },
         error: error => {
@@ -135,9 +125,5 @@ export class RareItemsPageComponent implements OnInit {
           this.isLoading.set(false);
         }
       });
-  }
-
-  private buildCharacterKey(name: string, realm: string): string {
-    return `${realm}::${name}`;
   }
 }
