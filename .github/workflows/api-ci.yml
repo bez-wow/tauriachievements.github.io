@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  formatting:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Check C# formatting
+        run: dotnet csharpier check .
+
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore AchievementLadder.sln
+
+      - name: Build solution
+        run: dotnet build AchievementLadder.sln --configuration Release --no-restore
+
+      - name: Run tests and collect coverage
+        run: >-
+          dotnet test AchievementLadder.sln
+          --configuration Release
+          --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory artifacts/test-results
+
+      - name: Upload coverage
+        if: ${{ hashFiles('api/artifacts/test-results/**/coverage.cobertura.xml') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: api/artifacts/test-results/**/coverage.cobertura.xml
+          if-no-files-found: error
+          retention-days: 14
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
