@@ -21,7 +21,7 @@ and durable file-based publishing.
 - Defensive parsing of inconsistent third-party JSON
 - Deterministic normalization, deduplication, and ordering
 - xUnit unit and service tests with fake API responses and Coverlet coverage
-- .NET 10 CI builds and Gitleaks secret scanning
+- .NET 10 CI builds
 
 ## Architecture
 
@@ -67,7 +67,7 @@ next run rather than silently discarded.
 - `HttpClient`, `System.Text.Json`
 - `Parallel.ForEachAsync`, `SemaphoreSlim`, concurrent collections
 - CSV, JSON, text, and Open XML `.xlsx` generation
-- xUnit, Coverlet, GitHub Actions, Gitleaks
+- xUnit, Coverlet, GitHub Actions
 
 The solution intentionally has no database or web server. File-based publishing is a conscious
 fit for its static frontend and scheduled batch workflow.
