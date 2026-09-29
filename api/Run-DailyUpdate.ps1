@@ -99,10 +99,35 @@ function Get-LineCount([string]$Path) {
     return $count
 }
 
+# Clicking inside a classic console window with QuickEdit on starts a text selection that
+# freezes every program writing to that window until Esc is pressed. Turn QuickEdit off for
+# this window so a stray click cannot stall a run that takes hours.
+function Disable-ConsoleQuickEdit {
+    try {
+        Add-Type -Namespace DailyUpdate -Name ConsoleMode -MemberDefinition @'
+[DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int nStdHandle);
+[DllImport("kernel32.dll")] public static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+[DllImport("kernel32.dll")] public static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+'@
+        $enableQuickEditMode = 0x40
+        $enableExtendedFlags = 0x80
+        $inputHandle = [DailyUpdate.ConsoleMode]::GetStdHandle(-10)
+        [uint32]$mode = 0
+        if ([DailyUpdate.ConsoleMode]::GetConsoleMode($inputHandle, [ref]$mode)) {
+            $newMode = [uint32](($mode -bor $enableExtendedFlags) - ($mode -band $enableQuickEditMode))
+            [void][DailyUpdate.ConsoleMode]::SetConsoleMode($inputHandle, $newMode)
+        }
+    }
+    catch {
+        # Not a classic console (e.g. Windows Terminal or redirected input): nothing to do.
+    }
+}
+
 function Format-Duration([TimeSpan]$Duration) {
     '{0}h {1:00}m {2:00}s' -f [int][Math]::Floor($Duration.TotalHours), $Duration.Minutes, $Duration.Seconds
 }
 
+Disable-ConsoleQuickEdit
 $runStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 Write-Log "Daily update started (from step: $From). Log: $logPath"
 
