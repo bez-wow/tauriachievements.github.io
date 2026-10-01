@@ -9,6 +9,12 @@ test("lists the served data files with a short content hash", () => {
   assert.match(files["RareAchievements.json"], /^[0-9a-f]{12}$/);
 });
 
+test("lists the data files inside asset folders", () => {
+  const { files } = buildDataManifest();
+
+  assert.match(files["guild-analysis/endless.json"], /^[0-9a-f]{12}$/);
+});
+
 test("never lists itself", () => {
   assert.equal(buildDataManifest().files["assets/data/data-manifest.json"], undefined);
 });

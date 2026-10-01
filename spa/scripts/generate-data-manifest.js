@@ -26,17 +26,22 @@ function buildDataManifest() {
   return { files };
 }
 
-// Top-level files listed as assets in angular.json (served from the site root), plus
-// everything the build generates into assets/data.
+// Data files listed as assets in angular.json (served from the site root), the data files
+// directly inside asset folders such as guild-analysis/, plus everything the build generates
+// into assets/data.
 function listDataFiles() {
   const angularConfig = JSON.parse(fs.readFileSync(path.join(spaRoot, "angular.json"), "utf8"));
   const project = Object.values(angularConfig.projects)[0];
   const assetFiles = project.architect.build.options.assets
     .filter((asset) => typeof asset === "string")
     .map((asset) => path.relative(srcDir, path.join(spaRoot, asset)).split(path.sep).join("/"))
-    .filter((publicPath) => DATA_FILE_PATTERN.test(publicPath)
-      && fs.existsSync(path.join(srcDir, publicPath))
-      && fs.statSync(path.join(srcDir, publicPath)).isFile());
+    .filter((publicPath) => fs.existsSync(path.join(srcDir, publicPath)))
+    .flatMap((publicPath) => fs.statSync(path.join(srcDir, publicPath)).isDirectory()
+      ? fs.readdirSync(path.join(srcDir, publicPath))
+        .filter((fileName) => fs.statSync(path.join(srcDir, publicPath, fileName)).isFile())
+        .map((fileName) => `${publicPath}/${fileName}`)
+      : [publicPath])
+    .filter((publicPath) => DATA_FILE_PATTERN.test(publicPath));
   const generatedFiles = fs.existsSync(generatedDataDir)
     ? fs.readdirSync(generatedDataDir)
       .filter((fileName) => DATA_FILE_PATTERN.test(fileName) && path.join(generatedDataDir, fileName) !== outputPath)

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Tauri.Core.Dtos;
 using Tauri.Core.Infrastructure;
@@ -539,9 +541,15 @@ public sealed class GuildMemberExportService(
     private static string MakeFileNamePart(string value)
     {
         var invalidCharacters = Path.GetInvalidFileNameChars().ToHashSet();
+        // The site loads these files by URL, so accents are dropped ("Témérité" -> "Temerite")
+        // and the URL never needs encoding.
         var sanitized = new string(
             value
                 .Trim()
+                .Normalize(NormalizationForm.FormD)
+                .Where(character =>
+                    CharUnicodeInfo.GetUnicodeCategory(character) != UnicodeCategory.NonSpacingMark
+                )
                 .Select(character =>
                     invalidCharacters.Contains(character) || char.IsWhiteSpace(character)
                         ? '-'

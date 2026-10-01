@@ -18,6 +18,10 @@
       <strong>Guild Statistics</strong>
     </header>
 
+    <p class="load-error" *ngIf="loadFailed" role="alert">
+      The guild statistics could not be loaded. Please refresh the page to try again.
+    </p>
+
     <section
       class="summary-card character-groups roster-filters"
       [class.roster-filters--standard]="!showMainAltCharacters">

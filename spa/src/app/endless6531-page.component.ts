@@ -1,16 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import competenceOptionalAnalysis from '../guild-analysis/competence-optional.json';
-import endlessAnalysis from '../guild-analysis/endless.json';
 import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
-import entropyAnalysis from '../guild-analysis/entropy.json';
-import impairedAnalysis from '../guild-analysis/impaired.json';
-import impactAnalysis from '../guild-analysis/impact.json';
-import miracleAnalysis from '../guild-analysis/miracle.json';
-import outlawsAnalysis from '../guild-analysis/outlaws.json';
-import sixSevenAnalysis from '../guild-analysis/six-seven.json';
-import temeriteAnalysis from '../guild-analysis/témérité.json';
+import {
+  DEFAULT_GUILD_ANALYSIS_KEY,
+  GuildAnalysis,
+  GuildAnalysisKey,
+  GuildAnalysisLegendary,
+  GuildAnalysisPlayer
+} from './guild-analysis';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -20,100 +18,47 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 
-interface GuildAnalysisPlayer {
-  name: string;
-  race: number;
-  gender: number;
-  class: number;
-  guildRank?: number | null;
-  guildRankName?: string | null;
-  specialization?: string | null;
-  playedTime: number;
-  achievementPoints: number;
-  artifactRelics: number;
-  artifactTraits: number;
-  itemLevel: number;
-  legendaries?: GuildAnalysisLegendary[];
-}
-
-interface GuildAnalysisLegendary {
-  id: number;
-  name: string;
-  icon: string;
-  tooltipHtml?: string;
-}
-
-interface GuildAnalysis {
-  timestamp: string;
-  guild?: GuildAnalysisMetadata;
-  ranks?: GuildAnalysisRank[];
-  players: GuildAnalysisPlayer[];
-}
-
-interface GuildAnalysisRank {
-  order: number;
-  name: string;
-}
-
-interface GuildAnalysisMetadata {
-  name: string;
-  realm: string;
-  faction: 'Alliance' | 'Horde' | 'Unknown';
-}
-
-type GuildAnalysisKey = 'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'miracle' | 'outlaws' | 'six-seven' | 'temerite';
-
 interface GuildAnalysisConfig {
   name: string;
   realm: string;
-  analysis: GuildAnalysis;
 }
 
 const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = {
   'endless': {
     name: 'Endless',
-    realm: 'Evermoon',
-    analysis: endlessAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'competence-optional': {
     name: 'Competence Optional',
-    realm: 'Evermoon',
-    analysis: competenceOptionalAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'entropy': {
     name: 'Entropy',
-    realm: 'Evermoon',
-    analysis: entropyAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'impaired': {
     name: 'Impaired',
-    realm: 'Evermoon',
-    analysis: impairedAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'impact': {
     name: 'Impact',
-    realm: 'Evermoon',
-    analysis: impactAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'miracle': {
     name: 'Miracle',
-    realm: 'Evermoon',
-    analysis: miracleAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'outlaws': {
     name: 'Outlaws',
-    realm: 'Tauri',
-    analysis: outlawsAnalysis as GuildAnalysis
+    realm: 'Tauri'
   },
   'six-seven': {
     name: 'Six Seven',
-    realm: 'Evermoon',
-    analysis: sixSevenAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   },
   'temerite': {
     name: 'Témérité',
-    realm: 'Evermoon',
-    analysis: temeriteAnalysis as GuildAnalysis
+    realm: 'Evermoon'
   }
 };
 
@@ -208,10 +153,13 @@ const SORT_COLUMNS = new Set<SortColumn>([
 export class Endless6531PageComponent {
   private activeLegendaryTooltip: HTMLElement | null = null;
 
+  private readonly routeData = inject(ActivatedRoute).snapshot.data;
   private readonly guildKey =
-    inject(ActivatedRoute).snapshot.data['guild'] as GuildAnalysisKey ?? 'endless';
-  private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES.endless;
-  private readonly analysis = this.guild.analysis;
+    this.routeData['guild'] as GuildAnalysisKey ?? DEFAULT_GUILD_ANALYSIS_KEY;
+  private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES[DEFAULT_GUILD_ANALYSIS_KEY];
+  // Loaded by guildAnalysisResolver before the page is created; null when the load failed.
+  private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
+  private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
   private readonly sourcePlayers = this.analysis.players;
   private readonly guildRankOrderByName = new Map(
     (this.analysis.ranks ?? []).map((rank) => [
@@ -223,9 +171,10 @@ export class Endless6531PageComponent {
   readonly guildName = this.analysis.guild?.name ?? this.guild.name;
   readonly realmName = this.analysis.guild?.realm ?? this.guild.realm;
   readonly factionName = this.analysis.guild?.faction;
+  readonly loadFailed = !this.loadedAnalysis;
   readonly players = signal<GuildAnalysisPlayer[]>([]);
   readonly lastEdited = this.parseTimestamp(this.analysis.timestamp);
-  readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) ?? 'Local time';
+  readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) || 'Local time';
   readonly lastEditedTimeZone = this.timeZoneOffset(this.lastEditedTimeZoneLabel);
   readonly sortColumn = signal<SortColumn>('artifactTraits');
   readonly sortDirection = signal<SortDirection>('desc');
