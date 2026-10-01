@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { UpdateBarComponent } from './update-bar.component';
 import { getArmoryUrl } from '../utils/armory';
 import { DataFileService } from './services/data-file.service';
+import { getClassColor } from './class-colors';
 
 interface ApChestLooter {
   name: string;
@@ -11,21 +12,6 @@ interface ApChestLooter {
   count: number | '?';
   realm: string;
 }
-
-const CLASS_COLORS: Record<number, string> = {
-  1: '#C69B6D',
-  2: '#F48CBA',
-  3: '#AAD372',
-  4: '#FFF468',
-  5: '#FFFFFF',
-  6: '#C41E3A',
-  7: '#0070DD',
-  8: '#3FC7EB',
-  9: '#8788EE',
-  10: '#00FF98',
-  11: '#FF7C0A',
-  12: '#A330C9'
-};
 
 @Component({
   selector: 'app-ap-chest-looters-page',
@@ -61,7 +47,7 @@ export class ApChestLootersPageComponent {
   }
 
   classColor(classId: number): string {
-    return CLASS_COLORS[classId] ?? '#FFFFFF';
+    return getClassColor(classId) ?? '#ffffff';
   }
 
   private sortValue(count: number | '?'): number {

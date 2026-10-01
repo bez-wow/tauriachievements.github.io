@@ -17,7 +17,6 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
-  CLASS_COLORS,
   CLASS_NAMES,
   MythicPlusAffix,
   MythicPlusDataset,
@@ -42,6 +41,7 @@ import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component
 import { specIconFor } from './mythic-plus-stats';
 import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
+import { getClassColor } from './class-colors';
 
 const PAGE_SIZE = 50;
 
@@ -92,7 +92,7 @@ function parsePage(value: string | null): number {
 function toMemberView(member: MythicPlusMember): MemberView {
   return {
     ...member,
-    color: CLASS_COLORS[member.class] ?? '#e0e0e0',
+    color: getClassColor(member.class) ?? '#e0e0e0',
     className: CLASS_NAMES[member.class] ?? 'Unknown',
     armoryUrl: getArmoryUrl(member.name, member.realm),
     classIcon: getClassIconPath(member.class),

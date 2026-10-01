@@ -1,5 +1,6 @@
 import { CLASS_OPTIONS } from './ladder-options';
 import { RankedLadderPlayer } from './ladder.service';
+import { getClassColor } from './class-colors';
 
 export type ComparisonOutcome = 'a' | 'b' | 'tie';
 
@@ -33,28 +34,9 @@ export interface ComparisonResult {
 }
 
 const CLASS_NAME_BY_ID = new Map<number, string>(CLASS_OPTIONS.map((option) => [option.id, option.name]));
-const CLASS_COLOR_BY_ID = new Map<number, string>([
-  [1, '#C69B6D'],
-  [2, '#F48CBA'],
-  [3, '#AAD372'],
-  [4, '#FFF468'],
-  [5, '#FFFFFF'],
-  [6, '#C41E3A'],
-  [7, '#0070DD'],
-  [8, '#3FC7EB'],
-  [9, '#8788EE'],
-  [10, '#00FF98'],
-  [11, '#FF7C0A'],
-  [12, '#A330C9'],
-  [13, '#33937F']
-]);
 
 export function getClassName(classId: number): string {
   return CLASS_NAME_BY_ID.get(classId) ?? `Class ${classId}`;
-}
-
-export function getClassColor(classId: number): string | undefined {
-  return CLASS_COLOR_BY_ID.get(classId);
 }
 
 export function buildPlayerComparison(a: RankedLadderPlayer, b: RankedLadderPlayer): ComparisonResult {

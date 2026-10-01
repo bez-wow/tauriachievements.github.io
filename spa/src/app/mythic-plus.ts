@@ -83,21 +83,6 @@ export const CLASS_NAMES: Readonly<Record<number, string>> = {
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
 };
 
-export const CLASS_COLORS: Readonly<Record<number, string>> = {
-  1: '#c79c6e',
-  2: '#f58cba',
-  3: '#abd473',
-  4: '#fff569',
-  5: '#ffffff',
-  6: '#c41f3b',
-  7: '#0070de',
-  8: '#69ccf0',
-  9: '#9482c9',
-  10: '#00ff96',
-  11: '#ff7d0a',
-  12: '#a330c9'
-};
-
 export function keystoneUpgrades(clearTimeSeconds: number, timerSeconds: number): number {
   if (!(clearTimeSeconds > 0) || !(timerSeconds > 0)) {
     return 0;

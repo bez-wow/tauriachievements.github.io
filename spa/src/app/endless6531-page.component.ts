@@ -17,6 +17,7 @@ import { UpdateBarComponent } from './update-bar.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
+import { getClassColor } from './class-colors';
 
 interface GuildAnalysisConfig {
   name: string;
@@ -83,21 +84,6 @@ const CLASS_NAMES: Readonly<Record<number, string>> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
-};
-
-const CLASS_COLORS: Readonly<Record<number, string>> = {
-  1: '#c79c6e',
-  2: '#f58cba',
-  3: '#abd473',
-  4: '#fff569',
-  5: '#ffffff',
-  6: '#c41f3b',
-  7: '#0070de',
-  8: '#69ccf0',
-  9: '#9482c9',
-  10: '#00ff96',
-  11: '#ff7d0a',
-  12: '#a330c9'
 };
 
 const LEGACY_GUILD_RANK_ORDER = [
@@ -216,7 +202,7 @@ export class Endless6531PageComponent {
         value: entry.id,
         label: entry.name,
         icon: getClassIconPath(entry.id),
-        color: CLASS_COLORS[entry.id] ?? '#ffffff'
+        color: getClassColor(entry.id) ?? '#ffffff'
       }))
       .sort((left, right) => left.label.localeCompare(right.label))
   ];
@@ -275,7 +261,7 @@ export class Endless6531PageComponent {
   }
 
   classColor(classId: number): string {
-    return CLASS_COLORS[classId] ?? '#ffffff';
+    return getClassColor(classId) ?? '#ffffff';
   }
 
   armoryUrl(player: Pick<GuildAnalysisPlayer, 'name'>): string {

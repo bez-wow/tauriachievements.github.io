@@ -1,4 +1,5 @@
-import { CLASS_COLORS, CLASS_NAMES, MythicPlusMember, MythicPlusRole } from './mythic-plus';
+import { getClassColor } from './class-colors';
+import { CLASS_NAMES, MythicPlusMember, MythicPlusRole } from './mythic-plus';
 
 export interface SpecDefinition {
   classId: number;
@@ -138,7 +139,7 @@ export function specPopularity(
       group = {
         classId: definition.classId,
         className: CLASS_NAMES[definition.classId] ?? 'Unknown',
-        color: CLASS_COLORS[definition.classId] ?? '#9a9a9a',
+        color: getClassColor(definition.classId) ?? '#9a9a9a',
         count: 0,
         share: 0,
         specs: []

@@ -1,3 +1,5 @@
+import { getClassColor as getSharedClassColor } from './class-colors';
+
 export interface RatedBattlegroundCharacter {
   charname: string;
   race: number;
@@ -169,12 +171,6 @@ export const CLASS_NAMES: Readonly<Record<number, string>> = {
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
 };
 
-export const CLASS_COLORS: Readonly<Record<number, string>> = {
-  1: '#c79c6e', 2: '#f58cba', 3: '#abd473', 4: '#fff569',
-  5: '#ffffff', 6: '#c41f3b', 7: '#0070de', 8: '#69ccf0',
-  9: '#9482c9', 10: '#00ff96', 11: '#ff7d0a', 12: '#a330c9'
-};
-
 const SPECIFICATIONS: Readonly<Record<number, RatedSpecDefinition>> = {
   62: { name: 'Arcane', role: 'Damage' }, 63: { name: 'Fire', role: 'Damage' }, 64: { name: 'Frost', role: 'Damage' },
   65: { name: 'Holy', role: 'Healer' }, 66: { name: 'Protection', role: 'Tank' }, 70: { name: 'Retribution', role: 'Damage' },
@@ -329,7 +325,7 @@ export function getClassName(classId: number): string {
 }
 
 export function getClassColor(classId: number): string {
-  return CLASS_COLORS[classId] ?? '#cbd5e1';
+  return getSharedClassColor(classId) ?? '#cbd5e1';
 }
 
 export function getFactionLabel(faction: number): string {

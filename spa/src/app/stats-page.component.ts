@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
+import { getClassColor } from './class-colors';
 import { CommonModule } from '@angular/common';
 import {
   ArcElement,
@@ -43,12 +44,6 @@ const CLASS_NAMES: Record<number, string> = {
   1: 'Warrior', 2: 'Paladin', 3: 'Hunter', 4: 'Rogue',
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
-};
-
-const CLASS_COLORS: Record<number, string> = {
-  1: '#C69B3A', 2: '#F48CBA', 3: '#AAD372', 4: '#FFF468',
-  5: '#E8E8E8', 6: '#C41E3A', 7: '#0070DD', 8: '#68CCEF',
-  9: '#9482C9', 10: '#00FF98', 11: '#FF7C0A', 12: '#A330C9'
 };
 
 const RACE_NAMES: Record<number, string> = {
@@ -109,7 +104,7 @@ export function toServerStats(snapshot: ServerStatsSnapshot): ServerStats {
     factionCounts: snapshot.factions.map((faction) => faction.count),
     classLabels: snapshot.classes.map((entry) => CLASS_NAMES[entry.id] ?? `Class ${entry.id}`),
     classCounts: snapshot.classes.map((entry) => entry.count),
-    classColors: snapshot.classes.map((entry) => CLASS_COLORS[entry.id] ?? UNKNOWN_CLASS_COLOR),
+    classColors: snapshot.classes.map((entry) => getClassColor(entry.id) ?? UNKNOWN_CLASS_COLOR),
     raceLabels: snapshot.races.map((entry) => RACE_NAMES[entry.id] ?? `Race ${entry.id}`),
     raceCounts: snapshot.races.map((entry) => entry.count),
     guildLabels: snapshot.guilds.map((guild) => guild.name),

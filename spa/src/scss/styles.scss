@@ -98,18 +98,10 @@ app-root {
     color: #fff;
   }
 
-  .c1 { color: #c79c6e; }
-  .c2 { color: #f58cba; }
-  .c3 { color: #abd473; }
-  .c4 { color: #fff569; }
-  .c5 { color: #fff; }
-  .c6 { color: #c41f3b; }
-  .c7 { color: #0070de; }
-  .c8 { color: #69ccf0; }
-  .c9 { color: #9482c9; }
-  .c10 { color: #00ff96; }
-  .c11 { color: #ff7d0a; }
-  .c12 { color: #a330c9; }
+  // Class colours come from src/app/class-colors.ts, set on the page as --class-<id>.
+  @for $class-id from 1 through 12 {
+    .c#{$class-id} { color: var(--class-#{$class-id}); }
+  }
 
   .moneygold { color: #ffd100; }
   .moneysilver { color: #c7c7cf; }

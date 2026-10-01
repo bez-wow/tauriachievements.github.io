@@ -54,7 +54,7 @@ describe('toServerStats', () => {
   it('pairs each class with its class color', () => {
     const stats = toServerStats(snapshot());
 
-    expect(stats.classColors).toEqual(['#F48CBA', '#68CCEF']);
+    expect(stats.classColors).toEqual(['#f58cba', '#69ccf0']);
   });
 
   it('falls back to a readable label and a neutral color for an unknown class or race', () => {

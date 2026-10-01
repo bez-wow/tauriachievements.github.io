@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPlayerComparison, getClassColor, getClassName } from './compare';
+import { buildPlayerComparison, getClassName } from './compare';
 import { RankedLadderPlayer } from './ladder.service';
 import { makePlayer } from './testing/player.fixture';
 
@@ -33,15 +33,6 @@ describe('getClassName', () => {
     expect(getClassName(2)).toBe('Paladin');
     expect(getClassName(11)).toBe('Druid');
     expect(getClassName(99)).toBe('Class 99');
-  });
-});
-
-describe('getClassColor', () => {
-  it('returns the supplied World of Warcraft class colors', () => {
-    expect(getClassColor(5)).toBe('#FFFFFF');
-    expect(getClassColor(11)).toBe('#FF7C0A');
-    expect(getClassColor(13)).toBe('#33937F');
-    expect(getClassColor(99)).toBeUndefined();
   });
 });
 
@@ -132,8 +123,8 @@ describe('buildPlayerComparison', () => {
 
     expect(classRow?.kind).toBe('info');
     if (classRow?.kind === 'info') {
-      expect(classRow.aColor).toBe('#FFFFFF');
-      expect(classRow.bColor).toBe('#FF7C0A');
+      expect(classRow.aColor).toBe('#ffffff');
+      expect(classRow.bColor).toBe('#ff7d0a');
     }
   });
 

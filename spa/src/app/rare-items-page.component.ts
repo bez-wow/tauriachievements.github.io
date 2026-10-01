@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { getArmoryUrl } from '../utils/armory';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { DataFileService } from './services/data-file.service';
+import { getClassColor } from './class-colors';
 
 interface RareItem {
   id: number;
@@ -27,21 +28,6 @@ interface RareItemsDataset {
 }
 
 type RealmFilter = 'all' | 'Evermoon' | 'Tauri' | 'WoD';
-
-const CLASS_COLORS: Readonly<Record<number, string>> = {
-  1: '#C69B6D',
-  2: '#F48CBA',
-  3: '#AAD372',
-  4: '#FFF468',
-  5: '#FFFFFF',
-  6: '#C41E3A',
-  7: '#0070DD',
-  8: '#3FC7EB',
-  9: '#8788EE',
-  10: '#00FF98',
-  11: '#FF7C0A',
-  12: '#A330C9'
-};
 
 @Component({
   selector: 'app-rare-items-page',
@@ -105,7 +91,7 @@ export class RareItemsPageComponent implements OnInit {
   }
 
   getCharacterClassColor(character: RareItemCharacter): string {
-    return CLASS_COLORS[character.class] ?? '#b7df86';
+    return getClassColor(character.class) ?? '#b7df86';
   }
 
   private loadData(): void {
