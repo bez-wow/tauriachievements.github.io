@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-01 07:26:52 CET",
+  "timestamp": "2026-10-01 20:33:41 CET",
   "guild": {
     "name": "T\u00E9m\u00E9rit\u00E9",
     "realm": "Evermoon",
@@ -73,14 +73,14 @@
       "guildRank": 4,
       "guildRankName": "Ancien",
       "specialization": "Retribution",
-      "playedTime": 768004,
+      "playedTime": 770856,
       "achievementPoints": 2080,
-      "nightfallenReputation": 15500,
+      "nightfallenReputation": 15725,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 28,
-      "itemLevel": 864.75,
+      "itemLevel": 865.69,
       "legendaries": [
         {
           "id": 137086,
@@ -216,7 +216,7 @@
       "guildRank": 6,
       "guildRankName": "Reroll",
       "specialization": "Holy",
-      "playedTime": 1015443,
+      "playedTime": 1015472,
       "achievementPoints": 1725,
       "nightfallenReputation": 11000,
       "nightfallenReputationMaximum": 21000,
@@ -278,14 +278,14 @@
       "guildRank": 1,
       "guildRankName": "CO-GM",
       "specialization": "Balance",
-      "playedTime": 493242,
+      "playedTime": 495174,
       "achievementPoints": 1740,
       "nightfallenReputation": 8000,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Scythe of Elune",
       "artifactRelics": 3,
       "artifactTraits": 25,
-      "itemLevel": 860.06,
+      "itemLevel": 862.25,
       "legendaries": [
         {
           "id": 137092,
@@ -714,14 +714,14 @@
       "guildRank": 4,
       "guildRankName": "Ancien",
       "specialization": "Windwalker",
-      "playedTime": 1109623,
+      "playedTime": 1109848,
       "achievementPoints": 1545,
       "nightfallenReputation": 2350,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 20,
-      "itemLevel": 855.94,
+      "itemLevel": 855.63,
       "legendaries": [
         {
           "id": 137057,
@@ -819,6 +819,31 @@
       ]
     },
     {
+      "name": "Veonity",
+      "race": 10,
+      "gender": 1,
+      "class": 4,
+      "guildRank": 6,
+      "guildRankName": "Reroll",
+      "specialization": "Assassination",
+      "playedTime": 399355,
+      "achievementPoints": 965,
+      "nightfallenReputation": 625,
+      "nightfallenReputationMaximum": 12000,
+      "artifactWeapon": "The Kingslayers",
+      "artifactRelics": 3,
+      "artifactTraits": 21,
+      "itemLevel": 849.06,
+      "legendaries": [
+        {
+          "id": 137030,
+          "name": "Duskwalker\u0027s Footpads",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_boots_leather_8.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EDuskwalker\u0027s Footpads\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFeet\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E276 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208895\u0022 class=\u0022q2\u0022\u003EThe remaining cooldown on Vendetta is reduced by 1 sec for every 65 Energy you expend.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 95 / 95\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c4\u0022\u003ERogue\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022If an SI:7 agent like Caelvana has you in her sights, you\u0027d better run. You better run far, and you better do it quickly.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E69\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E16\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E60\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        }
+      ]
+    },
+    {
       "name": "Z\u00E4ga",
       "race": 10,
       "gender": 1,
@@ -840,31 +865,6 @@
           "name": "Prydaz, Xavaric\u0027s Magnum Opus",
           "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_necklace15.png",
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EPrydaz, Xavaric\u0027s Magnum Opus\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003ENeck\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B1784 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1784)\u0022\u003E2.97%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1784 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1784)\u0022\u003E2.97%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1784 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1784)\u0022\u003E4.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207428\u0022 class=\u0022q2\u0022\u003EEvery 0 sec1 sec, gain an absorb shield for 0% of your maximum health for 30 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Bearers of this amulet whistle a haunting tune, and those nearby attest to a distant cry of anguish between the notes.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E40\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E59\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E90\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
-        }
-      ]
-    },
-    {
-      "name": "Veonity",
-      "race": 10,
-      "gender": 1,
-      "class": 4,
-      "guildRank": 6,
-      "guildRankName": "Reroll",
-      "specialization": "Assassination",
-      "playedTime": 397143,
-      "achievementPoints": 965,
-      "nightfallenReputation": 225,
-      "nightfallenReputationMaximum": 12000,
-      "artifactWeapon": "The Kingslayers",
-      "artifactRelics": 3,
-      "artifactTraits": 21,
-      "itemLevel": 849.06,
-      "legendaries": [
-        {
-          "id": 137030,
-          "name": "Duskwalker\u0027s Footpads",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_boots_leather_8.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EDuskwalker\u0027s Footpads\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFeet\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E276 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208895\u0022 class=\u0022q2\u0022\u003EThe remaining cooldown on Vendetta is reduced by 1 sec for every 65 Energy you expend.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 95 / 95\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c4\u0022\u003ERogue\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022If an SI:7 agent like Caelvana has you in her sights, you\u0027d better run. You better run far, and you better do it quickly.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E69\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E16\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E60\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -1007,7 +1007,7 @@
       "guildRank": 4,
       "guildRankName": "Ancien",
       "specialization": "Arms",
-      "playedTime": 1641435,
+      "playedTime": 1641483,
       "achievementPoints": 2265,
       "nightfallenReputation": 2725,
       "nightfallenReputationMaximum": 6000,
@@ -1463,7 +1463,7 @@
       "guildRank": 8,
       "guildRankName": "Test",
       "specialization": "Assassination",
-      "playedTime": 4158002,
+      "playedTime": 4158066,
       "achievementPoints": 5620,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
@@ -1494,7 +1494,7 @@
       "guildRank": 8,
       "guildRankName": "Test",
       "specialization": "Elemental",
-      "playedTime": 2904578,
+      "playedTime": 2907318,
       "achievementPoints": 3175,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
