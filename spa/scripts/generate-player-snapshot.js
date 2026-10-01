@@ -6,13 +6,14 @@ const {
   getPlayerKey,
   sortByAchievementPoints,
 } = require("./player-ranking");
+const { SECONDS_PER_MINUTE } = require("./player-data-utils");
 
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.snapshot.json");
 const headOutputPath = path.join(outputDir, "players.head.snapshot.json");
 const newPlayersOutputPath = path.join(outputDir, "new-players.snapshot.json");
 
-const SNAPSHOT_VERSION = 3;
+const SNAPSHOT_VERSION = 4;
 
 // The ladder's default view is "top of the achievement-point ranking, unfiltered,
 // at most 1000 rows". That answer lives entirely in the highest-ranked slice, so we
@@ -24,7 +25,9 @@ const HEAD_PLAYER_COUNT = 25000;
 // The one definition of a serialized player row. The column names are written into the
 // snapshot (`c`), and the app reads each row by those names, so adding, removing or
 // reordering a column here can never shift values into the wrong field on the other side.
-// `realm` and `faction` hold indexes into the snapshot's `r` and `f` lists.
+// `realm` and `faction` hold indexes into the snapshot's `r` and `f` lists. `playedTime` and
+// `playedTimeDelta` are whole minutes (the app multiplies them back to seconds); the CSV
+// reader has already dropped the seconds, so the division is exact.
 const PLAYER_COLUMNS = [
   ["name", (row) => row.player.name],
   ["race", (row) => row.player.race],
@@ -37,7 +40,7 @@ const PLAYER_COLUMNS = [
   ["honorableKills", (row) => row.player.honorableKills],
   ["appearanceCount", (row) => row.player.appearanceCount],
   ["achievementsTotal", (row) => row.player.achievementsTotal],
-  ["playedTime", (row) => row.player.playedTime],
+  ["playedTime", (row) => toMinutes(row.player.playedTime)],
   ["ilvl", (row) => row.player.ilvl],
   ["level10Day", (row) => row.player.level10Day],
   ["isNewCharacter", (row) => (row.isNewCharacter ? 1 : 0)],
@@ -49,7 +52,7 @@ const PLAYER_COLUMNS = [
   ["appearanceRankDelta", (row) => row.appearanceRankDelta],
   ["achievementsTotalDelta", (row) => row.achievementsTotalDelta],
   ["achievementsTotalRankDelta", (row) => row.achievementsTotalRankDelta],
-  ["playedTimeDelta", (row) => row.playedTimeDelta],
+  ["playedTimeDelta", (row) => toMinutes(row.playedTimeDelta)],
   ["playedTimeRankDelta", (row) => row.playedTimeRankDelta],
 ];
 
@@ -133,6 +136,10 @@ function buildPlayerRows(rankedPlayers, previousPlayers) {
       playedTimeRankDelta: canComparePlayedTime ? rankDelta("playedTime", key) : 0,
     };
   });
+}
+
+function toMinutes(seconds) {
+  return Math.trunc(seconds / SECONDS_PER_MINUTE);
 }
 
 function buildLookups(players) {

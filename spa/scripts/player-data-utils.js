@@ -95,6 +95,15 @@ function toEpochDay(value) {
   return Number.isNaN(time) ? 0 : Math.round(time / MS_PER_DAY);
 }
 
+const SECONDS_PER_MINUTE = 60;
+
+// Played time is shown to the minute, so the seconds are dropped as soon as the CSV is read.
+// Ranking on whole minutes here keeps the build's rank changes in step with the browser's
+// re-sort, which only ever sees minutes; players in the same minute tie in both places.
+function toWholeMinuteSeconds(value) {
+  return Math.floor(toNumber(value) / SECONDS_PER_MINUTE) * SECONDS_PER_MINUTE;
+}
+
 function parsePlayersCsv(csvText) {
   const rows = parseCsv(csvText);
   if (rows.length < 2) {
@@ -135,7 +144,7 @@ function parsePlayersCsv(csvText) {
       hasAppearanceCount,
       achievementsTotal: toNumber(getField(row, index, "AchievementsTotal")),
       hasAchievementsTotal,
-      playedTime: toNumber(getField(row, index, "PlayedTime")),
+      playedTime: toWholeMinuteSeconds(getField(row, index, "PlayedTime")),
       hasPlayedTime,
       ilvl: toNumber(getField(row, index, "ilvl")),
       level10Day: toEpochDay(getField(row, index, "Level10Date")),
@@ -223,6 +232,7 @@ function readGitFile(sha, repoFilePath) {
 }
 
 module.exports = {
+  SECONDS_PER_MINUTE,
   toEpochDay,
   parseGitHistoryOutput,
   parsePlayersCsv,

@@ -34,12 +34,12 @@ test("parsePlayersCsv marks legacy scans without appearance data", () => {
 test("parsePlayersCsv reads account-wide achievements and played time when the columns exist", () => {
   const [player] = parsePlayersCsv([
     '"Name","Race","Gender","Class","Realm","Guild","AchievementPoints","HonorableKills","Faction","AchievementsTotal","PlayedTime"',
-    '"Shiny",1,0,2,"Tauri","Guild",1000,500,"Alliance",2100,86400'
+    '"Shiny",1,0,2,"Tauri","Guild",1000,500,"Alliance",2100,86459'
   ].join("\n"));
 
   assert.equal(player.achievementsTotal, 2100);
   assert.equal(player.hasAchievementsTotal, true);
-  assert.equal(player.playedTime, 86400);
+  assert.equal(player.playedTime, 86400, "seconds past the last whole minute are dropped");
   assert.equal(player.hasPlayedTime, true);
 });
 

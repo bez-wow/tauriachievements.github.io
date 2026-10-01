@@ -90,6 +90,16 @@ test("deltas and rank deltas compare against the previous scan", () => {
   assert.equal(leader.achievementRankDelta, -1);
 });
 
+test("played time and its delta are written in whole minutes", () => {
+  const previous = [player({ playedTime: 90 * 60 })];
+  const current = [player({ playedTime: 2 * 86400 + 3 * 3600 + 4 * 60 })];
+
+  const [row] = readRows(buildPlayerSnapshots(current, previous).full);
+
+  assert.equal(row.playedTime, 2 * 1440 + 3 * 60 + 4);
+  assert.equal(row.playedTimeDelta, 2 * 1440 + 3 * 60 + 4 - 90);
+});
+
 test("new characters are flagged and published on their own", () => {
   const previous = [player({ name: "Veteran" })];
   const current = [player({ name: "Veteran" }), player({ name: "Freshchar" })];

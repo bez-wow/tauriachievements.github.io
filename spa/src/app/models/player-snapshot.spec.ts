@@ -4,7 +4,7 @@ import { readPlayerSnapshot } from './player-snapshot';
 
 function snapshot(columns: string[], rows: (string | number)[][]): PlayerSnapshot {
   return {
-    v: 3,
+    v: 4,
     c: columns,
     k: {
       achievementPoints: ['achievementPoints', 'honorableKills'],
@@ -46,6 +46,16 @@ describe('readPlayerSnapshot', () => {
 
     expect(player.isNewCharacter).toBe(true);
     expect(player.faction).toBe('Neutral');
+  });
+
+  it('turns played time and its delta from minutes into seconds', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const [player] = readPlayerSnapshot(
+      snapshot(['name', 'realm', 'playedTime', 'playedTimeDelta'], [['Shiny', 1, 1444, -90]])
+    );
+
+    expect(player.playedTime).toBe(1444 * 60);
+    expect(player.playedTimeDelta).toBe(-90 * 60);
   });
 
   it('defaults missing columns and reports them once', () => {

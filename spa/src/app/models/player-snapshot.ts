@@ -4,6 +4,9 @@ type ColumnName = keyof Player;
 
 const FACTIONS: ReadonlySet<string> = new Set<Faction>(['Alliance', 'Horde', 'Neutral']);
 
+// The file stores played time in whole minutes to keep it small; the app works in seconds.
+const SECONDS_PER_MINUTE = 60;
+
 /**
  * Reads a players file into `Player` objects by column name. Because the file names its own
  * columns, a column the build adds, drops or moves can never land in the wrong field; a
@@ -77,7 +80,7 @@ export function readPlayerSnapshot(snapshot: PlayerSnapshot): Player[] {
       honorableKills: numberAt(row, honorableKills),
       appearanceCount: numberAt(row, appearanceCount),
       achievementsTotal: numberAt(row, achievementsTotal),
-      playedTime: numberAt(row, playedTime),
+      playedTime: numberAt(row, playedTime) * SECONDS_PER_MINUTE,
       ilvl: numberAt(row, ilvl),
       level10Day: numberAt(row, level10Day),
       isNewCharacter: numberAt(row, isNewCharacter) === 1,
@@ -89,7 +92,7 @@ export function readPlayerSnapshot(snapshot: PlayerSnapshot): Player[] {
       appearanceRankDelta: numberAt(row, appearanceRankDelta),
       achievementsTotalDelta: numberAt(row, achievementsTotalDelta),
       achievementsTotalRankDelta: numberAt(row, achievementsTotalRankDelta),
-      playedTimeDelta: numberAt(row, playedTimeDelta),
+      playedTimeDelta: numberAt(row, playedTimeDelta) * SECONDS_PER_MINUTE,
       playedTimeRankDelta: numberAt(row, playedTimeRankDelta)
     });
   }
