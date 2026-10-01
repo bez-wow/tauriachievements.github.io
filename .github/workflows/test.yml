@@ -1,8 +1,7 @@
 name: Tests
 
+# Pushes to main are tested by the Pages deploy workflow before it builds.
 on:
-  push:
-    branches: ["main"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:

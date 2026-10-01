@@ -45,6 +45,9 @@ jobs:
       - name: Install dependencies
         working-directory: spa
         run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Test
+        working-directory: spa
+        run: npm test
       - name: Build
         working-directory: spa
         run: npm run build -- --configuration production --base-href "/"
