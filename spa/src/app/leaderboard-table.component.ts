@@ -5,9 +5,7 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { formatCharacterAge } from './character-age';
 import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
 import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
-
-/** Below this width the table hides every column but #, Name, Race / Class and the sorted metric. */
-const COMPACT_TABLE_QUERY = '(max-width: 640px)';
+import { COMPACT_VIEWPORT_QUERY } from './compact-viewport';
 
 /** One line of the details panel that lists a compact row's hidden values. */
 export interface PlayerDetailMetric {
@@ -62,7 +60,7 @@ export class LeaderboardTableComponent {
   /** On phones the whole row toggles its details; links in the row keep working as links. */
   onRowClick(event: MouseEvent, player: LadderPlayerView): void {
     const target = event.target as Element | null;
-    if (target?.closest('a, button') || !window.matchMedia(COMPACT_TABLE_QUERY).matches) {
+    if (target?.closest('a, button') || !window.matchMedia(COMPACT_VIEWPORT_QUERY).matches) {
       return;
     }
 

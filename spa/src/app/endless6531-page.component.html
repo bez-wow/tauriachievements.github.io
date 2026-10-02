@@ -185,7 +185,7 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let player of players(); let rowIndex = index; trackBy: trackPlayer"
+          *ngFor="let player of renderedPlayers(); let rowIndex = index; trackBy: trackPlayer"
           [class.main-character-row]="selectedMainCharacter() && isSelectedMainCharacter(player)"
           [class.raid-character]="selectedMainCharacter() && !isSelectedMainCharacter(player) && wantsToRaid(player)"
           [class.non-raid-character]="selectedMainCharacter() && !isSelectedMainCharacter(player) && !wantsToRaid(player)">
@@ -252,6 +252,17 @@
         </tr>
       </tbody>
     </table>
+    <div class="show-more" *ngIf="hiddenPlayerCount() > 0">
+      <p class="show-more-status">Showing {{ renderedPlayers().length }} of {{ players().length }} members</p>
+      <div class="show-more-actions">
+        <button type="button" class="show-more-button" (click)="showMorePlayers()">
+          Show {{ nextRosterPageSize() }} more
+        </button>
+        <button type="button" class="show-more-button show-more-button--all" (click)="showAllPlayers()">
+          Show all
+        </button>
+      </div>
+    </div>
     </div>
   </div>
 </main>

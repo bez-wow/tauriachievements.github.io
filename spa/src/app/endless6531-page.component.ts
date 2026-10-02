@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import {
@@ -18,6 +18,10 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { getClassColor } from './class-colors';
+import { injectCompactViewport } from './compact-viewport';
+
+/** On phones each member is a ~470 px tall card, so the roster is rendered this many at a time. */
+const MOBILE_ROSTER_PAGE_SIZE = 25;
 
 interface GuildAnalysisConfig {
   name: string;
@@ -159,6 +163,13 @@ export class Endless6531PageComponent {
   readonly factionName = this.analysis.guild?.faction;
   readonly loadFailed = !this.loadedAnalysis;
   readonly players = signal<GuildAnalysisPlayer[]>([]);
+  private readonly isCompactViewport = injectCompactViewport();
+  private readonly mobileRosterLimit = signal(MOBILE_ROSTER_PAGE_SIZE);
+  readonly renderedPlayers = computed(() =>
+    this.isCompactViewport() ? this.players().slice(0, this.mobileRosterLimit()) : this.players()
+  );
+  readonly hiddenPlayerCount = computed(() => this.players().length - this.renderedPlayers().length);
+  readonly nextRosterPageSize = computed(() => Math.min(MOBILE_ROSTER_PAGE_SIZE, this.hiddenPlayerCount()));
   readonly lastEdited = this.parseTimestamp(this.analysis.timestamp);
   readonly lastEditedTimeZoneLabel = this.analysis.timestamp.trim().split(/\s+/).at(-1) || 'Local time';
   readonly lastEditedTimeZone = this.timeZoneOffset(this.lastEditedTimeZoneLabel);
@@ -470,7 +481,16 @@ export class Endless6531PageComponent {
     });
   }
 
+  showMorePlayers(): void {
+    this.mobileRosterLimit.update((limit) => limit + MOBILE_ROSTER_PAGE_SIZE);
+  }
+
+  showAllPlayers(): void {
+    this.mobileRosterLimit.set(Number.POSITIVE_INFINITY);
+  }
+
   private applySort(): void {
+    this.mobileRosterLimit.set(MOBILE_ROSTER_PAGE_SIZE);
     const column = this.sortColumn();
     const multiplier = this.sortDirection() === 'asc' ? 1 : -1;
     const selectedAltNames = new Set(

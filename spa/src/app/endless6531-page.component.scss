@@ -235,6 +235,51 @@
   }
 }
 
+// Phones render the roster a page at a time (see MOBILE_ROSTER_PAGE_SIZE).
+.show-more {
+  display: grid;
+  gap: 10px;
+  padding: 18px 0 6px;
+  text-align: center;
+}
+
+.show-more-status {
+  margin: 0;
+  color: #a7a7b0;
+  font-size: 0.8rem;
+}
+
+.show-more-actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+}
+
+.show-more-button {
+  min-height: 44px;
+  border: 1px solid rgba(247, 181, 0, 0.35);
+  border-radius: 8px;
+  background: rgba(247, 181, 0, 0.1);
+  color: #ffd700;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #f7b500;
+    background: rgba(247, 181, 0, 0.18);
+    outline: none;
+  }
+}
+
+.show-more-button--all {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: #d8d8de;
+}
+
 .main-character-select {
   position: relative;
   display: block;

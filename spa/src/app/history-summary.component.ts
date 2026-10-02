@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -7,6 +7,13 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { LadderHistoryMoverView } from './ladder-history.types';
 import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
+import { injectCompactViewport } from './compact-viewport';
+
+/** The four climber lists, named like their inputs (`achievementMovers`, ...). */
+export type MoverListKey = 'achievement' | 'honorableKill' | 'playedTime' | 'appearance';
+
+/** On phones each list starts with this many climbers; the rest open per list. */
+export const MOBILE_MOVER_PREVIEW_SIZE = 10;
 
 @Component({
   selector: 'app-history-summary',
@@ -46,6 +53,37 @@ export class HistorySummaryComponent {
   readonly getArmoryUrl = getArmoryUrl;
   readonly getClassIconPath = getClassIconPath;
   readonly getRaceIconPath = getRaceIconPath;
+
+  private readonly isCompactViewport = injectCompactViewport();
+  private readonly expandedLists = signal<ReadonlySet<MoverListKey>>(new Set());
+
+  visibleMovers(movers: ReadonlyArray<LadderHistoryMoverView>, list: MoverListKey): ReadonlyArray<LadderHistoryMoverView> {
+    return this.canToggleList(movers) && !this.isListExpanded(list)
+      ? movers.slice(0, MOBILE_MOVER_PREVIEW_SIZE)
+      : movers;
+  }
+
+  canToggleList(movers: ReadonlyArray<LadderHistoryMoverView>): boolean {
+    return this.isCompactViewport() && movers.length > MOBILE_MOVER_PREVIEW_SIZE;
+  }
+
+  isListExpanded(list: MoverListKey): boolean {
+    return this.expandedLists().has(list);
+  }
+
+  toggleList(list: MoverListKey): void {
+    this.expandedLists.update((expanded) => {
+      const next = new Set(expanded);
+      if (!next.delete(list)) {
+        next.add(list);
+      }
+      return next;
+    });
+  }
+
+  listToggleLabel(movers: ReadonlyArray<LadderHistoryMoverView>, list: MoverListKey): string {
+    return this.isListExpanded(list) ? `Show top ${MOBILE_MOVER_PREVIEW_SIZE}` : `Show all ${movers.length}`;
+  }
 
   hasRaceIcon(mover: LadderHistoryMoverView): boolean {
     return mover.race > 0;
