@@ -254,6 +254,16 @@
                 <span *ngIf="metric.delta" class="metric-delta" [ngClass]="metric.deltaClass">{{ metric.delta }}</span>
               </dd>
             </div>
+            <div *ngIf="getCharacterAge(player) as characterAge">
+              <dt>Character age</dt>
+              <dd>{{ characterAge }}</dd>
+            </div>
+            <ng-container *ngIf="getRareAchievementLines(player) as rareLines">
+              <div class="player-details-wide" *ngIf="rareLines.length > 0">
+                <dt>Rare achievements</dt>
+                <dd *ngFor="let line of rareLines">{{ line }}</dd>
+              </div>
+            </ng-container>
           </dl>
         </td>
       </tr>

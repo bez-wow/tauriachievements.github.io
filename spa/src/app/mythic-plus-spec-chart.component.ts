@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { getClassIconPath } from '../utils/classIconHelper';
 import { MythicPlusRole, MythicPlusRun } from './mythic-plus';
 import { ClassShare, SpecShare, formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { TapTooltipDirective } from './tap-tooltip.directive';
 
 type RoleFilter = MythicPlusRole | 'all';
 type CountMode = 'runs' | 'characters';
@@ -23,7 +24,7 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
 @Component({
   selector: 'app-mythic-plus-spec-chart',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TapTooltipDirective],
   templateUrl: './mythic-plus-spec-chart.component.html',
   styleUrls: ['./mythic-plus-spec-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

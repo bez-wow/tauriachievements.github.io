@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
+import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl } from '../utils/armory';
 import { DataFileService } from './services/data-file.service';
@@ -77,7 +78,7 @@ const TIMELINE_GUILD_REALMS: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-emerald-nightmare-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, TapTooltipDirective],
   templateUrl: './emerald-nightmare-page.component.html',
   styleUrls: ['./emerald-nightmare-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

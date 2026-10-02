@@ -270,8 +270,12 @@
   margin: 0 3px;
   vertical-align: middle;
 
-  &:hover .affix-tooltip { opacity: 1; visibility: visible; }
   .affix-tooltip { padding-left: 10px; }
+
+  // Mouse only: a tap opens the run details, which list every affix with its description.
+  @media (hover: hover) {
+    &:hover .affix-tooltip { opacity: 1; visibility: visible; }
+  }
 }
 
 // The CDN icons carry a ~4px dark frame baked into their 62px art; zoom past it inside a clipped box.
@@ -290,8 +294,14 @@
   font-size: .85rem;
   text-decoration: none;
 
-  &:hover, &:focus-visible { text-decoration: underline; }
-  &:hover .member-tooltip, &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible { text-decoration: underline; }
+  &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
+
+  // Mouse only: on a touch screen the run details list each member's spec and class.
+  @media (hover: hover) {
+    &:hover { text-decoration: underline; }
+    &:hover .member-tooltip { opacity: 1; visibility: visible; }
+  }
 }
 
 // Instant dark tooltip above a player name (class icon, spec icon, "Spec Class") or an affix icon (its name).

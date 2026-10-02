@@ -134,7 +134,9 @@ th, td { padding: 12px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.055)
 th { background: rgba(0, 0, 0, 0.22); color: #939c8b; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; }
 td { color: #c8cec1; }
 th:first-child, td:first-child { width: 62px; color: #7d8477; text-align: right; }
-tbody tr:hover { background: rgba(159, 201, 108, 0.045); }
+@media (hover: hover) {
+  tbody tr:hover { background: rgba(159, 201, 108, 0.045); }
+}
 tbody tr:last-child td { border-bottom: 0; }
 a { color: #b7df86; font-weight: 700; text-decoration: none; }
 a:hover { color: #d7ff9f; text-decoration: underline; }

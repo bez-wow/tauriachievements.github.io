@@ -106,9 +106,17 @@ $plot-height: 180px;
 
   // The hover `filter` makes the bar its own stacking context, which would trap the tooltip beneath
   // every bar painted after it — so lift the whole slot above its neighbours while it's active.
-  &:hover, &:focus-visible { z-index: 3; }
-  &:hover .bar { filter: brightness(1.2); }
-  &:hover .tooltip, &:focus-visible .tooltip { opacity: 1; visibility: visible; }
+  // .tooltip-open is a tap on a touch screen (appTapTooltip). :hover only counts for a mouse:
+  // touch browsers keep it on the last tapped bar, which would hold its tooltip open.
+  &:focus-visible, &.tooltip-open { z-index: 3; }
+  &:focus-visible .tooltip, &.tooltip-open .tooltip { opacity: 1; visibility: visible; }
+  &.tooltip-open .bar { filter: brightness(1.2); }
+
+  @media (hover: hover) {
+    &:hover { z-index: 3; }
+    &:hover .tooltip { opacity: 1; visibility: visible; }
+    &:hover .bar { filter: brightness(1.2); }
+  }
   &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
 }
 

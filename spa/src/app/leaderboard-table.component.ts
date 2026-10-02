@@ -247,14 +247,18 @@ export class LeaderboardTableComponent {
     return this.buildRankTitle(player.name, player.playedTimeRankDelta);
   }
 
-  getPlayerLinkTitle(player: LadderPlayerView): string {
-    const titleLines: string[] = [];
-
-    if (player.isNewRareAchievementCharacter && player.rareAchievementSummaryLabel) {
-      titleLines.push('New rare character found', player.rareAchievementSummaryLabel);
-    } else if (player.rareAchievementSummaryLabel) {
-      titleLines.push(player.rareAchievementSummaryLabel);
+  /** What the name's badges mean: shown in the hover tooltip, and in the details panel on phones. */
+  getRareAchievementLines(player: LadderPlayerView): string[] {
+    if (!player.rareAchievementSummaryLabel) {
+      return [];
     }
+
+    const lines = player.rareAchievementSummaryLabel.split('\n');
+    return player.isNewRareAchievementCharacter ? ['New rare character found', ...lines] : lines;
+  }
+
+  getPlayerLinkTitle(player: LadderPlayerView): string {
+    const titleLines = this.getRareAchievementLines(player);
 
     const characterAge = this.getCharacterAge(player);
     if (characterAge) {

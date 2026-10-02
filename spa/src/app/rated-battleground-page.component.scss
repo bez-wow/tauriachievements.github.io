@@ -473,8 +473,10 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.052);
   }
 
-  tbody tr:hover {
-    background: rgba(255, 255, 255, 0.022);
+  @media (hover: hover) {
+    tbody tr:hover {
+      background: rgba(255, 255, 255, 0.022);
+    }
   }
 }
 

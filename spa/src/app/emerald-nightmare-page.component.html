@@ -97,6 +97,7 @@
               [style.width.%]="timeline.progressWidth"></div>
             <div
               class="checkpoint"
+              appTapTooltip
               *ngFor="let checkpoint of timeline.checkpoints; trackBy: trackCheckpoint"
               [style.left.%]="checkpoint.positionPercent"
               [class.killed]="checkpoint.kill && checkpoint.isVisible"

@@ -111,6 +111,31 @@ describe('LeaderboardTableComponent row details', () => {
     expect(byLabel.get('Item level')).toEqual({ label: 'Item level', value: (873.5).toLocaleString() });
   });
 
+  it('lists the name tooltip\'s rare achievements in the details panel', async () => {
+    const fixture = await render([createPlayer({
+      isNewRareAchievementCharacter: true,
+      rareAchievementSummaryLabel: 'Hero of the Alliance: Prideful\n1 Gladiator mount'
+    })]);
+    fixture.nativeElement.querySelector('.row-toggle').click();
+    fixture.detectChanges();
+
+    const rareItem = fixture.nativeElement.querySelector('.player-details-wide');
+    expect(rareItem.querySelector('dt').textContent.trim()).toBe('Rare achievements');
+    expect([...rareItem.querySelectorAll('dd')].map((dd: Element) => dd.textContent?.trim())).toEqual([
+      'New rare character found',
+      'Hero of the Alliance: Prideful',
+      '1 Gladiator mount'
+    ]);
+  });
+
+  it('leaves out the rare achievements item for a player without any', async () => {
+    const fixture = await render([createPlayer()]);
+    fixture.nativeElement.querySelector('.row-toggle').click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.player-details-wide')).toBeNull();
+  });
+
   it('shows no account-wide value or change for a player without that data', () => {
     const component = new LeaderboardTableComponent();
     const metric = component
