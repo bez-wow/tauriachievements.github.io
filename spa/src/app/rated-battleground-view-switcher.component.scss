@@ -1,7 +1,7 @@
 :host {
   position: sticky;
   z-index: 40;
-  top: 44px;
+  top: calc(var(--update-bar-height) + 8px);
   display: block;
   width: 100%;
   margin: 20px auto 18px;

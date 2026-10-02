@@ -280,6 +280,8 @@
 
 .guild-link {
   display: inline;
+  // Vertical padding on an inline link grows its tap area without changing the line.
+  padding-block: 8px;
   color: #f3f3f6;
   font-weight: 700;
   text-decoration: none;

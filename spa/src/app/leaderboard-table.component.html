@@ -64,6 +64,7 @@
               (mouseleave)="hidePlayerTooltip()"
               (focus)="showPlayerTooltip($event, playerLinkTitle)"
               (blur)="hidePlayerTooltip()">
+              <span class="tap-area" aria-hidden="true"></span>
               <span
                 *ngIf="player.ratedBattlegroundHeroCount > 0"
                 class="player-name-rbg-sigil"

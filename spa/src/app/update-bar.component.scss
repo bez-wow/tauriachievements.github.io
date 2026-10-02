@@ -7,7 +7,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 36px;
+  height: var(--update-bar-height);
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
   display: flex;
@@ -505,9 +505,20 @@ a.nav-drawer-soon-item {
 }
 
 @media (max-width: 640px) {
+  // Pages space their first content for the 30 px phone header they were designed with.
+  // The bar itself is fixed, so this host height moves each page down by the extra height.
+  :host {
+    height: calc(var(--update-bar-height) - 30px);
+  }
+
   .update-bar {
-    height: 30px;
     font-size: 0.7rem;
+  }
+
+  // 40 px tap targets (the bar is 44 px tall here, see --update-bar-height).
+  .nav-toggle {
+    width: 40px;
+    min-height: 40px;
   }
 
   .update-bar-content {
@@ -520,13 +531,25 @@ a.nav-drawer-soon-item {
   }
 
   .home-link {
-    padding: 0 8px;
+    min-height: 40px;
+    padding: 0 10px;
     font-size: 0.69rem;
   }
 
+  // Two lines fit in the 44 px bar: wrap between the parts instead of running under the
+  // buttons, and stay inside the middle grid column.
   .update-bar-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     padding: 0 4px;
-    max-width: calc(100vw - 88px);
+    max-width: 100%;
+    line-height: 1.25;
+    white-space: normal;
+
+    > * {
+      white-space: nowrap;
+    }
   }
 
   .update-bar-actions {
@@ -535,8 +558,8 @@ a.nav-drawer-soon-item {
   }
 
   .discord-link {
-    width: 28px;
-    min-height: 28px;
+    width: 40px;
+    min-height: 40px;
     padding: 0;
     gap: 0;
   }

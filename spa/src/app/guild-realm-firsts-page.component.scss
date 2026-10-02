@@ -467,6 +467,9 @@
   .mobile-guild-link {
     min-width: 0;
     max-width: 100%;
+    // A taller tap area; the negative margin keeps the row height.
+    padding-block: 7px;
+    margin-block: -7px;
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;

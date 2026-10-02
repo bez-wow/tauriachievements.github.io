@@ -121,7 +121,7 @@
   grid-column: 2;
   grid-row: 2 / span 2;
   position: sticky;
-  top: 48px;
+  top: calc(var(--update-bar-height) + 12px);
   display: grid;
   gap: 16px;
   height: 0;
@@ -392,7 +392,7 @@ table {
 
   th {
     position: sticky;
-    top: 36px;
+    top: var(--update-bar-height);
     z-index: 50;
     padding: 0;
     border-bottom: 1px solid rgba(247, 181, 0, 0.16);
@@ -795,7 +795,7 @@ table tbody tr.main-character-row {
 
   .mobile-sort {
     position: sticky;
-    top: 35px;
+    top: calc(var(--update-bar-height) + 5px);
     z-index: 60;
     display: block;
     grid-row: 4;

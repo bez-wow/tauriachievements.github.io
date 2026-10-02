@@ -219,9 +219,9 @@
 .row-toggle {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
-  margin: 0 auto;
+  width: 32px;
+  height: 32px;
+  margin: -4px auto;
   border: 0;
   border-radius: 4px;
   background: none;
@@ -290,9 +290,13 @@
 
 .member-link {
   position: relative;
-  margin-right: 10px;
+  // Padding grows the tap area; the margins keep the names where they were, 10 px apart.
+  margin: 0 5px 0 -5px;
+  padding: 8px 5px;
   font-size: .85rem;
   text-decoration: none;
+
+  .member-tooltip { bottom: calc(100% - 2px); }
 
   &:focus-visible { text-decoration: underline; }
   &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
