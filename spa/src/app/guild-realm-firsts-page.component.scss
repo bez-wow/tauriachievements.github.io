@@ -467,9 +467,6 @@
   .mobile-guild-link {
     min-width: 0;
     max-width: 100%;
-    // A taller tap area; the negative margin keeps the row height.
-    padding-block: 7px;
-    margin-block: -7px;
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
@@ -513,6 +510,10 @@
   }
 
   .mobile-guild-link {
+    // A taller tap area; the negative margin keeps the row height. Only the link gets it:
+    // on the plain name and status pills it would pull them up over the realm label.
+    padding-block: 7px;
+    margin-block: -7px;
     color: #ffdd79;
     text-shadow: 0 0 10px rgba(247, 181, 0, 0.26);
     transition: color 0.18s ease, text-shadow 0.18s ease, transform 0.18s ease;
