@@ -59,15 +59,35 @@ export class AchievementLadderComponent implements OnInit {
   readonly lastEditedTimeZoneLabel = this.ladderPageStore.lastEditedTimeZoneLabel;
   readonly hasSourcePlayers = this.ladderPageStore.hasSourcePlayers;
   readonly isAwaitingCompleteDataset = this.ladderPageStore.isAwaitingCompleteDataset;
-  readonly showLoadingState = computed(() => (this.isLoading() && !this.hasSourcePlayers()) || this.isAwaitingCompleteDataset());
+  readonly isSearchingAllPlayers = this.ladderPageStore.isSearchingAllPlayers;
+  readonly showLoadingState = computed(() =>
+    (this.isLoading() && !this.hasSourcePlayers())
+    || this.isAwaitingCompleteDataset()
+    || (this.isSearchingAllPlayers() && this.players().length === 0));
   readonly showErrorState = computed(() => !this.isLoading() && !!this.loadError() && !this.hasSourcePlayers());
   readonly showEmptyState = computed(() => !this.showLoadingState() && !this.showErrorState() && this.players().length === 0);
-  readonly showRefreshingBanner = computed(() => this.isLoading() && this.hasSourcePlayers() && !this.isAwaitingCompleteDataset());
-  readonly loadingTitle = computed(() => this.isAwaitingCompleteDataset() ? 'Loading every character...' : 'Loading ladder...');
-  readonly loadingHint = computed(() =>
-    this.isAwaitingCompleteDataset()
-      ? 'Searching, filtering and the other rankings cover the whole server, so the full roster is on its way.'
-      : '');
+  readonly showRefreshingBanner = computed(() =>
+    this.isLoading() && this.hasSourcePlayers() && !this.isAwaitingCompleteDataset() && !this.isSearchingAllPlayers());
+  readonly showSearchingBanner = computed(() => this.isSearchingAllPlayers() && this.players().length > 0);
+  readonly searchingMessage = computed(() =>
+    `Showing matches among the top ${this.ladderPageStore.loadedPlayerCount().toLocaleString()} characters. `
+    + `Searching all ${this.ladderPageStore.totalPlayerCount().toLocaleString()}...`);
+  readonly loadingTitle = computed(() => {
+    if (this.isAwaitingCompleteDataset()) {
+      return 'Loading every character...';
+    }
+
+    return this.isSearchingAllPlayers() ? 'Searching every character...' : 'Loading ladder...';
+  });
+  readonly loadingHint = computed(() => {
+    if (this.isAwaitingCompleteDataset()) {
+      return 'Filtering and the other rankings cover the whole server, so the full roster is on its way.';
+    }
+
+    return this.isSearchingAllPlayers()
+      ? `No match among the top ${this.ladderPageStore.loadedPlayerCount().toLocaleString()} characters, so the rest of the server is loading.`
+      : '';
+  });
   readonly showErrorBanner = computed(() => !!this.loadError() && this.hasSourcePlayers());
   readonly hasSearchQuery = computed(() => this.searchTerm().trim().length > 0);
   readonly hasActiveFilters = computed(() => !!this.currentRealm() || !!this.currentFaction() || this.currentClass() !== undefined);

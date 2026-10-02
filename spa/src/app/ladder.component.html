@@ -28,6 +28,10 @@
     <span>{{ syncMessage() || 'Refreshing ladder data...' }}</span>
   </div>
 
+  <div class="ladder-status-banner info searching" role="status" *ngIf="showSearchingBanner()">
+    <span>{{ searchingMessage() }}</span>
+  </div>
+
   <div class="ladder-status-banner warning" *ngIf="showErrorBanner()">
     <span>{{ loadError() }}</span>
     <button type="button" class="status-action" (click)="syncData()">Try again</button>

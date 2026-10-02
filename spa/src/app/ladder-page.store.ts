@@ -4,6 +4,7 @@ import { BehaviorSubject, catchError, combineLatest, distinctUntilChanged, map, 
 import {
   DEFAULT_LADDER_FILTER_STATE,
   areLadderFilterStatesEqual,
+  isHeadFirstSearch,
   requiresCompleteLadderDataset
 } from './ladder-filter-state';
 import { mapLadderPlayersToView } from './ladder-player-view.mapper';
@@ -42,6 +43,16 @@ export class LadderPageStore {
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly hasSourcePlayers = computed(() => this.sourcePlayerCount() > 0);
   readonly isDatasetComplete = signal(this.dataSyncService.isCurrentDatasetComplete());
+  readonly totalPlayerCount = signal(0);
+  readonly loadedPlayerCount = this.sourcePlayerCount.asReadonly();
+
+  /**
+   * A search on the default ladder shows the head's matches at once (they are the first rows of
+   * the full answer) and is still searching the rest of the server for the rows it lacks.
+   */
+  readonly isSearchingAllPlayers = signal(false);
+  private searchLoad?: Promise<void>;
+  private searchLoadFailed = false;
   private readonly needsCompleteDataset = signal(requiresCompleteLadderDataset(DEFAULT_LADDER_FILTER_STATE));
 
   /**
@@ -55,6 +66,7 @@ export class LadderPageStore {
     this.bindSyncProgress();
     this.bindFilteredPlayers();
     this.bindDatasetCompleteness();
+    this.bindTotalPlayerCount();
   }
 
   initialize(): void {
@@ -81,6 +93,8 @@ export class LadderPageStore {
   async syncData(): Promise<void> {
     this.hasStartedSync = true;
     this.loadError.set(undefined);
+    // This is also the "Try again" after a failed search of every player.
+    this.searchLoadFailed = false;
 
     if (!this.hasSourcePlayers()) {
       this.isLoading.set(true);
@@ -94,7 +108,9 @@ export class LadderPageStore {
         await this.dataSyncService.syncData();
       }
 
-      this.loadError.set(undefined);
+      // The head is in: check whether the current search still needs the rest of the server.
+      // (loadError was cleared above; clearing it again here would hide a failed search load.)
+      this.searchRestOfServerIfNeeded(this.filterState$.value, this.players().length);
     } catch (error) {
       console.error('Failed to sync data:', error);
       this.loadError.set('We could not load the ladder right now. Please try again in a moment.');
@@ -103,11 +119,52 @@ export class LadderPageStore {
     }
   }
 
+  /**
+   * After a head-first search, loads every player when the head did not fill the page.
+   * Until then the head's matches stay on screen, flagged by isSearchingAllPlayers.
+   */
+  private searchRestOfServerIfNeeded(state: LadderFilterState, resultCount: number): void {
+    const needsRest = isHeadFirstSearch(state)
+      && this.hasSourcePlayers()
+      && !this.dataSyncService.isCurrentDatasetComplete()
+      && resultCount < state.pageSize;
+
+    // A failed load is retried only from "Try again" (syncData), not on every keystroke.
+    this.isSearchingAllPlayers.set(needsRest && !this.searchLoadFailed);
+    if (!needsRest || this.searchLoadFailed || this.searchLoad) {
+      return;
+    }
+
+    this.searchLoad = this.dataSyncService.ensureCompleteData()
+      .catch((error: unknown) => {
+        console.error('Failed to load every player for the search:', error);
+        this.searchLoadFailed = true;
+        this.isSearchingAllPlayers.set(false);
+        this.loadError.set('We could not search every character right now. Please try again in a moment.');
+      })
+      .finally(() => {
+        this.searchLoad = undefined;
+      });
+  }
+
+  private bindTotalPlayerCount(): void {
+    this.dataSyncService.getTotalPlayerCount().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((count) => {
+      this.totalPlayerCount.set(count);
+    });
+  }
+
   private bindDatasetCompleteness(): void {
     this.dataSyncService.isDatasetComplete().pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((isComplete) => {
       this.isDatasetComplete.set(isComplete);
+      // The full set is published just before it is flagged complete, so the search that
+      // asked for it last saw it as incomplete.
+      if (isComplete) {
+        this.isSearchingAllPlayers.set(false);
+      }
     });
   }
 
@@ -144,7 +201,7 @@ export class LadderPageStore {
           this.getFilteredPlayers(state).pipe(
             map((players) => ({
               players,
-              search: state.search
+              state
             }))
           )
         )
@@ -153,7 +210,8 @@ export class LadderPageStore {
     ]).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(([result, rareAchievementIndicators]) => {
-      this.players.set(this.mapPlayersForView(result.players, result.search, rareAchievementIndicators));
+      this.players.set(this.mapPlayersForView(result.players, result.state.search, rareAchievementIndicators));
+      this.searchRestOfServerIfNeeded(result.state, result.players.length);
     });
   }
 

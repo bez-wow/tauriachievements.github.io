@@ -66,13 +66,12 @@ export function areLadderFilterStatesEqual(previous: LadderFilterState, current:
 }
 
 /**
- * Whether answering this view needs every player, or whether the head snapshot is enough.
+ * Whether answering this view needs every player before anything can be shown.
  *
- * The head holds the top slice of the achievement-point ranking, so it can only serve the
- * unfiltered, unsearched achievement-point view. Every other case reads outside it:
- * another sort orders players the head never selected on, a search can match anyone on the
- * server, and a realm/faction/class filter re-ranks within its cohort, which needs the whole
- * cohort to be correct.
+ * The head holds the top slice of the achievement-point ranking. Another sort orders players
+ * the head never selected on, and a realm/faction/class filter re-ranks within its cohort,
+ * which needs the whole cohort to be correct. A search on the default ladder is different:
+ * see {@link isHeadFirstSearch}.
  *
  * Page size is not a factor - the largest option is 1000, far inside the head slice.
  */
@@ -80,8 +79,19 @@ export function requiresCompleteLadderDataset(state: LadderFilterState): boolean
   return state.sort !== 'achievementPoints'
     || state.realm !== undefined
     || state.faction !== undefined
-    || state.playerClass !== undefined
-    || state.search.trim().length > 0;
+    || state.playerClass !== undefined;
+}
+
+/**
+ * A search on the default ladder (achievement points, no realm/faction/class filter).
+ *
+ * Its results are the first matches in achievement-point rank order, and the head slice is
+ * the top of that order. So the matches found in the head are the first rows of the full
+ * answer, and when the head alone fills the page the answer is complete without loading
+ * every player. Only a search that runs out of head matches needs the rest of the server.
+ */
+export function isHeadFirstSearch(state: LadderFilterState): boolean {
+  return state.search.trim().length > 0 && !requiresCompleteLadderDataset(state);
 }
 
 export function toLadderQueryParams(state: LadderFilterState): Params {

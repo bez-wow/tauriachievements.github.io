@@ -4,6 +4,7 @@ import {
   DEFAULT_LADDER_FILTER_STATE,
   areLadderFilterStatesEqual,
   parseLadderFilterState,
+  isHeadFirstSearch,
   requiresCompleteLadderDataset,
   toLadderQueryParams
 } from './ladder-filter-state';
@@ -147,8 +148,8 @@ describe('requiresCompleteLadderDataset', () => {
     }
   });
 
-  it('needs every player for a search, which can match anyone on the server', () => {
-    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, search: 'yolko' })).toBe(true);
+  it('starts a search on the default ladder from the head (see isHeadFirstSearch)', () => {
+    expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, search: 'yolko' })).toBe(false);
   });
 
   it('ignores a search of only whitespace', () => {
@@ -171,5 +172,24 @@ describe('requiresCompleteLadderDataset', () => {
 
   it('treats a class of 0 as a real filter rather than an absent one', () => {
     expect(requiresCompleteLadderDataset({ ...DEFAULT_LADDER_FILTER_STATE, playerClass: 0 })).toBe(true);
+  });
+});
+
+describe('isHeadFirstSearch', () => {
+  it('starts a search on the default ladder from the head', () => {
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: 'lar' })).toBe(true);
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: 'lar', pageSize: 1000 })).toBe(true);
+  });
+
+  it('is not a search without a search term', () => {
+    expect(isHeadFirstSearch(DEFAULT_LADDER_FILTER_STATE)).toBe(false);
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: '   ' })).toBe(false);
+  });
+
+  it('needs every player when the search has another sort or a filter', () => {
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: 'lar', sort: 'honorableKills' })).toBe(false);
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: 'lar', realm: 'Tauri' })).toBe(false);
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: 'lar', faction: 'Horde' })).toBe(false);
+    expect(isHeadFirstSearch({ ...DEFAULT_LADDER_FILTER_STATE, search: 'lar', playerClass: 8 })).toBe(false);
   });
 });
