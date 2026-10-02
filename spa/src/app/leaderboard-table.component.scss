@@ -595,20 +595,119 @@
   }
 }
 
+// The rank doubles as the toggle for a row's details panel, but only on phones,
+// where the table hides most of its columns.
+.row-toggle,
+.player-details-row {
+  display: none;
+}
+
+.row-toggle {
+  width: 100%;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+
+  &:focus-visible {
+    outline: 2px solid rgba(247, 181, 0, 0.6);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+.row-toggle-chevron {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: #f7b500;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.75;
+  transition: transform 0.18s ease;
+
+  .is-expanded & {
+    transform: rotate(180deg);
+  }
+}
+
+.wow-table tr.player-details-row > td {
+  width: auto;
+  min-width: 0;
+  padding: 2px 12px 14px 46px;
+  text-align: left;
+  color: inherit;
+  font-weight: 400;
+}
+
+.player-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  dt {
+    color: #9a9fab;
+    font-size: 0.69rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    color: #eceef3;
+    font-size: 0.85rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .metric-delta {
+    margin-left: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 640px) {
   .wow-table {
     min-width: 100%;
+  }
+
+  .wow-table tbody tr:not(.player-details-row) {
+    cursor: pointer;
+  }
+
+  .wow-table tr.is-expanded > td {
+    padding-bottom: 6px;
+  }
+
+  .rank-text {
+    display: none;
+  }
+
+  .row-toggle {
+    display: inline-flex;
+  }
+
+  .player-details-row {
+    display: table-row;
   }
 
   .wow-table th,
   .wow-table td {
     padding: 10px 12px;
     font-size: 0.78rem;
-  }
-
-  .wow-table th:nth-child(4),
-  .wow-table td:nth-child(4) {
-    display: none;
   }
 
   .wow-table th:nth-child(1),
@@ -625,90 +724,20 @@
     padding-left: 6px;
   }
 
-  .wow-table th:nth-child(5),
-  .wow-table td:nth-child(5) {
+  // Show #, Name, Race / Class and the column of the current sort; hide the rest.
+  .wow-table :is(th, td):nth-child(n + 4) {
     display: none;
   }
 
-  .wow-table th:nth-child(6),
-  .wow-table td:nth-child(6) {
+  .wow-table:not(.sort-achievements-total, .sort-honorable-kills, .sort-played-time, .sort-item-level, .sort-appearances) :is(th, td):nth-child(6),
+  .wow-table.sort-achievements-total :is(th, td):nth-child(7),
+  .wow-table.sort-honorable-kills :is(th, td):nth-child(8),
+  .wow-table.sort-played-time :is(th, td):nth-child(9),
+  .wow-table.sort-item-level :is(th, td):nth-child(10),
+  .wow-table.sort-appearances :is(th, td):nth-child(11) {
     display: table-cell;
   }
 
-  .wow-table th:nth-child(7),
-  .wow-table td:nth-child(7) {
-    display: none;
-  }
-
-  .wow-table th:nth-child(8),
-  .wow-table td:nth-child(8) {
-    display: none;
-  }
-
-  .wow-table th:nth-child(9),
-  .wow-table td:nth-child(9) {
-    display: none;
-  }
-
-  .wow-table th:nth-child(10),
-  .wow-table td:nth-child(10) {
-    display: none;
-  }
-
-  .wow-table th:nth-child(11),
-  .wow-table td:nth-child(11) {
-    display: none;
-  }
-
-  .wow-table.sort-item-level th:nth-child(6),
-  .wow-table.sort-item-level td:nth-child(6) {
-    display: none;
-  }
-
-  .wow-table.sort-item-level th:nth-child(10),
-  .wow-table.sort-item-level td:nth-child(10) {
-    display: table-cell;
-  }
-
-  .wow-table.sort-achievements-total th:nth-child(6),
-  .wow-table.sort-achievements-total td:nth-child(6) {
-    display: none;
-  }
-
-  .wow-table.sort-achievements-total th:nth-child(7),
-  .wow-table.sort-achievements-total td:nth-child(7) {
-    display: table-cell;
-  }
-
-  .wow-table.sort-honorable-kills th:nth-child(6),
-  .wow-table.sort-honorable-kills td:nth-child(6) {
-    display: none;
-  }
-
-  .wow-table.sort-honorable-kills th:nth-child(8),
-  .wow-table.sort-honorable-kills td:nth-child(8) {
-    display: table-cell;
-  }
-
-  .wow-table.sort-played-time th:nth-child(6),
-  .wow-table.sort-played-time td:nth-child(6) {
-    display: none;
-  }
-
-  .wow-table.sort-played-time th:nth-child(9),
-  .wow-table.sort-played-time td:nth-child(9) {
-    display: table-cell;
-  }
-
-  .wow-table.sort-appearances th:nth-child(6),
-  .wow-table.sort-appearances td:nth-child(6) {
-    display: none;
-  }
-
-  .wow-table.sort-appearances th:nth-child(11),
-  .wow-table.sort-appearances td:nth-child(11) {
-    display: table-cell;
-  }
 
   .wow-table td:nth-child(2) {
     white-space: normal;
@@ -716,16 +745,49 @@
     text-overflow: clip;
   }
 
-  .metric-inline {
-    grid-template-columns: minmax(var(--metric-delta-col, 44px), max-content) max-content minmax(36px, 1fr);
+  // "ACHIEVEMENTS" and "APPEARANCES" are the widest words in their columns.
+  .wow-table th {
+    font-size: 0.69rem;
+    letter-spacing: 0.3px;
   }
 
-  .metric-side-start {
+  .wow-table :is(th, td):nth-child(3) {
+    padding-left: 6px;
     padding-right: 6px;
   }
 
+  .wow-table :is(th, td):nth-child(n + 6) {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  // Stack the value over its change and rank pill so the row fits a 360 px screen.
+  // The change and pill share a line, and wrap onto two when both are long.
+  .metric-inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2px 4px;
+  }
+
+  .metric-value {
+    order: -1;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .metric-side-start,
   .metric-side-end {
-    padding-left: 6px;
+    padding: 0;
+  }
+
+  .metric-side:empty {
+    display: none;
+  }
+
+  .metric-delta {
+    font-size: 0.69rem;
   }
 
   .metric-rank-pill {

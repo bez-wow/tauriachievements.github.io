@@ -6,6 +6,17 @@ import { formatCharacterAge } from './character-age';
 import { formatPlayedTime, formatSignedPlayedTime } from './played-time';
 import { HighlightPart, LadderPlayerView, LadderSort } from './ladder.types';
 
+/** Below this width the table hides every column but #, Name, Race / Class and the sorted metric. */
+const COMPACT_TABLE_QUERY = '(max-width: 640px)';
+
+/** One line of the details panel that lists a compact row's hidden values. */
+export interface PlayerDetailMetric {
+  label: string;
+  value: string;
+  delta?: string;
+  deltaClass?: string;
+}
+
 @Component({
   selector: 'app-leaderboard-table',
   templateUrl: './leaderboard-table.component.html',
@@ -19,6 +30,7 @@ export class LeaderboardTableComponent {
   @Input() currentSort: LadderSort = 'achievementPoints';
 
   activePlayerTooltip = '';
+  expandedPlayerKey: string | null = null;
   playerTooltipLeft = 0;
   playerTooltipTop = 0;
 
@@ -32,6 +44,43 @@ export class LeaderboardTableComponent {
 
   trackHighlightPart(index: number, _part: HighlightPart): number {
     return index;
+  }
+
+  isExpanded(player: LadderPlayerView): boolean {
+    return this.expandedPlayerKey === this.trackPlayer(0, player);
+  }
+
+  getDetailsId(player: LadderPlayerView): string {
+    return 'player-details-' + player.rank;
+  }
+
+  /** Opens or closes the details panel under a row. One row is open at a time. */
+  togglePlayerDetails(player: LadderPlayerView): void {
+    this.expandedPlayerKey = this.isExpanded(player) ? null : this.trackPlayer(0, player);
+  }
+
+  /** On phones the whole row toggles its details; links in the row keep working as links. */
+  onRowClick(event: MouseEvent, player: LadderPlayerView): void {
+    const target = event.target as Element | null;
+    if (target?.closest('a, button') || !window.matchMedia(COMPACT_TABLE_QUERY).matches) {
+      return;
+    }
+
+    this.togglePlayerDetails(player);
+  }
+
+  getDetailMetrics(player: LadderPlayerView): PlayerDetailMetric[] {
+    const metric = (label: string, value: string, delta: number, formattedDelta: string): PlayerDetailMetric =>
+      delta !== 0 ? { label, value, delta: formattedDelta, deltaClass: this.getDeltaClass(delta) } : { label, value };
+
+    return [
+      metric('Character achievements', player.achievementPoints.toLocaleString(), player.achievementPointsDelta, this.formatSignedValue(player.achievementPointsDelta)),
+      metric('Account wide achievements', this.formatAchievementsTotal(player), this.showAchievementsTotalDelta(player) ? player.achievementsTotalDelta : 0, this.formatSignedValue(player.achievementsTotalDelta)),
+      metric('Honorable kills', player.honorableKills.toLocaleString(), player.honorableKillsDelta, this.formatSignedValue(player.honorableKillsDelta)),
+      metric('Time played', this.formatPlayedTime(player), player.playedTimeDelta, this.formatPlayedTimeDelta(player)),
+      metric('Item level', player.ilvl.toLocaleString(undefined, { maximumFractionDigits: 2 }), 0, ''),
+      metric('Appearances', player.appearanceCount.toLocaleString(), player.appearanceCountDelta, this.formatSignedValue(player.appearanceCountDelta))
+    ];
   }
 
   showAchievementProgress(player: LadderPlayerView): boolean {

@@ -24,8 +24,26 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let player of players; trackBy: trackPlayer" [ngClass]="player.faction">
-        <td>{{ player.rank }}</td>
+      <ng-container *ngFor="let player of players; trackBy: trackPlayer">
+      <tr
+        [ngClass]="player.faction"
+        [class.is-expanded]="isExpanded(player)"
+        (click)="onRowClick($event, player)">
+        <td>
+          <span class="rank-text">{{ player.rank }}</span>
+          <button
+            type="button"
+            class="row-toggle"
+            [attr.aria-expanded]="isExpanded(player)"
+            [attr.aria-controls]="getDetailsId(player)"
+            [attr.aria-label]="(isExpanded(player) ? 'Hide' : 'Show') + ' details for ' + player.name"
+            (click)="togglePlayerDetails(player)">
+            {{ player.rank }}
+            <svg class="row-toggle-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+              <path d="M2.5 4.5 6 8l3.5-3.5" />
+            </svg>
+          </button>
+        </td>
         <td>
           <div class="player-identity">
             <ng-container *ngIf="getPlayerLinkTitle(player) as playerLinkTitle">
@@ -207,6 +225,39 @@
           </span>
         </td>
       </tr>
+      <tr
+        *ngIf="isExpanded(player)"
+        class="player-details-row"
+        [ngClass]="player.faction">
+        <td colspan="11" [id]="getDetailsId(player)">
+          <dl class="player-details">
+            <div>
+              <dt>Realm</dt>
+              <dd>{{ player.realm }}</dd>
+            </div>
+            <div>
+              <dt>Guild</dt>
+              <dd>
+                <a
+                  *ngIf="player.guild; else noGuild"
+                  class="guild-name clickable"
+                  [href]="getGuildArmoryUrl(player.guild, player.realm)"
+                  target="_blank"
+                  rel="noopener noreferrer">{{ player.guild }}</a>
+                <ng-template #noGuild>-</ng-template>
+              </dd>
+            </div>
+            <div *ngFor="let metric of getDetailMetrics(player)">
+              <dt>{{ metric.label }}</dt>
+              <dd>
+                {{ metric.value }}
+                <span *ngIf="metric.delta" class="metric-delta" [ngClass]="metric.deltaClass">{{ metric.delta }}</span>
+              </dd>
+            </div>
+          </dl>
+        </td>
+      </tr>
+      </ng-container>
     </tbody>
   </table>
 </div>
