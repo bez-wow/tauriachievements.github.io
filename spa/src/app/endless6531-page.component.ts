@@ -1,5 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import {
@@ -222,8 +233,33 @@ export class Endless6531PageComponent {
       .sort((left, right) => left.label.localeCompare(right.label))
   ];
 
+  /**
+   * Whether the roster table is wider than its column (its cells don't wrap, so it needs about
+   * 1,100 px). Only then does it scroll sideways: a scrolling container would also stop the
+   * header from sticking to the page, which it can keep wherever the table fits.
+   */
+  readonly isTableOverflowing = signal(false);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly tableScroll = viewChild<ElementRef<HTMLElement>>('tableScroll');
+
   constructor() {
     this.applySort();
+    afterNextRender(() => this.watchTableWidth());
+  }
+
+  private watchTableWidth(): void {
+    const container = this.tableScroll()?.nativeElement;
+    const table = container?.querySelector('table');
+    if (!container || !table || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      this.isTableOverflowing.set(table.offsetWidth > container.clientWidth + 1);
+    });
+    observer.observe(container);
+    observer.observe(table);
+    this.destroyRef.onDestroy(() => observer.disconnect());
   }
 
   /** The roster filters that differ from their defaults, for the phone filter summary. */

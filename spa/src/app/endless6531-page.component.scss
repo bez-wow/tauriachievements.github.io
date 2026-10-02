@@ -376,6 +376,18 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
+// Set when the table is wider than its column (see isTableOverflowing): scroll it sideways
+// rather than letting it run off the page or under the class summary.
+.table-scroll--overflowing {
+  overflow-x: auto;
+
+  // A scrolling container is the header's sticky reference now, and it doesn't scroll
+  // vertically: an offset for the page header would only push the header over row 1.
+  th {
+    top: 0;
+  }
+}
+
 .mobile-sort {
   display: none;
 }
@@ -727,8 +739,10 @@ table tbody tr.main-character-row {
 }
 
 @media (max-width: 1260px) {
+  // minmax(0, ...): a plain 1fr can't shrink below its widest content, which pushed the
+  // whole page past the right edge on tablets.
   .page-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .summary-panel {
@@ -742,6 +756,15 @@ table tbody tr.main-character-row {
       position: static;
       width: auto;
     }
+  }
+}
+
+// The six filters need about 840 px side by side; below that, wrap them onto more rows.
+// 200 px columns match the dropdown menus' min-width, so an open menu never reaches past
+// its own trigger (and off the right edge).
+@media (min-width: 641px) and (max-width: 900px) {
+  .character-groups {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 

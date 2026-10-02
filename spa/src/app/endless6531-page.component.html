@@ -152,7 +152,7 @@
       </div>
     </section>
 
-    <div class="table-scroll">
+    <div #tableScroll class="table-scroll" [class.table-scroll--overflowing]="isTableOverflowing()">
     <table>
       <thead>
         <tr>
