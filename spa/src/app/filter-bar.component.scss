@@ -17,9 +17,18 @@
   position: relative;
   z-index: 200;
 
-  @media (min-width: 768px) {
-    grid-template-columns: auto repeat(6, minmax(0, 1fr));
+  // Above phone width the controls share rows. Each one is at least as wide as its longest
+  // option, and the bar wraps instead of cutting labels to "Cha…" or "All …".
+  @media (min-width: 641px) {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+  }
+
+  // Phones held sideways: keep the bar compact so the table still shows.
+  @media (min-width: 641px) and (max-height: 500px) {
+    gap: 8px;
+    padding: 10px;
   }
 }
 
@@ -162,6 +171,27 @@
 
   &:active {
     transform: translateY(1px);
+  }
+}
+
+@media (min-width: 641px) {
+  // Longest option + 58 px of trigger padding, border and arrow (+ 30 px for the class icon).
+  .filter-group--sort { --filter-min-width: 256px; } // "Account Wide Achievements"
+  .filter-group--realm { --filter-min-width: 140px; } // "All Realms"
+  .filter-group--class { --filter-min-width: 190px; } // "Demon Hunter"
+  .filter-group--faction { --filter-min-width: 140px; } // "All Factions"
+  .filter-group--search { --filter-min-width: 160px; } // "Name or guild"
+  .filter-group--page-size { --filter-min-width: 160px; } // 100 / 500 / 1000
+
+  .filter-group {
+    flex: 1 1 var(--filter-min-width);
+    min-width: var(--filter-min-width);
+    width: auto;
+  }
+
+  .filter-group.reset-group {
+    flex: 0 0 auto;
+    min-width: 0;
   }
 }
 
