@@ -1,25 +1,6 @@
-export interface BattlegroundRecord {
-  name?: string;
-  startTime?: string;
-  startTimeUnix?: number;
-  startDate?: string;
-  duration?: number | string;
-  durationFormatted?: string;
-  bgId?: number;
-  bgName?: string;
-  bgStartTime?: string;
-  bgStartTimeUnix?: number;
-  bgStartDate?: string;
-  bgDuration?: number | string;
-  bgDurationFormatted?: string;
-}
-
 export interface NormalizedBattleground {
-  id: number | undefined;
   name: string;
   date: string;
-  startTime: string;
-  startTimestamp: number | undefined;
   startHour: number | undefined;
   startMinuteOfDay: number | undefined;
   durationMs: number | undefined;
@@ -32,10 +13,17 @@ export interface BattlegroundDateBounds {
 
 export type BattlegroundEra = 'legion' | 'wod-prepatch';
 
-export const LEGION_BATTLEGROUND_START = {
-  date: '2026-07-15',
-  minuteOfDay: 9 * 60
-} as const;
+/**
+ * One era's battlegrounds as built by scripts/generate-battleground-snapshot.js: days in date
+ * order, each holding flat [name index, start minute of day, duration in seconds] triples,
+ * with -1 for an unknown start or duration.
+ */
+export interface BattlegroundSnapshot {
+  version: number;
+  era: BattlegroundEra;
+  names: string[];
+  days: Array<[date: string, values: number[]]>;
+}
 
 export interface BattlegroundHourlyTotal {
   hour: number;
@@ -149,10 +137,6 @@ interface BattlegroundAccumulator {
 }
 
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
-const DATA_DATE_PATTERN = /^(\d{4})[.-](\d{1,2})[.-](\d{1,2})$/;
-const START_TIME_DATE_PATTERN = /^(\d{4})[.-](\d{1,2})[.-](\d{1,2})\s+/;
-const START_TIME_HOUR_PATTERN = /^\d{4}[.-]\d{1,2}[.-]\d{1,2}\s+(\d{1,2})[.:](\d{2})/;
-const FORMATTED_DURATION_PATTERN = /^(\d{1,2}):(\d{2}):(\d{2})$/;
 const HOURS = Array.from({ length: 24 }, (_value, hour) => hour);
 const HOURLY_CHART_WIDTH = 240;
 const HOURLY_CHART_HEIGHT = 64;
@@ -198,15 +182,31 @@ const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
   timeZone: 'UTC'
 });
 
-export function normalizeBattlegrounds(records: ReadonlyArray<BattlegroundRecord> | null | undefined): NormalizedBattleground[] {
-  if (!records?.length) {
-    return [];
+
+/** The records of an era snapshot, in its order (by date, then as collected). */
+export function decodeBattlegroundSnapshot(snapshot: BattlegroundSnapshot | null | undefined): NormalizedBattleground[] {
+  const records: NormalizedBattleground[] = [];
+
+  for (const [date, values] of snapshot?.days ?? []) {
+    for (let index = 0; index + 2 < values.length; index += 3) {
+      const name = snapshot!.names[values[index]];
+      if (name === undefined) {
+        continue;
+      }
+
+      const startMinuteOfDay = values[index + 1] >= 0 ? values[index + 1] : undefined;
+      const durationSeconds = values[index + 2];
+      records.push({
+        name,
+        date,
+        startHour: startMinuteOfDay === undefined ? undefined : Math.floor(startMinuteOfDay / 60),
+        startMinuteOfDay,
+        durationMs: durationSeconds >= 0 ? durationSeconds * 1000 : undefined
+      });
+    }
   }
 
-  return records
-    .map((record) => normalizeBattleground(record))
-    .filter((record): record is NormalizedBattleground => record !== undefined)
-    .sort((left, right) => compareBattlegrounds(left, right));
+  return records;
 }
 
 export function getBattlegroundDateBounds(records: ReadonlyArray<NormalizedBattleground>): BattlegroundDateBounds | undefined {
@@ -251,20 +251,6 @@ export function getCompletedBattlegroundDateBounds(
   };
 }
 
-export function filterBattlegroundsByEra(
-  records: ReadonlyArray<NormalizedBattleground>,
-  era: BattlegroundEra
-): NormalizedBattleground[] {
-  return records.filter((record) => {
-    const isLegion = record.date > LEGION_BATTLEGROUND_START.date
-      || (
-        record.date === LEGION_BATTLEGROUND_START.date
-        && (record.startMinuteOfDay ?? -1) >= LEGION_BATTLEGROUND_START.minuteOfDay
-      );
-
-    return era === 'legion' ? isLegion : !isLegion;
-  });
-}
 
 export function computeBattlegroundStats(
   records: ReadonlyArray<NormalizedBattleground>,
@@ -642,169 +628,16 @@ function getQueueConfidenceLabel(totalStarts: number, bestWindowShare: number): 
   return 'Spread out';
 }
 
-function normalizeBattleground(record: BattlegroundRecord): NormalizedBattleground | undefined {
-  const name = firstStringValue(record.name, record.bgName);
-  const startTime = firstStringValue(record.startTime, record.bgStartTime);
-  const startTimestamp = firstFiniteNumber(record.startTimeUnix, record.bgStartTimeUnix);
-  const startMinuteOfDay = normalizeStartMinuteOfDay(startTime, startTimestamp);
-  const date = normalizeDate(firstStringValue(record.startDate, record.bgStartDate))
-    ?? normalizeStartTimeDate(startTime)
-    ?? normalizeUnixDate(startTimestamp);
 
-  if (!name || !date) {
-    return undefined;
-  }
 
-  return {
-    id: typeof record.bgId === 'number' && Number.isFinite(record.bgId) ? record.bgId : undefined,
-    name,
-    date,
-    startTime: startTime ?? '',
-    startTimestamp,
-    startHour: startMinuteOfDay === undefined ? undefined : Math.floor(startMinuteOfDay / 60),
-    startMinuteOfDay,
-    durationMs: normalizeDurationMs(record)
-  };
-}
 
-function firstStringValue(...values: Array<string | undefined>): string | undefined {
-  for (const value of values) {
-    const trimmedValue = value?.trim();
-    if (trimmedValue) {
-      return trimmedValue;
-    }
-  }
 
-  return undefined;
-}
 
-function firstFiniteNumber(...values: Array<number | undefined>): number | undefined {
-  for (const value of values) {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-  }
 
-  return undefined;
-}
 
-function normalizeDate(value: string | undefined): string | undefined {
-  const trimmedValue = value?.trim();
-  if (!trimmedValue) {
-    return undefined;
-  }
 
-  const isoMatch = ISO_DATE_PATTERN.exec(trimmedValue);
-  if (isoMatch) {
-    return trimmedValue;
-  }
 
-  const dataMatch = DATA_DATE_PATTERN.exec(trimmedValue);
-  if (!dataMatch) {
-    return undefined;
-  }
 
-  const [, year, month, day] = dataMatch;
-  return buildIsoDate(year, month, day);
-}
-
-function normalizeStartTimeDate(value: string | undefined): string | undefined {
-  const match = START_TIME_DATE_PATTERN.exec(value?.trim() ?? '');
-  if (!match) {
-    return undefined;
-  }
-
-  const [, year, month, day] = match;
-  return buildIsoDate(year, month, day);
-}
-
-function normalizeStartMinuteOfDay(value: string | undefined, startTimestamp: number | undefined): number | undefined {
-  const match = START_TIME_HOUR_PATTERN.exec(value?.trim() ?? '');
-  if (match) {
-    const hour = Number(match[1]);
-    const minute = Number(match[2]);
-    return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59
-      ? hour * 60 + minute
-      : undefined;
-  }
-
-  if (startTimestamp === undefined) {
-    return undefined;
-  }
-
-  const date = new Date(startTimestamp * 1000);
-  return Number.isNaN(date.getTime())
-    ? undefined
-    : date.getHours() * 60 + date.getMinutes();
-}
-
-function normalizeUnixDate(value: number | undefined): string | undefined {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return undefined;
-  }
-
-  const date = new Date(value * 1000);
-  if (Number.isNaN(date.getTime())) {
-    return undefined;
-  }
-
-  return date.toISOString().slice(0, 10);
-}
-
-function buildIsoDate(year: string, month: string, day: string): string | undefined {
-  const numericMonth = Number(month);
-  const numericDay = Number(day);
-
-  if (numericMonth < 1 || numericMonth > 12 || numericDay < 1 || numericDay > 31) {
-    return undefined;
-  }
-
-  return `${year}-${numericMonth.toString().padStart(2, '0')}-${numericDay.toString().padStart(2, '0')}`;
-}
-
-function normalizeDurationMs(record: BattlegroundRecord): number | undefined {
-  return normalizeDurationValue(record.duration)
-    ?? normalizeDurationValue(record.durationFormatted)
-    ?? normalizeDurationValue(record.bgDuration)
-    ?? normalizeDurationValue(record.bgDurationFormatted);
-}
-
-function normalizeDurationValue(value: number | string | undefined): number | undefined {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) && value >= 0 ? Math.round(value) : undefined;
-  }
-
-  const trimmedValue = value?.trim();
-  if (!trimmedValue) {
-    return undefined;
-  }
-
-  const match = FORMATTED_DURATION_PATTERN.exec(trimmedValue);
-  if (match) {
-    const [, hours, minutes, seconds] = match;
-    return (
-      Number(hours) * 3600
-      + Number(minutes) * 60
-      + Number(seconds)
-    ) * 1000;
-  }
-
-  const duration = Number(trimmedValue);
-  return Number.isFinite(duration) && duration >= 0 ? Math.round(duration) : undefined;
-}
-
-function compareBattlegrounds(left: NormalizedBattleground, right: NormalizedBattleground): number {
-  const dateResult = left.date.localeCompare(right.date);
-  if (dateResult !== 0) {
-    return dateResult;
-  }
-
-  if (left.startTimestamp !== undefined || right.startTimestamp !== undefined) {
-    return (left.startTimestamp ?? 0) - (right.startTimestamp ?? 0);
-  }
-
-  return (left.id ?? 0) - (right.id ?? 0);
-}
 
 function getOrCreateAccumulator(
   accumulators: Map<string, BattlegroundAccumulator>,

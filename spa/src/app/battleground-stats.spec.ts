@@ -1,97 +1,60 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BattlegroundRecord,
+  NormalizedBattleground,
   computeBattlegroundStats,
-  filterBattlegroundsByEra,
+  decodeBattlegroundSnapshot,
   formatDuration,
   getBattlegroundDateBounds,
-  getCompletedBattlegroundDateBounds,
-  normalizeBattlegrounds
+  getCompletedBattlegroundDateBounds
 } from './battleground-stats';
 
-const sampleRecords: BattlegroundRecord[] = [
-  {
-    bgId: 1,
-    bgName: 'Warsong Gulch',
-    bgStartTime: '2026.06.29 19.10',
-    bgDuration: 600000
-  },
-  {
-    bgId: 2,
-    bgName: 'Warsong Gulch',
-    bgStartTime: '2026.06.30 20.05',
-    bgDuration: 900000
-  },
-  {
-    bgId: 3,
-    bgName: 'Warsong Gulch',
-    bgStartTime: '2026.06.30 20.44',
-    bgDuration: 600000
-  },
-  {
-    bgId: 4,
-    bgName: 'Arathi Basin',
-    bgStartTime: '2026.06.30 21.10',
-    bgDurationFormatted: '00:20:00'
-  },
-  {
-    bgId: 5,
-    bgName: 'Twin Peaks',
-    bgStartTime: '2026.07.02 18.00',
-    bgDuration: 1200000
-  }
+/** A battleground started at "YYYY.MM.DD HH.MM", as the collector writes it. */
+function battleground(name: string, startTime: string, durationMs?: number): NormalizedBattleground {
+  const [, year, month, day, hour, minute] = /^(\d{4})\.(\d{2})\.(\d{2}) (\d{2})\.(\d{2})$/.exec(startTime)!;
+  return {
+    name,
+    date: `${year}-${month}-${day}`,
+    startHour: Number(hour),
+    startMinuteOfDay: Number(hour) * 60 + Number(minute),
+    durationMs
+  };
+}
+
+const sampleRecords: NormalizedBattleground[] = [
+  battleground('Warsong Gulch', '2026.06.29 19.10', 600000),
+  battleground('Warsong Gulch', '2026.06.30 20.05', 900000),
+  battleground('Warsong Gulch', '2026.06.30 20.44', 600000),
+  battleground('Arathi Basin', '2026.06.30 21.10', 1200000),
+  battleground('Twin Peaks', '2026.07.02 18.00', 1200000)
 ];
 
-describe('normalizeBattlegrounds', () => {
-  it('normalizes compact battleground collector records', () => {
-    const records = normalizeBattlegrounds([
-      {
-        name: 'Warsong Gulch',
-        startTime: '2026.07.02 06.52',
-        duration: '00:13:47'
-      }
-    ]);
-
-    expect(records).toHaveLength(1);
-    expect(records[0]).toMatchObject({
-      name: 'Warsong Gulch',
-      date: '2026-07-02',
-      startTime: '2026.07.02 06.52',
-      startHour: 6,
-      startMinuteOfDay: 412,
-      durationMs: 827000
+describe('decodeBattlegroundSnapshot', () => {
+  it('reads each day\'s name, start minute and duration triples in order', () => {
+    const records = decodeBattlegroundSnapshot({
+      version: 1,
+      era: 'legion',
+      names: ['Warsong Gulch', 'Arathi Basin'],
+      days: [
+        ['2026-07-02', [0, 412, 827]],
+        ['2026-07-03', [1, 1270, -1, 0, -1, 600]]
+      ]
     });
+
+    expect(records).toEqual([
+      { name: 'Warsong Gulch', date: '2026-07-02', startHour: 6, startMinuteOfDay: 412, durationMs: 827000 },
+      { name: 'Arathi Basin', date: '2026-07-03', startHour: 21, startMinuteOfDay: 1270, durationMs: undefined },
+      { name: 'Warsong Gulch', date: '2026-07-03', startHour: undefined, startMinuteOfDay: undefined, durationMs: 600000 }
+    ]);
   });
 
-  it('normalizes dotted dates, start hours, and formatted durations', () => {
-    const records = normalizeBattlegrounds(sampleRecords);
-
-    expect(records.map((record) => record.date)).toEqual([
-      '2026-06-29',
-      '2026-06-30',
-      '2026-06-30',
-      '2026-06-30',
-      '2026-07-02'
-    ]);
-    expect(records[1].startHour).toBe(20);
-    expect(records[3].durationMs).toBe(1200000);
-  });
-
-  it('drops records without a name or usable date', () => {
-    const records = normalizeBattlegrounds([
-      { bgName: '', bgStartDate: '2026.06.30' },
-      { bgName: 'Warsong Gulch' },
-      { bgName: 'Arathi Basin', bgStartDate: '2026.06.30' }
-    ]);
-
-    expect(records).toHaveLength(1);
-    expect(records[0].name).toBe('Arathi Basin');
+  it('returns no records for a missing snapshot', () => {
+    expect(decodeBattlegroundSnapshot(null)).toEqual([]);
   });
 });
 
 describe('computeBattlegroundStats', () => {
   it('counts starts only on the selected day', () => {
-    const records = normalizeBattlegrounds(sampleRecords);
+    const records = sampleRecords;
     const stats = computeBattlegroundStats(records, '2026-06-30');
 
     expect(stats.selectedDayCount).toBe(3);
@@ -100,7 +63,7 @@ describe('computeBattlegroundStats', () => {
   });
 
   it('sorts battleground rows and includes hourly cells', () => {
-    const records = normalizeBattlegrounds(sampleRecords);
+    const records = sampleRecords;
     const stats = computeBattlegroundStats(records, '2026-06-30');
 
     expect(stats.mostStartedBg?.name).toBe('Warsong Gulch');
@@ -152,7 +115,7 @@ describe('computeBattlegroundStats', () => {
   });
 
   it('computes average, shortest, and longest duration per battleground across all tracked data', () => {
-    const records = normalizeBattlegrounds(sampleRecords);
+    const records = sampleRecords;
     const stats = computeBattlegroundStats(records, '2026-06-30');
     const warsong = stats.durationRows.find((row) => row.name === 'Warsong Gulch');
 
@@ -165,7 +128,7 @@ describe('computeBattlegroundStats', () => {
   });
 
   it('groups duration rows by battleground size', () => {
-    const records = normalizeBattlegrounds(sampleRecords);
+    const records = sampleRecords;
     const stats = computeBattlegroundStats(records, '2026-06-30');
 
     expect(stats.durationGroups.map((group) => group.label)).toEqual([
@@ -183,14 +146,10 @@ describe('computeBattlegroundStats', () => {
   });
 
   it('does not display ungrouped arena rows in the duration table', () => {
-    const records = normalizeBattlegrounds([
+    const records = [
       ...sampleRecords,
-      {
-        bgName: "Blade's Edge Arena",
-        bgStartTime: '2026.07.03 22.00',
-        bgDuration: 156000
-      }
-    ]);
+      battleground("Blade's Edge Arena", '2026.07.03 22.00', 156000)
+    ];
     const stats = computeBattlegroundStats(records, '2026-06-30');
 
     expect(stats.durationGroups.map((group) => group.label)).not.toContain('Other BGs');
@@ -198,11 +157,11 @@ describe('computeBattlegroundStats', () => {
   });
 
   it('does not display arena rows in an Other BGs daily group', () => {
-    const records = normalizeBattlegrounds([
+    const records = [
       ...sampleRecords,
-      { bgName: 'Black Rook Hold Arena', bgStartTime: '2026.06.30 22.00' },
-      { bgName: "Ashamane's Fall", bgStartTime: '2026.06.30 22.10' }
-    ]);
+      battleground('Black Rook Hold Arena', '2026.06.30 22.00'),
+      battleground("Ashamane's Fall", '2026.06.30 22.10')
+    ];
     const stats = computeBattlegroundStats(records, '2026-06-30');
 
     expect(stats.battlegroundGroups.map((group) => group.label)).not.toContain('Other BGs');
@@ -212,15 +171,15 @@ describe('computeBattlegroundStats', () => {
   });
 
   it('recommends queue windows for Alterac Valley and Isle of Conquest from historical starts', () => {
-    const records = normalizeBattlegrounds([
+    const records = [
       ...sampleRecords,
-      { bgName: 'Alterac Valley', bgStartTime: '2026.06.29 19.05' },
-      { bgName: 'Alterac Valley', bgStartTime: '2026.06.30 20.10' },
-      { bgName: 'Alterac Valley', bgStartTime: '2026.07.01 19.30' },
-      { bgName: 'Alterac Valley', bgStartTime: '2026.07.02 22.00' },
-      { bgName: 'Isle of Conquest', bgStartTime: '2026.06.29 14.10' },
-      { bgName: 'Isle of Conquest', bgStartTime: '2026.06.30 15.20' }
-    ]);
+      battleground('Alterac Valley', '2026.06.29 19.05'),
+      battleground('Alterac Valley', '2026.06.30 20.10'),
+      battleground('Alterac Valley', '2026.07.01 19.30'),
+      battleground('Alterac Valley', '2026.07.02 22.00'),
+      battleground('Isle of Conquest', '2026.06.29 14.10'),
+      battleground('Isle of Conquest', '2026.06.30 15.20')
+    ];
     const stats = computeBattlegroundStats(records, '2026-06-30');
     const alterac = stats.queueRecommendations.find((recommendation) =>
       recommendation.battlegroundName === 'Alterac Valley'
@@ -236,27 +195,9 @@ describe('computeBattlegroundStats', () => {
   });
 });
 
-describe('filterBattlegroundsByEra', () => {
-  it('starts Legion at 2026-07-15 09:00 and keeps earlier starts in WoD Prepatch', () => {
-    const records = normalizeBattlegrounds([
-      { name: 'Warsong Gulch', startTime: '2026.07.15 08.59' },
-      { name: 'Arathi Basin', startTime: '2026.07.15 09.00' },
-      { name: 'Twin Peaks', startTime: '2026.07.16 07.00' }
-    ]);
-
-    expect(filterBattlegroundsByEra(records, 'wod-prepatch').map((record) => record.name)).toEqual([
-      'Warsong Gulch'
-    ]);
-    expect(filterBattlegroundsByEra(records, 'legion').map((record) => record.name)).toEqual([
-      'Arathi Basin',
-      'Twin Peaks'
-    ]);
-  });
-});
-
 describe('getBattlegroundDateBounds', () => {
   it('returns the first and last available dates', () => {
-    const bounds = getBattlegroundDateBounds(normalizeBattlegrounds(sampleRecords));
+    const bounds = getBattlegroundDateBounds(sampleRecords);
 
     expect(bounds).toEqual({
       min: '2026-06-29',
@@ -267,11 +208,11 @@ describe('getBattlegroundDateBounds', () => {
 
 describe('getCompletedBattlegroundDateBounds', () => {
   it('only allows days that have data on the following calendar day', () => {
-    const bounds = getCompletedBattlegroundDateBounds(normalizeBattlegrounds([
-      { bgName: 'Warsong Gulch', bgStartTime: '2026.07.03 10.00' },
-      { bgName: 'Warsong Gulch', bgStartTime: '2026.07.04 10.00' },
-      { bgName: 'Warsong Gulch', bgStartTime: '2026.07.05 10.00' }
-    ]));
+    const bounds = getCompletedBattlegroundDateBounds([
+      battleground('Warsong Gulch', '2026.07.03 10.00'),
+      battleground('Warsong Gulch', '2026.07.04 10.00'),
+      battleground('Warsong Gulch', '2026.07.05 10.00')
+    ]);
 
     expect(bounds).toEqual({
       min: '2026-07-03',
@@ -280,9 +221,9 @@ describe('getCompletedBattlegroundDateBounds', () => {
   });
 
   it('returns no selectable date when there is no next-day data', () => {
-    const bounds = getCompletedBattlegroundDateBounds(normalizeBattlegrounds([
-      { bgName: 'Warsong Gulch', bgStartTime: '2026.07.05 10.00' }
-    ]));
+    const bounds = getCompletedBattlegroundDateBounds([
+      battleground('Warsong Gulch', '2026.07.05 10.00')
+    ]);
 
     expect(bounds).toBeUndefined();
   });

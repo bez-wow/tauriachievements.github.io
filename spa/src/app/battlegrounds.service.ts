@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { BattlegroundRecord } from './battleground-stats';
+import { BattlegroundEra, BattlegroundSnapshot } from './battleground-stats';
 import { DataFileService } from './services/data-file.service';
 
 export interface BattlegroundCollectorState {
@@ -11,10 +11,10 @@ export interface BattlegroundCollectorState {
 export class BattlegroundsService {
   private readonly dataFiles = inject(DataFileService);
 
-  getBattlegrounds(): Observable<BattlegroundRecord[]> {
-    // Large (10+ MB): fetched per visit rather than kept in memory; the HTTP cache still applies.
-    return this.dataFiles.fetchJson<BattlegroundRecord[]>('battlegrounds.json').pipe(
-      map((records) => Array.isArray(records) ? records : [])
+  /** One era's battlegrounds (assets/data/battlegrounds-<era>.json, built by the data pipeline). */
+  getBattlegrounds(era: BattlegroundEra): Observable<BattlegroundSnapshot | null> {
+    return this.dataFiles.fetchJson<BattlegroundSnapshot>(`assets/data/battlegrounds-${era}.json`).pipe(
+      map((snapshot) => Array.isArray(snapshot?.days) && Array.isArray(snapshot?.names) ? snapshot : null)
     );
   }
 

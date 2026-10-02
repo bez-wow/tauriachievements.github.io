@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
   BattlegroundDayGroup,
@@ -11,10 +11,9 @@ import {
   BattlegroundHourlyChartPoint,
   NormalizedBattleground,
   computeBattlegroundStats,
-  filterBattlegroundsByEra,
+  decodeBattlegroundSnapshot,
   formatDuration,
-  getCompletedBattlegroundDateBounds,
-  normalizeBattlegrounds
+  getCompletedBattlegroundDateBounds
 } from './battleground-stats';
 import { BattlegroundCollectorState, BattlegroundsService } from './battlegrounds.service';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -59,8 +58,10 @@ const BATTLEGROUND_ERA_OPTIONS: ReadonlyArray<{ value: BattlegroundEra; label: s
 export class BattlegroundPageComponent implements OnInit {
   private readonly battlegroundsService = inject(BattlegroundsService);
 
-  readonly battlegrounds = signal(normalizeBattlegrounds([]));
   readonly selectedEra = signal<BattlegroundEra>('legion');
+  /** Each era is its own file, loaded the first time that era is shown. */
+  private readonly loadedEras = signal<Partial<Record<BattlegroundEra, NormalizedBattleground[]>>>({});
+  readonly battlegrounds = computed(() => this.loadedEras()[this.selectedEra()] ?? []);
   readonly eraOptions = BATTLEGROUND_ERA_OPTIONS;
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
@@ -69,16 +70,13 @@ export class BattlegroundPageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
 
-  readonly filteredBattlegrounds = computed(() =>
-    filterBattlegroundsByEra(this.battlegrounds(), this.selectedEra())
-  );
-  readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.filteredBattlegrounds()));
+  readonly dateBounds = computed(() => getCompletedBattlegroundDateBounds(this.battlegrounds()));
   readonly hasData = computed(() => this.battlegrounds().length > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());
   readonly showContent = computed(() => !this.showLoading() && !this.showError() && this.hasData());
   readonly stats = computed(() =>
-    computeBattlegroundStats(this.filteredBattlegrounds(), this.selectedDay())
+    computeBattlegroundStats(this.battlegrounds(), this.selectedDay())
   );
   readonly selectedBattlegroundDetails = computed(() => {
     const name = this.selectedBattlegroundName();
@@ -97,6 +95,7 @@ export class BattlegroundPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBattlegrounds();
+    this.loadCollectorState();
   }
 
   retryLoad(): void {
@@ -110,7 +109,7 @@ export class BattlegroundPageComponent implements OnInit {
 
     this.closeBattlegroundStarts();
     this.selectedEra.set(value);
-    this.initializeDateSelection();
+    this.loadBattlegrounds();
   }
 
   setSelectedDay(value: string): void {
@@ -176,35 +175,42 @@ export class BattlegroundPageComponent implements OnInit {
     this.closeBattlegroundStarts();
   }
 
+  /** Shows the selected era, loading its file the first time. */
   private loadBattlegrounds(): void {
+    const era = this.selectedEra();
+    if (this.loadedEras()[era]) {
+      this.initializeDateSelection();
+      return;
+    }
+
     this.isLoading.set(true);
     this.loadError.set(undefined);
 
-    forkJoin({
-      records: this.battlegroundsService.getBattlegrounds(),
-      state: this.battlegroundsService.getCollectorState().pipe(
-        catchError((error: unknown) => {
-          console.warn('Could not load battleground collector state:', error);
-          return of(null);
-        })
-      )
-    }).subscribe({
-      next: ({ records, state }) => {
-        const battlegrounds = normalizeBattlegrounds(records);
-        this.battlegrounds.set(battlegrounds);
-        this.initializeDateSelection();
-        this.applyCollectorState(state);
-        this.isLoading.set(false);
+    this.battlegroundsService.getBattlegrounds(era).subscribe({
+      next: (snapshot) => {
+        this.loadedEras.update((eras) => ({ ...eras, [era]: decodeBattlegroundSnapshot(snapshot) }));
+        if (this.selectedEra() === era) {
+          this.initializeDateSelection();
+          this.isLoading.set(false);
+        }
       },
       error: (error: unknown) => {
         console.error('Failed to load battleground data:', error);
-        this.battlegrounds.set([]);
-        this.lastEdited.set(undefined);
-        this.lastEditedTimeZoneLabel.set('Local time');
-        this.loadError.set('We could not load battleground data right now. Please try again in a moment.');
-        this.isLoading.set(false);
+        if (this.selectedEra() === era) {
+          this.loadError.set('We could not load battleground data right now. Please try again in a moment.');
+          this.isLoading.set(false);
+        }
       }
     });
+  }
+
+  private loadCollectorState(): void {
+    this.battlegroundsService.getCollectorState().pipe(
+      catchError((error: unknown) => {
+        console.warn('Could not load battleground collector state:', error);
+        return of(null);
+      })
+    ).subscribe((state) => this.applyCollectorState(state));
   }
 
   private initializeDateSelection(): void {
@@ -262,7 +268,7 @@ export class BattlegroundPageComponent implements OnInit {
 
   private buildBattlegroundStartGroups(name: string): BattlegroundStartGroup[] {
     const selectedDay = this.selectedDay();
-    const records = this.filteredBattlegrounds()
+    const records = this.battlegrounds()
       .filter((record) => record.name === name && record.date === selectedDay)
       .sort((left, right) => this.compareStartRecords(left, right));
     const groups = new Map<string, BattlegroundStartGroup>();
@@ -279,7 +285,7 @@ export class BattlegroundPageComponent implements OnInit {
 
       group.count++;
       group.entries.push({
-        id: `${record.id ?? 'record'}-${record.startTime || index}-${index}`,
+        id: `${groupLabel}-${index}`,
         startLabel: this.formatStartLabel(record),
         durationLabel: record.durationMs === undefined ? 'Unknown duration' : formatDuration(record.durationMs),
         durationKnown: record.durationMs !== undefined
@@ -294,9 +300,8 @@ export class BattlegroundPageComponent implements OnInit {
     const leftMinute = left.startMinuteOfDay ?? Number.MAX_SAFE_INTEGER;
     const rightMinute = right.startMinuteOfDay ?? Number.MAX_SAFE_INTEGER;
 
-    return leftMinute - rightMinute
-      || (left.startTimestamp ?? 0) - (right.startTimestamp ?? 0)
-      || (left.id ?? 0) - (right.id ?? 0);
+    // Array sort is stable: starts in the same minute keep the order they were collected in.
+    return leftMinute - rightMinute;
   }
 
   private formatStartLabel(record: NormalizedBattleground): string {
@@ -306,6 +311,6 @@ export class BattlegroundPageComponent implements OnInit {
       return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     }
 
-    return record.startTime || 'Unknown start';
+    return 'Unknown start';
   }
 }

@@ -14,10 +14,15 @@ describe('BattlegroundPageComponent', () => {
         {
           provide: BattlegroundsService,
           useValue: {
-            getBattlegrounds: () => of([
-              { name: 'Warsong Gulch', startTime: '2026.07.15 09.00', duration: '00:10:00' },
-              { name: 'Warsong Gulch', startTime: '2026.07.16 09.00', duration: '00:10:00' }
-            ]),
+            getBattlegrounds: () => of({
+              version: 1,
+              era: 'legion',
+              names: ['Warsong Gulch'],
+              days: [
+                ['2026-07-15', [0, 540, 600]],
+                ['2026-07-16', [0, 540, 600]]
+              ]
+            }),
             getCollectorState: () => of({ lastScanUtc: '2026-07-16T09:00:00Z' })
           }
         }
