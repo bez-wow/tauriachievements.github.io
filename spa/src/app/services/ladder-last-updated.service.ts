@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of } from 'rxjs';
 import { DataFileService } from './data-file.service';
+import { getLocalTimeZoneLabel } from '../../utils/time-zone-label';
 
 export interface LadderLastUpdated {
   date: Date;
@@ -30,16 +31,7 @@ export class LadderLastUpdatedService {
 
     return {
       date: parsed,
-      timeZoneLabel: this.getTimeZoneLabel(parsed)
+      timeZoneLabel: getLocalTimeZoneLabel(parsed)
     };
-  }
-
-  private getTimeZoneLabel(date: Date): string {
-    try {
-      const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(date);
-      return parts.find((part) => part.type === 'timeZoneName')?.value ?? 'Local time';
-    } catch {
-      return 'Local time';
-    }
   }
 }

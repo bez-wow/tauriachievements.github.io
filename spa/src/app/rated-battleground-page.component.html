@@ -1,6 +1,7 @@
 <app-update-bar
   [lastEdited]="lastEdited()"
-  lastEditedTimeZoneLabel="Latest recorded match" />
+  lastEditedLabel="Latest match:"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="rated-shell">
   <div class="rated-feedback loading" *ngIf="showLoading()">

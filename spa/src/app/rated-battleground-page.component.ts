@@ -35,6 +35,7 @@ import {
   RatedBattlegroundViewSwitcherComponent
 } from './rated-battleground-view-switcher.component';
 import { UpdateBarComponent } from './update-bar.component';
+import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
   { value: 'rating', label: 'Net rating change' },
@@ -145,10 +146,12 @@ export class RatedBattlegroundPageComponent implements OnInit {
         .map(member => ({ match, member, won: member.side === getWinningSide(match) })))
       .sort((left, right) => left.match.starttime - right.match.starttime || left.match.matchid - right.match.matchid);
   });
+  /** The start of the latest recorded match, shown in local time in the update bar. */
   readonly lastEdited = computed(() => {
     const latest = this.matches().at(-1)?.starttime;
     return latest ? new Date(latest * 1000) : undefined;
   });
+  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly hasData = computed(() => this.matches().length > 0);
   readonly showLoading = computed(() => this.isLoading() && !this.hasData());
   readonly showError = computed(() => !this.isLoading() && !!this.loadError() && !this.hasData());

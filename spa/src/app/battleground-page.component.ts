@@ -20,6 +20,7 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownValue } from './filter-dropdown.types';
 import { UpdateBarComponent } from './update-bar.component';
+import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 
 interface BattlegroundStartEntry {
   id: string;
@@ -241,7 +242,7 @@ export class BattlegroundPageComponent implements OnInit {
   private applyCollectorState(state: BattlegroundCollectorState | null): void {
     const parsedDate = this.parseDate(state?.lastScanUtc);
     this.lastEdited.set(parsedDate);
-    this.lastEditedTimeZoneLabel.set(this.getTimeZoneLabel(parsedDate));
+    this.lastEditedTimeZoneLabel.set(getLocalTimeZoneLabel(parsedDate));
   }
 
   private parseDate(value: string | undefined): Date | undefined {
@@ -251,19 +252,6 @@ export class BattlegroundPageComponent implements OnInit {
 
     const parsedDate = new Date(value);
     return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
-  }
-
-  private getTimeZoneLabel(date: Date | undefined): string {
-    if (!date) {
-      return 'Local time';
-    }
-
-    try {
-      const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(date);
-      return parts.find((part) => part.type === 'timeZoneName')?.value ?? 'Local time';
-    } catch {
-      return 'Local time';
-    }
   }
 
   private buildBattlegroundStartGroups(name: string): BattlegroundStartGroup[] {

@@ -47,6 +47,7 @@ import { UpdateBarComponent } from './update-bar.component';
 import { getGuildArmoryUrl, getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
+import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 
 type CharacterFaction = 'Alliance' | 'Horde';
 type CountRankingMetric = 'gladiatorTitleCount' | 'gladiatorMountCount';
@@ -369,7 +370,7 @@ export class RareAchievementsPageComponent implements OnInit {
         this.dataset.set(dataset);
         this.summaries.set(summaries);
         this.lastEdited.set(this.parseDate(dataset.generatedAt));
-        this.lastEditedTimeZoneLabel.set(this.getTimeZoneLabel(this.lastEdited()));
+        this.lastEditedTimeZoneLabel.set(getLocalTimeZoneLabel(this.lastEdited()));
         this.isLoading.set(false);
       },
       error: (error: unknown) => {
@@ -633,19 +634,6 @@ export class RareAchievementsPageComponent implements OnInit {
 
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? undefined : parsed;
-  }
-
-  private getTimeZoneLabel(date: Date | undefined): string {
-    if (!date) {
-      return 'Local time';
-    }
-
-    try {
-      const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(date);
-      return parts.find((part) => part.type === 'timeZoneName')?.value ?? 'Local time';
-    } catch {
-      return 'Local time';
-    }
   }
 
   private formatObtainedAt(value: string | null | undefined): string {

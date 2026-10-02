@@ -12,6 +12,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class UpdateBarComponent {
   @Input() lastEdited?: Date;
+  /** What the shown time is, e.g. "Last updated:" or, for match data, "Latest match:". */
+  @Input() lastEditedLabel = 'Last updated:';
   @Input() lastEditedTimeZoneLabel = 'Local time';
   @Input() lastEditedTimeZone?: string;
   @Input() showLastUpdated = true;
