@@ -784,6 +784,11 @@ table tbody tr.main-character-row {
     grid-template-columns: 1fr;
   }
 
+  // The filters and the class breakdown open from their buttons (app-mobile-filter-toggle).
+  .filters-collapsed .collapsible-filter {
+    display: none;
+  }
+
   .summary-card {
     padding: 12px;
   }

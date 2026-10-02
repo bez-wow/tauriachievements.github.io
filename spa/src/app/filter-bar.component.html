@@ -1,9 +1,15 @@
-<div class="ladder-header">
+<div id="ladder-filters" class="ladder-header" [class.filters-collapsed]="!filtersOpen">
   <div class="filter-group reset-group">
     <button type="button" class="reset-button" (click)="resetFilters()">Reset</button>
   </div>
 
-  <div class="filter-group" [ngClass]="'filter-group--' + dropdown.key" *ngFor="let dropdown of dropdowns; trackBy: trackDropdown">
+  <app-mobile-filter-toggle
+    controlsId="ladder-filters"
+    [expanded]="filtersOpen"
+    [activeFilters]="activeFilterLabels"
+    (expandedChange)="filtersOpen = $event" />
+
+  <div class="filter-group collapsible-filter" [ngClass]="'filter-group--' + dropdown.key" *ngFor="let dropdown of dropdowns; trackBy: trackDropdown">
     <app-filter-dropdown
       [dropdownId]="dropdown.key"
       [triggerId]="dropdown.triggerId"
@@ -27,7 +33,7 @@
       (input)="onSearchInput($event)" />
   </div>
 
-  <div class="filter-group filter-group--page-size">
+  <div class="filter-group filter-group--page-size collapsible-filter">
     <div class="page-size">
       <button type="button" class="page-size-button page-size-reset-inline" (click)="resetFilters()">Reset</button>
       <button

@@ -196,10 +196,24 @@
 }
 
 @media (max-width: 640px) {
+  // Search and the Filters button share the first row; the rest opens from the button.
   .ladder-header {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .filter-group {
+    grid-column: 1 / -1;
+  }
+
+  .filter-group--search {
+    order: -2;
+    grid-column: 1;
+  }
+
+  .filters-collapsed .collapsible-filter {
+    display: none;
   }
 
   .filter-select {

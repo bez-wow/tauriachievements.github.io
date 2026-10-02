@@ -19,6 +19,7 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { getClassColor } from './class-colors';
 import { injectCompactViewport } from './compact-viewport';
+import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 
 /** On phones each member is a ~470 px tall card, so the roster is rendered this many at a time. */
 const MOBILE_ROSTER_PAGE_SIZE = 25;
@@ -134,7 +135,7 @@ const SORT_COLUMNS = new Set<SortColumn>([
 @Component({
   selector: 'app-endless6531-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, FilterDropdownComponent],
+  imports: [CommonModule, UpdateBarComponent, FilterDropdownComponent, MobileFilterToggleComponent],
   providers: [FilterDropdownCoordinatorService],
   templateUrl: './endless6531-page.component.html',
   styleUrls: ['./endless6531-page.component.scss'],
@@ -189,6 +190,9 @@ export class Endless6531PageComponent {
   readonly selectedCharacterRole = signal<CharacterRole | 'all'>('all');
   readonly selectedGuildRank = signal('');
   readonly selectedCombatRole = signal<CombatRole | ''>('');
+  /** Phones collapse the filters and the class breakdown so the roster starts on the first screen. */
+  readonly filtersOpen = signal(false);
+  readonly classBreakdownOpen = signal(false);
   readonly guildRanks = this.buildGuildRanks();
   readonly guildRankFilterOptions: ReadonlyArray<FilterDropdownOption<string | undefined>> = [
     { value: undefined, label: 'All ranks' },
@@ -220,6 +224,30 @@ export class Endless6531PageComponent {
 
   constructor() {
     this.applySort();
+  }
+
+  /** The roster filters that differ from their defaults, for the phone filter summary. */
+  activeFilterLabels(): string[] {
+    const labels: string[] = [];
+
+    if (this.selectedMainCharacter()) {
+      labels.push(`Main: ${this.selectedMainCharacter()}`);
+    }
+    const role = this.selectedCharacterRole();
+    if (role !== 'all') {
+      labels.push(role === 'main' ? 'Mains' : role === 'alt' ? 'Alts' : 'Unknown role');
+    }
+    if (this.selectedGuildRank()) {
+      labels.push(this.selectedGuildRank());
+    }
+    const classEntry = this.classCounts.find((entry) => entry.id === this.selectedClassId());
+    if (classEntry) {
+      labels.push(classEntry.name);
+    }
+    if (this.selectedCombatRole()) {
+      labels.push(this.selectedCombatRole());
+    }
+    return labels;
   }
 
   sortBy(column: SortColumn): void {

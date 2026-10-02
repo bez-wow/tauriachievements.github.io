@@ -6,6 +6,7 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { HistorySummaryComponent } from './history-summary.component';
+import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { buildHistoryComparisonLabel } from './ladder-history.mapper';
 import { LadderHistoryData, LadderHistoryMoverView } from './ladder-history.types';
 import { CLASS_OPTIONS, PAGE_SIZE_OPTIONS, REALM_OPTIONS } from './ladder-options';
@@ -61,7 +62,7 @@ const APPEARANCE_SOURCE_LIMIT_OPTIONS: ReadonlyArray<FilterDropdownOption<number
   templateUrl: './rank-movement-page.component.html',
   styleUrls: ['./rank-movement-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, FilterDropdownComponent, HistorySummaryComponent, MobileFilterToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
@@ -75,6 +76,8 @@ export class TopGainersPageComponent implements OnInit {
   readonly lastEdited = signal<Date | undefined>(undefined);
   readonly lastEditedTimeZoneLabel = signal('Local time');
   readonly topGainersLimit = signal(DEFAULT_TOP_GAINERS_LIMIT);
+  /** Phones show only the comparison label until the filter panel is opened. */
+  readonly filtersOpen = signal(false);
   readonly achievementSourceLimit = signal<number | undefined>(DEFAULT_ACHIEVEMENT_SOURCE_LIMIT);
   readonly honorableKillSourceLimit = signal<number | undefined>(DEFAULT_HONORABLE_KILL_SOURCE_LIMIT);
   readonly playedTimeSourceLimit = signal<number | undefined>(DEFAULT_PLAYED_TIME_SOURCE_LIMIT);
@@ -168,6 +171,21 @@ export class TopGainersPageComponent implements OnInit {
         showIcons: true
       }
     ];
+  }
+
+  /** The page filters that differ from the defaults. The per-list source dropdowns stay in each list. */
+  get activeFilterLabels(): string[] {
+    const labels: string[] = [];
+    if (this.topGainersLimit() !== DEFAULT_TOP_GAINERS_LIMIT) {
+      labels.push(this.selectedLimitLabel);
+    }
+    if (this.currentRealm()) {
+      labels.push(this.selectedRealmLabel);
+    }
+    if (this.currentClass() !== undefined) {
+      labels.push(this.selectedClassLabel);
+    }
+    return labels;
   }
 
   get selectedLimitLabel(): string {

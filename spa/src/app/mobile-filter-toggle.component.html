@@ -1,0 +1,21 @@
+<button
+  type="button"
+  class="mobile-filter-toggle"
+  [class.has-active]="activeFilters.length > 0"
+  [attr.aria-expanded]="expanded"
+  [attr.aria-controls]="controlsId"
+  [attr.aria-label]="ariaLabel"
+  (click)="toggle()">
+  <svg class="mobile-filter-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <path d="M2 3.5h12M4.5 8h7M7 12.5h2" />
+  </svg>
+  <span>{{ label }}</span>
+  <span class="mobile-filter-count" *ngIf="activeFilters.length > 0">{{ activeFilters.length }}</span>
+  <svg class="mobile-filter-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+    <path d="M2.5 4.5 6 8l3.5-3.5" />
+  </svg>
+</button>
+
+<ul class="mobile-filter-chips" *ngIf="!expanded && activeFilters.length > 0" aria-label="Active filters">
+  <li *ngFor="let filter of activeFilters">{{ filter }}</li>
+</ul>

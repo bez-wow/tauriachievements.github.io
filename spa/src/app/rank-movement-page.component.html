@@ -3,12 +3,22 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <div class="movement-page-container">
-  <div class="movement-filter-bar" *ngIf="historyAvailable()">
-    <div class="movement-filter-group reset-group">
+  <div
+    id="top-gainers-filters"
+    class="movement-filter-bar"
+    [class.filters-collapsed]="!filtersOpen()"
+    *ngIf="historyAvailable()">
+    <app-mobile-filter-toggle
+      controlsId="top-gainers-filters"
+      [expanded]="filtersOpen()"
+      [activeFilters]="activeFilterLabels"
+      (expandedChange)="filtersOpen.set($event)" />
+
+    <div class="movement-filter-group reset-group collapsible-filter">
       <button type="button" class="movement-reset-button" (click)="resetFilters()">Reset</button>
     </div>
 
-    <div class="movement-filter-group" *ngFor="let dropdown of dropdowns; trackBy: trackDropdown">
+    <div class="movement-filter-group collapsible-filter" *ngFor="let dropdown of dropdowns; trackBy: trackDropdown">
       <app-filter-dropdown
         [dropdownId]="dropdown.key"
         [triggerId]="dropdown.triggerId"

@@ -103,13 +103,29 @@
     padding: 46px 12px 20px;
   }
 
+  // The comparison label and the Filters button share the first row; the rest opens from the button.
   .movement-filter-bar {
-    grid-template-columns: 1fr;
-    padding: 16px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 12px;
+  }
+
+  .movement-filter-group {
+    grid-column: 1 / -1;
   }
 
   .movement-comparison-group {
+    order: -2;
+    grid-column: 1;
     justify-content: flex-start;
+  }
+
+  .movement-comparison-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .filters-collapsed .collapsible-filter {
+    display: none;
   }
 
   .movement-feedback {

@@ -23,9 +23,17 @@
     </p>
 
     <section
+      id="guild-filters"
       class="summary-card character-groups roster-filters"
-      [class.roster-filters--standard]="!showMainAltCharacters">
-      <div class="main-filter" *ngIf="showMainAltCharacters">
+      [class.roster-filters--standard]="!showMainAltCharacters"
+      [class.filters-collapsed]="!filtersOpen()">
+      <app-mobile-filter-toggle
+        controlsId="guild-filters"
+        [expanded]="filtersOpen()"
+        [activeFilters]="activeFilterLabels()"
+        (expandedChange)="filtersOpen.set($event)" />
+
+      <div class="main-filter collapsible-filter" *ngIf="showMainAltCharacters">
         <label for="main-character">Main character</label>
         <span class="main-character-select">
           <select
@@ -40,7 +48,7 @@
         </span>
       </div>
 
-      <div class="role-filter" *ngIf="showMainAltCharacters">
+      <div class="role-filter collapsible-filter" *ngIf="showMainAltCharacters">
         <label for="character-role-filter">Filter by role</label>
         <span class="main-character-select">
           <select
@@ -55,7 +63,7 @@
         </span>
       </div>
 
-      <div class="guild-rank-filter">
+      <div class="guild-rank-filter collapsible-filter">
         <app-filter-dropdown
           dropdownId="guild-rank-dropdown"
           triggerId="guild-rank-filter"
@@ -66,7 +74,7 @@
           (selectionChange)="selectGuildRank($event)" />
       </div>
 
-      <div class="class-filter">
+      <div class="class-filter collapsible-filter">
         <app-filter-dropdown
           dropdownId="guild-class-filter"
           triggerId="class-filter"
@@ -79,7 +87,7 @@
           (selectionChange)="selectClass($event)" />
       </div>
 
-      <div class="combat-role-filter">
+      <div class="combat-role-filter collapsible-filter">
         <app-filter-dropdown
           dropdownId="combat-role-dropdown"
           triggerId="combat-role-filter"
@@ -90,13 +98,19 @@
           (selectionChange)="selectCombatRole($event)" />
       </div>
 
-      <button class="reset-filters" type="button" (click)="resetFilters()">
+      <button class="reset-filters collapsible-filter" type="button" (click)="resetFilters()">
         Reset
       </button>
     </section>
 
-    <aside class="summary-panel" aria-label="Guild roster summary">
-      <section class="summary-card">
+    <aside class="summary-panel" aria-label="Guild roster summary" [class.filters-collapsed]="!classBreakdownOpen()">
+      <app-mobile-filter-toggle
+        controlsId="guild-class-breakdown"
+        label="Class breakdown"
+        [expanded]="classBreakdownOpen()"
+        (expandedChange)="classBreakdownOpen.set($event)" />
+
+      <section id="guild-class-breakdown" class="summary-card collapsible-filter">
         <div class="class-list">
           <div class="class-row" *ngFor="let entry of classCounts">
             <img [src]="getClassIconPath(entry.id)" [alt]="entry.name" />

@@ -3,7 +3,8 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
-import { LadderClassOption, LadderSelectOption } from './ladder-options';
+import { DEFAULT_PAGE_SIZE, DEFAULT_SORT, LadderClassOption, LadderSelectOption } from './ladder-options';
+import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { LadderSort } from './ladder.types';
 
 type DropdownKey = 'class' | 'sort' | 'realm' | 'faction';
@@ -28,7 +29,7 @@ interface DropdownConfig {
   templateUrl: './filter-bar.component.html',
   styleUrls: ['./filter-bar.component.scss'],
   standalone: true,
-  imports: [CommonModule, FilterDropdownComponent],
+  imports: [CommonModule, FilterDropdownComponent, MobileFilterToggleComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [FilterDropdownCoordinatorService]
 })
@@ -54,6 +55,9 @@ export class FilterBarComponent {
   @Output() readonly reset = new EventEmitter<void>();
 
   private readonly dropdownCoordinator = inject(FilterDropdownCoordinatorService);
+
+  /** Phones show only the search box until the filter panel is opened. */
+  filtersOpen = false;
 
   get dropdowns(): ReadonlyArray<DropdownConfig> {
     return [
@@ -92,6 +96,27 @@ export class FilterBarComponent {
         selectedLabel: this.selectedFactionLabel
       }
     ];
+  }
+
+  /** The settings that differ from the defaults: what Reset would undo. Search is always visible. */
+  get activeFilterLabels(): string[] {
+    const labels: string[] = [];
+    if (this.sort !== DEFAULT_SORT) {
+      labels.push(`Sort: ${this.selectedSortLabel}`);
+    }
+    if (this.realm) {
+      labels.push(this.selectedRealmLabel);
+    }
+    if (this.playerClass !== undefined) {
+      labels.push(this.selectedClassLabel);
+    }
+    if (this.faction) {
+      labels.push(this.selectedFactionLabel);
+    }
+    if (this.pageSize !== DEFAULT_PAGE_SIZE) {
+      labels.push(`${this.pageSize} per page`);
+    }
+    return labels;
   }
 
   get selectedSortLabel(): string {
