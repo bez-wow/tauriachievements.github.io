@@ -384,7 +384,7 @@
   position: absolute;
   left: calc(100% + 4px);
   top: 50%;
-  font-size: 0.78em;
+  font-size: max(0.78em, 11px);
   line-height: 1;
   transform: translateY(-52%);
   pointer-events: none;
@@ -782,7 +782,7 @@
 
   .player-name-rbg-sigil {
     left: calc(100% + 3px);
-    font-size: 0.72em;
+    font-size: max(0.72em, 11px);
   }
 
   .reset-button,

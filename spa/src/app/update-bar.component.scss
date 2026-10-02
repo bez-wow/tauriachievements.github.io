@@ -8,6 +8,8 @@
   left: 0;
   right: 0;
   height: 36px;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,10 +133,12 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: min(304px, 88vw);
+  width: calc(min(304px, 88vw) + env(safe-area-inset-left, 0px));
   display: flex;
   flex-direction: column;
   padding: 10px;
+  padding-left: calc(10px + env(safe-area-inset-left, 0px));
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(160deg, rgba(24, 24, 30, 0.99), rgba(8, 8, 12, 0.99));
   border-right: 1px solid rgba(247, 181, 0, 0.18);
   box-shadow: 18px 0 48px rgba(0, 0, 0, 0.6);
@@ -283,7 +287,7 @@
   background: linear-gradient(135deg, rgba(234, 88, 12, 0.3), rgba(247, 181, 0, 0.17));
   box-shadow: 0 0 9px rgba(249, 115, 22, 0.2);
   color: #ffd39b;
-  font-size: 0.58rem;
+  font-size: 0.69rem;
   font-weight: 900;
   letter-spacing: 0.65px;
   line-height: 1.35;
@@ -292,7 +296,7 @@
   animation: nav-new-pulse 2.4s ease-in-out infinite;
 
   span {
-    font-size: 0.68rem;
+    font-size: 0.69rem;
     line-height: 1;
   }
 }
@@ -326,7 +330,7 @@
 
 .nav-drawer-section-title {
   padding: 0 6px 4px;
-  font-size: 0.68rem;
+  font-size: 0.69rem;
   font-weight: 800;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -388,7 +392,7 @@ a.nav-drawer-soon-item {
   border: 1px solid rgba(247, 181, 0, 0.34);
   background: rgba(247, 181, 0, 0.12);
   color: #ffe28a;
-  font-size: 0.6rem;
+  font-size: 0.69rem;
   font-weight: 850;
   letter-spacing: 0.5px;
   line-height: 1.4;
@@ -517,7 +521,7 @@ a.nav-drawer-soon-item {
 
   .home-link {
     padding: 0 8px;
-    font-size: 0.66rem;
+    font-size: 0.69rem;
   }
 
   .update-bar-text {

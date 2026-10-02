@@ -79,7 +79,7 @@
 
 .countdown-label {
   color: #aa9295;
-  font-size: .58rem;
+  font-size: .69rem;
   font-weight: 600;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -130,11 +130,11 @@
 
 @media (max-width: 520px) {
   .mythic-countdown { padding: 12px 10px 10px; }
-  .countdown-eyebrow { font-size: .64rem; letter-spacing: .1em; }
+  .countdown-eyebrow { font-size: .69rem; letter-spacing: .1em; }
   .countdown-clock { gap: 3px; }
   .countdown-unit { min-width: 0; flex: 1 1 0; padding: 6px 2px 5px; }
   .countdown-value { font-size: 1.5rem; }
-  .countdown-label { font-size: .54rem; letter-spacing: .06em; }
+  .countdown-label { font-size: .69rem; letter-spacing: .06em; }
   .countdown-colon { padding-top: 6px; font-size: 1.1rem; }
   .countdown-live { font-size: 1.25rem; }
 }
@@ -169,7 +169,7 @@
 :host(.compact) .countdown-eyebrow {
   color: #9a9aa4;
   font-family: inherit;
-  font-size: .64rem;
+  font-size: .69rem;
   letter-spacing: .14em;
   text-shadow: none;
   white-space: nowrap;
@@ -198,7 +198,7 @@
 }
 
 :host(.compact) .countdown-label {
-  font-size: .55rem;
+  font-size: .69rem;
   letter-spacing: .1em;
   color: #8b8b95;
 }
@@ -222,7 +222,7 @@
   margin-left: auto;
   gap: 6px;
   color: #8b8b95;
-  font-size: .68rem;
+  font-size: .69rem;
   white-space: nowrap;
 }
 

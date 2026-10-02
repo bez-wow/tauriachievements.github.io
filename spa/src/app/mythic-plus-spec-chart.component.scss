@@ -70,7 +70,7 @@ $plot-height: 180px;
     position: absolute;
     right: 8px;
     color: #8a8a8a;
-    font-size: .68rem;
+    font-size: .69rem;
     font-variant-numeric: tabular-nums;
     transform: translateY(50%);
   }
@@ -127,7 +127,7 @@ $plot-height: 180px;
   bottom: calc(100% + 3px);
   left: 50%;
   color: #e0e0e0;
-  font-size: .68rem;
+  font-size: .69rem;
   font-weight: 700;
   white-space: nowrap;
   transform: translateX(-50%);
@@ -159,7 +159,7 @@ $plot-height: 180px;
 }
 
 .flip .tooltip { right: calc(100% + 6px); left: auto; }
-.tooltip-meta { color: #8a8a8a; font-size: .68rem; }
+.tooltip-meta { color: #8a8a8a; font-size: .69rem; }
 
 .spec-icons {
   display: flex;
