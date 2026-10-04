@@ -45,7 +45,7 @@ interface NewRareCharacterView {
 
 type RareDiscoveryCategory = 'gladiatorTitle' | 'gladiatorMount' | 'realmFirst' | 'keystoneMaster';
 
-const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11162, 11224]);
+const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11224]);
 
 @Component({
   selector: 'app-new-rare-characters-page',

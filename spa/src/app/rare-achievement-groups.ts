@@ -1,11 +1,9 @@
 import { FilterDropdownOption } from './filter-dropdown.types';
 
 export const SCARAB_LORD_ACHIEVEMENT_ID = 416;
-export const KEYSTONE_MASTER_ACHIEVEMENT_ID = 11162;
 export const REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID = 11224;
 
 export const KEYSTONE_MASTER_OPTIONS: ReadonlyArray<FilterDropdownOption<number>> = [
-  { value: KEYSTONE_MASTER_ACHIEVEMENT_ID, label: 'Keystone Master' },
   { value: REALM_FIRST_KEYSTONE_MASTER_ACHIEVEMENT_ID, label: 'Realm First! Keystone Master' }
 ];
 
