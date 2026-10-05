@@ -44,13 +44,32 @@ export class MythicPlusSpecChartComponent {
     { value: 'runs', label: 'All runs' },
     { value: 'characters', label: 'Unique characters' }
   ];
+  /** Minimum key level; each step keeps that level and everything above it. */
+  readonly levelOptions: ReadonlyArray<{ value: number; label: string; title: string }> = [
+    { value: 0, label: 'All keys', title: 'Keys of every level' },
+    { value: 5, label: '+5', title: 'Keys +5 and higher' },
+    { value: 10, label: '+10', title: 'Keys +10 and higher' },
+    { value: 15, label: '+15', title: 'Keys +15 and higher' }
+  ];
 
   readonly role = signal<RoleFilter>('all');
   readonly countMode = signal<CountMode>('runs');
+  readonly minLevel = signal(0);
+
+  readonly isFiltered = computed(() =>
+    this.role() !== 'all' || this.minLevel() !== 0 || this.countMode() !== 'runs');
+
+  resetFilters(): void {
+    this.role.set('all');
+    this.minLevel.set(0);
+    this.countMode.set('runs');
+  }
 
   readonly popularity = computed(() => {
     const role = this.role();
-    return specPopularity(this.runs(), {
+    const minLevel = this.minLevel();
+    const runs = minLevel > 0 ? this.runs().filter(run => run.keyLevel >= minLevel) : this.runs();
+    return specPopularity(runs, {
       role: role === 'all' ? undefined : role,
       uniqueCharacters: this.countMode() === 'characters'
     });
@@ -88,10 +107,12 @@ export class MythicPlusSpecChartComponent {
     const { total, runCount } = this.popularity();
     const role = this.roleOptions.find(option => option.value === this.role())?.label ?? 'All roles';
     const count = this.countMode() === 'characters' ? 'Unique characters' : 'All runs';
+    const minLevel = this.minLevel();
 
     return [
       this.scopeLabel(),
       role,
+      minLevel > 0 ? `Keys +${minLevel} and higher` : 'All keys',
       count,
       `${total} ${this.unitLabel()} from ${runCount} ${runCount === 1 ? 'run' : 'runs'}`,
       'Grouped by popularity'

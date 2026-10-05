@@ -6,6 +6,14 @@
     </div>
 
     <div class="chart-filters">
+      <button
+        type="button"
+        class="filter-reset"
+        aria-label="Reset the chart filters to all roles, all keys and all runs"
+        [disabled]="!isFiltered()"
+        (click)="resetFilters()">
+        Reset
+      </button>
       <div class="segmented" role="group" aria-label="Filter by role">
         <button
           *ngFor="let option of roleOptions"
@@ -13,6 +21,15 @@
           [class.active]="role() === option.value"
           [attr.aria-pressed]="role() === option.value"
           (click)="role.set(option.value)">{{ option.label }}</button>
+      </div>
+      <div class="segmented" role="group" aria-label="Minimum key level">
+        <button
+          *ngFor="let option of levelOptions"
+          type="button"
+          [title]="option.title"
+          [class.active]="minLevel() === option.value"
+          [attr.aria-pressed]="minLevel() === option.value"
+          (click)="minLevel.set(option.value)">{{ option.label }}</button>
       </div>
       <div class="segmented" role="group" aria-label="How characters are counted">
         <button
