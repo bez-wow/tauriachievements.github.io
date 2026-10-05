@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -201,6 +201,7 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   @ViewChild('leaderboard') private leaderboardRef?: ElementRef<HTMLElement>;
 
@@ -467,8 +468,7 @@ export class MythicPlusPageComponent implements OnInit {
   onSearch(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
 
-    // Search isn't in the URL, so only navigate when `?page` needs resetting —
-    // every router navigation starts a view transition, and per-keystroke ones abort each other.
+    // Search isn't in the URL, so the URL only changes when `?page` needs resetting.
     if (this.page() !== 1) {
       this.page.set(1);
       this.syncQueryParams();
@@ -499,9 +499,15 @@ export class MythicPlusPageComponent implements OnInit {
     return `${member.name}-${member.realm}`;
   }
 
+  /**
+   * Mirrors the filters into the address bar so links and reloads keep them. This writes the
+   * URL directly instead of navigating: every router navigation scrolls to the top
+   * (scrollPositionRestoration) and runs a full-page view transition, and a filter change
+   * should leave the reader where they are.
+   */
   private syncQueryParams(): void {
     const players = this.view() === 'players';
-    void this.router.navigate([], {
+    const url = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: {
         dungeon: this.selectedDungeon()?.id ?? null,
@@ -510,9 +516,10 @@ export class MythicPlusPageComponent implements OnInit {
         class: players ? this.classFilter() ?? null : null,
         spec: players ? this.specFilter() ?? null : null,
         page: this.currentPage() > 1 ? this.currentPage() : null
-      },
-      replaceUrl: true
+      }
     });
+
+    this.location.replaceState(this.router.serializeUrl(url));
   }
 
   private loadData(): void {
