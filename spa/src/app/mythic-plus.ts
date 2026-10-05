@@ -259,12 +259,22 @@ export interface PlayerScore {
  * Player score, raider.io's classic model: the sum of a character's best run score in each
  * dungeon. Playing every dungeon counts; farming one doesn't. Given one dungeon's runs, the
  * score is simply the character's best run there. Highest first; ties go by name.
+ *
+ * `include` limits which roster slots count, e.g. one spec: a character is then scored only on
+ * the runs they played as that spec.
  */
-export function rankPlayers(runs: readonly MythicPlusRun[]): PlayerScore[] {
+export function rankPlayers(
+  runs: readonly MythicPlusRun[],
+  include?: (member: MythicPlusMember) => boolean
+): PlayerScore[] {
   const players = new Map<string, { member: MythicPlusMember; topRun: MythicPlusRun; bestRuns: Map<string, MythicPlusRun> }>();
 
   for (const run of runs) {
     for (const member of run.roster) {
+      if (include && !include(member)) {
+        continue;
+      }
+
       const key = `${member.name}|${member.realm}`;
       let player = players.get(key);
       if (!player) {

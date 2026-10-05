@@ -44,7 +44,10 @@ import {
   upgradeCutoffs
 } from './mythic-plus';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
-import { specIconFor } from './mythic-plus-stats';
+import { LEGION_SPECS, specIconFor } from './mythic-plus-stats';
+import { FilterDropdownComponent } from './filter-dropdown.component';
+import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
+import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
@@ -126,6 +129,16 @@ function parsePage(value: string | null): number {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
+function parseClassFilter(value: string | null): number | undefined {
+  const classId = Number(value);
+  return value && CLASS_NAMES[classId] ? classId : undefined;
+}
+
+/** A spec from the URL only counts when it belongs to the class filter. */
+function parseSpecFilter(classId: number | undefined, value: string | null): string | undefined {
+  return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
+}
+
 function toMemberView(member: MythicPlusMember): MemberView {
   return {
     ...member,
@@ -176,9 +189,11 @@ function toRunView(
 @Component({
   selector: 'app-mythic-plus-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent],
+  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent, FilterDropdownComponent],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
+  // Keeps one of this page's dropdowns open at a time.
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusPageComponent implements OnInit {
@@ -204,6 +219,30 @@ export class MythicPlusPageComponent implements OnInit {
   readonly expandedRunId = signal<string | undefined>(undefined);
   readonly view = signal<LeaderboardView>(
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
+  /** Players view only: one class, and optionally one of its specs. */
+  readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
+  readonly specFilter = signal<string | undefined>(
+    parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
+
+  readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
+    { value: undefined, label: 'All classes' },
+    ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
+      value: Number(id),
+      label: name,
+      icon: getClassIconPath(Number(id)),
+      color: getClassColor(Number(id))
+    }))
+  ];
+
+  readonly specOptions = computed<FilterDropdownOption[]>(() => {
+    const classId = this.classFilter();
+    return [
+      { value: undefined, label: 'All specs' },
+      ...LEGION_SPECS
+        .filter(spec => spec.classId === classId)
+        .map(spec => ({ value: spec.spec, label: spec.spec, icon: spec.icon }))
+    ];
+  });
 
   private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
   private readonly requestedDungeons = new Set<string>();
@@ -257,8 +296,16 @@ export class MythicPlusPageComponent implements OnInit {
   });
 
   /** Characters in the selected scope by player score; only worked out once the players view is opened. */
-  private readonly rankedPlayers = computed<RankedPlayer[]>(() =>
-    rankPlayers(this.dungeonRuns()).map((player, index) => ({ player, rank: index + 1 })));
+  private readonly rankedPlayers = computed<RankedPlayer[]>(() => {
+    const classId = this.classFilter();
+    const spec = this.specFilter();
+    // A spec filter scores each character on the runs they played as that spec only.
+    const include = classId === undefined
+      ? undefined
+      : (member: MythicPlusMember) => member.class === classId && (spec === undefined || member.spec === spec);
+
+    return rankPlayers(this.dungeonRuns(), include).map((player, index) => ({ player, rank: index + 1 }));
+  });
 
   readonly filteredPlayers = computed<RankedPlayer[]>(() => {
     const query = this.search();
@@ -328,6 +375,12 @@ export class MythicPlusPageComponent implements OnInit {
       return `${subject} "${query}"${dungeon ? ` in ${dungeon.name}` : ''}.`;
     }
 
+    const classId = this.classFilter();
+    if (this.view() === 'players' && classId !== undefined) {
+      const who = [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
+      return `No ${who} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
+    }
+
     return dungeon ? `No ${dungeon.name} runs recorded yet.` : 'No runs recorded yet this season.';
   });
 
@@ -342,6 +395,29 @@ export class MythicPlusPageComponent implements OnInit {
     } else {
       this.loadData();
     }
+  }
+
+  setClassFilter(value: FilterDropdownValue): void {
+    const classId = typeof value === 'number' ? value : undefined;
+    if (classId === this.classFilter()) {
+      return;
+    }
+
+    this.classFilter.set(classId);
+    this.specFilter.set(undefined);
+    this.page.set(1);
+    this.syncQueryParams();
+  }
+
+  setSpecFilter(value: FilterDropdownValue): void {
+    const spec = typeof value === 'string' ? value : undefined;
+    if (spec === this.specFilter()) {
+      return;
+    }
+
+    this.specFilter.set(spec);
+    this.page.set(1);
+    this.syncQueryParams();
   }
 
   setView(view: LeaderboardView): void {
@@ -424,11 +500,15 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   private syncQueryParams(): void {
+    const players = this.view() === 'players';
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
         dungeon: this.selectedDungeon()?.id ?? null,
-        view: this.view() === 'players' ? 'players' : null,
+        view: players ? 'players' : null,
+        // The filters only apply to the players view; they wait there when the runs view is open.
+        class: players ? this.classFilter() ?? null : null,
+        spec: players ? this.specFilter() ?? null : null,
         page: this.currentPage() > 1 ? this.currentPage() : null
       },
       replaceUrl: true

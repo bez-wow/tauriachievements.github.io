@@ -109,8 +109,40 @@
   span { color: #9a9a9a; font-size: .85rem; font-variant-numeric: tabular-nums; }
 }
 
+// Class / spec dropdowns (players view) sit in front of the search box.
+.leaderboard-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-slot { width: 170px; }
+
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 7px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  span { color: #f7b500; font-size: .75rem; }
+
+  &:hover { border-color: #f7b500; color: #fff; }
+  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+}
+
 .player-search input {
   width: min(240px, 100%);
+  height: 40px;
   padding: 7px 10px;
   border: 1px solid #3a3a3a;
   border-radius: 4px;
@@ -502,5 +534,9 @@
 
 @media (max-width: 640px) {
   .pager-row { flex-direction: column; align-items: stretch; }
-  .player-search input { width: 100%; }
+  .player-search, .player-search input { width: 100%; }
+  // Class and spec split the first row in half; search fills the next row, with Reset beside it.
+  .filter-slot { flex: 1 1 calc(50% - 4px); width: auto; min-width: 0; }
+  .player-search { flex: 1 1 60%; order: 1; }
+  .filter-reset { order: 2; }
 }

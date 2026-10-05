@@ -79,15 +79,51 @@
 
       <div class="pager-row">
         <ng-container *ngTemplateOutlet="pager; context: { $implicit: false }"></ng-container>
-        <label class="player-search">
-          <span class="visually-hidden">Search by player name</span>
-          <input
-            type="search"
-            placeholder="Search player..."
-            autocomplete="off"
-            [value]="search()"
-            (input)="onSearch($event)" />
-        </label>
+        <div class="leaderboard-filters">
+          <ng-container *ngIf="view() === 'players'">
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="mythicPlusClass"
+                triggerId="mythicPlusClassTrigger"
+                ariaLabel="Filter players by class"
+                [options]="classOptions"
+                [selectedValue]="classFilter()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setClassFilter($event)" />
+            </div>
+            <div class="filter-slot" *ngIf="classFilter() !== undefined">
+              <app-filter-dropdown
+                dropdownId="mythicPlusSpec"
+                triggerId="mythicPlusSpecTrigger"
+                ariaLabel="Filter players by spec"
+                [options]="specOptions()"
+                [selectedValue]="specFilter()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setSpecFilter($event)" />
+            </div>
+            <button
+              type="button"
+              class="filter-reset"
+              *ngIf="classFilter() !== undefined"
+              aria-label="Reset class and spec filters"
+              (click)="setClassFilter(undefined)">
+              <span aria-hidden="true">✕</span> Reset
+            </button>
+          </ng-container>
+          <label class="player-search">
+            <span class="visually-hidden">Search by player name</span>
+            <input
+              type="search"
+              placeholder="Search player..."
+              autocomplete="off"
+              [value]="search()"
+              (input)="onSearch($event)" />
+          </label>
+        </div>
       </div>
 
       <div class="table-scroll">

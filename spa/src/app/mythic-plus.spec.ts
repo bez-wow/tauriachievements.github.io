@@ -195,6 +195,15 @@ describe('rankPlayers', () => {
     // Shown with the spec of their highest run.
     expect(ranked[0].member.spec).toBe('Havoc');
   });
+
+  it('scores a spec filter on the runs played as that spec only', () => {
+    const ranked = rankPlayers([
+      run('a', 'hov', 180, [member('Pashao', 'Vengeance'), member('Bea')]),
+      run('b', 'eoa', 190, [member('Pashao', 'Havoc')])
+    ], candidate => candidate.spec === 'Vengeance');
+
+    expect(ranked.map(player => [player.member.name, player.score])).toEqual([['Pashao', 180]]);
+  });
 });
 
 describe('memberNameMatches', () => {
