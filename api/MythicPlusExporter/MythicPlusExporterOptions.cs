@@ -22,7 +22,7 @@ public sealed record MythicPlusExporterOptions(IReadOnlyList<string> Realms, boo
               dotnet run --project MythicPlusExporter
               dotnet run --project MythicPlusExporter -- --realm Evermoon
 
-            Writes spa/src/mythic-plus/index.json and one <dungeon>.json per dungeon.
+            Writes spa/src/mythic-plus-data/index.json and one <dungeon>.json per dungeon.
 
             Options:
               --realm <name>   Realm whose leaderboard to read; repeat for several.

@@ -53,13 +53,15 @@ export interface MythicPlusRun {
 }
 
 /*
- * The files api/MythicPlusExporter writes to src/mythic-plus/ (see MythicPlusFileWriter.cs).
+ * The files api/MythicPlusExporter writes to src/mythic-plus-data/ (see MythicPlusFileWriter.cs).
  * index.json holds the season, the dungeons, the affixes and the player and spec tables that
  * every dungeon file points into. The page reads the index first, then only the dungeon files
  * it shows.
  */
 
-export const MYTHIC_PLUS_DATA_DIR = 'mythic-plus';
+// Not 'mythic-plus': a folder named like the /mythic-plus route makes GitHub Pages serve the
+// folder instead of the app.
+export const MYTHIC_PLUS_DATA_DIR = 'mythic-plus-data';
 
 export interface MythicPlusSpecEntry {
   class: number;

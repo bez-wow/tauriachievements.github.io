@@ -34,7 +34,7 @@ internal static class Program
         var settingsPath = ResolveSettingsPath(projectRoot, solutionRoot);
         var outputDirectory = Path.Combine(
             ProjectPaths.GetFrontendSrcDirectory(solutionRoot),
-            "mythic-plus"
+            "mythic-plus-data"
         );
 
         using var cancellationTokenSource = new CancellationTokenSource();

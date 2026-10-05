@@ -6,7 +6,7 @@
     Builds the solution once, then runs each job in order and stops at the first failure:
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
       Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
-      MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus (the /mythic-plus leaderboards)
+      MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
       Ladder           AchievementLadder        -> Players.csv and the rare exports
       MissingPlayers   MissingPlayerFinder      -> backfills skipped characters in rounds
@@ -62,7 +62,7 @@ $publishPaths = @(
     'spa/src/battleground-collector-state.json',
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',
-    'spa/src/mythic-plus',
+    'spa/src/mythic-plus-data',
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',
     'api/AchievementLadder/Data/Guilds/evermoon-guilds.txt',
     'api/AchievementLadder/Data/Guilds/wod-guilds.txt',
