@@ -239,6 +239,65 @@ export function runIncludesPlayer(run: { roster: ReadonlyArray<Pick<MythicPlusMe
   return !needle || run.roster.some(member => foldedMemberName(member).includes(needle));
 }
 
+/** The same match as `runIncludesPlayer`, for a single character. */
+export function memberNameMatches(member: Pick<MythicPlusMember, 'name'>, query: string): boolean {
+  const needle = foldName(query.trim());
+  return !needle || foldedMemberName(member).includes(needle);
+}
+
+export interface PlayerScore {
+  /** `name|realm` — a character, whichever spec they played. */
+  key: string;
+  /** The character as they appear in their highest-scoring run, so with that run's spec. */
+  member: MythicPlusMember;
+  score: number;
+  /** The character's best run in each dungeon they have played, by dungeon id. */
+  bestRuns: ReadonlyMap<string, MythicPlusRun>;
+}
+
+/**
+ * Player score, raider.io's classic model: the sum of a character's best run score in each
+ * dungeon. Playing every dungeon counts; farming one doesn't. Given one dungeon's runs, the
+ * score is simply the character's best run there. Highest first; ties go by name.
+ */
+export function rankPlayers(runs: readonly MythicPlusRun[]): PlayerScore[] {
+  const players = new Map<string, { member: MythicPlusMember; topRun: MythicPlusRun; bestRuns: Map<string, MythicPlusRun> }>();
+
+  for (const run of runs) {
+    for (const member of run.roster) {
+      const key = `${member.name}|${member.realm}`;
+      let player = players.get(key);
+      if (!player) {
+        player = { member, topRun: run, bestRuns: new Map() };
+        players.set(key, player);
+      } else if (isBetterRun(run, player.topRun)) {
+        player.member = member;
+        player.topRun = run;
+      }
+
+      const best = player.bestRuns.get(run.dungeon);
+      if (!best || isBetterRun(run, best)) {
+        player.bestRuns.set(run.dungeon, run);
+      }
+    }
+  }
+
+  return [...players].map(([key, player]) => {
+    let total = 0;
+    for (const run of player.bestRuns.values()) {
+      total += run.score;
+    }
+
+    // Scores carry one decimal; rounding keeps float noise out of ties.
+    return { key, member: player.member, score: Math.round(total * 10) / 10, bestRuns: player.bestRuns };
+  }).sort((a, b) => b.score - a.score || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
+function isBetterRun(candidate: MythicPlusRun, current: MythicPlusRun): boolean {
+  return candidate.score > current.score
+    || (candidate.score === current.score && candidate.clearTimeSeconds < current.clearTimeSeconds);
+}
+
 /** Tank, healer, then DPS — keeping the DPS in their original order. */
 export function sortRoster<T extends Pick<MythicPlusMember, 'role'>>(roster: readonly T[]): T[] {
   return [...roster].sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role]);

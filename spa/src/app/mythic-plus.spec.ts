@@ -5,7 +5,9 @@ import {
   formatDuration,
   formatTimerDelta,
   keystoneUpgrades,
+  memberNameMatches,
   pageCount,
+  rankPlayers,
   rankRuns,
   runIncludesPlayer,
   scoreQuality,
@@ -158,6 +160,48 @@ describe('createRunDecoder', () => {
 
     expect(first.roster).toHaveLength(1);
     expect(second.roster[0]).toBe(first.roster[0]);
+  });
+});
+
+describe('rankPlayers', () => {
+  const member = (name: string, spec = 'Blood') =>
+    ({ name, realm: 'Evermoon', class: 6, race: 1, gender: 0, spec, role: 'tank' as const });
+  const run = (id: string, dungeon: string, score: number, roster: ReturnType<typeof member>[], clearTimeSeconds = 1500) =>
+    ({ id, dungeon, keyLevel: 10, clearTimeSeconds, score, completedAt: '', affixes: [], roster });
+
+  it('sums the best run per dungeon, so farming one dungeon does not count twice', () => {
+    const tank = member('Pretz');
+    const [pretz] = rankPlayers([
+      run('a', 'hov', 150, [tank]),
+      run('b', 'hov', 170.1, [tank]),
+      run('c', 'eoa', 160.2, [tank])
+    ]);
+
+    expect(pretz.score).toBe(330.3);
+    expect(pretz.bestRuns.get('hov')?.id).toBe('b');
+    expect(pretz.bestRuns.get('eoa')?.id).toBe('c');
+  });
+
+  it('ranks by score, then name, and counts every spec of a character as one player', () => {
+    const ranked = rankPlayers([
+      run('a', 'hov', 180, [member('Pashao', 'Vengeance'), member('Bea')]),
+      run('b', 'eoa', 190, [member('Pashao', 'Havoc')]),
+      run('c', 'hov', 180, [member('Abe')])
+    ]);
+
+    expect(ranked.map(player => [player.member.name, player.score])).toEqual([
+      ['Pashao', 370], ['Abe', 180], ['Bea', 180]
+    ]);
+    // Shown with the spec of their highest run.
+    expect(ranked[0].member.spec).toBe('Havoc');
+  });
+});
+
+describe('memberNameMatches', () => {
+  it('matches like the run search', () => {
+    expect(memberNameMatches({ name: 'Björñ' }, 'bjorn')).toBe(true);
+    expect(memberNameMatches({ name: 'Björñ' }, '')).toBe(true);
+    expect(memberNameMatches({ name: 'Björñ' }, 'pretz')).toBe(false);
   });
 });
 

@@ -33,7 +33,10 @@ import {
   formatDuration,
   formatTimerDelta,
   keystoneUpgrades,
+  memberNameMatches,
   pageCount,
+  PlayerScore,
+  rankPlayers,
   rankRuns,
   runIncludesPlayer,
   scoreQuality,
@@ -90,6 +93,32 @@ interface RunRow extends RunView {
 interface RankedRun {
   run: MythicPlusRun;
   rank: number;
+}
+
+type LeaderboardView = 'runs' | 'players';
+
+interface RankedPlayer {
+  player: PlayerScore;
+  rank: number;
+}
+
+/** A character's best run in one dungeon, as a cell of the players table. */
+interface BestRunCell {
+  dungeon: MythicPlusDungeon;
+  keyLevel: number;
+  timed: boolean;
+  clearTime: string;
+  score: number;
+}
+
+interface PlayerRow {
+  key: string;
+  rank: number;
+  member: MemberView;
+  score: number;
+  quality: RunQuality;
+  /** One per dungeon in scope, in tile order; undefined where the character has no run. */
+  bests: Array<BestRunCell | undefined>;
 }
 
 function parsePage(value: string | null): number {
@@ -173,6 +202,8 @@ export class MythicPlusPageComponent implements OnInit {
   readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
   readonly search = signal('');
   readonly expandedRunId = signal<string | undefined>(undefined);
+  readonly view = signal<LeaderboardView>(
+    this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
 
   private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
   private readonly requestedDungeons = new Set<string>();
@@ -225,7 +256,24 @@ export class MythicPlusPageComponent implements OnInit {
     return query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
   });
 
-  readonly totalPages = computed(() => pageCount(this.filteredRows().length, PAGE_SIZE));
+  /** Characters in the selected scope by player score; only worked out once the players view is opened. */
+  private readonly rankedPlayers = computed<RankedPlayer[]>(() =>
+    rankPlayers(this.dungeonRuns()).map((player, index) => ({ player, rank: index + 1 })));
+
+  readonly filteredPlayers = computed<RankedPlayer[]>(() => {
+    const query = this.search();
+    const ranked = this.rankedPlayers();
+    return query.trim() ? ranked.filter(entry => memberNameMatches(entry.player.member, query)) : ranked;
+  });
+
+  readonly resultCount = computed(() =>
+    this.view() === 'players' ? this.filteredPlayers().length : this.filteredRows().length);
+  readonly resultUnit = computed(() => {
+    const single = this.resultCount() === 1;
+    return this.view() === 'players' ? (single ? 'player' : 'players') : (single ? 'run' : 'runs');
+  });
+
+  readonly totalPages = computed(() => pageCount(this.resultCount(), PAGE_SIZE));
   readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
   /** Only the visible page is turned into display rows; a season holds tens of thousands of runs. */
@@ -241,12 +289,43 @@ export class MythicPlusPageComponent implements OnInit {
     });
   });
 
+  /** Dungeons the players table has a best-run column for: the selected one, or all of them. */
+  readonly playerDungeons = computed(() => {
+    const dungeon = this.selectedDungeon();
+    return dungeon ? [dungeon] : this.dungeons();
+  });
+
+  readonly pagedPlayers = computed<PlayerRow[]>(() => {
+    const start = (this.currentPage() - 1) * PAGE_SIZE;
+    const dungeons = this.playerDungeons();
+    const topScore = this.rankedPlayers()[0]?.player.score ?? 0;
+
+    return this.filteredPlayers().slice(start, start + PAGE_SIZE).map(({ player, rank }) => ({
+      key: player.key,
+      rank,
+      member: toMemberView(player.member),
+      score: player.score,
+      quality: scoreQuality(player.score, topScore),
+      bests: dungeons.map(dungeon => {
+        const run = player.bestRuns.get(dungeon.id);
+        return run && {
+          dungeon,
+          keyLevel: run.keyLevel,
+          timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
+          clearTime: formatDuration(run.clearTimeSeconds),
+          score: run.score
+        };
+      })
+    }));
+  });
+
   readonly emptyMessage = computed(() => {
     const query = this.search().trim();
     const dungeon = this.selectedDungeon();
 
     if (query) {
-      return `No runs with a player matching "${query}"${dungeon ? ` in ${dungeon.name}` : ''}.`;
+      const subject = this.view() === 'players' ? 'No players matching' : 'No runs with a player matching';
+      return `${subject} "${query}"${dungeon ? ` in ${dungeon.name}` : ''}.`;
     }
 
     return dungeon ? `No ${dungeon.name} runs recorded yet.` : 'No runs recorded yet this season.';
@@ -263,6 +342,27 @@ export class MythicPlusPageComponent implements OnInit {
     } else {
       this.loadData();
     }
+  }
+
+  setView(view: LeaderboardView): void {
+    if (view === this.view()) {
+      return;
+    }
+
+    this.view.set(view);
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+  }
+
+  /** From a player row: the runs view, searched down to that character. */
+  showPlayerRuns(name: string): void {
+    this.search.set(name);
+    this.view.set('runs');
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+    this.leaderboardRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   selectDungeon(dungeonId: string | undefined): void {
@@ -315,6 +415,10 @@ export class MythicPlusPageComponent implements OnInit {
     return row.id;
   }
 
+  trackPlayer(index: number, row: PlayerRow): string {
+    return row.key;
+  }
+
   trackMember(index: number, member: MemberView): string {
     return `${member.name}-${member.realm}`;
   }
@@ -324,6 +428,7 @@ export class MythicPlusPageComponent implements OnInit {
       relativeTo: this.route,
       queryParams: {
         dungeon: this.selectedDungeon()?.id ?? null,
+        view: this.view() === 'players' ? 'players' : null,
         page: this.currentPage() > 1 ? this.currentPage() : null
       },
       replaceUrl: true

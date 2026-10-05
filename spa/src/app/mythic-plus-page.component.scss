@@ -54,8 +54,38 @@
 
 // Toolbar + pager
 .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 10px;
   scroll-margin-top: 64px;
+}
+
+// Same look as the spec chart's role / count filters.
+.view-switch {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+
+  button {
+    padding: 5px 14px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { color: #fff; }
+    &.active { background: #2e2716; color: #f7b500; }
+    &:focus-visible { outline: 2px solid #f7b500; outline-offset: 1px; }
+  }
 }
 
 // The top pager shares its row with the player search.
@@ -208,6 +238,26 @@
 .col-time, .col-score { font-variant-numeric: tabular-nums; }
 .col-score { color: #fff; font-size: .95rem; }
 .depleted .col-level, .depleted .col-time { color: #8a8a8a; }
+
+// Players view
+.players-table {
+  min-width: 860px;
+
+  .col-player, .col-guild { text-align: left; }
+  .over-time { color: #8a8a8a; }
+}
+
+.player-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  img { width: 20px; height: 20px; border-radius: 3px; }
+}
+
+.player-realm { color: #8a8a8a; font-size: .75rem; }
+.col-guild { max-width: 200px; overflow: hidden; color: #9a9a9a; font-size: .8rem; text-overflow: ellipsis; }
+.col-best { width: 52px; color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; }
 
 // Holds the clipped icon and its tooltip side by side, so the crop below can't cut the tooltip off.
 .affix {

@@ -63,12 +63,24 @@
           <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
           <span *ngIf="selectedDungeonTimer() as timer">Timer {{ timer }}</span>
         </div>
+        <div class="view-switch" role="group" aria-label="Rank runs or players">
+          <button
+            type="button"
+            [class.active]="view() === 'runs'"
+            [attr.aria-pressed]="view() === 'runs'"
+            (click)="setView('runs')">Runs</button>
+          <button
+            type="button"
+            [class.active]="view() === 'players'"
+            [attr.aria-pressed]="view() === 'players'"
+            (click)="setView('players')">Players</button>
+        </div>
       </div>
 
       <div class="pager-row">
         <ng-container *ngTemplateOutlet="pager; context: { $implicit: false }"></ng-container>
         <label class="player-search">
-          <span class="visually-hidden">Search runs by player name</span>
+          <span class="visually-hidden">Search by player name</span>
           <input
             type="search"
             placeholder="Search player..."
@@ -79,7 +91,7 @@
       </div>
 
       <div class="table-scroll">
-        <table class="runs-table">
+        <table class="runs-table" *ngIf="view() === 'runs'">
           <caption class="visually-hidden">Mythic+ runs ranked by score</caption>
           <thead>
             <tr>
@@ -239,6 +251,70 @@
             </tr>
           </tbody>
         </table>
+
+        <table class="runs-table players-table" *ngIf="view() === 'players'">
+          <caption class="visually-hidden">Mythic+ players ranked by score: the sum of their best run in each dungeon</caption>
+          <thead>
+            <tr>
+              <th scope="col">Rank</th>
+              <th scope="col" class="col-player">Player</th>
+              <th scope="col" class="col-guild">Guild</th>
+              <ng-container *ngIf="selectedDungeon(); else dungeonColumns">
+                <th scope="col">Best key</th>
+                <th scope="col">Time</th>
+              </ng-container>
+              <ng-template #dungeonColumns>
+                <th scope="col" class="col-best" *ngFor="let dungeon of playerDungeons(); trackBy: trackDungeon" [title]="dungeon.name">
+                  {{ dungeon.shortName }}
+                </th>
+              </ng-template>
+              <th scope="col">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="run-row"
+              *ngFor="let row of pagedPlayers(); let odd = odd; trackBy: trackPlayer"
+              [class.alt]="odd"
+              [title]="'Show runs with ' + row.member.name"
+              (click)="showPlayerRuns(row.member.name)">
+              <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+              <td class="col-player">
+                <span class="player-identity">
+                  <img [src]="row.member.classIcon" [alt]="row.member.className" />
+                  <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.member }"></ng-container>
+                  <span class="player-realm">{{ row.member.realm }}</span>
+                </span>
+              </td>
+              <td class="col-guild">{{ row.member.guild }}</td>
+              <ng-container *ngIf="selectedDungeon(); else dungeonCells">
+                <ng-container *ngIf="row.bests[0] as best">
+                  <td class="col-level" [class.over-time]="!best.timed">
+                    <span class="level">
+                      <span class="level-value">+{{ best.keyLevel }}</span>
+                      <span class="level-star" *ngIf="best.timed" title="Timed">★<span class="visually-hidden"> timed</span></span>
+                    </span>
+                  </td>
+                  <td class="col-time" [class.over-time]="!best.timed">{{ best.clearTime }}</td>
+                </ng-container>
+              </ng-container>
+              <ng-template #dungeonCells>
+                <td
+                  class="col-best"
+                  *ngFor="let best of row.bests"
+                  [class.over-time]="!best?.timed"
+                  [title]="best ? best.dungeon.name + ' +' + best.keyLevel + (best.timed ? '' : ' (over time)') + ' · ' + (best.score | number:'1.1-1') : ''">
+                  {{ best ? '+' + best.keyLevel : '–' }}
+                </td>
+              </ng-template>
+              <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+            </tr>
+
+            <tr class="empty-row" *ngIf="pagedPlayers().length === 0">
+              <td [attr.colspan]="selectedDungeon() ? 6 : playerDungeons().length + 4">{{ emptyMessage() }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
@@ -263,7 +339,7 @@
       Last <span aria-hidden="true">»</span>
     </button>
     <span class="pager-status">
-      Page {{ currentPage() }} of {{ totalPages() }} · {{ filteredRows().length }} {{ filteredRows().length === 1 ? 'run' : 'runs' }}
+      Page {{ currentPage() }} of {{ totalPages() }} · {{ resultCount() }} {{ resultUnit() }}
     </span>
   </nav>
 </ng-template>
