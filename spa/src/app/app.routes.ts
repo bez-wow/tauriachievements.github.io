@@ -39,6 +39,11 @@ export const routes: Routes = [
       .then(module => module.MythicPlusPageComponent)
   },
   {
+    path: 'mythic-plus/scoring',
+    loadComponent: () => import('./mythic-plus-scoring-page.component')
+      .then(module => module.MythicPlusScoringPageComponent)
+  },
+  {
     path: 'guild-realm-firsts',
     redirectTo: 'raid-history',
     pathMatch: 'full'

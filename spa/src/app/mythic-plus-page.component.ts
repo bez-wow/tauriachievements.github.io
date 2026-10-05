@@ -11,7 +11,7 @@ import {
   signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -189,7 +189,7 @@ function toRunView(
 @Component({
   selector: 'app-mythic-plus-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent, FilterDropdownComponent],
+  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent, FilterDropdownComponent],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
   // Keeps one of this page's dropdowns open at a time.

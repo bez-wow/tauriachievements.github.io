@@ -1,0 +1,193 @@
+<app-update-bar
+  [showLastUpdated]="false" />
+
+<main class="scoring-page">
+  <a class="back-link" routerLink="/mythic-plus">
+    <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
+  </a>
+
+  <header class="page-header">
+    <h1>How the scores are calculated</h1>
+    <p>
+      Every run gets a <strong>run score</strong> from its key level and clear time. A character's
+      <strong>player score</strong> is then built from their best runs.
+    </p>
+  </header>
+
+  <div class="columns">
+    <!-- Run score -->
+    <section class="panel" aria-labelledby="run-score-title">
+      <h2 id="run-score-title"><span class="panel-tag">Runs</span> Run score</h2>
+      <p class="lead">
+        The key level decides almost everything. The clear time only sorts runs of the same level.
+      </p>
+
+      <h3>Timed run</h3>
+      <p class="formula" aria-label="Score equals 50 plus 7.5 times the key level plus 12.5 times one minus the clear time divided by the timer">
+        <span class="term base">50</span>
+        <span class="op">+</span>
+        <span class="term level">7.5 × level</span>
+        <span class="op">+</span>
+        <span class="term time">12.5 × (1 − time ÷ timer)</span>
+      </p>
+      <ul class="facts">
+        <li><span class="swatch base" aria-hidden="true"></span><strong>50 points</strong> for finishing a key at all.</li>
+        <li><span class="swatch level" aria-hidden="true"></span><strong>7.5 points per key level</strong>, so a +20 is worth 150.</li>
+        <li><span class="swatch time" aria-hidden="true"></span><strong>Up to 12.5 bonus points</strong> for finishing under the timer. The faster you are, the bigger the bonus. Finishing right on the timer gives 0.</li>
+      </ul>
+
+      <figure class="example">
+        <figcaption>Example: Black Rook Hold +20 in 30:37 (timer 39:00)</figcaption>
+        <div class="score-bar" aria-hidden="true">
+          <span class="seg base" style="flex-grow: 50">50</span>
+          <span class="seg level" style="flex-grow: 150">150</span>
+          <span class="seg time" style="flex-grow: 9">+2.7</span>
+        </div>
+        <p class="calc">
+          30:37 is 78.5% of the timer → bonus 12.5 × 0.215 = 2.7<br>
+          50 + 150 + 2.7 = <strong class="result">202.7</strong>
+        </p>
+      </figure>
+
+      <table class="mini-table">
+        <caption>Time bonus for a timed run</caption>
+        <thead>
+          <tr><th scope="col">Finished at</th><th scope="col">Bonus</th><th scope="col">Keystone</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>50% of the timer</td><td>+6.25</td><td>+3</td></tr>
+          <tr><td>60% of the timer</td><td>+5.0</td><td>+3</td></tr>
+          <tr><td>80% of the timer</td><td>+2.5</td><td>+2</td></tr>
+          <tr><td>100% of the timer</td><td>0</td><td>+1</td></tr>
+        </tbody>
+      </table>
+      <p class="note">
+        The bonus follows the exact clear time, not the keystone upgrade. A +2 chest at 61% and
+        one at 79% get different bonuses.
+      </p>
+
+      <h3>Over time (depleted)</h3>
+      <p class="formula over" aria-label="Score equals 50 plus 7.5 times the key level minus one, minus 20 times the clear time divided by the timer minus one">
+        <span class="term base">50</span>
+        <span class="op">+</span>
+        <span class="term level">7.5 × (level − 1)</span>
+        <span class="op">−</span>
+        <span class="term penalty">20 × (time ÷ timer − 1)</span>
+      </p>
+      <ul class="facts">
+        <li>The run is scored <strong>one key level lower</strong>.</li>
+        <li><span class="swatch penalty" aria-hidden="true"></span>It then loses <strong>20 points per full timer length</strong> it ran over: 5% over costs 1 point, 50% over costs 10.</li>
+        <li>A score never goes below 0.</li>
+      </ul>
+
+      <figure class="example">
+        <figcaption>Example: the same +20, depleted in 41:00</figcaption>
+        <p class="calc">
+          41:00 is 105.1% of the timer → penalty 20 × 0.051 = 1.0<br>
+          50 + 142.5 − 1.0 = <strong class="result">191.5</strong>
+        </p>
+        <p class="compare">
+          A +19 timed with one second to spare scores <strong>192.5</strong>, so a depleted key
+          ranks just below a barely timed key one level lower. A fast +19 (60% of the timer)
+          scores <strong>197.5</strong>.
+        </p>
+      </figure>
+
+      <h3>Good to know</h3>
+      <ul class="facts plain">
+        <li>Scores are rounded to one decimal.</li>
+        <li>Affixes add nothing on their own; they come with the key level.</li>
+        <li>Equal scores are ordered by the faster clear time.</li>
+        <li>
+          The rank colour compares a run with the season's best run:
+          <span class="q-artifact">best</span>,
+          <span class="q-legendary">90%+</span>,
+          <span class="q-epic">84%+</span>,
+          <span class="q-rare">76%+</span>,
+          <span class="q-uncommon">below 76%</span>.
+        </li>
+      </ul>
+    </section>
+
+    <!-- Player score -->
+    <section class="panel" aria-labelledby="player-score-title">
+      <h2 id="player-score-title"><span class="panel-tag">Players</span> Player score</h2>
+      <p class="lead">
+        A player's score is the sum of their <strong>best run score in each dungeon</strong>.
+      </p>
+
+      <p class="formula" aria-label="Player score equals the sum over every dungeon of the best run score in that dungeon">
+        <span class="term level">best EOA</span>
+        <span class="op">+</span>
+        <span class="term level">best DHT</span>
+        <span class="op">+</span>
+        <span class="term level">best BRH</span>
+        <span class="op">+ … +</span>
+        <span class="term level">best COS</span>
+      </p>
+      <ul class="facts">
+        <li><strong>Only one run per dungeon counts</strong>, the highest-scoring one. If two runs score the same, the faster one counts.</li>
+        <li>A dungeon with no run adds 0, so <strong>playing every dungeon</strong> counts for much more than repeating one.</li>
+        <li>Depleted runs count too, with their lower score, until a better run in that dungeon replaces them.</li>
+      </ul>
+
+      <figure class="example">
+        <figcaption>Example player</figcaption>
+        <table class="mini-table example-table">
+          <thead>
+            <tr><th scope="col">Dungeon</th><th scope="col">Best run</th><th scope="col">Score</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>BRH</td><td>+20 in 30:37 <span class="star" title="Timed">★</span></td><td>202.7</td></tr>
+            <tr><td>COS</td><td>+20 in 27:03 <span class="star" title="Timed">★</span></td><td>201.2</td></tr>
+            <tr><td>EOA</td><td>+18 in 31:00 <span class="star" title="Timed">★</span></td><td>186.4</td></tr>
+            <tr><td>MOS</td><td class="depleted">+17 in 25:30, over time</td><td>168.8</td></tr>
+            <tr class="muted"><td>Other dungeons</td><td>not played</td><td>0</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><th scope="row" colspan="2">Player score</th><td class="result">759.1</td></tr>
+          </tfoot>
+        </table>
+        <p class="compare">
+          An older EOA +18 in 33:00 (185.7) is ignored, because the 31:00 run beats it. Running
+          BRH ten more times adds nothing unless one of those runs beats 202.7.
+        </p>
+      </figure>
+
+      <h3>Filters change what counts</h3>
+      <ul class="facts plain">
+        <li>
+          <strong>Dungeon picked:</strong> the score is simply the player's best run in that
+          dungeon.
+        </li>
+        <li>
+          <strong>Class or spec filter:</strong> only runs played as that class or spec count.
+          A player with a Blood and a Frost run is scored on the Blood run alone under a Blood
+          filter. Ranks are renumbered for the filtered list.
+        </li>
+        <li>
+          <strong>Player search:</strong> only hides rows. Everyone keeps their real rank.
+        </li>
+      </ul>
+
+      <h3>Good to know</h3>
+      <ul class="facts plain">
+        <li>A player is one character on one realm, whatever specs they played.</li>
+        <li>The spec shown is the one from the player's highest-scoring run.</li>
+        <li>Equal player scores are ordered by name.</li>
+        <li>
+          The rank colour compares a player with the top player in the current list, using the
+          same steps as runs:
+          <span class="q-artifact">top</span>,
+          <span class="q-legendary">90%+</span>,
+          <span class="q-epic">84%+</span>,
+          <span class="q-rare">76%+</span>,
+          <span class="q-uncommon">below 76%</span>.
+        </li>
+        <li>Scores refresh once a day with the leaderboard data.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<app-back-to-top-button />

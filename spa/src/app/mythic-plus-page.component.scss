@@ -63,6 +63,44 @@
   scroll-margin-top: 64px;
 }
 
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+// Opens /mythic-plus/scoring, the page that explains run and player scores.
+.scoring-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .15s ease, color .15s ease;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+}
+
+.scoring-link-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2e2716;
+  color: #f7b500;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
 // Same look as the spec chart's role / count filters.
 .view-switch {
   display: inline-flex;

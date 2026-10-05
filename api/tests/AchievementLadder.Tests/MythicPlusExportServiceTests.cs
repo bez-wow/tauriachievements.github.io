@@ -28,6 +28,30 @@ public sealed class MythicPlusExportServiceTests
         );
     }
 
+    // The worked examples on /mythic-plus/scoring (spa mythic-plus-scoring-page.component.html).
+    // If the formula changes, update that page too.
+    [Theory]
+    [InlineData(20, 1_837_000, 2340, 202.7)] // BRH +20 in 30:37
+    [InlineData(20, 1_623_000, 1800, 201.2)] // COS +20 in 27:03
+    [InlineData(18, 1_860_000, 2100, 186.4)] // EOA +18 in 31:00
+    [InlineData(18, 1_980_000, 2100, 185.7)] // EOA +18 in 33:00
+    [InlineData(17, 1_530_000, 1440, 168.8)] // MOS +17 in 25:30, over time
+    [InlineData(20, 2_460_000, 2340, 191.5)] // BRH +20 in 41:00, over time
+    [InlineData(19, 2_339_000, 2340, 192.5)] // BRH +19 with one second to spare
+    [InlineData(19, 1_404_000, 2340, 197.5)] // BRH +19 at 60% of the timer
+    public void Score_MatchesTheScoringPageExamples(
+        int keyLevel,
+        long clearTimeMilliseconds,
+        int timerSeconds,
+        double expected
+    )
+    {
+        Assert.Equal(
+            expected,
+            MythicPlusScore.Calculate(keyLevel, clearTimeMilliseconds, timerSeconds)
+        );
+    }
+
     [Fact]
     public void ParseLeaderboard_DropsEmptyAffixSlotsAndUnknownCharacters()
     {

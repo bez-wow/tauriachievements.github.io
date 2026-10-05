@@ -63,17 +63,23 @@
           <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
           <span *ngIf="selectedDungeonTimer() as timer">Timer {{ timer }}</span>
         </div>
-        <div class="view-switch" role="group" aria-label="Rank runs or players">
-          <button
-            type="button"
-            [class.active]="view() === 'runs'"
-            [attr.aria-pressed]="view() === 'runs'"
-            (click)="setView('runs')">Runs</button>
-          <button
-            type="button"
-            [class.active]="view() === 'players'"
-            [attr.aria-pressed]="view() === 'players'"
-            (click)="setView('players')">Players</button>
+        <div class="toolbar-actions">
+          <a class="scoring-link" routerLink="/mythic-plus/scoring">
+            <span class="scoring-link-icon" aria-hidden="true">?</span>
+            How are scores calculated?
+          </a>
+          <div class="view-switch" role="group" aria-label="Rank runs or players">
+            <button
+              type="button"
+              [class.active]="view() === 'runs'"
+              [attr.aria-pressed]="view() === 'runs'"
+              (click)="setView('runs')">Runs</button>
+            <button
+              type="button"
+              [class.active]="view() === 'players'"
+              [attr.aria-pressed]="view() === 'players'"
+              (click)="setView('players')">Players</button>
+          </div>
         </div>
       </div>
 
