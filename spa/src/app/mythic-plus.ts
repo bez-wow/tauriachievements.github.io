@@ -203,6 +203,47 @@ export function formatTimerDelta(clearTimeSeconds: number, timerSeconds: number)
   return `${delta < 0 ? '-' : '+'}${formatClock(Math.abs(delta))}`;
 }
 
+/** The affixes of one reset week, and the earliest moment (ms) a run of that week finished. */
+export interface AffixWeek {
+  affixes: number[];
+  since: number;
+}
+
+/**
+ * The current affix week: the affixes of the newest run that has all three, starting just after
+ * the last run whose affixes contradict them. Keys below +4 carry no affixes, so they are placed
+ * by time alone; +4 to +9 keys carry the first one or two of the week's affixes.
+ */
+export function currentAffixWeek(runs: readonly Pick<MythicPlusRun, 'affixes' | 'completedAt'>[]): AffixWeek | undefined {
+  let newest: { affixes: number[]; at: number } | undefined;
+  for (const run of runs) {
+    const at = Date.parse(run.completedAt);
+    if (run.affixes.length === 3 && (!newest || at > newest.at)) {
+      newest = { affixes: run.affixes, at };
+    }
+  }
+
+  if (!newest) {
+    return undefined;
+  }
+
+  const week = newest.affixes;
+  let lastOtherWeek = 0;
+  for (const run of runs) {
+    const at = Date.parse(run.completedAt);
+    if (at > lastOtherWeek && run.affixes.some((id, slot) => id !== week[slot])) {
+      lastOtherWeek = at;
+    }
+  }
+
+  return { affixes: [...week], since: lastOtherWeek + 1 };
+}
+
+/** One star per keystone upgrade: ★ for +1, ★★ for +2, ★★★ for +3. */
+export function upgradeStars(upgrades: number): string {
+  return '★'.repeat(Math.max(0, Math.min(3, upgrades)));
+}
+
 /** Highest score first; a faster clear breaks ties. Returns a new array. */
 export function rankRuns<T extends Pick<MythicPlusRun, 'id' | 'score' | 'clearTimeSeconds'>>(runs: readonly T[]): T[] {
   return [...runs].sort((a, b) =>

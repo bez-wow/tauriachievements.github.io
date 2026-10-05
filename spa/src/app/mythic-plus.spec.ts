@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   createRunDecoder,
+  currentAffixWeek,
   formatClock,
   formatDuration,
   formatTimerDelta,
@@ -12,8 +13,54 @@ import {
   runIncludesPlayer,
   scoreQuality,
   sortRoster,
-  upgradeCutoffs
+  upgradeCutoffs,
+  upgradeStars
 } from './mythic-plus';
+
+describe('upgradeStars', () => {
+  it('draws one star per upgrade and none for a depleted key', () => {
+    expect(upgradeStars(0)).toBe('');
+    expect(upgradeStars(1)).toBe('★');
+    expect(upgradeStars(2)).toBe('★★');
+    expect(upgradeStars(3)).toBe('★★★');
+  });
+});
+
+describe('currentAffixWeek', () => {
+  const run = (completedAt: string, affixes: number[]) => ({ completedAt, affixes });
+  const ms = (iso: string) => Date.parse(iso);
+
+  it('takes the newest full affix set and starts the week after the last run of another week', () => {
+    const week = currentAffixWeek([
+      run('2026-09-29T20:00:00Z', [8, 3, 10]),
+      run('2026-09-30T06:49:05Z', [8]),
+      run('2026-09-30T07:40:57Z', [5, 4, 9]),
+      run('2026-10-05T18:00:00Z', [5, 4, 9]),
+      run('2026-10-05T19:00:00Z', [5])
+    ]);
+
+    expect(week).toEqual({ affixes: [5, 4, 9], since: ms('2026-09-30T06:49:05Z') + 1 });
+  });
+
+  it('places keys without affixes by time only', () => {
+    const week = currentAffixWeek([
+      run('2026-09-29T20:00:00Z', [8, 3, 10]),
+      run('2026-09-30T05:00:00Z', []),
+      run('2026-09-30T08:00:00Z', [5, 4, 9])
+    ]);
+
+    expect(week?.since).toBe(ms('2026-09-29T20:00:00Z') + 1);
+  });
+
+  it('covers the whole season while there has only been one week', () => {
+    expect(currentAffixWeek([run('2026-09-16T12:00:00Z', [7, 1, 9])])?.since).toBe(1);
+  });
+
+  it('has no week until a run with all three affixes exists', () => {
+    expect(currentAffixWeek([run('2026-09-16T12:00:00Z', [7])])).toBeUndefined();
+    expect(currentAffixWeek([])).toBeUndefined();
+  });
+});
 
 describe('keystoneUpgrades', () => {
   it('awards +3, +2 and +1 at the 60% / 80% / 100% cutoffs', () => {

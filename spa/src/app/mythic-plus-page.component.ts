@@ -29,6 +29,7 @@ import {
   RunQuality,
   UPGRADE_CUTOFFS,
   createRunDecoder,
+  currentAffixWeek,
   formatClock,
   formatDuration,
   formatTimerDelta,
@@ -41,7 +42,8 @@ import {
   runIncludesPlayer,
   scoreQuality,
   sortRoster,
-  upgradeCutoffs
+  upgradeCutoffs,
+  upgradeStars
 } from './mythic-plus';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
 import { LEGION_SPECS, specIconFor } from './mythic-plus-stats';
@@ -100,6 +102,9 @@ interface RankedRun {
 
 type LeaderboardView = 'runs' | 'players';
 
+/** Season: every run. Week: only runs with the current week's affixes. */
+type LeaderboardPeriod = 'season' | 'week';
+
 interface RankedPlayer {
   player: PlayerScore;
   rank: number;
@@ -110,6 +115,7 @@ interface BestRunCell {
   dungeon: MythicPlusDungeon;
   keyLevel: number;
   timed: boolean;
+  upgrades: number;
   clearTime: string;
   score: number;
 }
@@ -224,6 +230,8 @@ export class MythicPlusPageComponent implements OnInit {
   readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
     parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
+  readonly period = signal<LeaderboardPeriod>(
+    this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
 
   readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All classes' },
@@ -260,17 +268,30 @@ export class MythicPlusPageComponent implements OnInit {
     new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() =>
     new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
+  /** Worked out from the runs loaded so far; the leaderboard files carry no week of their own. */
+  readonly affixWeek = computed(() => currentAffixWeek([...this.runsByDungeon().values()].flat()));
+  readonly weekAffixes = computed(() => {
+    const affixes = this.affixesById();
+    return (this.affixWeek()?.affixes ?? [])
+      .map(id => affixes.get(id))
+      .filter((affix): affix is MythicPlusAffix => affix !== undefined);
+  });
+
   /** Run colours are relative to the season's best run, whichever dungeon is shown. */
   private readonly seasonBestScore = computed(() =>
     Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
 
   /** Runs in the selected scope, best first; undefined until every file the scope needs has loaded. */
   readonly scopeRuns = computed<readonly MythicPlusRun[] | undefined>(() => {
+    const since = this.period() === 'week' ? this.affixWeek()?.since : undefined;
+    const inPeriod = (runs: readonly MythicPlusRun[]) => since === undefined
+      ? runs
+      : runs.filter(run => Date.parse(run.completedAt) >= since);
     const loaded = this.runsByDungeon();
     const dungeon = this.selectedDungeon();
     if (dungeon) {
       const runs = loaded.get(dungeon.id);
-      return runs && rankRuns(runs);
+      return runs && rankRuns(inPeriod(runs));
     }
 
     const dungeons = this.dungeons();
@@ -278,7 +299,7 @@ export class MythicPlusPageComponent implements OnInit {
       return undefined;
     }
 
-    return rankRuns(dungeons.flatMap(entry => loaded.get(entry.id) ?? []));
+    return rankRuns(inPeriod(dungeons.flatMap(entry => loaded.get(entry.id) ?? [])));
   });
 
   readonly runsLoading = computed(() => !this.isLoading() && !this.loadError() && this.scopeRuns() === undefined);
@@ -360,6 +381,7 @@ export class MythicPlusPageComponent implements OnInit {
           dungeon,
           keyLevel: run.keyLevel,
           timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
+          upgrades: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds),
           clearTime: formatDuration(run.clearTimeSeconds),
           score: run.score
         };
@@ -380,6 +402,10 @@ export class MythicPlusPageComponent implements OnInit {
     if (this.view() === 'players' && classId !== undefined) {
       const who = [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
       return `No ${who} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
+    }
+
+    if (this.period() === 'week') {
+      return dungeon ? `No ${dungeon.name} runs yet this week.` : 'No runs yet this week.';
     }
 
     return dungeon ? `No ${dungeon.name} runs recorded yet.` : 'No runs recorded yet this season.';
@@ -418,6 +444,17 @@ export class MythicPlusPageComponent implements OnInit {
 
     this.specFilter.set(spec);
     this.page.set(1);
+    this.syncQueryParams();
+  }
+
+  setPeriod(period: LeaderboardPeriod): void {
+    if (period === this.period()) {
+      return;
+    }
+
+    this.period.set(period);
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
     this.syncQueryParams();
   }
 
@@ -483,6 +520,8 @@ export class MythicPlusPageComponent implements OnInit {
     return this.expandedRunId() === runId;
   }
 
+  readonly upgradeStars = upgradeStars;
+
   trackDungeon(index: number, dungeon: MythicPlusDungeon): string {
     return dungeon.id;
   }
@@ -511,6 +550,7 @@ export class MythicPlusPageComponent implements OnInit {
       relativeTo: this.route,
       queryParams: {
         dungeon: this.selectedDungeon()?.id ?? null,
+        period: this.period() === 'week' ? 'week' : null,
         view: players ? 'players' : null,
         // The filters only apply to the players view; they wait there when the runs view is open.
         class: players ? this.classFilter() ?? null : null,

@@ -15,6 +15,29 @@
   </section>
 
   <ng-container *ngIf="!isLoading() && !loadError()">
+    <div class="period-bar">
+      <div class="view-switch" role="group" aria-label="Show the whole season or this week">
+        <button
+          type="button"
+          [class.active]="period() === 'season'"
+          [attr.aria-pressed]="period() === 'season'"
+          (click)="setPeriod('season')">Season</button>
+        <button
+          type="button"
+          [class.active]="period() === 'week'"
+          [attr.aria-pressed]="period() === 'week'"
+          [disabled]="!affixWeek()"
+          (click)="setPeriod('week')">This week</button>
+      </div>
+      <ul class="week-affixes" *ngIf="weekAffixes().length" aria-label="This week's affixes">
+        <li *ngFor="let affix of weekAffixes()">
+          <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>
+          <span>{{ affix.name }}</span>
+          <span class="affix-tooltip week-affix-tooltip" *ngIf="affix.description">{{ affix.description }}</span>
+        </li>
+      </ul>
+    </div>
+
     <nav class="dungeon-picker" aria-label="Filter runs by dungeon">
       <button
         type="button"
@@ -56,7 +79,7 @@
         class="spec-chart"
         [runs]="dungeonRuns()"
         [scopeLabel]="selectedDungeon()?.name ?? 'All dungeons'"
-        [seasonName]="index()?.season?.name ?? ''" />
+        [seasonName]="period() === 'week' ? 'This week' : index()?.season?.name ?? ''" />
 
       <div class="toolbar" #leaderboard>
         <div class="toolbar-title">
@@ -194,7 +217,7 @@
                 <td class="col-level">
                   <span class="level">
                     <span class="level-value">+{{ row.keyLevel }}</span>
-                    <span class="level-star" *ngIf="row.upgrades > 0" title="Timed">★<span class="visually-hidden"> timed</span></span>
+                    <span class="level-star" *ngIf="row.upgrades > 0" [title]="'Timed, +' + row.upgrades">{{ upgradeStars(row.upgrades) }}<span class="visually-hidden"> timed +{{ row.upgrades }}</span></span>
                   </span>
                 </td>
                 <td class="col-time" [title]="row.upgrades === 0 ? 'Over time' : ''">{{ row.clearTime }}</td>
@@ -334,7 +357,7 @@
                   <td class="col-level" [class.over-time]="!best.timed">
                     <span class="level">
                       <span class="level-value">+{{ best.keyLevel }}</span>
-                      <span class="level-star" *ngIf="best.timed" title="Timed">★<span class="visually-hidden"> timed</span></span>
+                      <span class="level-star" *ngIf="best.timed" [title]="'Timed, +' + best.upgrades">{{ upgradeStars(best.upgrades) }}<span class="visually-hidden"> timed +{{ best.upgrades }}</span></span>
                     </span>
                   </td>
                   <td class="col-time" [class.over-time]="!best.timed">{{ best.clearTime }}</td>

@@ -298,13 +298,13 @@
 // Fixed-width slots so every key number lines up, whether or not the run earned a star.
 .level {
   display: inline-grid;
-  grid-template-columns: 2em 1em;
+  grid-template-columns: 2em 2.2em;
   align-items: center;
   column-gap: 3px;
 }
 
 .level-value { text-align: right; font-variant-numeric: tabular-nums; }
-.level-star { color: #f7b500; font-size: .7rem; text-align: left; }
+.level-star { color: #f7b500; font-size: .7rem; text-align: left; letter-spacing: -1px; white-space: nowrap; }
 .col-time, .col-score { font-variant-numeric: tabular-nums; }
 .col-score { color: #fff; font-size: .95rem; }
 .depleted .col-level, .depleted .col-time { color: #8a8a8a; }
@@ -577,4 +577,49 @@
   .filter-slot { flex: 1 1 calc(50% - 4px); width: auto; min-width: 0; }
   .player-search { flex: 1 1 60%; order: 1; }
   .filter-reset { order: 2; }
+}
+
+// Season / this week switch, with the current week's affixes beside it.
+.period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 14px;
+
+  .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
+}
+
+.week-affixes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #bdbdbd;
+  font-size: .8rem;
+
+  li { position: relative; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+  // Mouse only, like the table's affix tooltips.
+  @media (hover: hover) {
+    li:hover .affix-tooltip { opacity: 1; visibility: visible; }
+  }
+}
+
+// The description runs a sentence or two, so wrap it and pin it to the left edge instead of centering.
+// Opens below: above, it would slide under the sticky site header.
+.week-affix-tooltip {
+  z-index: 20;
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: 0;
+  width: max-content;
+  max-width: 280px;
+  padding: 6px 10px;
+  font-size: .8rem;
+  line-height: 1.4;
+  white-space: normal;
+  transform: none;
 }
