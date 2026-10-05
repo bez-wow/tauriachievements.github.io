@@ -46,6 +46,7 @@ workflow and its output contract.
 | `RealmFirstAchievements` | Rebuilds and validates realm-first character sources. |
 | `BattlegroundCollector` | Collects sequential PvP matches with resumable state and appends complete ranked responses to the frontend archive. |
 | `MythicPlusExporter` | Merges every realm's Mythic+ leaderboards into scored, ranked per-dungeon files for the `/mythic-plus` page. |
+| `MythicPlusGuildAndCharScan` | Adds the guilds and guildless characters seen on the Mythic+ leaderboards to the scan inputs. |
 | `Guildkukker` | Generates ranked guild reports with reputation, artifact, and item-level data. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |
 
@@ -105,6 +106,7 @@ concurrency, timeouts, and retry behavior; see
 | Validate realm-first characters | `dotnet run --project RealmFirstAchievements` |
 | Collect battlegrounds | `dotnet run --project BattlegroundCollector -- 95874` |
 | Export the Mythic+ leaderboards | `dotnet run --project MythicPlusExporter` |
+| Collect guilds and guildless characters from Mythic+ runs | `dotnet run --project MythicPlusGuildAndCharScan` |
 | Export a ranked guild report | `dotnet run --project Guildkukker -- Evermoon Endless` |
 | Export the Endless workbook | `dotnet run --project EndlessGuildExporter` |
 
@@ -114,7 +116,8 @@ at startup.
 ## Daily update
 
 `Run-DailyUpdate.cmd` (or `Run-DailyUpdate.ps1`) runs the whole refresh end to end:
-RealmFirstAchievements, BattlegroundCollector, MythicPlusExporter, GuildCharacterExporter, AchievementLadder and
+MythicPlusExporter, MythicPlusGuildAndCharScan, RealmFirstAchievements, BattlegroundCollector,
+GuildCharacterExporter, AchievementLadder and
 MissingPlayerFinder, then commits every data file as one `sync data` commit and pushes it.
 That commit message triggers the Discord notification, so keep it.
 

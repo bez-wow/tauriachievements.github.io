@@ -20,5 +20,6 @@
     <ProjectReference Include="..\..\GuildCharacterExporter\GuildCharacterExporter.csproj" />
     <ProjectReference Include="..\..\Tauri.Core\Tauri.Core.csproj" />
     <ProjectReference Include="..\..\MythicPlusExporter\MythicPlusExporter.csproj" />
+    <ProjectReference Include="..\..\MythicPlusGuildAndCharScan\MythicPlusGuildAndCharScan.csproj" />
   </ItemGroup>
 </Project>

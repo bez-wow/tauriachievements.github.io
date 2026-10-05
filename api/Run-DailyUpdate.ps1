@@ -4,9 +4,10 @@
 
 .DESCRIPTION
     Builds the solution once, then runs each job in order and stops at the first failure:
+      MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
+      MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
       Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
-      MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
       Ladder           AchievementLadder        -> Players.csv and the rare exports
       MissingPlayers   MissingPlayerFinder      -> backfills skipped characters in rounds
@@ -24,8 +25,8 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('RealmFirst', 'Battlegrounds', 'MythicPlus', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
-    [string]$From = 'RealmFirst',
+    [ValidateSet('MythicPlus', 'MythicPlusNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [string]$From = 'MythicPlus',
 
     [switch]$NoPush,
 
@@ -44,9 +45,10 @@ $logPath = Join-Path $logDir ('daily-update_{0:yyyy-MM-dd_HHmm}.log' -f (Get-Dat
 $playersCsvRepoPath = 'spa/src/Players.csv'
 
 $steps = @(
+    @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
+    @{ Name = 'MythicPlusNames'; Project = 'MythicPlusGuildAndCharScan' },
     @{ Name = 'RealmFirst'; Project = 'RealmFirstAchievements' },
     @{ Name = 'Battlegrounds'; Project = 'BattlegroundCollector' },
-    @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
     @{ Name = 'GuildCharacters'; Project = 'GuildCharacterExporter' },
     @{ Name = 'Ladder'; Project = 'AchievementLadder' },
     @{ Name = 'MissingPlayers'; Project = 'MissingPlayerFinder' }

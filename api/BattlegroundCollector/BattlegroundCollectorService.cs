@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Tauri.Core.Infrastructure;
@@ -20,8 +19,6 @@ public sealed class BattlegroundCollectorService(
         WriteIndented = true,
     };
 
-    private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
-
     private static readonly HashSet<string> ExcludedBattlegroundNames = new(
         StringComparer.OrdinalIgnoreCase
     )
@@ -34,27 +31,10 @@ public sealed class BattlegroundCollectorService(
         "Ashamane's Fall",
     };
 
-    private static readonly (string Token, string FileName)[] GuildFileByRealm =
-    [
-        ("Evermoon", "evermoon-guilds.txt"),
-        ("Tauri", "tauri-guilds.txt"),
-        ("Warriors of Darkness", "wod-guilds.txt"),
-        ("WoD", "wod-guilds.txt"),
-    ];
-
     private readonly string _projectRoot = Path.GetFullPath(projectRoot);
-    private readonly string _guildsDirectory = Path.Combine(
-        solutionRoot,
-        "AchievementLadder",
-        "Data",
-        "Guilds"
-    );
-    private readonly string _guildlessCharactersPath = Path.Combine(
-        solutionRoot,
-        "AchievementLadder",
-        "Data",
-        "GuildCharacters",
-        "guildless-characters.txt"
+    private readonly string _guildsDirectory = GuildListFiles.GetGuildsDirectory(solutionRoot);
+    private readonly string _guildlessCharactersPath = GuildListFiles.GetGuildlessCharactersPath(
+        solutionRoot
     );
     private readonly string _frontendSrcDirectory = Path.GetFullPath(frontendSrcDirectory);
     private readonly ITauriApiClient _apiClient = apiClient;
@@ -171,8 +151,14 @@ public sealed class BattlegroundCollectorService(
         {
             await WriteJsonAsync(ratedOutputPath, mergedRatedMatches, cancellationToken);
         }
-        var newGuildCount = CollectUnknownGuilds(newMembers);
-        CollectGuildlessCharacters(scannedMembers);
+        var newGuildCount = GuildListFiles.AddNewGuilds(
+            _guildsDirectory,
+            ToSeenCharacters(newMembers)
+        );
+        GuildListFiles.AddNewGuildlessCharacters(
+            _guildlessCharactersPath,
+            ToSeenCharacters(scannedMembers)
+        );
 
         var savedState = new BattlegroundCollectorState(
             currentMatchId,
@@ -474,125 +460,6 @@ public sealed class BattlegroundCollectorService(
         return mergedRecords;
     }
 
-    private int CollectUnknownGuilds(IReadOnlyList<MatchMember> members)
-    {
-        Console.WriteLine();
-        Console.WriteLine("=== Guild collection ===");
-
-        if (members.Count == 0)
-        {
-            Console.WriteLine("No new battleground members to check for guilds.");
-            return 0;
-        }
-
-        Directory.CreateDirectory(_guildsDirectory);
-
-        var knownGuildsByFile = new Dictionary<string, HashSet<string>>(
-            StringComparer.OrdinalIgnoreCase
-        );
-        var newGuildsByFile = new Dictionary<string, List<string>>(
-            StringComparer.OrdinalIgnoreCase
-        );
-        var addedCount = 0;
-        var skippedUnknownRealm = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var distinctMembers = members
-            .DistinctBy(member => $"{member.CharName}|{member.RealmName}".ToLowerInvariant())
-            .OrderBy(member => member.CharName, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var member in distinctMembers)
-        {
-            if (string.IsNullOrWhiteSpace(member.GuildName))
-            {
-                continue;
-            }
-
-            var fileName = ResolveGuildFileName(member.RealmName);
-            if (fileName is null)
-            {
-                if (skippedUnknownRealm.Add(member.RealmName))
-                {
-                    Console.WriteLine(
-                        $"  No guild file for realm '{member.RealmName}' - skipping its guilds."
-                    );
-                }
-
-                continue;
-            }
-
-            var filePath = Path.Combine(_guildsDirectory, fileName);
-            if (!knownGuildsByFile.TryGetValue(fileName, out var knownGuilds))
-            {
-                knownGuilds = LoadGuildSet(filePath);
-                knownGuildsByFile[fileName] = knownGuilds;
-            }
-
-            if (!knownGuilds.Add(member.GuildName))
-            {
-                continue;
-            }
-
-            if (!newGuildsByFile.TryGetValue(fileName, out var newGuilds))
-            {
-                newGuilds = [];
-                newGuildsByFile[fileName] = newGuilds;
-            }
-
-            newGuilds.Add(member.GuildName);
-            addedCount++;
-            Console.WriteLine($"  + Added '{member.GuildName}' to {fileName}");
-        }
-
-        foreach (var (fileName, newGuilds) in newGuildsByFile)
-        {
-            AppendGuildNames(Path.Combine(_guildsDirectory, fileName), newGuilds);
-        }
-
-        Console.WriteLine(
-            addedCount == 0
-                ? "No new guilds - all guilds already known."
-                : $"Added {addedCount} new guild name(s)."
-        );
-
-        return addedCount;
-    }
-
-    private int CollectGuildlessCharacters(IReadOnlyList<MatchMember> members)
-    {
-        Console.WriteLine();
-        Console.WriteLine("=== Guildless character collection ===");
-
-        var knownCharacters = LoadGuildSet(_guildlessCharactersPath);
-        var newCharacters = members
-            .Where(member =>
-                string.IsNullOrWhiteSpace(member.GuildName)
-                && !string.IsNullOrWhiteSpace(member.CharName)
-                && !string.IsNullOrWhiteSpace(member.RealmName)
-            )
-            .Select(member => $"{member.CharName.Trim()}-{member.RealmName.Trim()}")
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Where(knownCharacters.Add)
-            .OrderBy(character => character, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        if (newCharacters.Count == 0)
-        {
-            Console.WriteLine("No new guildless characters found.");
-            return 0;
-        }
-
-        var directory = Path.GetDirectoryName(_guildlessCharactersPath);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        AppendGuildNames(_guildlessCharactersPath, newCharacters);
-        Console.WriteLine(
-            $"Added {newCharacters.Count} guildless character(s) to {_guildlessCharactersPath}."
-        );
-        return newCharacters.Count;
-    }
-
     private static Task WriteJsonAsync<T>(
         string outputPath,
         T value,
@@ -688,6 +555,13 @@ public sealed class BattlegroundCollectorService(
         };
     }
 
+    private static IEnumerable<SeenCharacter> ToSeenCharacters(IEnumerable<MatchMember> members) =>
+        members.Select(member => new SeenCharacter(
+            member.CharName,
+            member.RealmName,
+            member.GuildName
+        ));
+
     private static List<MatchMember> ReadMembers(JsonElement responseElement)
     {
         if (
@@ -726,74 +600,6 @@ public sealed class BattlegroundCollectorService(
         }
 
         return members;
-    }
-
-    private static string? ResolveGuildFileName(string realmName)
-    {
-        if (string.IsNullOrWhiteSpace(realmName))
-        {
-            return null;
-        }
-
-        foreach (var (token, fileName) in GuildFileByRealm)
-        {
-            if (realmName.Contains(token, StringComparison.OrdinalIgnoreCase))
-            {
-                return fileName;
-            }
-        }
-
-        return null;
-    }
-
-    private static HashSet<string> LoadGuildSet(string filePath)
-    {
-        var guilds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (!File.Exists(filePath))
-        {
-            return guilds;
-        }
-
-        foreach (var line in File.ReadLines(filePath))
-        {
-            var trimmed = line.Trim().TrimStart('\uFEFF');
-            if (!string.IsNullOrWhiteSpace(trimmed))
-            {
-                guilds.Add(trimmed);
-            }
-        }
-
-        return guilds;
-    }
-
-    private static void AppendGuildNames(string filePath, IReadOnlyList<string> guildNames)
-    {
-        var builder = new StringBuilder();
-
-        if (File.Exists(filePath) && !EndsWithNewline(filePath))
-        {
-            builder.Append(Environment.NewLine);
-        }
-
-        foreach (var guildName in guildNames)
-        {
-            builder.Append(guildName).Append(Environment.NewLine);
-        }
-
-        File.AppendAllText(filePath, builder.ToString(), Utf8NoBom);
-    }
-
-    private static bool EndsWithNewline(string filePath)
-    {
-        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        if (stream.Length == 0)
-        {
-            return true;
-        }
-
-        stream.Seek(-1, SeekOrigin.End);
-        var lastByte = stream.ReadByte();
-        return lastByte is '\n' or '\r';
     }
 
     private static bool TryAddRecord(

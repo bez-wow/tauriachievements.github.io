@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text.Json;
 using Tauri.Core.Infrastructure;
 
@@ -18,73 +17,36 @@ public sealed record MythicPlusExportResult(
 /// </summary>
 public sealed class MythicPlusExportService(string outputDirectory, ITauriApiClient apiClient)
 {
-    private const string IndexEndpoint = "challenge-index";
-    private const string LeaderboardEndpoint = "challenge-leaderboard";
-    private const int MaxParallelLeaderboards = 4;
-
     /// <summary>
     /// Leaderboards only grow during a season, so fewer runs than last time means the API
     /// returned a partial answer. A small allowance covers runs the server itself removed.
     /// </summary>
     private const double MaxShrinkFraction = 0.02;
 
+    private readonly ChallengeLeaderboardReader _reader = new(apiClient);
+
     public async Task<MythicPlusExportResult> ExportAsync(
         MythicPlusExporterOptions options,
         CancellationToken cancellationToken
     )
     {
-        var index = await FetchIndexAsync(options.Realms[0], cancellationToken);
-        if (index.Maps.Count == 0)
-        {
-            throw new InvalidOperationException("challenge-index returned no challenge maps.");
-        }
-
-        var runsByChallengeId = new ConcurrentDictionary<int, IReadOnlyList<ChallengeRun>>();
-        var failures = new ConcurrentBag<string>();
-
-        await Parallel.ForEachAsync(
-            index.Maps,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = MaxParallelLeaderboards,
-                CancellationToken = cancellationToken,
-            },
-            async (map, token) =>
-            {
-                var runs = new List<ChallengeRun>();
-                foreach (var realm in options.Realms)
-                {
-                    var result = await apiClient.FetchResponseElementAsync(
-                        LeaderboardEndpoint,
-                        new { r = realm, id = map.ChallengeId },
-                        $"{map.Name} ({realm})",
-                        token
-                    );
-
-                    if (!result.Succeeded || result.ResponseElement is not { } response)
-                    {
-                        failures.Add($"{map.Name} ({realm}): {result.FailureMessage}");
-                        return;
-                    }
-
-                    runs.AddRange(ChallengeResponseParser.ParseLeaderboard(response));
-                }
-
-                runsByChallengeId[map.ChallengeId] = runs;
-                Console.WriteLine($"  {map.Name}: {runs.Count} runs");
-            }
+        var index = await _reader.ReadIndexAsync(options.Realms[0], cancellationToken);
+        var leaderboards = await _reader.ReadLeaderboardsAsync(
+            index,
+            options.Realms,
+            cancellationToken
         );
 
-        if (!failures.IsEmpty)
+        if (leaderboards.Failures.Count > 0)
         {
             throw new InvalidOperationException(
                 "Could not read every leaderboard, nothing was written:"
                     + Environment.NewLine
-                    + string.Join(Environment.NewLine, failures.Order(StringComparer.Ordinal))
+                    + string.Join(Environment.NewLine, leaderboards.Failures)
             );
         }
 
-        var dataset = MythicPlusDatasetBuilder.Build(index, runsByChallengeId);
+        var dataset = MythicPlusDatasetBuilder.Build(index, leaderboards.RunsByChallengeId);
         var previousRunCount = ReadPreviousRunCount();
 
         if (
@@ -102,28 +64,6 @@ public sealed class MythicPlusExportService(string outputDirectory, ITauriApiCli
 
         await MythicPlusFileWriter.WriteAsync(outputDirectory, dataset, cancellationToken);
         return new MythicPlusExportResult(dataset, previousRunCount, outputDirectory);
-    }
-
-    private async Task<ChallengeIndex> FetchIndexAsync(
-        string realm,
-        CancellationToken cancellationToken
-    )
-    {
-        var result = await apiClient.FetchResponseElementAsync(
-            IndexEndpoint,
-            new { r = realm },
-            $"challenge index ({realm})",
-            cancellationToken
-        );
-
-        if (!result.Succeeded || result.ResponseElement is not { } response)
-        {
-            throw new InvalidOperationException(
-                $"Could not read the challenge index: {result.FailureMessage}"
-            );
-        }
-
-        return ChallengeResponseParser.ParseIndex(response);
     }
 
     private int ReadPreviousRunCount()

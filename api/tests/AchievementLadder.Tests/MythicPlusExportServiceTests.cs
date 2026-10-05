@@ -6,8 +6,8 @@ namespace AchievementLadder.Tests;
 
 public sealed class MythicPlusExportServiceTests
 {
-    private const string Evermoon = "[EN] Evermoon";
-    private const string WoD = "[HU] Warriors of Darkness";
+    internal const string Evermoon = "[EN] Evermoon";
+    internal const string WoD = "[HU] Warriors of Darkness";
 
     [Theory]
     [InlineData(18, 1_245_000, 1440, 186.7)] // timed, 86% of the timer
@@ -233,16 +233,16 @@ public sealed class MythicPlusExportServiceTests
         }
     }
 
-    private static string CreateTempDirectory()
+    internal static string CreateTempDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), $"mythic-plus-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
     }
 
-    private static JsonElement Parse(string json) => JsonDocument.Parse(json).RootElement.Clone();
+    internal static JsonElement Parse(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
-    private static string IndexJson() =>
+    internal static string IndexJson() =>
         """
             {
               "dataUrlPrefix": "legion-",
@@ -254,10 +254,10 @@ public sealed class MythicPlusExportServiceTests
             }
             """;
 
-    private static string LeaderboardJson(params string[] runs) =>
+    internal static string LeaderboardJson(params string[] runs) =>
         $$"""{ "challengesdata": [{{string.Join(",", runs)}}] }""";
 
-    private static string Run(
+    internal static string Run(
         int level,
         long clearTimeMilliseconds,
         long completedAt,
@@ -279,7 +279,7 @@ public sealed class MythicPlusExportServiceTests
             }
             """;
 
-    private static string Member(
+    internal static string Member(
         string name,
         string realm,
         int classId,
@@ -299,7 +299,7 @@ public sealed class MythicPlusExportServiceTests
             }
             """;
 
-    private sealed class FakeChallengeApiClient(
+    internal sealed class FakeChallengeApiClient(
         string indexJson,
         Dictionary<(string Realm, int ChallengeId), string> leaderboards
     ) : ITauriApiClient
