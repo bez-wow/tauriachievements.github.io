@@ -18,14 +18,17 @@ import { getRaceIconPath } from '../utils/raceIconHelper';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
   CLASS_NAMES,
+  MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
-  MythicPlusDataset,
   MythicPlusDungeon,
+  MythicPlusDungeonFile,
+  MythicPlusIndex,
   MythicPlusMember,
   MythicPlusRun,
   ROLE_LABELS,
   RunQuality,
   UPGRADE_CUTOFFS,
+  createRunDecoder,
   formatClock,
   formatDuration,
   formatTimerDelta,
@@ -84,6 +87,11 @@ interface RunRow extends RunView {
   rank: number;
 }
 
+interface RankedRun {
+  run: MythicPlusRun;
+  rank: number;
+}
+
 function parsePage(value: string | null): number {
   const page = Number(value);
   return Number.isInteger(page) && page > 0 ? page : 1;
@@ -104,7 +112,7 @@ function toMemberView(member: MythicPlusMember): MemberView {
 function toRunView(
   run: MythicPlusRun,
   dungeon: MythicPlusDungeon,
-  affixes: ReadonlyMap<string, MythicPlusAffix>,
+  affixes: ReadonlyMap<number, MythicPlusAffix>,
   bestScore: number
 ): RunView {
   const upgrades = keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds);
@@ -155,7 +163,9 @@ export class MythicPlusPageComponent implements OnInit {
   readonly roleLabels = ROLE_LABELS;
   readonly cutoffMarks = UPGRADE_CUTOFFS.filter(cutoff => cutoff.percent < 100);
 
-  readonly dataset = signal<MythicPlusDataset | undefined>(undefined);
+  readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  /** Decoded runs per dungeon id, filled as the dungeon files arrive. */
+  readonly runsByDungeon = signal<ReadonlyMap<string, readonly MythicPlusRun[]>>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly selectedDungeonId = signal<string | undefined>(
@@ -164,7 +174,10 @@ export class MythicPlusPageComponent implements OnInit {
   readonly search = signal('');
   readonly expandedRunId = signal<string | undefined>(undefined);
 
-  readonly dungeons = computed(() => this.dataset()?.dungeons ?? []);
+  private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
+  private readonly requestedDungeons = new Set<string>();
+
+  readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   readonly selectedDungeon = computed(() =>
     this.dungeons().find(dungeon => dungeon.id === this.selectedDungeonId()));
   readonly selectedDungeonTimer = computed(() => {
@@ -172,46 +185,60 @@ export class MythicPlusPageComponent implements OnInit {
     return dungeon ? formatClock(dungeon.timerSeconds) : undefined;
   });
 
-  /** Raw runs in the selected dungeon, for the spec popularity chart. */
-  readonly dungeonRuns = computed(() => {
-    const runs = this.dataset()?.runs ?? [];
-    const dungeon = this.selectedDungeon();
-    return dungeon ? runs.filter(run => run.dungeon === dungeon.id) : runs;
-  });
+  private readonly dungeonsById = computed(() =>
+    new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
+  private readonly affixesById = computed(() =>
+    new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
+  /** Run colours are relative to the season's best run, whichever dungeon is shown. */
+  private readonly seasonBestScore = computed(() =>
+    Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
 
-  readonly runs = computed<RunView[]>(() => {
-    const data = this.dataset();
-    if (!data) {
-      return [];
+  /** Runs in the selected scope, best first; undefined until every file the scope needs has loaded. */
+  readonly scopeRuns = computed<readonly MythicPlusRun[] | undefined>(() => {
+    const loaded = this.runsByDungeon();
+    const dungeon = this.selectedDungeon();
+    if (dungeon) {
+      const runs = loaded.get(dungeon.id);
+      return runs && rankRuns(runs);
     }
 
-    const dungeons = new Map(data.dungeons.map(dungeon => [dungeon.id, dungeon]));
-    const affixes = new Map(data.affixes.map(affix => [affix.id, affix]));
-    const ranked = rankRuns(data.runs);
-    const bestScore = ranked[0]?.score ?? 0;
+    const dungeons = this.dungeons();
+    if (dungeons.some(entry => !loaded.has(entry.id))) {
+      return undefined;
+    }
 
-    return ranked.flatMap(run => {
-      const dungeon = dungeons.get(run.dungeon);
-      return dungeon ? [toRunView(run, dungeon, affixes, bestScore)] : [];
-    });
+    return rankRuns(dungeons.flatMap(entry => loaded.get(entry.id) ?? []));
   });
 
-  /** Ranks are per dungeon filter (like raider.io); the player search narrows rows without renumbering them. */
-  readonly filteredRows = computed<RunRow[]>(() => {
-    const dungeon = this.selectedDungeon();
-    const query = this.search();
+  readonly runsLoading = computed(() => !this.isLoading() && !this.loadError() && this.scopeRuns() === undefined);
 
-    return this.runs()
-      .filter(run => !dungeon || run.dungeon.id === dungeon.id)
-      .map((run, index) => ({ ...run, rank: index + 1 }))
-      .filter(row => runIncludesPlayer(row, query));
+  /** Raw runs in the selected scope, for the spec popularity chart. */
+  readonly dungeonRuns = computed(() => this.scopeRuns() ?? []);
+
+  private readonly rankedRuns = computed<RankedRun[]>(() =>
+    this.dungeonRuns().map((run, index) => ({ run, rank: index + 1 })));
+
+  /** Ranks are per dungeon filter (like raider.io); the player search narrows rows without renumbering them. */
+  readonly filteredRows = computed<RankedRun[]>(() => {
+    const query = this.search();
+    const ranked = this.rankedRuns();
+    return query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
   });
 
   readonly totalPages = computed(() => pageCount(this.filteredRows().length, PAGE_SIZE));
   readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
-  readonly pagedRows = computed(() => {
+
+  /** Only the visible page is turned into display rows; a season holds tens of thousands of runs. */
+  readonly pagedRows = computed<RunRow[]>(() => {
     const start = (this.currentPage() - 1) * PAGE_SIZE;
-    return this.filteredRows().slice(start, start + PAGE_SIZE);
+    const dungeons = this.dungeonsById();
+    const affixes = this.affixesById();
+    const bestScore = this.seasonBestScore();
+
+    return this.filteredRows().slice(start, start + PAGE_SIZE).flatMap(({ run, rank }) => {
+      const dungeon = dungeons.get(run.dungeon);
+      return dungeon ? [{ ...toRunView(run, dungeon, affixes, bestScore), rank }] : [];
+    });
   });
 
   readonly emptyMessage = computed(() => {
@@ -230,7 +257,12 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   retryLoad(): void {
-    this.loadData();
+    if (this.index()) {
+      this.loadError.set(undefined);
+      this.loadScopeRuns();
+    } else {
+      this.loadData();
+    }
   }
 
   selectDungeon(dungeonId: string | undefined): void {
@@ -238,6 +270,7 @@ export class MythicPlusPageComponent implements OnInit {
     this.page.set(1);
     this.expandedRunId.set(undefined);
     this.syncQueryParams();
+    this.loadScopeRuns();
   }
 
   goToPage(page: number, scrollToLeaderboard = false): void {
@@ -300,18 +333,54 @@ export class MythicPlusPageComponent implements OnInit {
   private loadData(): void {
     this.isLoading.set(true);
     this.loadError.set(undefined);
-    this.dataFiles.getJson<MythicPlusDataset>('MythicPlus.json')
+    this.dataFiles.getJson<MythicPlusIndex>(`${MYTHIC_PLUS_DATA_DIR}/index.json`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: data => {
-          this.dataset.set(data);
+        next: index => {
+          this.decodeRuns = createRunDecoder(index);
+          this.index.set(index);
           this.isLoading.set(false);
+          this.loadScopeRuns();
         },
-        error: error => {
-          console.error('Failed to load Mythic+ leaderboard:', error);
-          this.loadError.set('The Mythic+ leaderboard could not be loaded.');
-          this.isLoading.set(false);
-        }
+        error: error => this.failLoad(error)
       });
+  }
+
+  /** Fetches the dungeon files the selected scope still needs: one dungeon, or all of them. */
+  private loadScopeRuns(): void {
+    const decode = this.decodeRuns;
+    if (!decode) {
+      return;
+    }
+
+    const selected = this.selectedDungeon();
+    const needed = selected ? [selected] : this.dungeons();
+
+    for (const dungeon of needed) {
+      if (this.requestedDungeons.has(dungeon.id)) {
+        continue;
+      }
+
+      this.requestedDungeons.add(dungeon.id);
+      // fetchJson rather than getJson: the decoded runs are what we keep, not the raw file.
+      this.dataFiles.fetchJson<MythicPlusDungeonFile>(`${MYTHIC_PLUS_DATA_DIR}/${dungeon.id}.json`)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: file => {
+            const runs = decode(file);
+            this.runsByDungeon.update(loaded => new Map(loaded).set(dungeon.id, runs));
+          },
+          error: error => {
+            this.requestedDungeons.delete(dungeon.id);
+            this.failLoad(error);
+          }
+        });
+    }
+  }
+
+  private failLoad(error: unknown): void {
+    console.error('Failed to load Mythic+ leaderboard:', error);
+    this.loadError.set('The Mythic+ leaderboard could not be loaded.');
+    this.isLoading.set(false);
   }
 }

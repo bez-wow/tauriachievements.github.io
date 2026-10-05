@@ -6,6 +6,7 @@
     Builds the solution once, then runs each job in order and stops at the first failure:
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
       Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
+      MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus (the /mythic-plus leaderboards)
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
       Ladder           AchievementLadder        -> Players.csv and the rare exports
       MissingPlayers   MissingPlayerFinder      -> backfills skipped characters in rounds
@@ -23,7 +24,7 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [ValidateSet('RealmFirst', 'Battlegrounds', 'MythicPlus', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
     [string]$From = 'RealmFirst',
 
     [switch]$NoPush,
@@ -45,6 +46,7 @@ $playersCsvRepoPath = 'spa/src/Players.csv'
 $steps = @(
     @{ Name = 'RealmFirst'; Project = 'RealmFirstAchievements' },
     @{ Name = 'Battlegrounds'; Project = 'BattlegroundCollector' },
+    @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
     @{ Name = 'GuildCharacters'; Project = 'GuildCharacterExporter' },
     @{ Name = 'Ladder'; Project = 'AchievementLadder' },
     @{ Name = 'MissingPlayers'; Project = 'MissingPlayerFinder' }
@@ -60,6 +62,7 @@ $publishPaths = @(
     'spa/src/battleground-collector-state.json',
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',
+    'spa/src/mythic-plus',
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',
     'api/AchievementLadder/Data/Guilds/evermoon-guilds.txt',
     'api/AchievementLadder/Data/Guilds/wod-guilds.txt',

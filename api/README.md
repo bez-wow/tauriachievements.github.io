@@ -45,6 +45,7 @@ workflow and its output contract.
 | `MissingPlayerFinder` | Backfills characters absent from an existing export. |
 | `RealmFirstAchievements` | Rebuilds and validates realm-first character sources. |
 | `BattlegroundCollector` | Collects sequential PvP matches with resumable state and appends complete ranked responses to the frontend archive. |
+| `MythicPlusExporter` | Merges every realm's Mythic+ leaderboards into scored, ranked per-dungeon files for the `/mythic-plus` page. |
 | `Guildkukker` | Generates ranked guild reports with reputation, artifact, and item-level data. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |
 
@@ -103,6 +104,7 @@ concurrency, timeouts, and retry behavior; see
 | Backfill missing players (up to 3 rounds) | `dotnet run --project MissingPlayerFinder` |
 | Validate realm-first characters | `dotnet run --project RealmFirstAchievements` |
 | Collect battlegrounds | `dotnet run --project BattlegroundCollector -- 95874` |
+| Export the Mythic+ leaderboards | `dotnet run --project MythicPlusExporter` |
 | Export a ranked guild report | `dotnet run --project Guildkukker -- Evermoon Endless` |
 | Export the Endless workbook | `dotnet run --project EndlessGuildExporter` |
 
@@ -112,7 +114,7 @@ at startup.
 ## Daily update
 
 `Run-DailyUpdate.cmd` (or `Run-DailyUpdate.ps1`) runs the whole refresh end to end:
-RealmFirstAchievements, BattlegroundCollector, GuildCharacterExporter, AchievementLadder and
+RealmFirstAchievements, BattlegroundCollector, MythicPlusExporter, GuildCharacterExporter, AchievementLadder and
 MissingPlayerFinder, then commits every data file as one `sync data` commit and pushes it.
 That commit message triggers the Discord notification, so keep it.
 
@@ -128,7 +130,7 @@ from the guild lists; BattlegroundCollector adds them back if they reappear.
 
 ## Tests and CI
 
-The solution contains 47 focused tests covering:
+The solution contains 56 focused tests covering:
 
 - Rare-achievement parsing across valid, missing, and malformed payloads
 - Item-appearance counting and character mapping, including the Level 10 date
@@ -137,6 +139,7 @@ The solution contains 47 focused tests covering:
 - Atomic file writes, including a failed write leaving the previous file intact
 - Successful and failed character scans through a fake `ITauriApiClient`
 - Guild export retry rounds, retry-only merges, and dead-guild pruning with its safety cap
+- Mythic+ scoring, leaderboard parsing, cross-realm merging, and the no-partial-publish and shrink guards
 
 Run the same Release validation used by CI:
 

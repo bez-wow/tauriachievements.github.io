@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  createRunDecoder,
   formatClock,
   formatDuration,
   formatTimerDelta,
@@ -112,6 +113,51 @@ describe('sortRoster', () => {
     ];
 
     expect(sortRoster(roster).map(member => member.name)).toEqual(['T', 'H', 'A', 'B']);
+  });
+});
+
+describe('createRunDecoder', () => {
+  const index = {
+    players: [
+      ['Pashao', 'Evermoon', 'Хранители Вечности', 12, 4, 1],
+      ['Swag', 'Tauri', '', 3, 22, 0]
+    ] as Array<[string, string, string, number, number, number]>,
+    specs: [
+      { class: 3, name: 'Marksmanship', role: 'dps' as const },
+      { class: 12, name: 'Vengeance', role: 'tank' as const }
+    ]
+  };
+
+  it('expands a dungeon file into runs ranked in file order', () => {
+    const decode = createRunDecoder(index);
+    const [run] = decode({
+      version: 1,
+      dungeon: 'hov',
+      runs: [[16, 1715363, 1790520370, 174.6, [8, 3, 10], [[0, 1], [1, 0]]]]
+    });
+
+    expect(run).toEqual({
+      id: 'hov-1',
+      dungeon: 'hov',
+      keyLevel: 16,
+      clearTimeSeconds: 1715.363,
+      score: 174.6,
+      completedAt: '2026-09-27T14:46:10.000Z',
+      affixes: [8, 3, 10],
+      roster: [
+        { name: 'Pashao', realm: 'Evermoon', guild: 'Хранители Вечности', class: 12, race: 4, gender: 1, spec: 'Vengeance', role: 'tank' },
+        { name: 'Swag', realm: 'Tauri', guild: undefined, class: 3, race: 22, gender: 0, spec: 'Marksmanship', role: 'dps' }
+      ]
+    });
+  });
+
+  it('shares one member object across runs and files, and skips unknown references', () => {
+    const decode = createRunDecoder(index);
+    const [first] = decode({ version: 1, dungeon: 'hov', runs: [[10, 1, 0, 100, [], [[0, 1], [9, 0], [1, 7]]]] });
+    const [second] = decode({ version: 1, dungeon: 'eoa', runs: [[11, 1, 0, 110, [], [[0, 1]]]] });
+
+    expect(first.roster).toHaveLength(1);
+    expect(second.roster[0]).toBe(first.roster[0]);
   });
 });
 

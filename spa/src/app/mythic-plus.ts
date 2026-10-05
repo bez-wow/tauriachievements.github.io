@@ -9,15 +9,20 @@ export interface MythicPlusSeason {
 }
 
 export interface MythicPlusDungeon {
+  /** URL slug, used as the `?dungeon=` value. */
   id: string;
+  challengeId: number;
   shortName: string;
   name: string;
   timerSeconds: number;
   icon: string;
+  runCount: number;
+  bestScore: number;
 }
 
 export interface MythicPlusAffix {
-  id: string;
+  /** The game's affix id. */
+  id: number;
   name: string;
   /** Keystone level the affix activates at (4, 7 or 10 in Legion). */
   level: number;
@@ -34,7 +39,6 @@ export interface MythicPlusMember {
   gender: number;
   spec: string;
   role: MythicPlusRole;
-  itemLevel?: number;
 }
 
 export interface MythicPlusRun {
@@ -44,17 +48,89 @@ export interface MythicPlusRun {
   clearTimeSeconds: number;
   score: number;
   completedAt: string;
-  affixes: string[];
+  affixes: number[];
   roster: MythicPlusMember[];
 }
 
-export interface MythicPlusDataset {
-  /** True while the file holds made-up runs rather than real keystone results. */
-  isSampleData?: boolean;
+/*
+ * The files api/MythicPlusExporter writes to src/mythic-plus/ (see MythicPlusFileWriter.cs).
+ * index.json holds the season, the dungeons, the affixes and the player and spec tables that
+ * every dungeon file points into. The page reads the index first, then only the dungeon files
+ * it shows.
+ */
+
+export const MYTHIC_PLUS_DATA_DIR = 'mythic-plus';
+
+export interface MythicPlusSpecEntry {
+  class: number;
+  name: string;
+  role: MythicPlusRole;
+}
+
+/** `[name, realm, guild ('' when guildless), class, race, gender]` */
+export type MythicPlusPlayerEntry = [string, string, string, number, number, number];
+
+/**
+ * `[keyLevel, clearTimeMs, completedAt (Unix seconds), score, affixIds, [[player, spec], ...]]`,
+ * where player and spec are positions in the index's tables.
+ */
+export type MythicPlusRunEntry = [number, number, number, number, number[], Array<[number, number]>];
+
+export interface MythicPlusIndex {
+  version: number;
   season: MythicPlusSeason;
   dungeons: MythicPlusDungeon[];
   affixes: MythicPlusAffix[];
-  runs: MythicPlusRun[];
+  specs: MythicPlusSpecEntry[];
+  players: MythicPlusPlayerEntry[];
+}
+
+export interface MythicPlusDungeonFile {
+  version: number;
+  dungeon: string;
+  runs: MythicPlusRunEntry[];
+}
+
+/**
+ * Turns dungeon files into runs. Members are shared: a character who played one spec in a
+ * hundred runs is one object, which keeps a season of tens of thousands of runs small.
+ */
+export function createRunDecoder(
+  index: Pick<MythicPlusIndex, 'players' | 'specs'>
+): (file: MythicPlusDungeonFile) => MythicPlusRun[] {
+  const members = new Map<number, MythicPlusMember>();
+  const specCount = Math.max(1, index.specs.length);
+
+  const member = (playerIndex: number, specIndex: number): MythicPlusMember | undefined => {
+    const key = playerIndex * specCount + specIndex;
+    let decoded = members.get(key);
+    if (!decoded) {
+      const player = index.players[playerIndex];
+      const spec = index.specs[specIndex];
+      if (!player || !spec) {
+        return undefined;
+      }
+
+      const [name, realm, guild, classId, race, gender] = player;
+      decoded = { name, realm, guild: guild || undefined, class: classId, race, gender, spec: spec.name, role: spec.role };
+      members.set(key, decoded);
+    }
+
+    return decoded;
+  };
+
+  return file => file.runs.map(([keyLevel, clearTimeMs, completedAt, score, affixes, roster], position) => ({
+    id: `${file.dungeon}-${position + 1}`,
+    dungeon: file.dungeon,
+    keyLevel,
+    clearTimeSeconds: clearTimeMs / 1000,
+    score,
+    completedAt: new Date(completedAt * 1000).toISOString(),
+    affixes,
+    roster: roster
+      .map(([playerIndex, specIndex]) => member(playerIndex, specIndex))
+      .filter((decoded): decoded is MythicPlusMember => decoded !== undefined)
+  }));
 }
 
 export interface UpgradeCutoff {
@@ -158,7 +234,7 @@ export function scoreQuality(score: number, bestScore: number): RunQuality {
 /** Case- and accent-insensitive partial match, so `bjorn` finds `Björñ`. An empty query matches every run. */
 export function runIncludesPlayer(run: { roster: ReadonlyArray<Pick<MythicPlusMember, 'name'>> }, query: string): boolean {
   const needle = foldName(query.trim());
-  return !needle || run.roster.some(member => foldName(member.name).includes(needle));
+  return !needle || run.roster.some(member => foldedMemberName(member).includes(needle));
 }
 
 /** Tank, healer, then DPS — keeping the DPS in their original order. */
@@ -168,6 +244,19 @@ export function sortRoster<T extends Pick<MythicPlusMember, 'role'>>(roster: rea
 
 export function pageCount(totalItems: number, pageSize: number): number {
   return Math.max(1, Math.ceil(totalItems / pageSize));
+}
+
+// Decoded runs share their member objects, so each name is folded once, not once per run per keystroke.
+const foldedNames = new WeakMap<object, string>();
+
+function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {
+  let folded = foldedNames.get(member);
+  if (folded === undefined) {
+    folded = foldName(member.name);
+    foldedNames.set(member, folded);
+  }
+
+  return folded;
 }
 
 function foldName(value: string): string {
