@@ -126,8 +126,6 @@ public sealed class MythicPlusExportServiceTests
                         )
                     ),
                     [(WoD, 197)] = LeaderboardJson(),
-                    [(Evermoon, 239)] = LeaderboardJson(),
-                    [(WoD, 239)] = LeaderboardJson(),
                 }
             );
             var service = new MythicPlusExportService(outputDirectory, apiClient);
@@ -151,7 +149,8 @@ public sealed class MythicPlusExportServiceTests
                 File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
             );
             var root = index.RootElement;
-            // Seat of the Triumvirate has no runs, so it gets no tile.
+            // Seat of the Triumvirate is unreleased: its leaderboard is never requested (the fake
+            // client would fail it) and it gets no tile.
             Assert.Equal(
                 ["eoa", "hov"],
                 root.GetProperty("dungeons")
@@ -190,11 +189,7 @@ public sealed class MythicPlusExportServiceTests
         {
             var apiClient = new FakeChallengeApiClient(
                 IndexJson(),
-                new()
-                {
-                    [(Evermoon, 197)] = LeaderboardJson(),
-                    [(Evermoon, 239)] = LeaderboardJson(),
-                }
+                new() { [(Evermoon, 197)] = LeaderboardJson() }
             );
             var service = new MythicPlusExportService(outputDirectory, apiClient);
 
@@ -232,7 +227,6 @@ public sealed class MythicPlusExportServiceTests
                     [(Evermoon, 200)] = LeaderboardJson(
                         Run(10, 1_000_000, 1, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
                     ),
-                    [(Evermoon, 239)] = LeaderboardJson(),
                 }
             );
             var service = new MythicPlusExportService(outputDirectory, apiClient);

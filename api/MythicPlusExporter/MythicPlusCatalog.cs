@@ -37,12 +37,21 @@ public static class MythicPlusCatalog
         [239] = new("seat", "SEAT", "achievement_dungeon_argusdungeon"),
     };
 
+    /// <summary>
+    /// Maps the server lists but has not opened yet (Karazhan, Cathedral, Seat). Their
+    /// leaderboards are always empty, so they are not read at all. Remove an id when the
+    /// dungeon opens; its slug and icon above are already in place.
+    /// </summary>
+    private static readonly HashSet<int> UnreleasedChallengeIds = [227, 233, 234, 239];
+
     private static readonly HashSet<string> MinorWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "of",
         "the",
         "to",
     };
+
+    public static bool IsReleased(int challengeId) => !UnreleasedChallengeIds.Contains(challengeId);
 
     /// <summary>A map the catalog does not know yet still gets a usable slug, label and icon.</summary>
     public static DungeonInfo GetDungeon(int challengeId, string name)

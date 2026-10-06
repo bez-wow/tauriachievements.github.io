@@ -67,7 +67,9 @@ internal static class Program
             }
 
             Console.WriteLine(
-                $"Runs: {dataset.RunCount} (last export: {result.PreviousRunCount}, duplicates removed: {dataset.DuplicateRunCount})"
+                result.PreviousRunCount == 0
+                    ? $"New M+ runs: {dataset.RunCount} (first export)"
+                    : $"New M+ runs since last export: {dataset.RunCount - result.PreviousRunCount}"
             );
             Console.WriteLine($"Players: {dataset.Players.Count}");
             Console.WriteLine($"Output: {result.OutputDirectory}");

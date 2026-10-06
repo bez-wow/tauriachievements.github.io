@@ -45,7 +45,18 @@ public sealed class ChallengeLeaderboardReader(ITauriApiClient apiClient)
             throw new InvalidOperationException("challenge-index returned no challenge maps.");
         }
 
-        return index;
+        var skipped = index.Maps.Where(map => !MythicPlusCatalog.IsReleased(map.ChallengeId));
+        if (skipped.Any())
+        {
+            Console.WriteLine(
+                $"  Skipping unreleased: {string.Join(", ", skipped.Select(map => map.Name))}"
+            );
+        }
+
+        return index with
+        {
+            Maps = [.. index.Maps.Where(map => MythicPlusCatalog.IsReleased(map.ChallengeId))],
+        };
     }
 
     public async Task<ChallengeLeaderboards> ReadLeaderboardsAsync(

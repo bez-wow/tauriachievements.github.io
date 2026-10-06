@@ -54,7 +54,6 @@ public sealed class MythicPlusGuildAndCharScanServiceTests
                             Member("Delta", Tauri, 1, "Arms", 2, "Tauri Guild")
                         )
                     ),
-                    [(Evermoon, 239)] = LeaderboardJson(),
                     [(WoD, 200)] = LeaderboardJson(
                         Run(
                             9,
@@ -66,7 +65,6 @@ public sealed class MythicPlusGuildAndCharScanServiceTests
                         )
                     ),
                     [(WoD, 197)] = LeaderboardJson(),
-                    [(WoD, 239)] = LeaderboardJson(),
                 }
             );
             var service = new MythicPlusGuildAndCharScanService(
@@ -140,7 +138,8 @@ public sealed class MythicPlusGuildAndCharScanServiceTests
 
             var result = await service.ScanAsync([Evermoon], CancellationToken.None);
 
-            Assert.Equal(2, result.Failures.Count);
+            // Seat of the Triumvirate is unreleased and never requested, so only EOA fails.
+            Assert.Contains("Eye of Azshara", Assert.Single(result.Failures));
             Assert.Equal(
                 ["Outlaws"],
                 File.ReadAllLines(Path.Combine(guildsDirectory, "evermoon-guilds.txt"))
