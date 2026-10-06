@@ -178,9 +178,19 @@
       class="nav-drawer-link nav-drawer-link--new"
       routerLink="/mythic-plus"
       routerLinkActive="active"
+      [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }"
       (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">🗝️</span>
       <span class="nav-drawer-link-label">M+ Leaderboard</span>
+      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
+    </a>
+    <a
+      class="nav-drawer-link nav-drawer-link--new"
+      routerLink="/mythic-plus/stats"
+      routerLinkActive="active"
+      (click)="closeNav()">
+      <span class="nav-drawer-icon" aria-hidden="true">⏱️</span>
+      <span class="nav-drawer-link-label">M+ Stats</span>
       <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
     </a>
   </nav>

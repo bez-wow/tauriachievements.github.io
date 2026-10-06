@@ -70,6 +70,9 @@
   gap: 10px;
 }
 
+// Bar-chart icon on the link to /mythic-plus/stats.
+.scoring-link-chart { width: 14px; height: 14px; fill: #f7b500; }
+
 // Opens /mythic-plus/scoring, the page that explains run and player scores.
 .scoring-link {
   display: inline-flex;
