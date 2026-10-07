@@ -141,6 +141,21 @@
   .pager { margin-bottom: 0; }
 }
 
+// Above the pager while a character filter is on: their run count, picked out in gold.
+.character-summary {
+  margin: 0 0 12px;
+  font-size: 1rem;
+
+  .character-summary-count {
+    color: #f7b500;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .character-summary-label { color: #bdbdbd; }
+  .character-summary-realm { color: #8a8a8a; }
+}
+
 .toolbar-title {
   display: flex;
   align-items: baseline;

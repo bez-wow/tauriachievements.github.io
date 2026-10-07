@@ -406,6 +406,24 @@ export class MythicPlusPageComponent implements OnInit {
     }));
   });
 
+  /** Runs view with a character filter: how many runs they have in the selected scope. */
+  readonly characterSummary = computed(() => {
+    const character = this.characterFilter();
+    if (!character || this.view() !== 'runs') {
+      return undefined;
+    }
+
+    const count = this.filteredRows().length;
+    const dungeon = this.selectedDungeon();
+    return {
+      character,
+      count,
+      unit: count === 1 ? 'Mythic+ run' : 'Mythic+ runs',
+      scope: [dungeon && `in ${dungeon.name}`, this.period() === 'week' ? 'this week' : 'this season']
+        .filter(Boolean).join(' ')
+    };
+  });
+
   readonly emptyMessage = computed(() => {
     const query = this.search().trim();
     const dungeon = this.selectedDungeon();

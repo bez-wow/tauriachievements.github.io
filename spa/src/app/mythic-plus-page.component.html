@@ -114,6 +114,15 @@
         </div>
       </div>
 
+      <p class="character-summary" *ngIf="characterSummary() as summary" aria-live="polite">
+        <span class="character-summary-count">{{ summary.count | number }}</span>
+        <span class="character-summary-label">
+          {{ summary.unit }} by
+          <strong [style.color]="summary.character.color">{{ summary.character.name }}</strong><span class="character-summary-realm"> ({{ summary.character.realm }})</span>
+          {{ summary.scope }}
+        </span>
+      </p>
+
       <div class="pager-row">
         <ng-container *ngTemplateOutlet="pager; context: { $implicit: false }"></ng-container>
         <div class="leaderboard-filters">
