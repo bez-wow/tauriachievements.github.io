@@ -26,6 +26,7 @@ import {
   MythicPlusMember,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
+  characterKey,
   createRunDecoder,
   currentAffixWeek,
   exportedAt,
@@ -43,10 +44,19 @@ import {
   sharesTables
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
+import { characterParam, characterProfileLink, findCharacters, parseCharacterParam, realmSlug } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
 import { LEGION_SPECS } from './mythic-plus-stats';
-import { MYTHIC_PLUS_CARDS_QUERY, PlayerRow, RunRow, toMemberView, toRunView } from './mythic-plus-views';
+import {
+  MYTHIC_PLUS_CARDS_PAGE_SIZE,
+  MYTHIC_PLUS_CARDS_QUERY,
+  MYTHIC_PLUS_PAGE_SIZE,
+  PlayerRow,
+  RunRow,
+  toMemberView,
+  toRunView
+} from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -55,10 +65,6 @@ import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
-
-/** Rows per page: 50 in the tables, 25 of the taller cards. */
-const PAGE_SIZE = 50;
-const CARDS_PAGE_SIZE = 25;
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -75,13 +81,17 @@ interface RankedPlayer {
   rank: number;
 }
 
-/** Runs view only: one character, picked from a player row. */
+/**
+ * One character, from `?character=Name-Realm` (a profile's "Show runs" or rank links). The runs
+ * view shows only their runs; the players view picks out their row.
+ */
 interface CharacterFilter {
   /** `characterKey` of the character. */
   key: string;
   name: string;
   realm: string;
   color: string;
+  profileLink: string[];
 }
 
 function parsePage(value: string | null): number {
@@ -131,8 +141,8 @@ export class MythicPlusPageComponent implements OnInit {
 
   /** Narrow screens list runs and players as cards (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
-  private readonly pageSize = computed(() => this.cards() ? CARDS_PAGE_SIZE : PAGE_SIZE);
-  /** Phones: whether the class / spec filters are shown, or folded behind the Filters button. */
+  private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
+  /** Phones: whether the realm / class / spec filters are shown, or folded behind the Filters button. */
   readonly filtersOpen = signal(false);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
@@ -146,12 +156,13 @@ export class MythicPlusPageComponent implements OnInit {
     this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
   readonly search = signal('');
-  /** Set by clicking a player row; typing a search replaces it. */
-  readonly characterFilter = signal<CharacterFilter | undefined>(undefined);
+  /** The character `?character=` names, as written there; typing a search replaces it. */
+  private readonly characterParam = signal(parseCharacterParam(this.route.snapshot.queryParamMap.get('character')));
   readonly expandedRunId = signal<string | undefined>(undefined);
   readonly view = signal<LeaderboardView>(
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
-  /** Players view only: one class, and optionally one of its specs. */
+  /** Players view only: one realm (its slug), one class, and optionally one of its specs. */
+  readonly realmFilter = signal<string | undefined>(this.route.snapshot.queryParamMap.get('realm')?.toLowerCase() || undefined);
   readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
     parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
@@ -178,10 +189,53 @@ export class MythicPlusPageComponent implements OnInit {
     ];
   });
 
-  /** The class / spec filters in use, as chips under the phone Filters button. */
+  /** The realms in the export, the one with the most players first. */
+  readonly realmOptions = computed<FilterDropdownOption[]>(() => {
+    const players = new Map<string, number>();
+    for (const [, realm] of this.index()?.players ?? []) {
+      players.set(realm, (players.get(realm) ?? 0) + 1);
+    }
+
+    return [
+      { value: undefined, label: 'All realms' },
+      ...[...players].sort((a, b) => b[1] - a[1]).map(([realm]) => ({ value: realmSlug(realm), label: realm }))
+    ];
+  });
+
+  private readonly realmName = computed(() => {
+    const realm = this.realmFilter();
+    return realm && (this.realmOptions().find(option => option.value === realm)?.label ?? realm);
+  });
+
+  /** The realm / class / spec filters in use, as chips under the phone Filters button. */
   readonly activeFilterLabels = computed(() => {
     const classId = this.classFilter();
-    return classId === undefined ? [] : [[this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ')];
+    return [
+      this.realmName(),
+      classId === undefined ? undefined : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ')
+    ].filter((label): label is string => !!label);
+  });
+
+  /** Every character in the export, to match `?character=` against. */
+  private readonly indexCharacters = computed(() =>
+    (this.index()?.players ?? []).map(([name, realm, , classId]) => ({ name, realm, classId })));
+
+  /** The character `?character=` names, matched to the export so a typed `progtrix-evermoon` works too. */
+  readonly characterFilter = computed<CharacterFilter | undefined>(() => {
+    const wanted = this.characterParam();
+    if (!wanted) {
+      return undefined;
+    }
+
+    const found = findCharacters(this.indexCharacters(), wanted.realm, wanted.name)[0];
+    const character = found ?? wanted;
+    return {
+      key: characterKey(character),
+      name: character.name,
+      realm: character.realm,
+      color: (found && getClassColor(found.classId)) ?? '#e0e0e0',
+      profileLink: characterProfileLink(character)
+    };
   });
 
   private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
@@ -257,12 +311,14 @@ export class MythicPlusPageComponent implements OnInit {
 
   /** Characters in the selected scope by player score; only worked out once the players view is opened. */
   private readonly rankedPlayers = computed<RankedPlayer[]>(() => {
+    const realm = this.realmFilter();
     const classId = this.classFilter();
     const spec = this.specFilter();
     // A spec filter scores each character on the runs they played as that spec only.
-    const include = classId === undefined
+    const include = realm === undefined && classId === undefined
       ? undefined
-      : (member: MythicPlusMember) => member.class === classId && (spec === undefined || member.spec === spec);
+      : (member: MythicPlusMember) => (realm === undefined || realmSlug(member.realm) === realm)
+        && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)));
 
     return rankPlayers(this.dungeonRuns(), include).map((player, index) => ({ player, rank: index + 1 }));
   });
@@ -362,9 +418,10 @@ export class MythicPlusPageComponent implements OnInit {
     }
 
     const classId = this.classFilter();
-    if (this.view() === 'players' && classId !== undefined) {
-      const who = [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
-      return `No ${who} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
+    const realm = this.realmName();
+    if (this.view() === 'players' && (classId !== undefined || realm)) {
+      const who = classId === undefined ? 'player' : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
+      return `No ${who}${realm ? ` on ${realm}` : ''} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
     }
 
     if (this.period() === 'week') {
@@ -387,6 +444,25 @@ export class MythicPlusPageComponent implements OnInit {
     } else {
       this.loadData();
     }
+  }
+
+  setRealmFilter(value: FilterDropdownValue): void {
+    const realm = typeof value === 'string' ? value : undefined;
+    if (realm === this.realmFilter()) {
+      return;
+    }
+
+    this.realmFilter.set(realm);
+    this.page.set(1);
+    this.syncQueryParams();
+  }
+
+  resetFilters(): void {
+    this.realmFilter.set(undefined);
+    this.classFilter.set(undefined);
+    this.specFilter.set(undefined);
+    this.page.set(1);
+    this.syncQueryParams();
   }
 
   setClassFilter(value: FilterDropdownValue): void {
@@ -434,21 +510,6 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  /**
-   * From a player row: the runs view, filtered to exactly that character. Not through the
-   * search, whose partial match would also bring in `Napim` for `Nap`.
-   */
-  showPlayerRuns(row: PlayerRow): void {
-    const { name, realm, color } = row.member;
-    this.characterFilter.set({ key: row.key, name, realm, color });
-    this.search.set('');
-    this.view.set('runs');
-    this.page.set(1);
-    this.expandedRunId.set(undefined);
-    this.syncQueryParams();
-    this.leaderboardRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
   selectDungeon(dungeonId: string | undefined): void {
     this.selectedDungeonId.set(dungeonId);
     this.page.set(1);
@@ -473,7 +534,7 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   clearCharacterFilter(): void {
-    this.characterFilter.set(undefined);
+    this.characterParam.set(undefined);
     this.page.set(1);
     this.expandedRunId.set(undefined);
     this.syncQueryParams();
@@ -481,10 +542,10 @@ export class MythicPlusPageComponent implements OnInit {
 
   onSearch(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
-    this.characterFilter.set(undefined);
 
-    // Search isn't in the URL, so the URL only changes when `?page` needs resetting.
-    if (this.page() !== 1) {
+    // Search isn't in the URL, so the URL only changes when it replaces a character or resets `?page`.
+    if (this.characterParam() || this.page() !== 1) {
+      this.characterParam.set(undefined);
       this.page.set(1);
       this.syncQueryParams();
     }
@@ -506,6 +567,7 @@ export class MythicPlusPageComponent implements OnInit {
    */
   private syncQueryParams(): void {
     const players = this.view() === 'players';
+    const character = this.characterFilter();
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: {
@@ -513,8 +575,10 @@ export class MythicPlusPageComponent implements OnInit {
         period: this.period() === 'week' ? 'week' : null,
         view: players ? 'players' : null,
         // The filters only apply to the players view; they wait there when the runs view is open.
+        realm: players ? this.realmFilter() ?? null : null,
         class: players ? this.classFilter() ?? null : null,
         spec: players ? this.specFilter() ?? null : null,
+        character: character ? characterParam(character) : null,
         page: this.currentPage() > 1 ? this.currentPage() : null
       }
     });

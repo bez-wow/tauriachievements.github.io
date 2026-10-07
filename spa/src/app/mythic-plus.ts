@@ -390,7 +390,11 @@ export function rankPlayers(
   }).sort((a, b) => b.score - a.score || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 
-function isBetterRun(candidate: MythicPlusRun, current: MythicPlusRun): boolean {
+/** Whether `candidate` beats `current`: a higher score, or the same score cleared faster. */
+export function isBetterRun(
+  candidate: Pick<MythicPlusRun, 'score' | 'clearTimeSeconds'>,
+  current: Pick<MythicPlusRun, 'score' | 'clearTimeSeconds'>
+): boolean {
   return candidate.score > current.score
     || (candidate.score === current.score && candidate.clearTimeSeconds < current.clearTimeSeconds);
 }

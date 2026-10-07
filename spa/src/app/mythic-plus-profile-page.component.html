@@ -1,0 +1,300 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="profile-page">
+  <a class="back-link" routerLink="/mythic-plus">
+    <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
+  </a>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Charging the keystones...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError()">
+    <ng-container *ngIf="player() && member() as member; else noProfile">
+      <header class="profile-header">
+        <span class="profile-crest" [style.--class-color]="member.color">
+          <img [src]="classCrest()" [alt]="member.className" width="256" height="256" />
+        </span>
+        <div class="profile-identity">
+          <h1 [style.color]="member.color">{{ member.name }}</h1>
+          <p class="profile-meta">
+            <span>{{ member.realm }}</span>
+            <span *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
+          </p>
+          <ul class="profile-specs" aria-label="Specs played">
+            <li *ngFor="let spec of specs()">
+              <span class="spec-icon" *ngIf="spec.icon"><img [src]="spec.icon" alt="" /></span>
+              <span>{{ spec.spec }} {{ member.className }}</span>
+              <span class="spec-runs">{{ spec.runs | number }} {{ spec.runs === 1 ? 'run' : 'runs' }}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="profile-score">
+          <span class="profile-score-value" [ngClass]="'q-' + quality()">{{ player()?.score | number:'1.1-1' }}</span>
+          <span class="profile-score-label">Mythic+ score<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></span>
+        </div>
+        <div class="profile-actions">
+          <a class="action-link" routerLink="/mythic-plus" [queryParams]="showRunsParams()">Show runs on the leaderboard</a>
+          <a class="action-link" [href]="member.armoryUrl" target="_blank" rel="noopener noreferrer">
+            Armory <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <dl class="profile-summary">
+          <div *ngFor="let item of summary()">
+            <dt>{{ item.label }}</dt>
+            <dd>{{ item.value }}</dd>
+          </div>
+        </dl>
+      </header>
+
+      <nav class="ranks" aria-label="Ranks, each opening the players leaderboard where it is">
+        <a
+          class="rank-tile"
+          *ngFor="let tile of ranks()"
+          routerLink="/mythic-plus"
+          [queryParams]="tile.queryParams">
+          <span class="rank-scope">{{ tile.scope }}</span>
+          <span class="rank-value">#{{ tile.rank | number }}</span>
+          <span class="rank-label">
+            <span class="rank-icon" *ngIf="tile.icon"><img [src]="tile.icon" alt="" /></span>
+            {{ tile.label }}
+          </span>
+          <span class="rank-total">of {{ tile.total | number }} · <b>{{ tile.top }}</b></span>
+        </a>
+      </nav>
+
+      <div class="pair">
+        <section class="card" aria-labelledby="bests-title">
+          <header class="card-header">
+            <h2 id="bests-title">Best run per dungeon</h2>
+            <p class="card-subtitle">Their score is the sum of these points</p>
+          </header>
+
+          <table class="bests" *ngIf="!cards(); else bestCards">
+            <thead>
+              <tr>
+                <th scope="col">Dungeon</th>
+                <th scope="col" class="num">Key</th>
+                <th scope="col" class="num">Time</th>
+                <th scope="col" class="num">Points</th>
+                <th scope="col" class="num">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let best of dungeonBests()" [class.not-played]="!best.run">
+                <th scope="row">
+                  <span class="dungeon-name">
+                    <img [src]="best.dungeon.icon" alt="" loading="lazy" />{{ best.dungeon.name }}
+                  </span>
+                </th>
+                <ng-container *ngIf="best.run as run; else notPlayedCells">
+                  <td class="num" [class.over-time]="run.upgrades === 0">
+                    <span class="level">
+                      <span class="level-value">+{{ run.keyLevel }}</span>
+                      <span class="level-star" *ngIf="run.upgrades > 0" [title]="'Timed, +' + run.upgrades">{{ upgradeStars(run.upgrades) }}<span class="visually-hidden"> timed +{{ run.upgrades }}</span></span>
+                    </span>
+                  </td>
+                  <td class="num time" [title]="'Timer ' + run.timerClock">
+                    {{ run.clearClock }}
+                    <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
+                  </td>
+                  <td class="num points" [ngClass]="'q-' + run.quality">{{ run.score | number:'1.1-1' }}</td>
+                  <td class="num date"><time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time></td>
+                </ng-container>
+                <ng-template #notPlayedCells>
+                  <td class="not-played-cell" colspan="4">Not played</td>
+                </ng-template>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #bestCards>
+            <ol class="best-cards">
+              <li *ngFor="let best of dungeonBests()" [class.not-played]="!best.run">
+                <img class="best-card-icon" [src]="best.dungeon.icon" alt="" loading="lazy" />
+                <span class="best-card-body">
+                  <span class="best-card-name">{{ best.dungeon.name }}</span>
+                  <span class="best-card-meta" *ngIf="best.run as run; else notPlayedMeta">
+                    {{ run.clearClock }}
+                    <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
+                    · <time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time>
+                  </span>
+                  <ng-template #notPlayedMeta><span class="best-card-meta">Not played</span></ng-template>
+                </span>
+                <ng-container *ngIf="best.run as run">
+                  <span class="level" [class.over-time]="run.upgrades === 0">
+                    <span class="level-value">+{{ run.keyLevel }}</span>
+                    <span class="level-star">{{ upgradeStars(run.upgrades) }}<span class="visually-hidden" *ngIf="run.upgrades > 0"> timed +{{ run.upgrades }}</span></span>
+                  </span>
+                  <span class="points" [ngClass]="'q-' + run.quality"><span class="visually-hidden">Points </span>{{ run.score | number:'1.1-1' }}</span>
+                </ng-container>
+              </li>
+            </ol>
+          </ng-template>
+        </section>
+
+        <section class="card" aria-labelledby="teammates-title">
+          <header class="card-header">
+            <h2 id="teammates-title">Frequent teammates</h2>
+            <p class="card-subtitle">Most runs together, and their best key together</p>
+          </header>
+          <ol class="teammates" *ngIf="teammates().length; else noTeammates">
+            <li *ngFor="let mate of teammates(); trackBy: trackCharacter">
+              <a class="teammate" [routerLink]="mate.member.profileLink">
+                <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
+                <span class="teammate-body">
+                  <span class="teammate-name" [style.color]="mate.member.color">{{ mate.member.name }}</span>
+                  <span class="teammate-meta">{{ mate.member.realm }} · {{ mate.member.spec }}</span>
+                </span>
+                <span class="teammate-numbers">
+                  <span class="teammate-count"><b>{{ mate.runs | number }}</b> {{ mate.runs === 1 ? 'run' : 'runs' }}</span>
+                  <span class="teammate-best" [title]="'Best key together: ' + mate.dungeonName + ' +' + mate.keyLevel">
+                    {{ mate.dungeon }} +{{ mate.keyLevel }}<span class="level-star" *ngIf="mate.upgrades > 0">{{ upgradeStars(mate.upgrades) }}</span>
+                  </span>
+                </span>
+              </a>
+            </li>
+          </ol>
+          <ng-template #noTeammates>
+            <p class="card-empty">No runs with anyone yet.</p>
+          </ng-template>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="timeline-title" *ngIf="chart() as chart">
+        <header class="card-header">
+          <h2 id="timeline-title">Score over the season</h2>
+          <p class="card-subtitle">
+            At the end of each day in your local time · shaded by affix week ·
+            <span class="hint-hover">hover a day for its runs</span><span class="hint-touch">tap a day for its runs</span>
+          </p>
+        </header>
+        <!-- Wider than a phone in a long season: opens on the newest days, at the right end. -->
+        <div class="chart-scroll" [appScrollToEnd]="chart.points.length">
+          <div class="line-chart" [style.--columns]="chart.points.length">
+            <div class="y-axis" aria-hidden="true">
+              <span *ngFor="let line of chart.gridlines" [style.bottom.%]="line.position">{{ line.value }}</span>
+            </div>
+            <div class="plot">
+              <div class="gridlines" aria-hidden="true">
+                <span *ngFor="let line of chart.gridlines" [style.bottom.%]="line.position"></span>
+              </div>
+              <div class="week-bands" aria-hidden="true">
+                <span
+                  *ngFor="let band of chart.bands"
+                  [class.shade]="band.shade"
+                  [style.grid-column]="band.start + ' / span ' + band.span">
+                  <em><img *ngFor="let affix of band.affixes" [src]="affix.icon" alt="" loading="lazy" /></em>
+                </span>
+              </div>
+              <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <polygon class="area" [attr.points]="chart.area" />
+                <polyline class="stroke" [attr.points]="chart.line" vector-effect="non-scaling-stroke" />
+              </svg>
+              <div class="columns">
+                <div
+                  class="column"
+                  appTapTooltip
+                  *ngFor="let point of chart.points"
+                  [class.flip]="point.flip"
+                  [class.middle]="point.middle"
+                  [class.played]="point.day.runs > 0"
+                  role="img"
+                  tabindex="0"
+                  [attr.aria-label]="point.ariaLabel">
+                  <span class="dot" [style.bottom.%]="point.bottom"></span>
+                  <span class="tooltip" aria-hidden="true">
+                    <strong>{{ point.day.score | number:'1.1-1' }}</strong>
+                    <span>{{ point.longLabel }}</span>
+                    <span class="tooltip-row" *ngIf="point.day.runs; else noRunsThatDay">
+                      {{ point.day.runs }} {{ point.day.runs === 1 ? 'run' : 'runs' }}<b>+{{ point.day.gained | number:'1.1-1' }}</b>
+                    </span>
+                    <ng-template #noRunsThatDay><span class="tooltip-meta">No runs</span></ng-template>
+                  </span>
+                </div>
+              </div>
+              <div class="x-labels" aria-hidden="true">
+                <span *ngFor="let point of chart.points">{{ point.showLabel ? point.label : '' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="history" aria-labelledby="history-title">
+        <header class="history-header">
+          <h2 id="history-title">Runs</h2>
+          <p>{{ runs().length | number }} this season, newest first. Rank is the run's place among every run of the season.</p>
+        </header>
+        <app-mythic-plus-runs-list
+          caption="Mythic+ runs, newest first"
+          emptyMessage="No runs this season."
+          [rows]="historyRows()"
+          [expandedRunId]="expandedRunId()"
+          [cards]="cards()"
+          (toggleRun)="toggleRun($event)" />
+        <button type="button" class="more-runs" *ngIf="nextRuns()" (click)="showMoreRuns()">
+          Show {{ nextRuns() }} more {{ nextRuns() === 1 ? 'run' : 'runs' }}
+        </button>
+      </section>
+    </ng-container>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />
+
+<ng-template #noProfile>
+  <section class="not-found" *ngIf="ambiguous().length; else notFound">
+    <h1>Which {{ urlName() }}?</h1>
+    <p>More than one character on {{ realmName() }} goes by that name. Pick one:</p>
+    <ng-container *ngTemplateOutlet="characterList; context: { $implicit: ambiguous() }"></ng-container>
+  </section>
+
+  <ng-template #notFound>
+    <section class="not-found">
+      <h1>No Mythic+ runs this season</h1>
+      <p>
+        <strong>{{ urlName() }}</strong> on {{ realmName() }} has no Mythic+ run this season. The character
+        may have been renamed or moved to another realm, or not have finished a key yet.
+      </p>
+      <label class="character-search">
+        <span>Find a character</span>
+        <input
+          type="search"
+          placeholder="Character name..."
+          autocomplete="off"
+          enterkeyhint="search"
+          [value]="searchQuery()"
+          (input)="onSearch($event)" />
+      </label>
+      <ng-container *ngIf="searchResults().length; else noResults">
+        <ng-container *ngTemplateOutlet="characterList; context: { $implicit: searchResults() }"></ng-container>
+      </ng-container>
+      <ng-template #noResults>
+        <p class="search-empty" *ngIf="searchQuery().trim() as query">No character matching "{{ query }}" has a run this season.</p>
+      </ng-template>
+    </section>
+  </ng-template>
+</ng-template>
+
+<ng-template #characterList let-characters>
+  <ul class="character-results">
+    <li *ngFor="let character of characters; trackBy: trackCharacter">
+      <a [routerLink]="character.member.profileLink">
+        <img [src]="character.member.classIcon" [alt]="character.member.className" />
+        <span class="result-name" [style.color]="character.member.color">{{ character.member.name }}</span>
+        <span class="result-realm">{{ character.member.realm }}</span>
+        <span class="result-score">{{ character.score | number:'1.1-1' }}</span>
+      </a>
+    </li>
+  </ul>
+</ng-template>

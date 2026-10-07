@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ROLE_LABELS, UPGRADE_CUTOFFS } from './mythic-plus';
 import { MemberView, RunView } from './mythic-plus-views';
 
-/** The panel under an expanded run: result, affixes, timer and the whole group. */
+/** The panel under an expanded run: result, affixes, timer and the whole group, each linking to their profile. */
 @Component({
   selector: 'app-mythic-plus-run-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './mythic-plus-run-details.component.html',
   styleUrl: './mythic-plus-run-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

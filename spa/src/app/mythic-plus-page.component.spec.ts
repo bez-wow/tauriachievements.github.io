@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MythicPlusDungeonFile, MythicPlusIndex, MythicPlusPlayerEntry, NEWER_DATA_MESSAGE } from './mythic-plus';
@@ -84,5 +85,41 @@ describe('MythicPlusPageComponent data from two exports', () => {
 
     expect(dataFiles.refreshes).toBe(0);
     expect(page.runsByDungeon().get('cos')?.[0].roster[0].name).toBe('Exkeito');
+  });
+});
+
+describe('MythicPlusPageComponent character and realm in the URL', () => {
+  // Two runs: Exkeito (Evermoon) with Napim (Tauri), and Napim alone.
+  const both = exportOf('cccccccccccc', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
+  both.cos.runs = [
+    [19, 1297289, 1791293804, 196, [], [[0, 0], [1, 0]]],
+    [15, 1297289, 1791293904, 160, [], [[1, 0]]]
+  ];
+
+  async function open(url: string): Promise<MythicPlusPageComponent> {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(both.index, both) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    return harness.navigateByUrl(url, MythicPlusPageComponent);
+  }
+
+  it('shows only the runs of the character a profile links to, matched to the export', async () => {
+    const page = await open('/mythic-plus?character=napim-tauri');
+
+    expect(page.characterFilter()).toMatchObject({ key: 'Napim|Tauri', name: 'Napim', realm: 'Tauri', color: '#ff7d0a' });
+    expect(page.characterFilter()?.profileLink).toEqual(['/mythic-plus', 'character', 'tauri', 'Napim']);
+    expect(page.filteredRows().length).toBe(2);
+  });
+
+  it('ranks the players of one realm', async () => {
+    const page = await open('/mythic-plus?view=players&realm=evermoon');
+
+    expect(page.filteredPlayers().map(entry => entry.player.member.name)).toEqual(['Exkeito']);
+    expect(page.realmOptions().map(option => option.label)).toEqual(['All realms', 'Evermoon', 'Tauri']);
+    expect(page.activeFilterLabels()).toEqual(['Evermoon']);
   });
 });

@@ -50,11 +50,7 @@
         <span class="roster-identity">
           <img [src]="member.classIcon" [alt]="member.className" />
           <img [src]="member.raceIcon" alt="" />
-          <a
-            [href]="member.armoryUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            [style.color]="member.color">{{ member.name }}</a>
+          <a [routerLink]="member.profileLink" [style.color]="member.color">{{ member.name }}</a>
         </span>
         <span class="roster-meta">{{ member.spec }} {{ member.className }}</span>
         <span class="roster-meta" *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>

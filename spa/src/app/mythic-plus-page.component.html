@@ -125,10 +125,20 @@
           <ng-container *ngIf="view() === 'players'">
             <app-mobile-filter-toggle
               controlsId="mythic-plus-filters"
-              label="Class"
               [expanded]="filtersOpen()"
               [activeFilters]="activeFilterLabels()"
               (expandedChange)="filtersOpen.set($event)" />
+            <div class="filter-slot collapsible-filter">
+              <app-filter-dropdown
+                dropdownId="mythicPlusRealm"
+                triggerId="mythicPlusRealmTrigger"
+                ariaLabel="Filter players by realm"
+                [options]="realmOptions()"
+                [selectedValue]="realmFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setRealmFilter($event)" />
+            </div>
             <div class="filter-slot collapsible-filter">
               <app-filter-dropdown
                 dropdownId="mythicPlusClass"
@@ -156,23 +166,25 @@
             <button
               type="button"
               class="filter-reset collapsible-filter"
-              *ngIf="classFilter() !== undefined"
-              aria-label="Reset class and spec filters"
-              (click)="setClassFilter(undefined)">
+              *ngIf="activeFilterLabels().length"
+              aria-label="Reset realm, class and spec filters"
+              (click)="resetFilters()">
               <span aria-hidden="true">✕</span> Reset
             </button>
           </ng-container>
-          <button
-            type="button"
-            class="character-chip"
-            *ngIf="view() === 'runs' && characterFilter() as character"
-            [title]="'Showing runs with ' + character.name + ' (' + character.realm + ')'"
-            [attr.aria-label]="'Showing runs with ' + character.name + ' (' + character.realm + '). Remove filter'"
-            (click)="clearCharacterFilter()">
+          <div class="character-chip" *ngIf="view() === 'runs' && characterFilter() as character">
             <span class="character-chip-name" [style.color]="character.color">{{ character.name }}</span>
             <span class="character-chip-realm">{{ character.realm }}</span>
-            <span class="character-chip-remove" aria-hidden="true">✕</span>
-          </button>
+            <a class="character-chip-profile" [routerLink]="character.profileLink">Profile</a>
+            <button
+              type="button"
+              class="character-chip-remove"
+              [title]="'Show every run, not only those with ' + character.name"
+              [attr.aria-label]="'Showing runs with ' + character.name + ' (' + character.realm + '). Remove filter'"
+              (click)="clearCharacterFilter()">
+              <span aria-hidden="true">✕</span>
+            </button>
+          </div>
           <label class="player-search">
             <span class="visually-hidden">Search by player name</span>
             <input
@@ -201,7 +213,7 @@
         [singleDungeon]="!!selectedDungeon()"
         [emptyMessage]="emptyMessage()"
         [cards]="cards()"
-        (playerSelected)="showPlayerRuns($event)" />
+        [highlightKey]="characterFilter()?.key" />
 
       <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
     </ng-container>

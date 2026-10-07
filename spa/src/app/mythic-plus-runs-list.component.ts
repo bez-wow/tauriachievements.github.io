@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { upgradeStars } from './mythic-plus';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
 import { MemberView, RunRow } from './mythic-plus-views';
@@ -7,11 +8,12 @@ import { MemberView, RunRow } from './mythic-plus-views';
 /**
  * One page of ranked runs. A ten-column table on wide screens; on narrow ones a card per run
  * (rank, dungeon, key, time, score and the group's names) that opens the same details panel.
+ * Names link to the characters' profiles.
  */
 @Component({
   selector: 'app-mythic-plus-runs-list',
   standalone: true,
-  imports: [CommonModule, MythicPlusRunDetailsComponent],
+  imports: [CommonModule, RouterLink, MythicPlusRunDetailsComponent],
   templateUrl: './mythic-plus-runs-list.component.html',
   styleUrl: './mythic-plus-runs-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -22,6 +24,8 @@ export class MythicPlusRunsListComponent {
   readonly emptyMessage = input('');
   /** Cards instead of the table (MYTHIC_PLUS_CARDS_QUERY). */
   readonly cards = input(false);
+  /** Names the list for screen readers. */
+  readonly caption = input('Mythic+ runs ranked by score');
 
   readonly toggleRun = output<string>();
 

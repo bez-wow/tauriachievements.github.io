@@ -1,7 +1,7 @@
 <ng-container *ngIf="cards(); else table">
   <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon" *ngIf="rows().length; else empty">
-    <li *ngFor="let row of rows(); trackBy: trackPlayer">
-      <button type="button" class="player-card" (click)="playerSelected.emit(row)">
+    <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()">
+      <a class="player-card" [routerLink]="row.member.profileLink">
         <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
         <span class="card-body">
           <span class="card-line">
@@ -29,7 +29,7 @@
           </ng-template>
         </span>
         <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
-      </button>
+      </a>
     </li>
   </ol>
 </ng-container>
@@ -64,17 +64,16 @@
           class="player-row"
           *ngFor="let row of rows(); let odd = odd; trackBy: trackPlayer"
           [class.alt]="odd"
-          [title]="'Show runs with ' + row.member.name"
-          (click)="playerSelected.emit(row)">
+          [class.highlighted]="row.key === highlightKey()"
+          [title]="'Open the profile of ' + row.member.name"
+          (click)="openProfile(row)">
           <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
           <td class="col-player">
             <span class="player-identity">
               <img [src]="row.member.classIcon" [alt]="row.member.className" />
               <a
                 class="member-link"
-                [href]="row.member.armoryUrl"
-                target="_blank"
-                rel="noopener noreferrer"
+                [routerLink]="row.member.profileLink"
                 [style.color]="row.member.color"
                 [attr.aria-label]="row.member.name + ', ' + row.member.spec + ' ' + row.member.className"
                 (click)="$event.stopPropagation()">{{ row.member.name }}<span class="member-tooltip" aria-hidden="true">

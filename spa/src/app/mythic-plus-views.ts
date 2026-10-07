@@ -17,6 +17,7 @@ import {
   sortRoster,
   upgradeCutoffs
 } from './mythic-plus';
+import { characterProfileLink } from './mythic-plus-profile';
 import { specIconFor } from './mythic-plus-stats';
 
 /**
@@ -27,10 +28,16 @@ import { specIconFor } from './mythic-plus-stats';
  */
 export const MYTHIC_PLUS_CARDS_QUERY = '(max-width: 900px)';
 
+/** Leaderboard rows per page: 50 in the tables, 25 of the taller cards. */
+export const MYTHIC_PLUS_PAGE_SIZE = 50;
+export const MYTHIC_PLUS_CARDS_PAGE_SIZE = 25;
+
 export interface MemberView extends MythicPlusMember {
   color: string;
   className: string;
   armoryUrl: string;
+  /** Router commands for the character's profile page. */
+  profileLink: string[];
   classIcon: string;
   raceIcon: string;
   specIcon?: string;
@@ -92,6 +99,7 @@ export function toMemberView(member: MythicPlusMember): MemberView {
     color: getClassColor(member.class) ?? '#e0e0e0',
     className: CLASS_NAMES[member.class] ?? 'Unknown',
     armoryUrl: getArmoryUrl(member.name, member.realm),
+    profileLink: characterProfileLink(member),
     classIcon: getClassIconPath(member.class),
     raceIcon: getRaceIconPath(member.race, member.gender),
     specIcon: specIconFor(member.class, member.spec)

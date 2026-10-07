@@ -49,6 +49,11 @@ export const routes: Routes = [
       .then(module => module.MythicPlusStatsPageComponent)
   },
   {
+    path: 'mythic-plus/character/:realm/:name',
+    loadComponent: () => import('./mythic-plus-profile-page.component')
+      .then(module => module.MythicPlusProfilePageComponent)
+  },
+  {
     path: 'guild-realm-firsts',
     redirectTo: 'raid-history',
     pathMatch: 'full'

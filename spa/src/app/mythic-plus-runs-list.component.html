@@ -1,5 +1,5 @@
 <ng-container *ngIf="cards(); else table">
-  <ol class="run-cards" aria-label="Mythic+ runs ranked by score" *ngIf="rows().length; else empty">
+  <ol class="run-cards" [attr.aria-label]="caption()" *ngIf="rows().length; else empty">
     <li
       class="run-card"
       *ngFor="let row of rows(); trackBy: trackRow"
@@ -48,7 +48,7 @@
 <ng-template #table>
   <div class="table-scroll">
     <table class="runs-table">
-      <caption class="visually-hidden">Mythic+ runs ranked by score</caption>
+      <caption class="visually-hidden">{{ caption() }}</caption>
       <thead>
         <tr>
           <th scope="col" class="col-toggle"><span class="visually-hidden">Details</span></th>
@@ -149,9 +149,7 @@
   <a
     *ngIf="member"
     class="member-link"
-    [href]="member.armoryUrl"
-    target="_blank"
-    rel="noopener noreferrer"
+    [routerLink]="member.profileLink"
     [style.color]="member.color"
     [attr.aria-label]="member.name + ', ' + member.spec + ' ' + member.className"
     (click)="$event.stopPropagation()">{{ member.name }}<span class="member-tooltip" aria-hidden="true">
