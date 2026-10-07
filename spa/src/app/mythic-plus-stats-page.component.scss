@@ -1,3 +1,5 @@
+@use './mythic-plus-shared' as shared;
+
 // Same palette as the M+ leaderboard: dark cards, gold accent. Timed / depleted reuse the
 // scoring page's green and red; key level bands use the leaderboard's item-quality colours
 // (common grey, epic, legendary).
@@ -73,43 +75,16 @@ $plot-height: 200px;
   gap: 8px 16px;
 }
 
-.week-affixes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: #bdbdbd;
-  font-size: .8rem;
+.affix-icon { @include shared.affix-icon; }
 
-  li { position: relative; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-
-  // Mouse only, like the leaderboard's affix tooltips.
-  @media (hover: hover) {
-    li:hover .week-affix-tooltip { opacity: 1; visibility: visible; }
-  }
-}
-
-// The CDN icons carry a ~4px dark frame baked into their 62px art; zoom past it inside a clipped box.
-.affix-icon {
-  display: block;
-  width: 22px;
-  height: 22px;
-  overflow: hidden;
-
-  img { display: block; width: 100%; height: 100%; transform: scale(1.2); }
-}
-
-// Instant tooltip with the affix description, as on the leaderboard.
-// Opens below: above, it would slide under the sticky site header.
+// The weeks table's affix description (mouse only), placed against the viewport; see `.floating`.
 .week-affix-tooltip {
   position: absolute;
   z-index: 20;
   top: calc(100% + 6px);
   left: 0;
   width: max-content;
-  max-width: 280px;
+  max-width: min(280px, calc(100vw - 32px));
   padding: 6px 10px;
   border: 1px solid #3a3a3a;
   border-radius: 6px;
@@ -386,6 +361,8 @@ $plot-height: 200px;
 }
 
 .flip .tooltip { right: calc(100% + 6px); left: auto; }
+// A column half the chart wide (or all of it) has no room beside it.
+.column.wide .tooltip { right: auto; left: 50%; transform: translateX(-50%); }
 .tooltip-meta { color: #8a8a8a; font-size: .69rem; }
 
 .tooltip-row {
@@ -512,4 +489,118 @@ $plot-height: 200px;
   color: $gold;
   font-size: .68rem;
   font-weight: 700;
+}
+
+// "Hover a level" for a mouse, "Tap a level" on a touch screen.
+.hint-touch { display: none; }
+
+@media (hover: none) {
+  .hint-hover { display: none; }
+  .hint-touch { display: inline; }
+}
+
+// Affix weeks as cards (narrow screens): affixes, dates, then the numbers in a 2x2 grid.
+.week-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.week-card {
+  padding: 10px 12px;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+
+  &.current { border-color: rgba(247, 181, 0, .45); background: rgba(247, 181, 0, .05); }
+}
+
+.week-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+}
+
+.week-card-dates { margin-top: 2px; color: #9a9a9a; font-size: .78rem; }
+
+.week-card-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin: 8px 0 0;
+
+  dt { color: #8a8a8a; font-size: .72rem; }
+  dd { margin: 0; color: #fff; font-size: .95rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+}
+
+@media (pointer: coarse) {
+  .segmented button { min-height: 40px; }
+  .back-link { min-height: 40px; }
+  // The 14 px bars are hard to hit with a finger; the invisible strip makes them about 34 px tall.
+  .track::before { position: absolute; inset: -10px 0; content: ''; }
+}
+
+@media (max-width: shared.$phone-breakpoint) {
+  .stats-page { padding-top: 32px; }
+  .page-header h1 { font-size: 1.35rem; }
+
+  .chart-card { padding: 12px 12px 14px; }
+
+  // Each switch fills its row with even buttons.
+  .chart-header .segmented, .chart-controls .segmented { flex: 1 1 100%; }
+  .chart-header .segmented button, .chart-controls .segmented button { flex: 1 1 0; padding: 7px 6px; }
+
+  // The dungeon picker gets its own row instead of squeezing the title into a narrow column.
+  .chart-header.with-corner { flex-wrap: wrap; }
+  .corner-filter { width: 100%; }
+
+  // Narrower columns, so a season's days need less sideways scrolling, and key levels fit.
+  .column-chart {
+    grid-template-columns: 36px minmax(0, 1fr);
+    // Room for the last date or level label, which overhangs its narrow column.
+    padding-right: 14px;
+
+    &.days { min-width: max(100%, calc(var(--columns) * 8px)); }
+    &.levels { min-width: 0; }
+  }
+
+  // Name and numbers on one line, the bar under them at full width.
+  .dungeon-rows li {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'name value' 'track track';
+    gap: 4px 10px;
+  }
+
+  .dungeon-name { grid-area: name; }
+  .track { grid-area: track; }
+
+  .dungeon-value {
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0 8px;
+    grid-area: value;
+    text-align: right;
+  }
+
+  .week-card-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  // A tooltip beside a column near the middle would run past the end of a phone-wide chart
+  // (and make it scroll); those open centred over their column instead.
+  .column.middle .tooltip { right: auto; left: 50%; transform: translateX(-50%); }
+
+  // Hidden tooltips still widen a scrolling chart, which would then scroll for nothing.
+  .tooltip { display: none; }
+  .column:focus-visible .tooltip, .column.tooltip-open .tooltip,
+  .track:focus-visible .tooltip, .track.tooltip-open .tooltip { display: flex; }
+
+  @media (hover: hover) {
+    .column:hover .tooltip, .track:hover .tooltip { display: flex; }
+  }
 }

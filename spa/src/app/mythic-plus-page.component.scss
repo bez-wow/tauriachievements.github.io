@@ -1,10 +1,25 @@
+@use './mythic-plus-shared' as *;
+
 :host { display: block; width: 100%; }
+
+@include visually-hidden;
 
 .mplus-page {
   width: min(1240px, 100%);
   margin: 0 auto;
   padding: 48px 16px;
   color: #e0e0e0;
+}
+
+// Season / this week switch, with the current week's affixes beside it.
+.period-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 14px;
+
+  .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
 }
 
 // Dungeon picker — scopes both the chart and the leaderboard below it. `auto-fit` stretches the tiles
@@ -38,8 +53,8 @@
   .dungeon-tile-all { width: 36px; height: 36px; border-radius: 4px; }
 
   &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
-  &.active { border-color: #f7b500; background: #231d0a; color: #f7b500; box-shadow: 0 0 12px rgba(247, 181, 0, .2); }
-  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+  &.active { border-color: $gold; background: #231d0a; color: $gold; box-shadow: 0 0 12px rgba(247, 181, 0, .2); }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
 .dungeon-tile-all {
@@ -47,10 +62,10 @@
   place-items: center;
   background: #262626;
 
-  svg { width: 22px; height: 22px; fill: #f7b500; }
+  svg { width: 22px; height: 22px; fill: $gold; }
 }
 
-.spec-chart { margin-bottom: 10px; }
+.spec-chart { display: block; margin-bottom: 10px; }
 
 // Toolbar + pager
 .toolbar {
@@ -63,17 +78,29 @@
   scroll-margin-top: 64px;
 }
 
+.toolbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+
+  h2 { color: #fff; font-size: 1.2rem; }
+  span { color: #9a9a9a; font-size: .85rem; font-variant-numeric: tabular-nums; }
+}
+
 .toolbar-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+
+  // First in the markup (and tab order), last on the row.
+  .view-switch { order: 1; }
 }
 
 // Bar-chart icon on the link to /mythic-plus/stats.
-.scoring-link-chart { width: 14px; height: 14px; fill: #f7b500; }
+.scoring-link-chart { width: 14px; height: 14px; flex: none; fill: $gold; }
 
-// Opens /mythic-plus/scoring, the page that explains run and player scores.
+// Opens /mythic-plus/stats or /mythic-plus/scoring.
 .scoring-link {
   display: inline-flex;
   align-items: center;
@@ -89,18 +116,19 @@
   transition: border-color .15s ease, color .15s ease;
 
   &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
-  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
 .scoring-link-icon {
   display: grid;
+  flex: none;
   place-items: center;
   width: 18px;
   height: 18px;
   border-radius: 50%;
   background: #2e2716;
-  color: #f7b500;
-  font-size: .72rem;
+  color: $gold;
+  font-size: .75rem;
   font-weight: 700;
 }
 
@@ -124,8 +152,8 @@
     cursor: pointer;
 
     &:hover { color: #fff; }
-    &.active { background: #2e2716; color: #f7b500; }
-    &:focus-visible { outline: 2px solid #f7b500; outline-offset: 1px; }
+    &.active { background: #2e2716; color: $gold; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
   }
 }
 
@@ -147,22 +175,13 @@
   font-size: 1rem;
 
   .character-summary-count {
-    color: #f7b500;
+    color: $gold;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
   .character-summary-label { color: #bdbdbd; }
   .character-summary-realm { color: #8a8a8a; }
-}
-
-.toolbar-title {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-
-  h2 { color: #fff; font-size: 1.2rem; }
-  span { color: #9a9a9a; font-size: .85rem; font-variant-numeric: tabular-nums; }
 }
 
 // Class / spec dropdowns (players view) sit in front of the search box.
@@ -190,10 +209,10 @@
   font-weight: 700;
   cursor: pointer;
 
-  span { color: #f7b500; font-size: .75rem; }
+  span { color: $gold; font-size: .75rem; }
 
-  &:hover { border-color: #f7b500; color: #fff; }
-  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+  &:hover { border-color: $gold; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
 // The character picked from a player row; the runs list shows only their runs until it's removed.
@@ -204,7 +223,7 @@
   max-width: 100%;
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #f7b500;
+  border: 1px solid $gold;
   border-radius: 7px;
   background: #111;
   font: inherit;
@@ -214,10 +233,10 @@
 
   .character-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .character-chip-realm { color: #8a8a8a; font-weight: 400; white-space: nowrap; }
-  .character-chip-remove { color: #f7b500; font-size: .75rem; }
+  .character-chip-remove { color: $gold; font-size: .75rem; }
 
   &:hover { background: #1c1c1c; }
-  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
 .player-search input {
@@ -231,14 +250,14 @@
   font: inherit;
   font-size: .85rem;
 
-  &:focus { border-color: #f7b500; outline: none; }
+  &:focus { border-color: $gold; outline: none; }
 }
 
 .pager {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 8px 12px;
   margin-bottom: 12px;
 
   &.pager-bottom { margin: 12px 0 0; }
@@ -246,6 +265,7 @@
   button {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     padding: 6px 12px;
     border: 1px solid #5a5a5a;
@@ -256,336 +276,21 @@
     font-size: .85rem;
     cursor: pointer;
 
-    &:hover:not(:disabled) { border-color: #f7b500; }
-    &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+    &:hover:not(:disabled) { border-color: $gold; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
     &:disabled { border-color: #333; background: #2a2a2a; color: #777; cursor: default; }
   }
 }
 
-.pager-status { margin-left: 4px; color: #9a9a9a; font-size: .8rem; }
+.pager-buttons { display: flex; gap: 8px; }
+.pager-status { color: #9a9a9a; font-size: .8rem; }
 
-// Leaderboard table
-.table-scroll {
-  overflow-x: auto;
-  border-radius: 4px;
-  background: #1b1b1b;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
-}
-
-.runs-table {
-  width: 100%;
-  min-width: 1040px;
-  border-collapse: collapse;
-  font-size: .875rem;
-
-  th {
-    padding: 12px 8px;
-    background: #141414;
-    color: #fff;
-    font-size: .95rem;
-    font-weight: 600;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  td { height: 42px; padding: 0 8px; text-align: center; white-space: nowrap; }
-
-  .col-member, .col-dps { text-align: left; }
-  .col-toggle { width: 36px; }
-}
-
-.run-row {
-  border-bottom: 1px solid #141414;
-  background: #2b2b2b;
-  cursor: pointer;
-
-  &.alt { background: #262626; }
-  &:hover { background: #333; }
-  &.expanded { background: #36302a; }
-}
-
-.row-toggle {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  margin: -4px auto;
-  border: 0;
-  border-radius: 4px;
-  background: none;
-  color: #fff;
-  cursor: pointer;
-
-  &:focus-visible { outline: 2px solid #f7b500; }
-}
-
-.caret {
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 6px solid currentColor;
-  transition: transform .15s ease;
-}
-
-.expanded .caret { transform: rotate(90deg); }
-
-.col-rank { font-size: 1.1rem; font-weight: 600; }
-.q-artifact { color: #e6cc80; }
-.q-legendary { color: #ff8000; }
-.q-epic { color: #b048f8; }
-.q-rare { color: #1a8cff; }
-.q-uncommon { color: #1eff00; }
-
-.col-dungeon { font-size: .8rem; font-weight: 700; }
-.col-level { color: #fff; font-size: 1rem; font-weight: 600; }
-// Fixed-width slots so every key number lines up, whether or not the run earned a star.
-.level {
-  display: inline-grid;
-  grid-template-columns: 2em 2.2em;
-  align-items: center;
-  column-gap: 3px;
-}
-
-.level-value { text-align: right; font-variant-numeric: tabular-nums; }
-.level-star { color: #f7b500; font-size: .7rem; text-align: left; letter-spacing: -1px; white-space: nowrap; }
-.col-time, .col-score { font-variant-numeric: tabular-nums; }
-.col-score { color: #fff; font-size: .95rem; }
-.depleted .col-level, .depleted .col-time { color: #8a8a8a; }
-
-// Players view
-.players-table {
-  min-width: 860px;
-
-  .col-player, .col-guild { text-align: left; }
-  .over-time { color: #8a8a8a; }
-}
-
-.player-identity {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  img { width: 20px; height: 20px; border-radius: 3px; }
-}
-
-.player-realm { color: #8a8a8a; font-size: .75rem; }
-.col-guild { max-width: 200px; overflow: hidden; color: #9a9a9a; font-size: .8rem; text-overflow: ellipsis; }
-.col-best { width: 52px; color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; }
-
-// Holds the clipped icon and its tooltip side by side, so the crop below can't cut the tooltip off.
-.affix {
-  position: relative;
-  display: inline-block;
-  margin: 0 3px;
-  vertical-align: middle;
-
-  .affix-tooltip { padding-left: 10px; }
-
-  // Mouse only: a tap opens the run details, which list every affix with its description.
-  @media (hover: hover) {
-    &:hover .affix-tooltip { opacity: 1; visibility: visible; }
-  }
-}
-
-// The CDN icons carry a ~4px dark frame baked into their 62px art; zoom past it inside a clipped box.
-.affix-icon {
-  display: block;
-  width: 22px;
-  height: 22px;
-  overflow: hidden;
-
-  img { display: block; width: 100%; height: 100%; transform: scale(1.2); }
-}
-
-.member-link {
-  position: relative;
-  // Padding grows the tap area; the margins keep the names where they were, 10 px apart.
-  margin: 0 5px 0 -5px;
-  padding: 8px 5px;
-  font-size: .85rem;
-  text-decoration: none;
-
-  .member-tooltip { bottom: calc(100% - 2px); }
-
-  &:focus-visible { text-decoration: underline; }
-  &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
-
-  // Mouse only: on a touch screen the run details list each member's spec and class.
-  @media (hover: hover) {
-    &:hover { text-decoration: underline; }
-    &:hover .member-tooltip { opacity: 1; visibility: visible; }
-  }
-}
-
-// Instant dark tooltip above a player name (class icon, spec icon, "Spec Class") or an affix icon (its name).
-.member-tooltip,
-.affix-tooltip {
-  position: absolute;
-  z-index: 5;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 4px;
-  border: 1px solid #3a3a3a;
-  border-radius: 6px;
-  background: #0d0d0d;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
-  color: #fff;
-  font-size: .85rem;
-  font-weight: 400;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateX(-50%);
-
-  img { display: block; width: 20px; height: 20px; }
-}
-
-// Same zoom-past-the-frame treatment as the affix icons.
-.member-tooltip-spec {
-  width: 20px;
-  height: 20px;
-  overflow: hidden;
-
-  img { transform: scale(1.2); }
-}
-
-.role-heading { display: inline-flex; align-items: center; gap: 6px; }
-
-.role-icon {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid #555;
-  border-radius: 50%;
-  background: #0c0c0c;
-
-  svg { width: 12px; height: 12px; fill: currentColor; }
-  &.tank { color: #6ea8ff; }
-  &.healer { color: #3ecf5e; }
-  &.dps { color: #e5484d; }
-}
-
-.empty-row td { height: 120px; color: #9a9a9a; white-space: normal; }
-
-// Expanded run details
-.details-row td {
-  height: auto;
-  padding: 0;
-  border-bottom: 1px solid #141414;
-  background: #1f1c17;
-  text-align: left;
-  white-space: normal;
-}
-
-.run-details {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px 32px;
-  padding: 18px 20px 20px 48px;
-
-  h3 { margin-bottom: 8px; color: #f7b500; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
-}
-
-.details-affixes { grid-row: span 2; }
-.details-roster { grid-column: 1 / -1; }
-
-.details-summary {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-
-  h2 { color: #fff; font-size: 1.15rem; }
-}
-
-.details-dungeon-icon { width: 56px; height: 56px; border: 2px solid #f7b500; border-radius: 6px; }
-.details-level { color: #f7b500; }
-.details-result { color: #7fdc8f; font-size: .85rem; font-weight: 700; }
-.details-result.depleted { color: #e06666; }
-.details-date { color: #9a9a9a; font-size: .8rem; }
-
-.timer-values {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-variant-numeric: tabular-nums;
-
-  strong { color: #fff; font-size: 1.1rem; }
-}
-
-.timer-of { color: #9a9a9a; }
-.timer-delta { color: #7fdc8f; font-weight: 700; }
-.timer-delta.over { color: #e06666; }
-
-.timer-bar { position: relative; height: 10px; overflow: hidden; border-radius: 5px; background: #333; }
-.timer-fill { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #2f9e44, #7fdc8f); }
-.timer-fill.over { background: linear-gradient(90deg, #a61e1e, #e06666); }
-.timer-mark { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(0, 0, 0, .75); }
-
-.timer-cutoffs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  margin-top: 6px;
-  color: #9a9a9a;
-  font-size: .75rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.affix-list, .roster-list { display: grid; gap: 8px; list-style: none; }
-
-.affix-list li {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  align-items: start;
-  gap: 10px;
-  color: #bdbdbd;
-  font-size: .8rem;
-
-  img { width: 28px; height: 28px; border-radius: 4px; }
-  strong { display: block; color: #fff; font-size: .85rem; }
-}
-
-.roster-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-
-.roster-card {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 12px;
-  border-top: 2px solid #e5484d;
-  border-radius: 4px;
-  background: #292520;
-  font-size: .85rem;
-
-  &[data-role='tank'] { border-top-color: #6ea8ff; }
-  &[data-role='healer'] { border-top-color: #3ecf5e; }
-}
-
-.roster-role { color: #9a9a9a; font-size: .69rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-
-.roster-identity {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-
-  img { width: 18px; height: 18px; border-radius: 3px; }
-  a { overflow: hidden; font-weight: 700; text-decoration: none; text-overflow: ellipsis; }
-  a:hover, a:focus-visible { text-decoration: underline; }
-}
-
-.roster-meta { overflow: hidden; color: #9a9a9a; font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
 // Loading / error
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 
 .feedback button {
   padding: 9px 15px;
-  border: 1px solid #f7b500;
+  border: 1px solid $gold;
   border-radius: 5px;
   background: #231d0a;
   color: #fff;
@@ -596,72 +301,56 @@
   width: 34px;
   height: 34px;
   border: 3px solid rgba(255, 255, 255, .15);
-  border-top-color: #f7b500;
+  border-top-color: $gold;
   border-radius: 50%;
   animation: spin .8s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
+// Touch screens: every switch, link and pager button at least 40 px tall.
+@media (pointer: coarse) {
+  .view-switch button { min-height: 40px; }
+  .scoring-link { min-height: 40px; }
+  .pager button { min-height: 40px; }
 }
 
-@media (max-width: 640px) {
-  .pager-row { flex-direction: column; align-items: stretch; }
-  .player-search, .player-search input { width: 100%; }
-  // Class and spec split the first row in half; search fills the next row, with Reset beside it.
-  .filter-slot { flex: 1 1 calc(50% - 4px); width: auto; min-width: 0; }
-  .player-search { flex: 1 1 60%; order: 1; }
-  .filter-reset { order: 2; }
-}
+@media (max-width: $phone-breakpoint) {
+  .mplus-page { padding-top: 32px; }
 
-// Season / this week switch, with the current week's affixes beside it.
-.period-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  margin-bottom: 14px;
+  .dungeon-tile {
+    padding: 5px 2px;
+    font-size: .7rem;
 
-  .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
-}
-
-.week-affixes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: #bdbdbd;
-  font-size: .8rem;
-
-  li { position: relative; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-
-  // Mouse only, like the table's affix tooltips.
-  @media (hover: hover) {
-    li:hover .affix-tooltip { opacity: 1; visibility: visible; }
+    img { width: 32px; height: 32px; }
+    .dungeon-tile-all { width: 30px; height: 30px; }
   }
-}
 
-// The description runs a sentence or two, so wrap it and pin it to the left edge instead of centering.
-// Opens below: above, it would slide under the sticky site header.
-.week-affix-tooltip {
-  z-index: 20;
-  top: calc(100% + 6px);
-  bottom: auto;
-  left: 0;
-  width: max-content;
-  max-width: 280px;
-  padding: 6px 10px;
-  font-size: .8rem;
-  line-height: 1.4;
-  white-space: normal;
-  transform: none;
+  // Runs / Players across the full width; the two links share the row under it.
+  .toolbar-actions {
+    width: 100%;
+
+    .view-switch { order: 0; flex: 1 1 100%; }
+    .view-switch button { flex: 1 1 0; }
+  }
+
+  .scoring-link { flex: 1 1 0; justify-content: center; text-align: center; }
+
+  // Search (and the Class filters) first, then the pager.
+  .pager-row { flex-direction: column; align-items: stretch; }
+  .pager-row .leaderboard-filters { order: -1; }
+
+  // Four equal buttons, page count under them.
+  .pager { flex-direction: column; align-items: stretch; gap: 6px; }
+  .pager-buttons button { flex: 1 1 0; padding: 6px 4px; }
+  .pager-status { text-align: center; }
+
+  // Filters button (players view) and the search share the first row; the class and spec
+  // dropdowns and Reset open on the row under them.
+  .leaderboard-filters { flex-wrap: wrap; }
+  .player-search { flex: 1 1 0; min-width: 140px; order: -1; }
+  .player-search input { width: 100%; }
+  .character-chip { flex: 1 1 100%; order: -2; }
+  .filter-slot { flex: 1 1 0; width: auto; min-width: 0; }
+  .filters-collapsed .collapsible-filter { display: none; }
 }

@@ -1,0 +1,58 @@
+@use './mythic-plus-shared' as *;
+
+:host { display: block; min-width: 0; }
+
+// The list, not each affix, positions the tooltips: they open under the row at its left edge
+// and are never wider than it, so the last affix's description can't run off a phone's screen.
+.week-affixes {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #bdbdbd;
+  font-size: .8rem;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+
+    &:focus-visible { box-shadow: 0 0 0 2px $gold; }
+  }
+
+  .tooltip-open, li:focus-visible {
+    color: #fff;
+
+    .week-affix-tooltip { opacity: 1; visibility: visible; }
+  }
+
+  // :hover only counts for a mouse: touch browsers keep it on the last tapped affix,
+  // which would hold its tooltip open. A tap toggles .tooltip-open instead (appTapTooltip).
+  @media (hover: hover) {
+    li:hover { color: #fff; }
+    li:hover .week-affix-tooltip { opacity: 1; visibility: visible; }
+  }
+}
+
+.affix-icon { @include affix-icon; }
+
+// Opens below: above, it would slide under the sticky site header.
+.week-affix-tooltip {
+  @include tooltip-box;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max-content;
+  max-width: min(320px, 100%);
+  padding: 6px 10px;
+  font-size: .8rem;
+  line-height: 1.4;
+  white-space: normal;
+}

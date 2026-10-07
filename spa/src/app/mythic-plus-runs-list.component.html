@@ -1,0 +1,162 @@
+<ng-container *ngIf="cards(); else table">
+  <ol class="run-cards" aria-label="Mythic+ runs ranked by score" *ngIf="rows().length; else empty">
+    <li
+      class="run-card"
+      *ngFor="let row of rows(); trackBy: trackRow"
+      [class.expanded]="isExpanded(row.id)"
+      [class.depleted]="row.upgrades === 0">
+      <button
+        type="button"
+        class="run-card-summary"
+        [attr.aria-expanded]="isExpanded(row.id)"
+        [attr.aria-controls]="'run-details-' + row.id"
+        (click)="toggleRun.emit(row.id)">
+        <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+        <span class="card-body">
+          <span class="card-line">
+            <img class="card-dungeon-icon" [src]="row.dungeon.icon" alt="" loading="lazy" />
+            <span class="card-dungeon" [title]="row.dungeon.name">{{ row.dungeon.shortName }}</span>
+            <span class="level">
+              <span class="level-value">+{{ row.keyLevel }}</span>
+              <span class="level-star" *ngIf="row.upgrades > 0">{{ upgradeStars(row.upgrades) }}<span class="visually-hidden"> timed +{{ row.upgrades }}</span></span>
+            </span>
+            <span class="card-time">{{ row.clearTime }}<span class="visually-hidden" *ngIf="row.upgrades === 0"> over time</span></span>
+          </span>
+          <span class="card-roster">
+            <span
+              class="card-member"
+              *ngFor="let member of row.roster; trackBy: trackMember"
+              [attr.data-role]="member.role"
+              [style.color]="member.color">{{ member.name }}</span>
+          </span>
+        </span>
+        <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+        <span class="caret" aria-hidden="true"></span>
+      </button>
+      <app-mythic-plus-run-details
+        *ngIf="isExpanded(row.id)"
+        [id]="'run-details-' + row.id"
+        [run]="row" />
+    </li>
+  </ol>
+</ng-container>
+
+<ng-template #empty>
+  <p class="empty-cards">{{ emptyMessage() }}</p>
+</ng-template>
+
+<ng-template #table>
+  <div class="table-scroll">
+    <table class="runs-table">
+      <caption class="visually-hidden">Mythic+ runs ranked by score</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="col-toggle"><span class="visually-hidden">Details</span></th>
+          <th scope="col">Rank</th>
+          <th scope="col">Dungeon</th>
+          <th scope="col">Level</th>
+          <th scope="col">Time</th>
+          <th scope="col">Affixes</th>
+          <th scope="col" class="col-member">
+            <span class="role-heading">
+              Tank
+              <span class="role-icon tank" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z" /></svg>
+              </span>
+            </span>
+          </th>
+          <th scope="col" class="col-member">
+            <span class="role-heading">
+              Healer
+              <span class="role-icon healer" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z" /></svg>
+              </span>
+            </span>
+          </th>
+          <th scope="col" class="col-dps">
+            <span class="role-heading">
+              DPS
+              <span class="role-icon dps" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z" /></svg>
+              </span>
+            </span>
+          </th>
+          <th scope="col">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let row of rows(); let odd = odd; trackBy: trackRow">
+          <tr
+            class="run-row"
+            [class.alt]="odd"
+            [class.expanded]="isExpanded(row.id)"
+            [class.depleted]="row.upgrades === 0"
+            (click)="toggleRun.emit(row.id)">
+            <td class="col-toggle">
+              <button
+                type="button"
+                class="row-toggle"
+                [attr.aria-expanded]="isExpanded(row.id)"
+                [attr.aria-controls]="'run-details-' + row.id"
+                [attr.aria-label]="(isExpanded(row.id) ? 'Hide' : 'Show') + ' details for rank ' + row.rank"
+                (click)="$event.stopPropagation(); toggleRun.emit(row.id)">
+                <span class="caret" aria-hidden="true"></span>
+              </button>
+            </td>
+            <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+            <td class="col-dungeon" [title]="row.dungeon.name">{{ row.dungeon.shortName }}</td>
+            <td class="col-level">
+              <span class="level">
+                <span class="level-value">+{{ row.keyLevel }}</span>
+                <span class="level-star" *ngIf="row.upgrades > 0" [title]="'Timed, +' + row.upgrades">{{ upgradeStars(row.upgrades) }}<span class="visually-hidden"> timed +{{ row.upgrades }}</span></span>
+              </span>
+            </td>
+            <td class="col-time" [title]="row.upgrades === 0 ? 'Over time' : ''">{{ row.clearTime }}</td>
+            <td class="col-affixes">
+              <span class="affix" *ngFor="let affix of row.affixes">
+                <span class="affix-icon"><img [src]="affix.icon" [alt]="affix.name" loading="lazy" /></span>
+                <span class="affix-tooltip" aria-hidden="true">{{ affix.name }}</span>
+              </span>
+            </td>
+            <td class="col-member">
+              <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.tank }"></ng-container>
+            </td>
+            <td class="col-member">
+              <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.healer }"></ng-container>
+            </td>
+            <td class="col-dps">
+              <ng-container *ngFor="let member of row.dps; trackBy: trackMember">
+                <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: member }"></ng-container>
+              </ng-container>
+            </td>
+            <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+          </tr>
+
+          <tr class="details-row" *ngIf="isExpanded(row.id)" [id]="'run-details-' + row.id">
+            <td colspan="10"><app-mythic-plus-run-details [run]="row" /></td>
+          </tr>
+        </ng-container>
+
+        <tr class="empty-row" *ngIf="rows().length === 0">
+          <td colspan="10">{{ emptyMessage() }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-template>
+
+<ng-template #memberLink let-member>
+  <a
+    *ngIf="member"
+    class="member-link"
+    [href]="member.armoryUrl"
+    target="_blank"
+    rel="noopener noreferrer"
+    [style.color]="member.color"
+    [attr.aria-label]="member.name + ', ' + member.spec + ' ' + member.className"
+    (click)="$event.stopPropagation()">{{ member.name }}<span class="member-tooltip" aria-hidden="true">
+      <img [src]="member.classIcon" alt="" />
+      <span class="member-tooltip-spec" *ngIf="member.specIcon"><img [src]="member.specIcon" alt="" /></span>
+      <span>{{ member.spec }} {{ member.className }}</span>
+    </span></a>
+</ng-template>

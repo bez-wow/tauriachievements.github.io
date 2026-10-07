@@ -1,0 +1,202 @@
+@use './mythic-plus-shared' as *;
+
+:host { display: block; }
+
+@include quality-colors;
+@include key-level;
+@include visually-hidden;
+
+.over-time { color: #8a8a8a; }
+
+// Table (wide screens)
+.table-scroll {
+  @include table-scroll;
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.players-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: .875rem;
+
+  th {
+    padding: 12px 8px;
+    background: #141414;
+    color: #fff;
+    font-size: .95rem;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  td { height: 42px; padding: 0 8px; text-align: center; white-space: nowrap; }
+
+  .col-player, .col-guild { text-align: left; }
+}
+
+.player-row {
+  border-bottom: 1px solid #141414;
+  background: #2b2b2b;
+  cursor: pointer;
+
+  &.alt { background: #262626; }
+  &:hover { background: #333; }
+}
+
+.col-rank { font-size: 1.1rem; font-weight: 600; }
+.col-level { color: #fff; font-size: 1rem; font-weight: 600; }
+.col-time, .col-score { font-variant-numeric: tabular-nums; }
+.col-score { color: #fff; font-size: .95rem; }
+.col-guild { max-width: 200px; overflow: hidden; color: #9a9a9a; font-size: .8rem; text-overflow: ellipsis; }
+.col-best { width: 52px; color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; }
+td.over-time { color: #8a8a8a; }
+
+.player-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  img { width: 20px; height: 20px; border-radius: 3px; }
+}
+
+.player-realm { color: #8a8a8a; font-size: .75rem; }
+
+.member-link {
+  position: relative;
+  margin: 0 5px 0 -5px;
+  padding: 8px 5px;
+  font-size: .85rem;
+  text-decoration: none;
+
+  &:focus-visible { text-decoration: underline; }
+  &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
+
+  @media (hover: hover) {
+    &:hover { text-decoration: underline; }
+    &:hover .member-tooltip { opacity: 1; visibility: visible; }
+  }
+}
+
+.member-tooltip {
+  @include tooltip-box;
+  z-index: 5;
+  bottom: calc(100% - 2px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  font-size: .85rem;
+  white-space: nowrap;
+  transform: translateX(-50%);
+
+  img { display: block; width: 20px; height: 20px; }
+}
+
+.member-tooltip-spec {
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+
+  img { transform: scale(1.2); }
+}
+
+.empty-row td { height: 120px; color: #9a9a9a; white-space: normal; }
+
+// Cards (narrow screens)
+.player-cards {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  list-style: none;
+
+  li { border-bottom: 1px solid #141414; background: #2b2b2b; }
+  li:nth-child(even) { background: #262626; }
+}
+
+// The whole card opens the player's runs, as a table row does.
+.player-card {
+  display: grid;
+  width: 100%;
+  min-height: 56px;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 8px;
+  border: 0;
+  background: none;
+  color: #e0e0e0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:active { background: #333; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: -2px; }
+}
+
+.card-rank { font-size: 1.05rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
+
+.card-body { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+
+.card-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.card-class-icon { width: 20px; height: 20px; flex: none; border-radius: 3px; }
+.card-name { overflow: hidden; font-size: .95rem; font-weight: 700; text-overflow: ellipsis; }
+.card-realm { color: #8a8a8a; font-size: .75rem; }
+
+.card-guild {
+  overflow: hidden;
+  color: #9a9a9a;
+  font-size: .78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-bests {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: #fff;
+  font-size: .8rem;
+
+  .level { font-size: .95rem; font-weight: 600; }
+}
+
+.card-time { color: #bdbdbd; font-variant-numeric: tabular-nums; }
+
+// "EOA +17" per dungeon played; greyed when the best run there was over time.
+.best-chip {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #1b1b1b;
+  color: #bdbdbd;
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  b { color: #fff; font-variant-numeric: tabular-nums; }
+  &.over-time b { color: #8a8a8a; }
+}
+
+.card-score { color: #fff; font-size: .95rem; font-variant-numeric: tabular-nums; }
+
+.empty-cards {
+  padding: 48px 16px;
+  border-radius: 4px;
+  background: #1b1b1b;
+  color: #9a9a9a;
+  text-align: center;
+}

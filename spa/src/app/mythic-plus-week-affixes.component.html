@@ -1,0 +1,15 @@
+<ul class="week-affixes" [attr.aria-label]="label()">
+  <li
+    *ngFor="let affix of affixes()"
+    appTapTooltip
+    [attr.tabindex]="affix.description ? 0 : null"
+    [attr.aria-describedby]="affix.description ? idPrefix + affix.id : null">
+    <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>
+    <span>{{ affix.name }}</span>
+    <span
+      class="week-affix-tooltip"
+      role="tooltip"
+      *ngIf="affix.description"
+      [id]="idPrefix + affix.id">{{ affix.description }}</span>
+  </li>
+</ul>

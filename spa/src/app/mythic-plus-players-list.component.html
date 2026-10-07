@@ -1,0 +1,118 @@
+<ng-container *ngIf="cards(); else table">
+  <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon" *ngIf="rows().length; else empty">
+    <li *ngFor="let row of rows(); trackBy: trackPlayer">
+      <button type="button" class="player-card" (click)="playerSelected.emit(row)">
+        <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+        <span class="card-body">
+          <span class="card-line">
+            <img class="card-class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
+            <span class="card-name" [style.color]="row.member.color">{{ row.member.name }}</span>
+            <span class="card-realm">{{ row.member.realm }}</span>
+          </span>
+          <span class="card-guild" *ngIf="row.member.guild">&lt;{{ row.member.guild }}&gt;</span>
+          <span class="card-bests" *ngIf="singleDungeon(); else dungeonChips">
+            <ng-container *ngIf="row.bests[0] as best">
+              <span class="level" [class.over-time]="!best.timed">
+                <span class="level-value">+{{ best.keyLevel }}</span>
+                <span class="level-star" *ngIf="best.timed">{{ upgradeStars(best.upgrades) }}<span class="visually-hidden"> timed +{{ best.upgrades }}</span></span>
+              </span>
+              <span class="card-time" [class.over-time]="!best.timed">{{ best.clearTime }}</span>
+            </ng-container>
+          </span>
+          <ng-template #dungeonChips>
+            <span class="card-bests">
+              <span
+                class="best-chip"
+                *ngFor="let best of playedBests(row)"
+                [class.over-time]="!best.timed">{{ best.dungeon.shortName }} <b>+{{ best.keyLevel }}</b><span class="visually-hidden" *ngIf="!best.timed"> over time</span></span>
+            </span>
+          </ng-template>
+        </span>
+        <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+      </button>
+    </li>
+  </ol>
+</ng-container>
+
+<ng-template #empty>
+  <p class="empty-cards">{{ emptyMessage() }}</p>
+</ng-template>
+
+<ng-template #table>
+  <div class="table-scroll">
+    <table class="players-table">
+      <caption class="visually-hidden">Mythic+ players ranked by score: the sum of their best run in each dungeon</caption>
+      <thead>
+        <tr>
+          <th scope="col">Rank</th>
+          <th scope="col" class="col-player">Player</th>
+          <th scope="col" class="col-guild">Guild</th>
+          <ng-container *ngIf="singleDungeon(); else dungeonColumns">
+            <th scope="col">Best key</th>
+            <th scope="col">Time</th>
+          </ng-container>
+          <ng-template #dungeonColumns>
+            <th scope="col" class="col-best" *ngFor="let dungeon of dungeons(); trackBy: trackDungeon" [title]="dungeon.name">
+              {{ dungeon.shortName }}
+            </th>
+          </ng-template>
+          <th scope="col">Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="player-row"
+          *ngFor="let row of rows(); let odd = odd; trackBy: trackPlayer"
+          [class.alt]="odd"
+          [title]="'Show runs with ' + row.member.name"
+          (click)="playerSelected.emit(row)">
+          <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+          <td class="col-player">
+            <span class="player-identity">
+              <img [src]="row.member.classIcon" [alt]="row.member.className" />
+              <a
+                class="member-link"
+                [href]="row.member.armoryUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                [style.color]="row.member.color"
+                [attr.aria-label]="row.member.name + ', ' + row.member.spec + ' ' + row.member.className"
+                (click)="$event.stopPropagation()">{{ row.member.name }}<span class="member-tooltip" aria-hidden="true">
+                  <img [src]="row.member.classIcon" alt="" />
+                  <span class="member-tooltip-spec" *ngIf="row.member.specIcon"><img [src]="row.member.specIcon" alt="" /></span>
+                  <span>{{ row.member.spec }} {{ row.member.className }}</span>
+                </span></a>
+              <span class="player-realm">{{ row.member.realm }}</span>
+            </span>
+          </td>
+          <td class="col-guild">{{ row.member.guild }}</td>
+          <ng-container *ngIf="singleDungeon(); else dungeonCells">
+            <ng-container *ngIf="row.bests[0] as best">
+              <td class="col-level" [class.over-time]="!best.timed">
+                <span class="level">
+                  <span class="level-value">+{{ best.keyLevel }}</span>
+                  <span class="level-star" *ngIf="best.timed" [title]="'Timed, +' + best.upgrades">{{ upgradeStars(best.upgrades) }}<span class="visually-hidden"> timed +{{ best.upgrades }}</span></span>
+                </span>
+              </td>
+              <td class="col-time" [class.over-time]="!best.timed">{{ best.clearTime }}</td>
+            </ng-container>
+          </ng-container>
+          <ng-template #dungeonCells>
+            <td
+              class="col-best"
+              *ngFor="let best of row.bests"
+              [class.over-time]="!best?.timed"
+              [title]="bestTitle(best)">
+              {{ best ? '+' + best.keyLevel : '–' }}
+            </td>
+          </ng-template>
+          <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+        </tr>
+
+        <tr class="empty-row" *ngIf="rows().length === 0">
+          <td [attr.colspan]="singleDungeon() ? 6 : dungeons().length + 4">{{ emptyMessage() }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-template>
