@@ -280,6 +280,22 @@ export function runIncludesPlayer(run: { roster: ReadonlyArray<Pick<MythicPlusMe
   return !needle || run.roster.some(member => foldedMemberName(member).includes(needle));
 }
 
+/** `name|realm`: one character, whichever spec they played. */
+export function characterKey(member: Pick<MythicPlusMember, 'name' | 'realm'>): string {
+  return `${member.name}|${member.realm}`;
+}
+
+/**
+ * Exact match on one character, name and realm, for a player picked from the players view.
+ * Unlike the typed search, `Nap` doesn't find `Napim`, nor a `Nap` on another realm.
+ */
+export function runIncludesCharacter(
+  run: { roster: ReadonlyArray<Pick<MythicPlusMember, 'name' | 'realm'>> },
+  key: string
+): boolean {
+  return run.roster.some(member => characterKey(member) === key);
+}
+
 /** The same match as `runIncludesPlayer`, for a single character. */
 export function memberNameMatches(member: Pick<MythicPlusMember, 'name'>, query: string): boolean {
   const needle = foldName(query.trim());
@@ -287,7 +303,7 @@ export function memberNameMatches(member: Pick<MythicPlusMember, 'name'>, query:
 }
 
 export interface PlayerScore {
-  /** `name|realm` — a character, whichever spec they played. */
+  /** `characterKey`: a character, whichever spec they played. */
   key: string;
   /** The character as they appear in their highest-scoring run, so with that run's spec. */
   member: MythicPlusMember;
@@ -316,7 +332,7 @@ export function rankPlayers(
         continue;
       }
 
-      const key = `${member.name}|${member.realm}`;
+      const key = characterKey(member);
       let player = players.get(key);
       if (!player) {
         player = { member, topRun: run, bestRuns: new Map() };

@@ -39,6 +39,7 @@ import {
   PlayerScore,
   rankPlayers,
   rankRuns,
+  runIncludesCharacter,
   runIncludesPlayer,
   scoreQuality,
   sortRoster,
@@ -118,6 +119,15 @@ interface BestRunCell {
   upgrades: number;
   clearTime: string;
   score: number;
+}
+
+/** Runs view only: one character, picked from a player row. */
+interface CharacterFilter {
+  /** `characterKey` of the character. */
+  key: string;
+  name: string;
+  realm: string;
+  color: string;
 }
 
 interface PlayerRow {
@@ -223,6 +233,8 @@ export class MythicPlusPageComponent implements OnInit {
     this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   readonly page = signal(parsePage(this.route.snapshot.queryParamMap.get('page')));
   readonly search = signal('');
+  /** Set by clicking a player row; typing a search replaces it. */
+  readonly characterFilter = signal<CharacterFilter | undefined>(undefined);
   readonly expandedRunId = signal<string | undefined>(undefined);
   readonly view = signal<LeaderboardView>(
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
@@ -312,8 +324,13 @@ export class MythicPlusPageComponent implements OnInit {
 
   /** Ranks are per dungeon filter (like raider.io); the player search narrows rows without renumbering them. */
   readonly filteredRows = computed<RankedRun[]>(() => {
-    const query = this.search();
     const ranked = this.rankedRuns();
+    const character = this.characterFilter();
+    if (character) {
+      return ranked.filter(entry => runIncludesCharacter(entry.run, character.key));
+    }
+
+    const query = this.search();
     return query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
   });
 
@@ -392,6 +409,11 @@ export class MythicPlusPageComponent implements OnInit {
   readonly emptyMessage = computed(() => {
     const query = this.search().trim();
     const dungeon = this.selectedDungeon();
+    const character = this.characterFilter();
+
+    if (character && this.view() === 'runs') {
+      return `No runs with ${character.name} (${character.realm})${dungeon ? ` in ${dungeon.name}` : ''}.`;
+    }
 
     if (query) {
       const subject = this.view() === 'players' ? 'No players matching' : 'No runs with a player matching';
@@ -469,9 +491,14 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
-  /** From a player row: the runs view, searched down to that character. */
-  showPlayerRuns(name: string): void {
-    this.search.set(name);
+  /**
+   * From a player row: the runs view, filtered to exactly that character. Not through the
+   * search, whose partial match would also bring in `Napim` for `Nap`.
+   */
+  showPlayerRuns(row: PlayerRow): void {
+    const { name, realm, color } = row.member;
+    this.characterFilter.set({ key: row.key, name, realm, color });
+    this.search.set('');
     this.view.set('runs');
     this.page.set(1);
     this.expandedRunId.set(undefined);
@@ -502,8 +529,16 @@ export class MythicPlusPageComponent implements OnInit {
     }
   }
 
+  clearCharacterFilter(): void {
+    this.characterFilter.set(undefined);
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+  }
+
   onSearch(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
+    this.characterFilter.set(undefined);
 
     // Search isn't in the URL, so the URL only changes when `?page` needs resetting.
     if (this.page() !== 1) {

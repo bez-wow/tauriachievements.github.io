@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  characterKey,
   createRunDecoder,
   currentAffixWeek,
   formatClock,
@@ -10,6 +11,7 @@ import {
   pageCount,
   rankPlayers,
   rankRuns,
+  runIncludesCharacter,
   runIncludesPlayer,
   scoreQuality,
   sortRoster,
@@ -149,6 +151,35 @@ describe('runIncludesPlayer', () => {
   it('matches everything for an empty query and nothing for a stranger', () => {
     expect(runIncludesPlayer(run, '')).toBe(true);
     expect(runIncludesPlayer(run, 'Pretz')).toBe(false);
+  });
+});
+
+describe('runIncludesCharacter', () => {
+  const member = (name: string, realm = 'Tauri') =>
+    ({ name, realm, class: 4, race: 1, gender: 0, spec: 'Outlaw', role: 'dps' as const });
+  const run = (id: string, ...roster: ReturnType<typeof member>[]) =>
+    ({ id, dungeon: 'hov', keyLevel: 10, clearTimeSeconds: 1500, score: 150, completedAt: '', affixes: [], roster });
+
+  const runs = [
+    run('nap', member('Nap'), member('Exa')),
+    run('napim', member('Napim')),
+    run('anapiel', member('Anapiel'), member('Exa')),
+    run('other-realm', member('Nap', 'Evermoon')),
+    run('both', member('Napim'), member('Nap'))
+  ];
+
+  it('keeps only runs of the clicked character, not of similar names or another realm', () => {
+    // The player row carries the key rankPlayers gave it.
+    const nap = rankPlayers(runs).find(player => player.member.name === 'Nap' && player.member.realm === 'Tauri');
+    expect(nap?.key).toBe(characterKey(member('Nap')));
+
+    const shown = runs.filter(candidate => runIncludesCharacter(candidate, nap!.key)).map(candidate => candidate.id);
+    expect(shown).toEqual(['nap', 'both']);
+  });
+
+  it('leaves the typed search matching partial names', () => {
+    expect(runs.filter(candidate => runIncludesPlayer(candidate, 'nap')).map(candidate => candidate.id))
+      .toEqual(['nap', 'napim', 'anapiel', 'other-realm', 'both']);
   });
 });
 

@@ -151,6 +151,17 @@
               <span aria-hidden="true">✕</span> Reset
             </button>
           </ng-container>
+          <button
+            type="button"
+            class="character-chip"
+            *ngIf="view() === 'runs' && characterFilter() as character"
+            [title]="'Showing runs with ' + character.name + ' (' + character.realm + ')'"
+            [attr.aria-label]="'Showing runs with ' + character.name + ' (' + character.realm + '). Remove filter'"
+            (click)="clearCharacterFilter()">
+            <span class="character-chip-name" [style.color]="character.color">{{ character.name }}</span>
+            <span class="character-chip-realm">{{ character.realm }}</span>
+            <span class="character-chip-remove" aria-hidden="true">✕</span>
+          </button>
           <label class="player-search">
             <span class="visually-hidden">Search by player name</span>
             <input
@@ -350,7 +361,7 @@
               *ngFor="let row of pagedPlayers(); let odd = odd; trackBy: trackPlayer"
               [class.alt]="odd"
               [title]="'Show runs with ' + row.member.name"
-              (click)="showPlayerRuns(row.member.name)">
+              (click)="showPlayerRuns(row)">
               <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
               <td class="col-player">
                 <span class="player-identity">
