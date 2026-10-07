@@ -250,13 +250,23 @@ export class MythicPlusStatsPageComponent implements OnInit {
   // Affix weeks (always the whole season)
   readonly weekRows = computed(() => {
     const day = (at: number) => new Date(at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-    return weekSummaries(this.allRuns(), this.timers(), this.weeks()).map((row, position, rows) => ({
-      ...row,
-      affixes: this.affixList(row.week.affixes),
-      dates: row.runs ? `${day(row.firstRun)} - ${day(row.lastRun)}` : '-',
-      timedRate: formatPercent(row.timed, row.runs),
-      current: position === rows.length - 1
-    })).reverse();
+    // The current week is still being played, so it ends a week after it began, not at its latest run.
+    const weekEnd = (at: number) => {
+      const end = new Date(at);
+      end.setDate(end.getDate() + 7);
+      return end.getTime();
+    };
+    return weekSummaries(this.allRuns(), this.timers(), this.weeks()).map((row, position, rows) => {
+      const current = position === rows.length - 1;
+      const lastDay = current ? weekEnd(row.firstRun) : row.lastRun;
+      return {
+        ...row,
+        affixes: this.affixList(row.week.affixes),
+        dates: row.runs ? `${day(row.firstRun)} - ${day(lastDay)}` : '-',
+        timedRate: formatPercent(row.timed, row.runs),
+        current
+      };
+    }).reverse();
   });
 
   /** The affix description shown for the hovered affix in the weeks table, in viewport pixels. */
