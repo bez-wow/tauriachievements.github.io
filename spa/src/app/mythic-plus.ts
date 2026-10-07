@@ -82,6 +82,8 @@ export interface MythicPlusIndex {
   version: number;
   /** When the exporter read the leaderboards, UTC ISO 8601. Missing in older exports. */
   generatedAt?: string;
+  /** Fingerprint of the player and spec tables. Missing in older exports. */
+  tables?: string;
   season: MythicPlusSeason;
   dungeons: MythicPlusDungeon[];
   affixes: MythicPlusAffix[];
@@ -101,8 +103,25 @@ export function exportedAt(index: Pick<MythicPlusIndex, 'generatedAt'> | undefin
 export interface MythicPlusDungeonFile {
   version: number;
   dungeon: string;
+  /** The `tables` of the index whose positions the runs use. Missing in older exports. */
+  tables?: string;
   runs: MythicPlusRunEntry[];
 }
+
+/**
+ * Whether a dungeon file's player and spec positions mean the same characters in this index.
+ * The player table is sorted by name, so every export with a new player renumbers it. A tab
+ * kept open across a deploy holds the old index while it fetches new dungeon files, and those
+ * would decode to the wrong characters.
+ */
+export function sharesTables(
+  index: Pick<MythicPlusIndex, 'tables'>,
+  file: Pick<MythicPlusDungeonFile, 'tables'>
+): boolean {
+  return index.tables === file.tables;
+}
+
+export const NEWER_DATA_MESSAGE = 'The Mythic+ leaderboard is being updated. Try again in a minute.';
 
 /**
  * Turns dungeon files into runs. Members are shared: a character who played one spec in a

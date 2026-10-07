@@ -1,5 +1,7 @@
 using System.Buffers;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Tauri.Core.Infrastructure;
@@ -10,14 +12,17 @@ namespace MythicPlusExporter;
 /// Writes the files the /mythic-plus page reads (contract: spa/src/app/mythic-plus.ts).
 /// <para>
 /// <c>index.json</c> holds when the leaderboards were read (<c>generatedAt</c>, UTC ISO 8601),
-/// the season, dungeons, affixes and the shared lookup tables:
+/// a fingerprint of the lookup tables (<c>tables</c>), the season, dungeons, affixes and the
+/// shared lookup tables themselves:
 /// <c>specs</c> as objects, <c>players</c> as <c>[name, realm, guild, class, race, gender]</c>.
 /// </para>
 /// <para>
 /// <c>&lt;dungeon&gt;.json</c> holds that dungeon's runs, best first, as
 /// <c>[keyLevel, clearTimeMs, completedAtUnixSeconds, score, [affixIds], [[player, spec], ...]]</c>
 /// where player and spec are positions in the index tables. Sharing the tables keeps a
-/// dungeon file to its runs; a character plays many dungeons.
+/// dungeon file to its runs; a character plays many dungeons. Each dungeon file repeats the
+/// index's <c>tables</c> fingerprint: the player table is sorted by name, so new players
+/// renumber it, and the page must not read a dungeon file against another export's index.
 /// </para>
 /// Every entry goes on its own line so git can store the daily changes as small deltas.
 /// </summary>
@@ -47,6 +52,7 @@ public static class MythicPlusFileWriter
         var specIndexes = dataset
             .Specs.Select((spec, index) => (spec, index))
             .ToDictionary(entry => entry.spec, entry => entry.index);
+        var tables = TablesFingerprint(dataset);
 
         // Dungeon files first and the index last: the index is what makes new dungeons visible.
         foreach (var dungeon in dataset.Dungeons)
@@ -54,24 +60,53 @@ public static class MythicPlusFileWriter
             await AtomicFile.WriteAsync(
                 Path.Combine(outputDirectory, dungeon.Info.Slug + ".json"),
                 (stream, token) =>
-                    WriteDungeonAsync(stream, dungeon, playerIndexes, specIndexes, token),
+                    WriteDungeonAsync(stream, dungeon, tables, playerIndexes, specIndexes, token),
                 cancellationToken
             );
         }
 
         await AtomicFile.WriteAsync(
             Path.Combine(outputDirectory, IndexFileName),
-            (stream, token) => WriteIndexAsync(stream, dataset, generatedAt, token),
+            (stream, token) => WriteIndexAsync(stream, dataset, generatedAt, tables, token),
             cancellationToken
         );
 
         RemoveStaleFiles(outputDirectory, dataset);
     }
 
+    /// <summary>
+    /// A short hash of what the positions in the dungeon files mean: the spec table and the
+    /// player identities, in order. It changes when a player is added (the sorted table shifts)
+    /// but not when a known player's guild or race does, so an unchanged dungeon file stays
+    /// byte for byte the same and still counts as matching a newer index.
+    /// </summary>
+    public static string TablesFingerprint(MythicPlusDataset dataset)
+    {
+        var text = new StringBuilder();
+        foreach (var spec in dataset.Specs)
+        {
+            text.Append("spec\t")
+                .Append(spec.ClassId.ToString(CultureInfo.InvariantCulture))
+                .Append('\t')
+                .Append(spec.Name)
+                .Append('\t')
+                .Append(spec.Role)
+                .Append('\n');
+        }
+        foreach (var player in dataset.Players)
+        {
+            text.Append("player\t").Append(player.Realm).Append('\t').Append(player.Name).Append('\n');
+        }
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString()));
+        return Convert.ToHexStringLower(hash)[..12];
+    }
+
     private static async Task WriteIndexAsync(
         Stream stream,
         MythicPlusDataset dataset,
         DateTimeOffset generatedAt,
+        string tables,
         CancellationToken cancellationToken
     )
     {
@@ -88,6 +123,7 @@ public static class MythicPlusFileWriter
                 CultureInfo.InvariantCulture
             )
         );
+        writer.WriteString("tables", tables);
         writer.WriteStartObject("season");
         writer.WriteString("id", season.Id);
         writer.WriteString("name", season.Name);
@@ -187,6 +223,7 @@ public static class MythicPlusFileWriter
     private static async Task WriteDungeonAsync(
         Stream stream,
         MythicPlusDungeon dungeon,
+        string tables,
         IReadOnlyDictionary<(string Realm, string Name), int> playerIndexes,
         IReadOnlyDictionary<MythicPlusSpec, int> specIndexes,
         CancellationToken cancellationToken
@@ -198,6 +235,7 @@ public static class MythicPlusFileWriter
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
         writer.WriteString("dungeon", dungeon.Info.Slug);
+        writer.WriteString("tables", tables);
         writer.WriteStartArray("runs");
 
         foreach (var (run, score) in dungeon.Runs)

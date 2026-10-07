@@ -10,6 +10,7 @@ import {
   keystoneUpgrades,
   memberNameMatches,
   pageCount,
+  sharesTables,
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
@@ -251,6 +252,15 @@ describe('createRunDecoder', () => {
 
     expect(first.roster).toHaveLength(1);
     expect(second.roster[0]).toBe(first.roster[0]);
+  });
+});
+
+describe('sharesTables', () => {
+  it('matches a dungeon file only to the index of the same tables', () => {
+    expect(sharesTables({ tables: 'aaa' }, { tables: 'aaa' })).toBe(true);
+    expect(sharesTables({ tables: 'aaa' }, { tables: 'bbb' })).toBe(false);
+    // An index from before the fingerprint existed cannot vouch for a newer file.
+    expect(sharesTables({}, { tables: 'bbb' })).toBe(false);
   });
 });
 

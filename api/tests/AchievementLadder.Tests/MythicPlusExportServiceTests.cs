@@ -180,11 +180,39 @@ public sealed class MythicPlusExportServiceTests
             var runs = hov.RootElement.GetProperty("runs").EnumerateArray().ToList();
             Assert.Equal([15, 14], runs.Select(run => run[0].GetInt32()));
             Assert.Equal(0, runs[0][5][0][0].GetInt32()); // Alpha, the first player
+
+            // Every dungeon file names the player table its positions point into.
+            var tables = root.GetProperty("tables").GetString();
+            Assert.Matches("^[0-9a-f]{12}$", tables);
+            Assert.Equal(tables, hov.RootElement.GetProperty("tables").GetString());
         }
         finally
         {
             Directory.Delete(outputDirectory, recursive: true);
         }
+    }
+
+    [Fact]
+    public void TablesFingerprint_ChangesWhenPositionsShiftOnly()
+    {
+        static MythicPlusDataset Dataset(params MythicPlusPlayer[] players) =>
+            new("", [], [], [new MythicPlusSpec(6, "Blood", "tank")], players, 0);
+        var alpha = new MythicPlusPlayer("Alpha", Evermoon, "Outlaws", 6, 1, 0);
+        var gamma = new MythicPlusPlayer("Gamma", Evermoon, "", 10, 2, 1);
+        var original = MythicPlusFileWriter.TablesFingerprint(Dataset(alpha, gamma));
+
+        // A guild change leaves every position meaning the same character.
+        Assert.Equal(
+            original,
+            MythicPlusFileWriter.TablesFingerprint(Dataset(alpha with { Guild = "" }, gamma))
+        );
+        // A new player sorted in between moves Gamma to another position.
+        Assert.NotEqual(
+            original,
+            MythicPlusFileWriter.TablesFingerprint(
+                Dataset(alpha, new MythicPlusPlayer("Beta", Evermoon, "", 2, 1, 1), gamma)
+            )
+        );
     }
 
     [Fact]

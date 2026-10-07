@@ -11,9 +11,11 @@ import {
   MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusRun,
+  NEWER_DATA_MESSAGE,
   createRunDecoder,
   currentAffixWeek,
-  exportedAt
+  exportedAt,
+  sharesTables
 } from './mythic-plus';
 import {
   DayActivity,
@@ -140,6 +142,8 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
+  /** Set once files from another export made the page load everything again. */
+  private reloadedForNewerData = false;
   readonly period = signal<StatsPeriod>(this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
   readonly daySplit = signal<DaySplit>('level');
   readonly dungeonSplit = signal<DungeonSplit>('result');
@@ -358,6 +362,20 @@ export class MythicPlusStatsPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ index, files }) => {
+          // Files from another export than the index (a deploy landed while the tab was open):
+          // fetch everything fresh, once. A second mismatch means the deploy is still going out.
+          if (files.some(file => !sharesTables(index, file))) {
+            this.dataFiles.refresh();
+            if (!this.reloadedForNewerData) {
+              this.reloadedForNewerData = true;
+              this.loadData();
+            } else {
+              this.loadError.set(NEWER_DATA_MESSAGE);
+              this.isLoading.set(false);
+            }
+            return;
+          }
+
           const decode = createRunDecoder(index);
           this.index.set(index);
           this.allRuns.set(files.flatMap(file => decode(file)));

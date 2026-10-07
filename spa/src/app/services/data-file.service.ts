@@ -19,18 +19,19 @@ const MANIFEST_URL = 'assets/data/data-manifest.json';
 @Injectable({ providedIn: 'root' })
 export class DataFileService {
   private readonly http = inject(HttpClient);
-  private readonly sessionStamp = Date.now();
+  private sessionStamp = Date.now();
   private readonly memoized = new Map<string, Observable<unknown>>();
+  private manifest$ = this.loadManifest();
 
-  private readonly manifest$: Observable<DataManifest> = this.http
-    .get<DataManifest>(`${MANIFEST_URL}?v=${this.sessionStamp}`)
-    .pipe(
-      catchError((error: unknown) => {
-        console.warn('Could not load the data manifest; data files will not be cached.', error);
-        return of({ files: {} });
-      }),
-      shareReplay({ bufferSize: 1, refCount: false })
-    );
+  /**
+   * Starts the session over: a fresh manifest and nothing memoized. For a tab left open
+   * across a deploy, which still holds the old manifest and the files it already loaded.
+   */
+  refresh(): void {
+    this.sessionStamp = Date.now();
+    this.manifest$ = this.loadManifest();
+    this.memoized.clear();
+  }
 
   /**
    * Loads a JSON file once per session and shares the parsed result with every caller.
@@ -53,6 +54,16 @@ export class DataFileService {
    */
   fetchJson<T>(path: string): Observable<T> {
     return this.versionedUrl(path).pipe(switchMap((url) => this.http.get<T>(url)));
+  }
+
+  private loadManifest(): Observable<DataManifest> {
+    return this.http.get<DataManifest>(`${MANIFEST_URL}?v=${this.sessionStamp}`).pipe(
+      catchError((error: unknown) => {
+        console.warn('Could not load the data manifest; data files will not be cached.', error);
+        return of({ files: {} });
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
   }
 
   private versionedUrl(path: string): Observable<string> {

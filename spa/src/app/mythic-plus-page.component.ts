@@ -25,6 +25,7 @@ import {
   MythicPlusIndex,
   MythicPlusMember,
   MythicPlusRun,
+  NEWER_DATA_MESSAGE,
   createRunDecoder,
   currentAffixWeek,
   exportedAt,
@@ -38,7 +39,8 @@ import {
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer,
-  scoreQuality
+  scoreQuality,
+  sharesTables
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
@@ -184,6 +186,8 @@ export class MythicPlusPageComponent implements OnInit {
 
   private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
   private readonly requestedDungeons = new Set<string>();
+  /** Set once a dungeon file from another export made the page load everything again. */
+  private reloadedForNewerData = false;
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   readonly selectedDungeon = computed(() =>
@@ -375,7 +379,9 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   retryLoad(): void {
-    if (this.index()) {
+    if (this.reloadedForNewerData) {
+      this.startOver();
+    } else if (this.index()) {
       this.loadError.set(undefined);
       this.loadScopeRuns();
     } else {
@@ -535,7 +541,8 @@ export class MythicPlusPageComponent implements OnInit {
   /** Fetches the dungeon files the selected scope still needs: one dungeon, or all of them. */
   private loadScopeRuns(): void {
     const decode = this.decodeRuns;
-    if (!decode) {
+    const index = this.index();
+    if (!decode || !index) {
       return;
     }
 
@@ -553,10 +560,21 @@ export class MythicPlusPageComponent implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: file => {
+            // A file requested before startOver(): the page has moved on to a newer index.
+            if (decode !== this.decodeRuns) {
+              return;
+            }
+            if (!sharesTables(index, file)) {
+              this.reloadForNewerData(dungeon.id);
+              return;
+            }
             const runs = decode(file);
             this.runsByDungeon.update(loaded => new Map(loaded).set(dungeon.id, runs));
           },
           error: error => {
+            if (decode !== this.decodeRuns) {
+              return;
+            }
             this.requestedDungeons.delete(dungeon.id);
             this.failLoad(error);
           }
@@ -564,9 +582,36 @@ export class MythicPlusPageComponent implements OnInit {
     }
   }
 
-  private failLoad(error: unknown): void {
+  /**
+   * A dungeon file from another export than the index, usually because a deploy landed while
+   * the tab was open. Loads everything again once; a second mismatch means the deploy is still
+   * going out, and is reported instead of retried in a loop.
+   */
+  private reloadForNewerData(dungeonId: string): void {
+    const firstTime = !this.reloadedForNewerData;
+    this.reloadedForNewerData = true;
+    if (firstTime) {
+      this.startOver();
+      return;
+    }
+
+    this.decodeRuns = undefined;
+    this.failLoad(new Error(`${dungeonId}.json and index.json come from different exports`), NEWER_DATA_MESSAGE);
+  }
+
+  /** Drops every loaded file and the session's manifest, then loads the page from scratch. */
+  private startOver(): void {
+    this.dataFiles.refresh();
+    this.decodeRuns = undefined;
+    this.requestedDungeons.clear();
+    this.runsByDungeon.set(new Map());
+    this.expandedRunId.set(undefined);
+    this.loadData();
+  }
+
+  private failLoad(error: unknown, message = 'The Mythic+ leaderboard could not be loaded.'): void {
     console.error('Failed to load Mythic+ leaderboard:', error);
-    this.loadError.set('The Mythic+ leaderboard could not be loaded.');
+    this.loadError.set(message);
     this.isLoading.set(false);
   }
 }

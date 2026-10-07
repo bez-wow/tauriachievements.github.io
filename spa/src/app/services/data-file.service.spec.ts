@@ -52,6 +52,20 @@ describe('DataFileService', () => {
     http.expectOne('RareItems.json?v=abc123').flush({});
   });
 
+  it('reads a new manifest and loads memoized files again after a refresh', () => {
+    const results: unknown[] = [];
+    service.getJson('RareItems.json').subscribe((value) => results.push(value));
+    answerManifest({ 'RareItems.json': 'old111' });
+    http.expectOne('RareItems.json?v=old111').flush({ deploy: 1 });
+
+    service.refresh();
+    service.getJson('RareItems.json').subscribe((value) => results.push(value));
+    answerManifest({ 'RareItems.json': 'new222' });
+    http.expectOne('RareItems.json?v=new222').flush({ deploy: 2 });
+
+    expect(results).toEqual([{ deploy: 1 }, { deploy: 2 }]);
+  });
+
   it('still loads files when the manifest is unavailable', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
