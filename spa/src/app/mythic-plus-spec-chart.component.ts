@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
+import { injectCompactViewport } from './compact-viewport';
 import { MythicPlusRole, MythicPlusRun } from './mythic-plus';
 import { ClassShare, SpecShare, formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 
 type RoleFilter = MythicPlusRole | 'all';
@@ -55,6 +57,14 @@ export class MythicPlusSpecChartComponent {
   readonly role = signal<RoleFilter>('all');
   readonly countMode = signal<CountMode>('runs');
   readonly minLevel = signal(0);
+
+  /**
+   * On narrow screens the chart and its filters start folded under the title, so the
+   * leaderboard is on the first screen; a tap opens them. Wide screens always show them.
+   */
+  readonly collapsible = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
+  readonly expanded = signal(false);
+  readonly showBody = computed(() => !this.collapsible() || this.expanded());
 
   readonly isFiltered = computed(() =>
     this.role() !== 'all' || this.minLevel() !== 0 || this.countMode() !== 'runs');

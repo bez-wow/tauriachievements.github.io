@@ -38,13 +38,7 @@
           [disabled]="!currentWeek()"
           (click)="setPeriod('week')">This week</button>
       </div>
-      <ul class="week-affixes" *ngIf="weekAffixes().length" aria-label="This week's affixes">
-        <li *ngFor="let affix of weekAffixes()">
-          <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>
-          <span>{{ affix.name }}</span>
-          <span class="week-affix-tooltip" *ngIf="affix.description">{{ affix.description }}</span>
-        </li>
-      </ul>
+      <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" />
     </div>
 
     <dl class="summary">
@@ -78,7 +72,8 @@
         </ng-template>
       </ul>
 
-      <div class="chart-scroll" *ngIf="dayBars().length; else noRuns">
+      <!-- Wider than a phone: opens on the newest days, at the right end. -->
+      <div class="chart-scroll" *ngIf="dayBars().length; else noRuns" [appScrollToEnd]="period() + dayBars().length">
         <div class="column-chart days" [style.--columns]="dayBars().length">
           <div class="y-axis" aria-hidden="true">
             <span *ngFor="let line of dayGridlines()" [style.bottom.%]="line.position">{{ line.value }}</span>
@@ -105,6 +100,8 @@
                 appTapTooltip
                 *ngFor="let bar of dayBars()"
                 [class.flip]="bar.flip"
+                [class.middle]="bar.middle"
+                [class.wide]="bar.wide"
                 [class.partial]="bar.partial"
                 role="img"
                 tabindex="0"
@@ -185,7 +182,10 @@
         <header class="chart-header with-corner">
           <div class="chart-heading">
             <h2 id="levels-title">Runs per key level</h2>
-            <p class="chart-subtitle">Hover a level for its numbers</p>
+            <p class="chart-subtitle">
+              <span class="hint-hover">Hover a level for its numbers</span>
+              <span class="hint-touch">Tap a level for its numbers</span>
+            </p>
           </div>
           <div class="corner-filter">
             <app-filter-dropdown
@@ -226,6 +226,8 @@
                   appTapTooltip
                   *ngFor="let bar of levelBars()"
                   [class.flip]="bar.flip"
+                  [class.middle]="bar.middle"
+                  [class.wide]="bar.wide"
                   role="img"
                   tabindex="0"
                   [attr.aria-label]="'+' + bar.level + ': ' + bar.runs + ' runs, ' + bar.timedRate + ' timed'">
@@ -242,7 +244,7 @@
                 </div>
               </div>
               <div class="x-labels" aria-hidden="true">
-                <span *ngFor="let bar of levelBars()">+{{ bar.level }}</span>
+                <span *ngFor="let bar of levelBars()">{{ bar.showLabel ? '+' + bar.level : '' }}</span>
               </div>
             </div>
           </div>
@@ -258,39 +260,57 @@
           <p class="chart-subtitle">Whole season, newest first</p>
         </div>
       </header>
-      <div class="table-scroll" (scroll)="hideAffixTooltip()">
-        <table class="weeks">
-          <thead>
-            <tr>
-              <th scope="col">Affixes</th>
-              <th scope="col" class="center">Runs played</th>
-              <th scope="col" class="num">Runs</th>
-              <th scope="col" class="num">Timed</th>
-              <th scope="col" class="num">Highest key timed</th>
-              <th scope="col" class="num">Players</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of weekRows()" [class.current]="row.current">
-              <td>
-                <span
-                  class="week-affix"
-                  *ngFor="let affix of row.affixes"
-                  (pointerenter)="showAffixTooltip($event, affix)"
-                  (pointerleave)="hideAffixTooltip()">
-                  <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>{{ affix.name }}
-                </span>
-                <span class="current-tag" *ngIf="row.current">This week</span>
-              </td>
-              <td class="dates center">{{ row.dates }}</td>
-              <td class="num">{{ row.runs | number }}</td>
-              <td class="num">{{ row.timedRate }}</td>
-              <td class="num">{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</td>
-              <td class="num">{{ row.players | number }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ol class="week-cards" *ngIf="cards(); else weeksTable">
+        <li class="week-card" *ngFor="let row of weekRows()" [class.current]="row.current">
+          <div class="week-card-head">
+            <app-mythic-plus-week-affixes [affixes]="row.affixes" [label]="'Affixes, ' + row.dates" />
+            <span class="current-tag" *ngIf="row.current">This week</span>
+          </div>
+          <p class="week-card-dates">{{ row.dates }}</p>
+          <dl class="week-card-stats">
+            <div><dt>Runs</dt><dd>{{ row.runs | number }}</dd></div>
+            <div><dt>Timed</dt><dd>{{ row.timedRate }}</dd></div>
+            <div><dt>Highest timed</dt><dd>{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</dd></div>
+            <div><dt>Players</dt><dd>{{ row.players | number }}</dd></div>
+          </dl>
+        </li>
+      </ol>
+
+      <ng-template #weeksTable>
+        <div class="table-scroll" (scroll)="hideAffixTooltip()">
+          <table class="weeks">
+            <thead>
+              <tr>
+                <th scope="col">Affixes</th>
+                <th scope="col" class="center">Runs played</th>
+                <th scope="col" class="num">Runs</th>
+                <th scope="col" class="num">Timed</th>
+                <th scope="col" class="num">Highest key timed</th>
+                <th scope="col" class="num">Players</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of weekRows()" [class.current]="row.current">
+                <td>
+                  <span
+                    class="week-affix"
+                    *ngFor="let affix of row.affixes"
+                    (pointerenter)="showAffixTooltip($event, affix)"
+                    (pointerleave)="hideAffixTooltip()">
+                    <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>{{ affix.name }}
+                  </span>
+                  <span class="current-tag" *ngIf="row.current">This week</span>
+                </td>
+                <td class="dates center">{{ row.dates }}</td>
+                <td class="num">{{ row.runs | number }}</td>
+                <td class="num">{{ row.timedRate }}</td>
+                <td class="num">{{ row.highestTimed ? '+' + row.highestTimed : '-' }}</td>
+                <td class="num">{{ row.players | number }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
       <span
         class="week-affix-tooltip floating"
         *ngIf="affixTooltip() as tooltip"

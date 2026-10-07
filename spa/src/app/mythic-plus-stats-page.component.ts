@@ -29,9 +29,13 @@ import {
   runsPerDungeon,
   weekSummaries
 } from './mythic-plus-activity';
+import { injectCompactViewport } from './compact-viewport';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
+import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
+import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
+import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
@@ -61,6 +65,10 @@ interface DayBar {
   /** Bottom to top. */
   segments: Segment[];
   flip: boolean;
+  /** In the middle third: on a phone its tooltip opens centred over it (see `.middle`). */
+  middle: boolean;
+  /** One of only one or two columns, each as wide as half the chart: its tooltip opens centred over it. */
+  wide: boolean;
 }
 
 interface WeekBand {
@@ -82,6 +90,8 @@ const WEEK_SEGMENTS: ReadonlyArray<{ key: 'fortified' | 'tyrannical'; label: str
 
 const percentOf = (part: number, whole: number) => whole > 0 ? (part / whole) * 100 : 0;
 const formatPercent = (part: number, whole: number) => `${Math.round(percentOf(part, whole))}%`;
+/** Whether a column sits in the middle third of its chart. */
+const isMiddle = (position: number, count: number) => position >= count / 3 && position < (count * 2) / 3;
 
 /**
  * /mythic-plus/stats: how much Mythic+ is being played. Runs per day, per dungeon and per key
@@ -91,7 +101,16 @@ const formatPercent = (part: number, whole: number) => `${Math.round(percentOf(p
 @Component({
   selector: 'app-mythic-plus-stats-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, TapTooltipDirective, FilterDropdownComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    UpdateBarComponent,
+    BackToTopButtonComponent,
+    TapTooltipDirective,
+    FilterDropdownComponent,
+    MythicPlusWeekAffixesComponent,
+    ScrollToEndDirective
+  ],
   templateUrl: './mythic-plus-stats-page.component.html',
   styleUrl: './mythic-plus-stats-page.component.scss',
   // Keeps one of this page's dropdowns open at a time.
@@ -109,6 +128,11 @@ export class MythicPlusStatsPageComponent implements OnInit {
 
   readonly levelBands = LEVEL_BANDS;
   readonly resultSegments = RESULT_SEGMENTS;
+
+  /** Narrow screens list the affix weeks as cards instead of a six-column table. */
+  readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
+  /** Phones: the charts' columns get narrower, so fewer of them carry a label. */
+  private readonly phone = injectCompactViewport();
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
@@ -177,7 +201,8 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly dayBars = computed<DayBar[]>(() => {
     const days = this.days();
     const top = this.dayTicks()[this.dayTicks().length - 1];
-    const labelEvery = Math.max(1, Math.ceil(days.length / 16));
+    // About 16 date labels across a desktop chart, 6 across a phone's narrower one.
+    const labelEvery = Math.max(1, Math.ceil(days.length / (this.phone() ? 6 : 16)));
     const split = this.daySplit();
     const today = localDay(new Date());
     return days.map((day, position) => {
@@ -193,7 +218,9 @@ export class MythicPlusStatsPageComponent implements OnInit {
         partial: day.day === today,
         heightPercent: percentOf(day.total, top),
         segments,
-        flip: position >= days.length / 2
+        flip: position >= days.length / 2,
+        middle: isMiddle(position, days.length),
+        wide: days.length < 3
       };
     });
   });
@@ -241,13 +268,18 @@ export class MythicPlusStatsPageComponent implements OnInit {
     const top = this.levelTicks()[this.levelTicks().length - 1];
     const levels = this.levels();
     const split = this.levelSplit();
+    // "+10 +11 +12" runs together in a phone's ~20 px columns: label every other level there.
+    const labelEvery = this.phone() && levels.length > 10 ? 2 : 1;
     return levels.map((level, position) => ({
       ...level,
+      showLabel: position % labelEvery === 0,
       heightPercent: percentOf(level.runs, top),
       segments: (split === 'result' ? RESULT_SEGMENTS : WEEK_SEGMENTS)
         .map(({ key, label }) => this.segment(key, label, level[key], level.runs)),
       timedRate: formatPercent(level.timed, level.runs),
-      flip: position >= levels.length / 2
+      flip: position >= levels.length / 2,
+      middle: isMiddle(position, levels.length),
+      wide: levels.length < 3
     }));
   });
 

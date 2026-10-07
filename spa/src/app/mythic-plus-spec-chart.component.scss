@@ -220,3 +220,39 @@ $plot-height: 180px;
 .class-share { color: #8a8a8a; font-weight: 400; font-variant-numeric: tabular-nums; }
 
 .chart-empty { padding: 40px 0; color: #9a9a9a; text-align: center; }
+
+// Narrow screens only: folds the chart and its filters under the title (see `collapsible`).
+.chart-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; transition: transform .18s ease; }
+  &[aria-expanded='true'] svg { transform: rotate(180deg); }
+  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
+}
+
+@media (pointer: coarse) {
+  .segmented button { min-height: 40px; }
+}
+
+// Must match MYTHIC_PLUS_CARDS_QUERY: the title and Show / Hide share a row, and each filter
+// group gets a full-width row of even buttons. Reset only shows once something is filtered.
+@media (max-width: 900px) {
+  .chart-heading { flex: 1 1 0; }
+  .chart-filters { flex: 1 1 100%; }
+  .segmented { flex: 1 1 100%; }
+  .segmented button { flex: 1 1 0; padding: 7px 6px; }
+  .filter-reset { order: 1; min-height: 40px; }
+  .filter-reset:disabled { display: none; }
+}

@@ -46,6 +46,19 @@ describe('injectCompactViewport', () => {
     expect(media.query.removeEventListener).toHaveBeenCalledWith('change', expect.any(Function));
   });
 
+  it('follows a wider media query when a page passes its own', () => {
+    stubMatchMedia(true);
+
+    @Component({ standalone: true, template: '' })
+    class WideHostComponent {
+      readonly isCompact = injectCompactViewport('(max-width: 900px)');
+    }
+
+    const fixture = TestBed.createComponent(WideHostComponent);
+    expect(window.matchMedia).toHaveBeenCalledWith('(max-width: 900px)');
+    expect(fixture.componentInstance.isCompact()).toBe(true);
+  });
+
   it('treats a browser without matchMedia as a wide screen', () => {
     vi.stubGlobal('matchMedia', undefined);
     const fixture = TestBed.createComponent(ViewportHostComponent);

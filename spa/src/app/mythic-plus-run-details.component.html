@@ -1,0 +1,64 @@
+<div class="run-details" *ngIf="run() as row">
+  <section class="details-summary">
+    <img class="details-dungeon-icon" [src]="row.dungeon.icon" alt="" />
+    <div>
+      <h2>{{ row.dungeon.name }} <span class="details-level">+{{ row.keyLevel }}</span></h2>
+      <p class="details-result" [class.depleted]="row.upgrades === 0">
+        {{ row.upgrades > 0 ? 'Timed, keystone upgraded +' + row.upgrades : 'Depleted, finished over time' }}
+      </p>
+      <p class="details-date">
+        Completed
+        <time [attr.datetime]="row.completedAt">{{ row.completedAt | date:'EEE, d MMM y · HH:mm' }}</time>
+      </p>
+    </div>
+  </section>
+
+  <section class="details-affixes">
+    <h3>Affixes</h3>
+    <ul class="affix-list">
+      <li *ngFor="let affix of row.affixes">
+        <img [src]="affix.icon" alt="" loading="lazy" />
+        <span><strong>{{ affix.name }}</strong>{{ affix.description }}</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="details-timer">
+    <h3>Timer</h3>
+    <p class="timer-values">
+      <strong>{{ row.clearClock }}</strong>
+      <span class="timer-of">of {{ row.timerClock }}</span>
+      <span class="timer-delta" [class.over]="row.upgrades === 0">{{ row.timerDelta }}</span>
+    </p>
+    <div class="timer-bar" aria-hidden="true">
+      <span class="timer-fill" [class.over]="row.upgrades === 0" [style.width.%]="row.timerPercent"></span>
+      <span class="timer-mark" *ngFor="let mark of cutoffMarks" [style.left.%]="mark.percent"></span>
+    </div>
+    <p class="timer-cutoffs">
+      <span *ngFor="let cutoff of row.cutoffs">+{{ cutoff.upgrades }} within {{ cutoff.time }}</span>
+    </p>
+  </section>
+
+  <section class="details-roster">
+    <h3>Group</h3>
+    <ul class="roster-list">
+      <li
+        class="roster-card"
+        *ngFor="let member of row.roster; trackBy: trackMember"
+        [attr.data-role]="member.role">
+        <span class="roster-role">{{ roleLabels[member.role] }}</span>
+        <span class="roster-identity">
+          <img [src]="member.classIcon" [alt]="member.className" />
+          <img [src]="member.raceIcon" alt="" />
+          <a
+            [href]="member.armoryUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            [style.color]="member.color">{{ member.name }}</a>
+        </span>
+        <span class="roster-meta">{{ member.spec }} {{ member.className }}</span>
+        <span class="roster-meta" *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
+      </li>
+    </ul>
+  </section>
+</div>

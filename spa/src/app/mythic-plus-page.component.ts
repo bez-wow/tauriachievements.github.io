@@ -12,11 +12,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
-import { getRaceIconPath } from '../utils/raceIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
+import { injectCompactViewport } from './compact-viewport';
 import {
   CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
@@ -26,15 +25,11 @@ import {
   MythicPlusIndex,
   MythicPlusMember,
   MythicPlusRun,
-  ROLE_LABELS,
-  RunQuality,
-  UPGRADE_CUTOFFS,
   createRunDecoder,
   currentAffixWeek,
   exportedAt,
   formatClock,
   formatDuration,
-  formatTimerDelta,
   keystoneUpgrades,
   memberNameMatches,
   pageCount,
@@ -43,60 +38,25 @@ import {
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer,
-  scoreQuality,
-  sortRoster,
-  upgradeCutoffs,
-  upgradeStars
+  scoreQuality
 } from './mythic-plus';
+import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
+import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
-import { LEGION_SPECS, specIconFor } from './mythic-plus-stats';
+import { LEGION_SPECS } from './mythic-plus-stats';
+import { MYTHIC_PLUS_CARDS_QUERY, PlayerRow, RunRow, toMemberView, toRunView } from './mythic-plus-views';
+import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
+import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
 
+/** Rows per page: 50 in the tables, 25 of the taller cards. */
 const PAGE_SIZE = 50;
-
-interface MemberView extends MythicPlusMember {
-  color: string;
-  className: string;
-  armoryUrl: string;
-  classIcon: string;
-  raceIcon: string;
-  specIcon?: string;
-}
-
-interface CutoffView {
-  upgrades: number;
-  time: string;
-}
-
-interface RunView {
-  id: string;
-  dungeon: MythicPlusDungeon;
-  keyLevel: number;
-  upgrades: number;
-  clearTime: string;
-  clearClock: string;
-  timerClock: string;
-  timerDelta: string;
-  timerPercent: number;
-  cutoffs: CutoffView[];
-  score: number;
-  quality: RunQuality;
-  completedAt: string;
-  affixes: MythicPlusAffix[];
-  tank?: MemberView;
-  healer?: MemberView;
-  dps: MemberView[];
-  roster: MemberView[];
-}
-
-interface RunRow extends RunView {
-  rank: number;
-}
+const CARDS_PAGE_SIZE = 25;
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -113,16 +73,6 @@ interface RankedPlayer {
   rank: number;
 }
 
-/** A character's best run in one dungeon, as a cell of the players table. */
-interface BestRunCell {
-  dungeon: MythicPlusDungeon;
-  keyLevel: number;
-  timed: boolean;
-  upgrades: number;
-  clearTime: string;
-  score: number;
-}
-
 /** Runs view only: one character, picked from a player row. */
 interface CharacterFilter {
   /** `characterKey` of the character. */
@@ -130,16 +80,6 @@ interface CharacterFilter {
   name: string;
   realm: string;
   color: string;
-}
-
-interface PlayerRow {
-  key: string;
-  rank: number;
-  member: MemberView;
-  score: number;
-  quality: RunQuality;
-  /** One per dungeon in scope, in tile order; undefined where the character has no run. */
-  bests: Array<BestRunCell | undefined>;
 }
 
 function parsePage(value: string | null): number {
@@ -157,57 +97,21 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
   return LEGION_SPECS.find(spec => spec.classId === classId && spec.spec === value)?.spec;
 }
 
-function toMemberView(member: MythicPlusMember): MemberView {
-  return {
-    ...member,
-    color: getClassColor(member.class) ?? '#e0e0e0',
-    className: CLASS_NAMES[member.class] ?? 'Unknown',
-    armoryUrl: getArmoryUrl(member.name, member.realm),
-    classIcon: getClassIconPath(member.class),
-    raceIcon: getRaceIconPath(member.race, member.gender),
-    specIcon: specIconFor(member.class, member.spec)
-  };
-}
-
-function toRunView(
-  run: MythicPlusRun,
-  dungeon: MythicPlusDungeon,
-  affixes: ReadonlyMap<number, MythicPlusAffix>,
-  bestScore: number
-): RunView {
-  const upgrades = keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds);
-  const roster = sortRoster(run.roster).map(toMemberView);
-
-  return {
-    id: run.id,
-    dungeon,
-    keyLevel: run.keyLevel,
-    upgrades,
-    clearTime: formatDuration(run.clearTimeSeconds),
-    clearClock: formatClock(run.clearTimeSeconds),
-    timerClock: formatClock(dungeon.timerSeconds),
-    timerDelta: formatTimerDelta(run.clearTimeSeconds, dungeon.timerSeconds),
-    timerPercent: Math.min(100, (run.clearTimeSeconds / dungeon.timerSeconds) * 100),
-    cutoffs: upgradeCutoffs(dungeon.timerSeconds)
-      .map(cutoff => ({ upgrades: cutoff.upgrades, time: formatClock(cutoff.seconds) })),
-    score: run.score,
-    quality: scoreQuality(run.score, bestScore),
-    completedAt: run.completedAt,
-    affixes: run.affixes
-      .map(id => affixes.get(id))
-      .filter((affix): affix is MythicPlusAffix => affix !== undefined)
-      .sort((a, b) => a.level - b.level),
-    tank: roster.find(member => member.role === 'tank'),
-    healer: roster.find(member => member.role === 'healer'),
-    dps: roster.filter(member => member.role === 'dps'),
-    roster
-  };
-}
-
 @Component({
   selector: 'app-mythic-plus-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, MythicPlusSpecChartComponent, FilterDropdownComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    UpdateBarComponent,
+    BackToTopButtonComponent,
+    MythicPlusSpecChartComponent,
+    MythicPlusWeekAffixesComponent,
+    MythicPlusRunsListComponent,
+    MythicPlusPlayersListComponent,
+    FilterDropdownComponent,
+    MobileFilterToggleComponent
+  ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
   // Keeps one of this page's dropdowns open at a time.
@@ -223,8 +127,11 @@ export class MythicPlusPageComponent implements OnInit {
 
   @ViewChild('leaderboard') private leaderboardRef?: ElementRef<HTMLElement>;
 
-  readonly roleLabels = ROLE_LABELS;
-  readonly cutoffMarks = UPGRADE_CUTOFFS.filter(cutoff => cutoff.percent < 100);
+  /** Narrow screens list runs and players as cards (MYTHIC_PLUS_CARDS_QUERY). */
+  readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
+  private readonly pageSize = computed(() => this.cards() ? CARDS_PAGE_SIZE : PAGE_SIZE);
+  /** Phones: whether the class / spec filters are shown, or folded behind the Filters button. */
+  readonly filtersOpen = signal(false);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
@@ -267,6 +174,12 @@ export class MythicPlusPageComponent implements OnInit {
         .filter(spec => spec.classId === classId)
         .map(spec => ({ value: spec.spec, label: spec.spec, icon: spec.icon }))
     ];
+  });
+
+  /** The class / spec filters in use, as chips under the phone Filters button. */
+  readonly activeFilterLabels = computed(() => {
+    const classId = this.classFilter();
+    return classId === undefined ? [] : [[this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ')];
   });
 
   private decodeRuns?: (file: MythicPlusDungeonFile) => MythicPlusRun[];
@@ -363,17 +276,18 @@ export class MythicPlusPageComponent implements OnInit {
     return this.view() === 'players' ? (single ? 'player' : 'players') : (single ? 'run' : 'runs');
   });
 
-  readonly totalPages = computed(() => pageCount(this.resultCount(), PAGE_SIZE));
+  readonly totalPages = computed(() => pageCount(this.resultCount(), this.pageSize()));
   readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
   /** Only the visible page is turned into display rows; a season holds tens of thousands of runs. */
   readonly pagedRows = computed<RunRow[]>(() => {
-    const start = (this.currentPage() - 1) * PAGE_SIZE;
+    const size = this.pageSize();
+    const start = (this.currentPage() - 1) * size;
     const dungeons = this.dungeonsById();
     const affixes = this.affixesById();
     const bestScore = this.seasonBestScore();
 
-    return this.filteredRows().slice(start, start + PAGE_SIZE).flatMap(({ run, rank }) => {
+    return this.filteredRows().slice(start, start + size).flatMap(({ run, rank }) => {
       const dungeon = dungeons.get(run.dungeon);
       return dungeon ? [{ ...toRunView(run, dungeon, affixes, bestScore), rank }] : [];
     });
@@ -386,11 +300,12 @@ export class MythicPlusPageComponent implements OnInit {
   });
 
   readonly pagedPlayers = computed<PlayerRow[]>(() => {
-    const start = (this.currentPage() - 1) * PAGE_SIZE;
+    const size = this.pageSize();
+    const start = (this.currentPage() - 1) * size;
     const dungeons = this.playerDungeons();
     const topScore = this.rankedPlayers()[0]?.player.score ?? 0;
 
-    return this.filteredPlayers().slice(start, start + PAGE_SIZE).map(({ player, rank }) => ({
+    return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => ({
       key: player.key,
       rank,
       member: toMemberView(player.member),
@@ -573,26 +488,8 @@ export class MythicPlusPageComponent implements OnInit {
     this.expandedRunId.update(current => current === runId ? undefined : runId);
   }
 
-  isExpanded(runId: string): boolean {
-    return this.expandedRunId() === runId;
-  }
-
-  readonly upgradeStars = upgradeStars;
-
   trackDungeon(index: number, dungeon: MythicPlusDungeon): string {
     return dungeon.id;
-  }
-
-  trackRow(index: number, row: RunRow): string {
-    return row.id;
-  }
-
-  trackPlayer(index: number, row: PlayerRow): string {
-    return row.key;
-  }
-
-  trackMember(index: number, member: MemberView): string {
-    return `${member.name}-${member.realm}`;
   }
 
   /**

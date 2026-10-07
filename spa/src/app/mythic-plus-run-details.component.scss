@@ -1,0 +1,128 @@
+@use './mythic-plus-shared' as *;
+
+:host { display: block; background: #1f1c17; cursor: default; }
+
+.run-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px 32px;
+  padding: 18px 20px 20px 48px;
+  text-align: left;
+  white-space: normal;
+
+  h3 { margin-bottom: 8px; color: $gold; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
+}
+
+.details-affixes { grid-row: span 2; }
+.details-roster { grid-column: 1 / -1; }
+
+.details-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  h2 { color: #fff; font-size: 1.15rem; }
+}
+
+.details-dungeon-icon { width: 56px; height: 56px; flex: none; border: 2px solid $gold; border-radius: 6px; }
+.details-level { color: $gold; }
+.details-result { color: #7fdc8f; font-size: .85rem; font-weight: 700; }
+.details-result.depleted { color: #e06666; }
+.details-date { color: #9a9a9a; font-size: .8rem; }
+
+.timer-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+
+  strong { color: #fff; font-size: 1.1rem; }
+}
+
+.timer-of { color: #9a9a9a; }
+.timer-delta { color: #7fdc8f; font-weight: 700; }
+.timer-delta.over { color: #e06666; }
+
+.timer-bar { position: relative; height: 10px; overflow: hidden; border-radius: 5px; background: #333; }
+.timer-fill { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #2f9e44, #7fdc8f); }
+.timer-fill.over { background: linear-gradient(90deg, #a61e1e, #e06666); }
+.timer-mark { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(0, 0, 0, .75); }
+
+.timer-cutoffs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+  color: #9a9a9a;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.affix-list, .roster-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+.affix-list li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  color: #bdbdbd;
+  font-size: .8rem;
+
+  img { width: 28px; height: 28px; border-radius: 4px; }
+  strong { display: block; color: #fff; font-size: .85rem; }
+}
+
+.roster-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+.roster-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-top: 2px solid #e5484d;
+  border-radius: 4px;
+  background: #292520;
+  font-size: .85rem;
+
+  &[data-role='tank'] { border-top-color: #6ea8ff; }
+  &[data-role='healer'] { border-top-color: #3ecf5e; }
+}
+
+.roster-role { color: #9a9a9a; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+.roster-identity {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+
+  img { width: 18px; height: 18px; flex: none; border-radius: 3px; }
+
+  a {
+    overflow: hidden;
+    font-weight: 700;
+    text-decoration: none;
+    text-overflow: ellipsis;
+
+    &:hover, &:focus-visible { text-decoration: underline; }
+  }
+}
+
+.roster-meta { overflow: hidden; color: #9a9a9a; font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+
+// Cards: one column, and the group as a two-column grid of name cards, each tall enough
+// for the armory link to be an easy tap.
+@media (max-width: $cards-breakpoint) {
+  .run-details {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 14px 14px 16px;
+  }
+
+  .details-affixes { grid-row: auto; }
+  .roster-list { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .roster-identity a { padding: 6px 0; }
+}

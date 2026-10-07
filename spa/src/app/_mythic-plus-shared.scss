@@ -1,0 +1,87 @@
+// Shared by the Mythic+ leaderboard, its run / player lists and the stats page.
+
+$gold: #f7b500;
+
+// Must match MYTHIC_PLUS_CARDS_QUERY in mythic-plus-views.ts: below it, runs and players are cards.
+$cards-breakpoint: 900px;
+// The site-wide phone breakpoint (COMPACT_VIEWPORT_QUERY).
+$phone-breakpoint: 640px;
+
+// The CDN icons carry a ~4px dark frame baked into their 62px art; zoom past it inside a clipped box.
+@mixin affix-icon($size: 22px) {
+  display: block;
+  width: $size;
+  height: $size;
+  flex: none;
+  overflow: hidden;
+
+  img { display: block; width: 100%; height: 100%; transform: scale(1.2); }
+}
+
+// Dark tooltip box; hidden until its trigger is hovered, focused or tapped.
+@mixin tooltip-box {
+  position: absolute;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
+  color: #fff;
+  font-weight: 400;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+// Run and player colours, relative to the season's best (scoreQuality).
+@mixin quality-colors {
+  .q-artifact { color: #e6cc80; }
+  .q-legendary { color: #ff8000; }
+  .q-epic { color: #b048f8; }
+  .q-rare { color: #1a8cff; }
+  .q-uncommon { color: #1eff00; }
+}
+
+// "+18 ★★": fixed-width slots so every key number lines up, whether or not the run earned a star.
+@mixin key-level {
+  .level {
+    display: inline-grid;
+    grid-template-columns: 2em 2.2em;
+    align-items: center;
+    column-gap: 3px;
+  }
+
+  .level-value { text-align: right; font-variant-numeric: tabular-nums; }
+  .level-star { color: $gold; font-size: .7rem; text-align: left; letter-spacing: -1px; white-space: nowrap; }
+}
+
+// Turns 90° when its row is expanded.
+@mixin caret {
+  .caret {
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 6px solid currentColor;
+    transition: transform .15s ease;
+  }
+
+  .expanded .caret { transform: rotate(90deg); }
+}
+
+@mixin visually-hidden {
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+// A sideways-scrolling table. position: relative makes it the containing block of the
+// visually-hidden labels (position: absolute) inside its cells. Without it they'd hang off the
+// page's right edge when the table is scrolled wider than the phone, and mobile Chrome would
+// zoom the whole page out to fit them.
+@mixin table-scroll {
+  position: relative;
+  overflow-x: auto;
+}

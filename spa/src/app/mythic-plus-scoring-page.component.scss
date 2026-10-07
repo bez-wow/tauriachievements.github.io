@@ -26,6 +26,9 @@ $penalty: #e06666;
 
   span { color: $gold; font-size: 1.1rem; }
 
+  // A full-size target on touch screens, as on the stats page.
+  @media (pointer: coarse) { min-height: 40px; }
+
   &:hover { color: #fff; }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
