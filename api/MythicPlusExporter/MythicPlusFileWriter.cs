@@ -95,7 +95,11 @@ public static class MythicPlusFileWriter
         }
         foreach (var player in dataset.Players)
         {
-            text.Append("player\t").Append(player.Realm).Append('\t').Append(player.Name).Append('\n');
+            text.Append("player\t")
+                .Append(player.Realm)
+                .Append('\t')
+                .Append(player.Name)
+                .Append('\n');
         }
 
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString()));
