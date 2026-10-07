@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Tauri.Core.Infrastructure;
@@ -8,7 +9,8 @@ namespace MythicPlusExporter;
 /// <summary>
 /// Writes the files the /mythic-plus page reads (contract: spa/src/app/mythic-plus.ts).
 /// <para>
-/// <c>index.json</c> holds the season, dungeons, affixes and the shared lookup tables:
+/// <c>index.json</c> holds when the leaderboards were read (<c>generatedAt</c>, UTC ISO 8601),
+/// the season, dungeons, affixes and the shared lookup tables:
 /// <c>specs</c> as objects, <c>players</c> as <c>[name, realm, guild, class, race, gender]</c>.
 /// </para>
 /// <para>
@@ -33,6 +35,7 @@ public static class MythicPlusFileWriter
     public static async Task WriteAsync(
         string outputDirectory,
         MythicPlusDataset dataset,
+        DateTimeOffset generatedAt,
         CancellationToken cancellationToken
     )
     {
@@ -58,7 +61,7 @@ public static class MythicPlusFileWriter
 
         await AtomicFile.WriteAsync(
             Path.Combine(outputDirectory, IndexFileName),
-            (stream, token) => WriteIndexAsync(stream, dataset, token),
+            (stream, token) => WriteIndexAsync(stream, dataset, generatedAt, token),
             cancellationToken
         );
 
@@ -68,6 +71,7 @@ public static class MythicPlusFileWriter
     private static async Task WriteIndexAsync(
         Stream stream,
         MythicPlusDataset dataset,
+        DateTimeOffset generatedAt,
         CancellationToken cancellationToken
     )
     {
@@ -77,6 +81,13 @@ public static class MythicPlusFileWriter
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
+        writer.WriteString(
+            "generatedAt",
+            generatedAt.UtcDateTime.ToString(
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                CultureInfo.InvariantCulture
+            )
+        );
         writer.WriteStartObject("season");
         writer.WriteString("id", season.Id);
         writer.WriteString("name", season.Name);

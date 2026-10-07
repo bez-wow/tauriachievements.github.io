@@ -3,6 +3,7 @@ import {
   characterKey,
   createRunDecoder,
   currentAffixWeek,
+  exportedAt,
   formatClock,
   formatDuration,
   formatTimerDelta,
@@ -25,6 +26,18 @@ describe('upgradeStars', () => {
     expect(upgradeStars(1)).toBe('★');
     expect(upgradeStars(2)).toBe('★★');
     expect(upgradeStars(3)).toBe('★★★');
+  });
+});
+
+describe('exportedAt', () => {
+  it('reads the export time from the index', () => {
+    expect(exportedAt({ generatedAt: '2026-10-07T09:30:15Z' })?.toISOString()).toBe('2026-10-07T09:30:15.000Z');
+  });
+
+  it('is undefined before the index loads, for older exports and for an invalid time', () => {
+    expect(exportedAt(undefined)).toBeUndefined();
+    expect(exportedAt({})).toBeUndefined();
+    expect(exportedAt({ generatedAt: 'not a date' })).toBeUndefined();
   });
 });
 

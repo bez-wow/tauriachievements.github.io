@@ -128,7 +128,12 @@ public sealed class MythicPlusExportServiceTests
                     [(WoD, 197)] = LeaderboardJson(),
                 }
             );
-            var service = new MythicPlusExportService(outputDirectory, apiClient);
+            var scannedAt = new DateTimeOffset(2026, 10, 7, 11, 30, 15, TimeSpan.FromHours(2));
+            var service = new MythicPlusExportService(
+                outputDirectory,
+                apiClient,
+                new FixedTimeProvider(scannedAt)
+            );
 
             var result = await service.ExportAsync(
                 new MythicPlusExporterOptions([Evermoon, WoD], AllowShrink: false),
@@ -149,6 +154,7 @@ public sealed class MythicPlusExportServiceTests
                 File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
             );
             var root = index.RootElement;
+            Assert.Equal("2026-10-07T09:30:15Z", root.GetProperty("generatedAt").GetString());
             // Seat of the Triumvirate is unreleased: its leaderboard is never requested (the fake
             // client would fail it) and it gets no tile.
             Assert.Equal(
@@ -345,5 +351,10 @@ public sealed class MythicPlusExportServiceTests
                     : TauriApiResponseResult.Failure("No fake leaderboard.")
             );
         }
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now.ToUniversalTime();
     }
 }

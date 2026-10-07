@@ -15,7 +15,11 @@ public sealed record MythicPlusExportResult(
 /// returns both; WoD keeps its own. Nothing is written unless every leaderboard was read,
 /// so a flaky API never publishes a partial season.
 /// </summary>
-public sealed class MythicPlusExportService(string outputDirectory, ITauriApiClient apiClient)
+public sealed class MythicPlusExportService(
+    string outputDirectory,
+    ITauriApiClient apiClient,
+    TimeProvider? timeProvider = null
+)
 {
     /// <summary>
     /// Leaderboards only grow during a season, so fewer runs than last time means the API
@@ -24,6 +28,7 @@ public sealed class MythicPlusExportService(string outputDirectory, ITauriApiCli
     private const double MaxShrinkFraction = 0.02;
 
     private readonly ChallengeLeaderboardReader _reader = new(apiClient);
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
 
     public async Task<MythicPlusExportResult> ExportAsync(
         MythicPlusExporterOptions options,
@@ -36,6 +41,8 @@ public sealed class MythicPlusExportService(string outputDirectory, ITauriApiCli
             options.Realms,
             cancellationToken
         );
+        // Every run in the files was on the leaderboards by now, so this is how current they are.
+        var scannedAt = _timeProvider.GetUtcNow();
 
         if (leaderboards.Failures.Count > 0)
         {
@@ -62,7 +69,12 @@ public sealed class MythicPlusExportService(string outputDirectory, ITauriApiCli
             );
         }
 
-        await MythicPlusFileWriter.WriteAsync(outputDirectory, dataset, cancellationToken);
+        await MythicPlusFileWriter.WriteAsync(
+            outputDirectory,
+            dataset,
+            scannedAt,
+            cancellationToken
+        );
         return new MythicPlusExportResult(dataset, previousRunCount, outputDirectory);
     }
 

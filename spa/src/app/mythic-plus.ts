@@ -80,11 +80,22 @@ export type MythicPlusRunEntry = [number, number, number, number, number[], Arra
 
 export interface MythicPlusIndex {
   version: number;
+  /** When the exporter read the leaderboards, UTC ISO 8601. Missing in older exports. */
+  generatedAt?: string;
   season: MythicPlusSeason;
   dungeons: MythicPlusDungeon[];
   affixes: MythicPlusAffix[];
   specs: MythicPlusSpecEntry[];
   players: MythicPlusPlayerEntry[];
+}
+
+/** When the data was exported, or undefined when the index has no valid timestamp. */
+export function exportedAt(index: Pick<MythicPlusIndex, 'generatedAt'> | undefined): Date | undefined {
+  if (!index?.generatedAt) {
+    return undefined;
+  }
+  const date = new Date(index.generatedAt);
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
 export interface MythicPlusDungeonFile {

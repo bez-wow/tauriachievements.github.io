@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, map, switchMap } from 'rxjs';
+import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
   MYTHIC_PLUS_DATA_DIR,
@@ -11,7 +12,8 @@ import {
   MythicPlusIndex,
   MythicPlusRun,
   createRunDecoder,
-  currentAffixWeek
+  currentAffixWeek,
+  exportedAt
 } from './mythic-plus';
 import {
   DayActivity,
@@ -109,6 +111,8 @@ export class MythicPlusStatsPageComponent implements OnInit {
   readonly resultSegments = RESULT_SEGMENTS;
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  readonly lastEdited = computed(() => exportedAt(this.index()));
+  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   readonly allRuns = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);

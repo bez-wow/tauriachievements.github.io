@@ -1,5 +1,7 @@
 <app-update-bar
-  [showLastUpdated]="false" />
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="mplus-page">
   <h1 class="visually-hidden">Mythic+ Leaderboard</h1>

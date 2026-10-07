@@ -15,6 +15,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
+import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import {
   CLASS_NAMES,
@@ -30,6 +31,7 @@ import {
   UPGRADE_CUTOFFS,
   createRunDecoder,
   currentAffixWeek,
+  exportedAt,
   formatClock,
   formatDuration,
   formatTimerDelta,
@@ -225,6 +227,8 @@ export class MythicPlusPageComponent implements OnInit {
   readonly cutoffMarks = UPGRADE_CUTOFFS.filter(cutoff => cutoff.percent < 100);
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
+  readonly lastEdited = computed(() => exportedAt(this.index()));
+  readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
   /** Decoded runs per dungeon id, filled as the dungeon files arrive. */
   readonly runsByDungeon = signal<ReadonlyMap<string, readonly MythicPlusRun[]>>(new Map());
   readonly isLoading = signal(true);

@@ -1,5 +1,7 @@
 <app-update-bar
-  [showLastUpdated]="false" />
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="stats-page">
   <a class="back-link" routerLink="/mythic-plus" [queryParams]="period() === 'week' ? { period: 'week' } : {}">
