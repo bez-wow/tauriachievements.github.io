@@ -42,8 +42,38 @@ $plot-height: 200px;
 }
 
 .page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 24px;
+
   h1 { margin-bottom: 6px; color: #fff; font-size: 1.6rem; line-height: 1.25; }
   p { color: #bdbdbd; line-height: 1.55; }
+}
+
+.page-heading { min-width: 0; flex: 1 1 480px; }
+
+// Opens /mythic-plus/records; the same pill as the leaderboard's Season Stats link.
+.records-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .15s ease, color .15s ease;
+
+  svg { width: 14px; height: 14px; flex: none; fill: $gold; }
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
@@ -539,7 +569,7 @@ $plot-height: 200px;
 
 @media (pointer: coarse) {
   .segmented button { min-height: 40px; }
-  .back-link { min-height: 40px; }
+  .back-link, .records-link { min-height: 40px; }
   // The 14 px bars are hard to hit with a finger; the invisible strip makes them about 34 px tall.
   .track::before { position: absolute; inset: -10px 0; content: ''; }
 }

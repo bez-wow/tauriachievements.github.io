@@ -97,10 +97,10 @@
   .view-switch { order: 1; }
 }
 
-// Bar-chart icon on the link to /mythic-plus/stats.
+// The bar-chart and trophy icons on the links to /mythic-plus/stats and /mythic-plus/records.
 .scoring-link-chart { width: 14px; height: 14px; flex: none; fill: $gold; }
 
-// Opens /mythic-plus/stats or /mythic-plus/scoring.
+// Opens /mythic-plus/stats, /mythic-plus/records or /mythic-plus/scoring.
 .scoring-link {
   display: inline-flex;
   align-items: center;
@@ -361,7 +361,8 @@
     .view-switch button { flex: 1 1 0; }
   }
 
-  .scoring-link { flex: 1 1 0; justify-content: center; text-align: center; }
+  // Season Stats and Records share a row; the longer scoring link gets the row under them.
+  .scoring-link { flex: 1 1 40%; justify-content: center; text-align: center; }
 
   // Search (and the Class filters) first, then the pager.
   .pager-row { flex-direction: column; align-items: stretch; }

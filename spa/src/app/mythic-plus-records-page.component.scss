@@ -1,0 +1,460 @@
+@use './mythic-plus-shared' as *;
+
+// Same palette as the M+ leaderboard and stats page: dark cards, gold accent, the run details'
+// green and red for under and over the timer.
+$timed: #7fdc8f;
+$depleted: #e06666;
+
+:host { display: block; width: 100%; }
+
+@include caret;
+@include visually-hidden;
+
+.records-page {
+  display: flex;
+  width: min(1240px, 100%);
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  color: #e0e0e0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  color: #bdbdbd;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  span { color: $gold; font-size: 1.1rem; }
+
+  &:hover { color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.page-header {
+  h1 { margin-bottom: 6px; color: #fff; font-size: 1.6rem; line-height: 1.25; }
+  p { color: #bdbdbd; line-height: 1.55; }
+}
+
+// Loading / error
+.feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+
+.feedback button {
+  padding: 9px 15px;
+  border: 1px solid $gold;
+  border-radius: 5px;
+  background: #231d0a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, .15);
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// All realms / WoD
+.realm-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.realm-note { color: #9a9a9a; font-size: .8rem; }
+
+// Same control as the stats page's.
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+
+  button {
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { color: #fff; }
+    &.active { background: #2e2716; color: $gold; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
+  }
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0;
+
+  div { min-width: 0; padding: 12px 16px; border-radius: 4px; background: #1b1b1b; }
+  dt { color: #9a9a9a; font-size: .75rem; }
+  dd { margin: 2px 0 0; color: #fff; font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+}
+
+.summary-note { display: block; color: #bdbdbd; font-size: .78rem; font-weight: 400; overflow-wrap: anywhere; }
+
+// Sections
+.section { display: flex; min-width: 0; flex-direction: column; gap: 12px; margin-top: 8px; }
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+
+  h2 { margin-bottom: 2px; color: #fff; font-size: 1.2rem; }
+  p { color: #9a9a9a; font-size: .8rem; line-height: 1.45; }
+}
+
+.section-heading { min-width: 0; flex: 1 1 320px; }
+.section-filter { width: 220px; flex: none; }
+.section-empty { padding: 32px 16px; border-radius: 4px; background: #1b1b1b; color: #9a9a9a; text-align: center; }
+
+.timer-of { color: #9a9a9a; font-size: .85rem; }
+.timer-delta { color: $timed; font-size: .85rem; font-weight: 700; }
+
+// The group of a run, names in class colour.
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: .85rem;
+
+  li { display: inline-flex; min-width: 0; align-items: center; gap: 5px; }
+  img { width: 16px; height: 16px; flex: none; border-radius: 3px; }
+
+  a {
+    min-width: 0;
+    padding: 3px 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+
+    &:hover, &:focus-visible { text-decoration: underline; }
+  }
+}
+
+// Dungeon records: a card each. An open card's details take the next row across the grid,
+// and `dense` lets the cards after it fill the rest of its own row.
+.record-grid {
+  display: grid;
+  grid-auto-flow: row dense;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.record-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-top: 2px solid #2e2716;
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+
+  &.expanded { border-top-color: $gold; background: #24201a; }
+  &.unclaimed { border-top-color: #333; }
+}
+
+.record-head {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+
+  img { width: 40px; height: 40px; border: 1px solid rgba(247, 181, 0, .6); border-radius: 5px; }
+  h3 { color: #fff; font-size: 1rem; line-height: 1.25; overflow-wrap: anywhere; }
+}
+
+.record-level {
+  color: $gold;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .level-star { margin-left: 3px; font-size: .7rem; letter-spacing: -1px; vertical-align: super; }
+}
+
+.record-time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-variant-numeric: tabular-nums;
+
+  strong { color: #fff; font-size: 1.05rem; }
+}
+
+.record-date { color: #9a9a9a; font-size: .8rem; }
+.record-empty { color: #8a8a8a; font-size: .85rem; }
+
+.details-toggle {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+  margin-top: auto;
+  padding: 6px 12px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { border-color: $gold; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &[aria-expanded='true'] { border-color: $gold; color: $gold; }
+}
+
+.record-details {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+// Server firsts: a timeline, highest level on top, a rail through the level badges.
+.timeline {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  list-style: none;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 47px;
+    width: 2px;
+    background: #2e2716;
+    content: '';
+  }
+}
+
+.first {
+  position: relative;
+  border-bottom: 1px solid #141414;
+
+  &:last-child { border-bottom: 0; }
+  &.expanded { background: #24201a; }
+}
+
+.first-row {
+  display: grid;
+  grid-template-areas: 'level date dungeon time group toggle';
+  grid-template-columns: 64px 150px 190px 130px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 12px 10px 16px;
+  cursor: pointer;
+
+  &:hover { background: rgba(255, 255, 255, .03); }
+  .group { grid-area: group; }
+}
+
+.first-level {
+  position: relative;
+  z-index: 1;
+  min-width: 52px;
+  padding: 3px 8px;
+  border: 1px solid rgba(247, 181, 0, .55);
+  border-radius: 999px;
+  background: #231d0a;
+  color: $gold;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  grid-area: level;
+  justify-self: center;
+}
+
+// The highest level timed so far.
+.first:first-child .first-level { background: $gold; color: #111; }
+
+.first-date { color: #bdbdbd; font-size: .8rem; font-variant-numeric: tabular-nums; grid-area: date; }
+
+.first-dungeon {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 600;
+  grid-area: dungeon;
+
+  img { width: 24px; height: 24px; flex: none; border-radius: 4px; }
+}
+
+.first-time { color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; grid-area: time; }
+
+.row-toggle {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  grid-area: toggle;
+
+  &:focus-visible { outline: 2px solid $gold; }
+}
+
+// Unclaimed bounties: dashed, because nobody holds them yet.
+.server-bounty {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 20px;
+  padding: 16px 20px;
+  border: 1px solid rgba(247, 181, 0, .45);
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2a2210, #1b1b1b 60%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.server-bounty-level {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  border: 2px dashed $gold;
+  border-radius: 50%;
+  color: $gold;
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.bounty-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+
+  h3 { color: #fff; font-size: 1.15rem; }
+}
+
+.bounty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.bounty-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px dashed #3a3a3a;
+  border-radius: 4px;
+  background: #161616;
+}
+
+.bounty-head {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+
+  img { width: 32px; height: 32px; border-radius: 4px; opacity: .85; }
+  h3 { color: #fff; font-size: .95rem; line-height: 1.3; overflow-wrap: anywhere; }
+}
+
+.bounty-level { color: $gold; font-size: 1.05rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.bounty-closest {
+  color: #e0e0e0;
+  font-size: .85rem;
+  font-variant-numeric: tabular-nums;
+
+  strong { color: $depleted; }
+  &.none { color: #8a8a8a; }
+}
+
+.bounty-attempts { color: #9a9a9a; font-size: .78rem; }
+
+.bounty-claimed {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #2a2a2a;
+
+  p { color: $timed; font-size: .8rem; font-weight: 600; }
+}
+
+@media (pointer: coarse) {
+  .back-link, .details-toggle, .segmented button { min-height: 40px; }
+  .row-toggle { width: 40px; height: 40px; }
+}
+
+// Narrower screens: each first stacks its date, dungeon and time beside the level, the group under them.
+@media (max-width: $cards-breakpoint) {
+  .timeline::before { left: 37px; }
+
+  .first-row {
+    grid-template-areas:
+      'level date toggle'
+      'level dungeon toggle'
+      'level time toggle'
+      '. group group';
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    padding: 10px 8px 10px 12px;
+
+    .group { margin-top: 4px; }
+  }
+
+  .first-level { min-width: 48px; padding: 2px 6px; align-self: start; }
+}
+
+@media (max-width: $phone-breakpoint) {
+  .records-page { padding-top: 32px; }
+
+  .page-header h1 { font-size: 1.35rem; }
+
+  .section-filter { width: 100%; }
+
+  .server-bounty { gap: 8px 14px; padding: 14px; }
+  .server-bounty-level { width: 56px; height: 56px; font-size: 1.2rem; }
+  .bounty-body h3 { font-size: 1rem; }
+}

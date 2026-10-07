@@ -49,6 +49,11 @@ export const routes: Routes = [
       .then(module => module.MythicPlusStatsPageComponent)
   },
   {
+    path: 'mythic-plus/records',
+    loadComponent: () => import('./mythic-plus-records-page.component')
+      .then(module => module.MythicPlusRecordsPageComponent)
+  },
+  {
     path: 'mythic-plus/character/:realm/:name',
     loadComponent: () => import('./mythic-plus-profile-page.component')
       .then(module => module.MythicPlusProfilePageComponent)

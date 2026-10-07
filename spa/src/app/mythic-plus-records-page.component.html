@@ -1,0 +1,243 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="records-page">
+  <a class="back-link" routerLink="/mythic-plus">
+    <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
+  </a>
+
+  <header class="page-header">
+    <h1>Mythic+ records<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></h1>
+    <p>The highest key timed in each dungeon, the first group to time each key level, and the keys nobody has timed yet.</p>
+  </header>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Polishing the trophies...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError()">
+    <div class="realm-bar">
+      <div class="segmented" role="group" aria-label="Whose runs count">
+        <button
+          type="button"
+          [class.active]="realm() === 'all'"
+          [attr.aria-pressed]="realm() === 'all'"
+          (click)="setRealm('all')">All realms</button>
+        <button
+          type="button"
+          [class.active]="realm() === 'wod'"
+          [attr.aria-pressed]="realm() === 'wod'"
+          (click)="setRealm('wod')">WoD</button>
+      </div>
+      <p class="realm-note">
+        {{ realm() === 'wod' ? 'Only runs on the WoD leaderboard.' : 'Evermoon and Tauri share one leaderboard. WoD has its own.' }}
+      </p>
+    </div>
+
+    <dl class="summary">
+      <div *ngFor="let tile of summary()">
+        <dt>{{ tile.label }}</dt>
+        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+      </div>
+    </dl>
+
+    <!-- Dungeon records -->
+    <section class="section" aria-labelledby="records-title">
+      <header class="section-header">
+        <h2 id="records-title">Dungeon records</h2>
+        <p>The highest key timed in each dungeon. At the same key, the faster clear holds the record.</p>
+      </header>
+
+      <!-- A record's details open under its row of cards, across the whole grid (grid-auto-flow: dense). -->
+      <div class="record-grid">
+        <ng-container *ngFor="let record of records(); trackBy: trackRecord">
+          <article
+            class="record-card"
+            [class.expanded]="record.run && isExpanded('record', record.run.id)"
+            [class.unclaimed]="!record.run"
+            [attr.aria-labelledby]="'record-' + record.dungeon.id">
+            <header class="record-head">
+              <img [src]="record.dungeon.icon" alt="" loading="lazy" />
+              <h3 [id]="'record-' + record.dungeon.id">{{ record.dungeon.name }}</h3>
+              <span class="record-level" *ngIf="record.run as run">
+                +{{ run.keyLevel }}<span class="level-star" [title]="'Timed, +' + run.upgrades">{{ upgradeStars(run.upgrades) }}<span class="visually-hidden"> timed +{{ run.upgrades }}</span></span>
+              </span>
+            </header>
+
+            <ng-container *ngIf="record.run as run; else noRecord">
+              <p class="record-time">
+                <strong>{{ run.clearClock }}</strong>
+                <span class="timer-of">of {{ run.timerClock }}</span>
+                <span class="timer-delta">{{ run.timerDelta }}</span>
+              </p>
+              <p class="record-date">
+                <time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time> · {{ record.heldFor }}
+              </p>
+              <ng-container *ngTemplateOutlet="group; context: { $implicit: run }"></ng-container>
+              <button
+                type="button"
+                class="details-toggle"
+                [attr.aria-expanded]="isExpanded('record', run.id)"
+                [attr.aria-controls]="'record-details-' + run.id"
+                (click)="toggle('record', run.id)">
+                <span class="caret" aria-hidden="true"></span>Run details
+              </button>
+            </ng-container>
+            <ng-template #noRecord>
+              <p class="record-empty">Nobody has timed it yet.</p>
+            </ng-template>
+          </article>
+
+          <div
+            class="record-details"
+            *ngIf="record.run && isExpanded('record', record.run.id)"
+            [id]="'record-details-' + record.run.id">
+            <app-mythic-plus-run-details [run]="record.run" />
+          </div>
+        </ng-container>
+      </div>
+    </section>
+
+    <!-- Server firsts -->
+    <section class="section" aria-labelledby="firsts-title">
+      <header class="section-header">
+        <div class="section-heading">
+          <h2 id="firsts-title">Server firsts</h2>
+          <p>
+            The first group to time each key level from +{{ firstsFromLevel }} up<ng-container *ngIf="selectedFirstsDungeon() as dungeon"> in {{ dungeon.name }}</ng-container>.
+            Times are in your local time.
+          </p>
+        </div>
+        <div class="section-filter">
+          <app-filter-dropdown
+            dropdownId="recordsFirstsDungeon"
+            triggerId="recordsFirstsDungeonTrigger"
+            ariaLabel="Show the firsts of one dungeon"
+            [options]="firstsDungeonOptions()"
+            [selectedValue]="firstsDungeonId()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            (selectionChange)="setFirstsDungeon($event)" />
+        </div>
+      </header>
+
+      <ol class="timeline" *ngIf="firsts().length; else noFirsts">
+        <li
+          class="first"
+          *ngFor="let first of firsts(); trackBy: trackFirst"
+          [class.expanded]="isExpanded('first', first.run.id)">
+          <div class="first-row" (click)="toggle('first', first.run.id)">
+            <span class="first-level">+{{ first.level }}</span>
+            <time class="first-date" [attr.datetime]="first.run.completedAt">{{ first.run.completedAt | date:'EEE d MMM, HH:mm' }}</time>
+            <span class="first-dungeon">
+              <img [src]="first.run.dungeon.icon" alt="" loading="lazy" />{{ first.run.dungeon.name }}
+            </span>
+            <span class="first-time">
+              {{ first.run.clearClock }}
+              <span class="timer-of">of {{ first.run.timerClock }}</span>
+            </span>
+            <ng-container *ngTemplateOutlet="group; context: { $implicit: first.run }"></ng-container>
+            <button
+              type="button"
+              class="row-toggle"
+              [attr.aria-expanded]="isExpanded('first', first.run.id)"
+              [attr.aria-controls]="'first-details-' + first.run.id"
+              [attr.aria-label]="(isExpanded('first', first.run.id) ? 'Hide' : 'Show') + ' the details of the first +' + first.level"
+              (click)="$event.stopPropagation(); toggle('first', first.run.id)">
+              <span class="caret" aria-hidden="true"></span>
+            </button>
+          </div>
+          <app-mythic-plus-run-details
+            *ngIf="isExpanded('first', first.run.id)"
+            [id]="'first-details-' + first.run.id"
+            [run]="first.run" />
+        </li>
+      </ol>
+      <ng-template #noFirsts>
+        <p class="section-empty">Nobody has timed a +{{ firstsFromLevel }} or higher{{ selectedFirstsDungeon() ? ' here' : '' }} yet.</p>
+      </ng-template>
+    </section>
+
+    <!-- Unclaimed bounties -->
+    <section class="section" aria-labelledby="bounties-title">
+      <header class="section-header">
+        <h2 id="bounties-title">Unclaimed bounties</h2>
+        <p>The next key nobody has timed, and the attempt that came closest. A claimed bounty stays here for a week.</p>
+      </header>
+
+      <article class="server-bounty" *ngIf="serverBounty() as bounty" aria-labelledby="server-bounty-title">
+        <span class="server-bounty-level" aria-hidden="true">+{{ bounty.level }}</span>
+        <div class="bounty-body">
+          <h3 id="server-bounty-title">Nobody has timed a +{{ bounty.level }} yet</h3>
+          <ng-container *ngTemplateOutlet="attempt; context: { $implicit: bounty }"></ng-container>
+        </div>
+      </article>
+
+      <div class="bounty-grid">
+        <article
+          class="bounty-card"
+          *ngFor="let bounty of bounties(); trackBy: trackBounty"
+          [attr.aria-labelledby]="'bounty-' + bounty.key">
+          <header class="bounty-head">
+            <img [src]="bounty.dungeon?.icon" alt="" loading="lazy" />
+            <h3 [id]="'bounty-' + bounty.key">{{ bounty.dungeon?.name }} <span class="bounty-level">+{{ bounty.level }}</span></h3>
+          </header>
+          <ng-container *ngTemplateOutlet="attempt; context: { $implicit: bounty }"></ng-container>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />
+
+<!-- The group of a run: names in class colour, each opening the character's profile. -->
+<ng-template #group let-run>
+  <ul class="group" aria-label="Group">
+    <li *ngFor="let member of run.roster; trackBy: trackMember">
+      <img [src]="member.classIcon" alt="" />
+      <a
+        [routerLink]="member.profileLink"
+        [style.color]="member.color"
+        [title]="member.spec + ' ' + member.className"
+        [attr.aria-label]="member.name + ', ' + member.spec + ' ' + member.className"
+        (click)="$event.stopPropagation()">{{ member.name }}</a>
+    </li>
+  </ul>
+</ng-template>
+
+<!-- A bounty's closest attempt, or none, and the claim of the level below while it is recent. -->
+<ng-template #attempt let-bounty>
+  <ng-container *ngIf="bounty.closest as run; else noAttempts">
+    <p class="bounty-closest">
+      Closest:<ng-container *ngIf="!bounty.dungeon"> {{ run.dungeon.name }}</ng-container>
+      +{{ run.keyLevel }}, missed by <strong>{{ bounty.missedBy }}</strong>
+      · <time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time>
+    </p>
+    <p class="bounty-attempts">
+      {{ bounty.attempts | number }} {{ bounty.attempts === 1 ? 'attempt' : 'attempts' }} at +{{ bounty.level }} or higher
+    </p>
+    <ng-container *ngTemplateOutlet="group; context: { $implicit: run }"></ng-container>
+  </ng-container>
+  <ng-template #noAttempts>
+    <p class="bounty-closest none">No attempts yet</p>
+  </ng-template>
+
+  <div class="bounty-claimed" *ngIf="bounty.claimed as run">
+    <p>
+      <span aria-hidden="true">✓</span>
+      +{{ run.keyLevel }}<ng-container *ngIf="!bounty.dungeon"> {{ run.dungeon.shortName }}</ng-container>
+      claimed on <time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time> by
+    </p>
+    <ng-container *ngTemplateOutlet="group; context: { $implicit: run }"></ng-container>
+  </div>
+</ng-template>
