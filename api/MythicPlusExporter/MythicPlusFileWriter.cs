@@ -12,8 +12,8 @@ namespace MythicPlusExporter;
 /// Writes the files the /mythic-plus page reads (contract: spa/src/app/mythic-plus.ts).
 /// <para>
 /// <c>index.json</c> holds when the leaderboards were read (<c>generatedAt</c>, UTC ISO 8601),
-/// a fingerprint of the lookup tables (<c>tables</c>), the season, dungeons, affixes and the
-/// shared lookup tables themselves:
+    /// a fingerprint of the lookup tables (<c>tables</c>), the season, dungeons, affixes, compact
+    /// scan-to-scan standings and the shared lookup tables themselves:
 /// <c>specs</c> as objects, <c>players</c> as <c>[name, realm, guild, class, race, gender]</c>.
 /// </para>
 /// <para>
@@ -40,7 +40,9 @@ public static class MythicPlusFileWriter
     public static async Task WriteAsync(
         string outputDirectory,
         MythicPlusDataset dataset,
+        IReadOnlyList<MythicPlusStanding> standings,
         DateTimeOffset generatedAt,
+        DateTimeOffset? previousGeneratedAt,
         CancellationToken cancellationToken
     )
     {
@@ -67,7 +69,15 @@ public static class MythicPlusFileWriter
 
         await AtomicFile.WriteAsync(
             Path.Combine(outputDirectory, IndexFileName),
-            (stream, token) => WriteIndexAsync(stream, dataset, generatedAt, tables, token),
+            (stream, token) => WriteIndexAsync(
+                stream,
+                dataset,
+                standings,
+                generatedAt,
+                previousGeneratedAt,
+                tables,
+                token
+            ),
             cancellationToken
         );
 
@@ -109,7 +119,9 @@ public static class MythicPlusFileWriter
     private static async Task WriteIndexAsync(
         Stream stream,
         MythicPlusDataset dataset,
+        IReadOnlyList<MythicPlusStanding> standings,
         DateTimeOffset generatedAt,
+        DateTimeOffset? previousGeneratedAt,
         string tables,
         CancellationToken cancellationToken
     )
@@ -122,11 +134,12 @@ public static class MythicPlusFileWriter
         writer.WriteNumber("version", FormatVersion);
         writer.WriteString(
             "generatedAt",
-            generatedAt.UtcDateTime.ToString(
-                "yyyy-MM-dd'T'HH:mm:ss'Z'",
-                CultureInfo.InvariantCulture
-            )
+            FormatTimestamp(generatedAt)
         );
+        if (previousGeneratedAt is not null)
+        {
+            writer.WriteString("previousGeneratedAt", FormatTimestamp(previousGeneratedAt.Value));
+        }
         writer.WriteString("tables", tables);
         writer.WriteStartObject("season");
         writer.WriteString("id", season.Id);
@@ -213,6 +226,30 @@ public static class MythicPlusFileWriter
                     item.WriteNumberValue(player.ClassId);
                     item.WriteNumberValue(player.Race);
                     item.WriteNumberValue(player.Gender);
+                    item.WriteEndArray();
+                }
+            );
+            await FlushIfLargeAsync(writer, cancellationToken);
+        }
+        writer.WriteEndArray();
+
+        // Aligned with `players`: [current score, current rank, score change, rank change].
+        // New characters (and the first export) have no two change values.
+        writer.WriteStartArray("standings");
+        foreach (var standing in standings)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteNumberValue(standing.Score);
+                    item.WriteNumberValue(standing.Rank);
+                    if (standing.ScoreChange is not null && standing.RankChange is not null)
+                    {
+                        item.WriteNumberValue(standing.ScoreChange.Value);
+                        item.WriteNumberValue(standing.RankChange.Value);
+                    }
                     item.WriteEndArray();
                 }
             );
@@ -313,6 +350,9 @@ public static class MythicPlusFileWriter
             await writer.FlushAsync(cancellationToken);
         }
     }
+
+    private static string FormatTimestamp(DateTimeOffset timestamp) =>
+        timestamp.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Writes one array element on a line of its own. The element is rendered by a scratch

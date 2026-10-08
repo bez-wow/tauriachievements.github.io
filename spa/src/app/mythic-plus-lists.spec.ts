@@ -189,6 +189,72 @@ describe('MythicPlusPlayersListComponent', () => {
     expect(element.querySelectorAll('td.col-best').length).toBe(2);
     expect(element.querySelector('.player-card')).toBeNull();
   });
+
+  it('shows score gained and upward rank movement in tables and cards', () => {
+    for (const cards of [true, false]) {
+      const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+      fixture.componentRef.setInput('rows', [{
+        ...playerRow('Alpha'),
+        change: { score: 12.3, rank: 4 }
+      }]);
+      fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+      fixture.componentRef.setInput('cards', cards);
+      fixture.detectChanges();
+
+      const rank: HTMLElement = fixture.nativeElement.querySelector('.rank-change');
+      const score: HTMLElement = fixture.nativeElement.querySelector(cards ? '.card-score' : '.score-metric');
+      expect(rank.textContent?.trim()).toBe('▲ 4');
+      expect(rank.getAttribute('aria-label')).toBe('Climbed 4 ranks since the last scan');
+      expect(score.classList).toContain('score-gained');
+      expect(score.querySelector('.score-tooltip')?.textContent?.trim()).toBe('+12.3 score since the last scan');
+      expect(score.querySelector('.score-change')).toBeNull();
+      if (!cards) {
+        expect(score.classList).toContain('score-metric');
+      }
+    }
+  });
+
+  it('does not show a rank indicator when the rank is unchanged', () => {
+    const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+    fixture.componentRef.setInput('rows', [{
+      ...playerRow('Alpha'),
+      change: { score: 3.2, rank: 0 }
+    }]);
+    fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+    fixture.componentRef.setInput('cards', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.rank-change')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.score-metric').classList).toContain('score-gained');
+    expect(fixture.nativeElement.querySelector('.score-tooltip')?.textContent?.trim())
+      .toBe('+3.2 score since the last scan');
+  });
+
+  it('does not show a score indicator when the score is unchanged', () => {
+    const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+    fixture.componentRef.setInput('rows', [{
+      ...playerRow('Alpha'),
+      change: { score: 0, rank: -2 }
+    }]);
+    fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+    fixture.componentRef.setInput('cards', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.score-tooltip')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.score-metric').classList).not.toContain('score-gained');
+    expect(fixture.nativeElement.querySelector('.rank-change')?.textContent?.trim()).toBe('▼ 2');
+  });
+
+  it('marks a player who was absent from the previous scan as new', () => {
+    const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+    fixture.componentRef.setInput('rows', [{ ...playerRow('Alpha'), newSinceLastScan: true }]);
+    fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+    fixture.componentRef.setInput('cards', false);
+    fixture.detectChanges();
+
+    expect([...fixture.nativeElement.querySelectorAll('.player-new')].map((node: Element) => node.textContent?.trim()))
+      .toEqual(['new', 'new']);
+  });
 });
 
 describe('MythicPlusWeekAffixesComponent', () => {

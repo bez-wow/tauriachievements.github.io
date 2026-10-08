@@ -73,6 +73,12 @@ export interface MythicPlusSpecEntry {
 export type MythicPlusPlayerEntry = [string, string, string, number, number, number];
 
 /**
+ * Aligned with `players`: current score, current rank, then changes since the previous scan.
+ * A new player (or the first export) has no change values. Positive rank change means climbed.
+ */
+export type MythicPlusStandingEntry = [number, number, number?, number?];
+
+/**
  * `[keyLevel, clearTimeMs, completedAt (Unix seconds), score, affixIds, [[player, spec], ...]]`,
  * where player and spec are positions in the index's tables.
  */
@@ -82,6 +88,8 @@ export interface MythicPlusIndex {
   version: number;
   /** When the exporter read the leaderboards, UTC ISO 8601. Missing in older exports. */
   generatedAt?: string;
+  /** The scan the optional standing changes compare with. Missing when there is no baseline. */
+  previousGeneratedAt?: string;
   /** Fingerprint of the player and spec tables. Missing in older exports. */
   tables?: string;
   season: MythicPlusSeason;
@@ -89,6 +97,7 @@ export interface MythicPlusIndex {
   affixes: MythicPlusAffix[];
   specs: MythicPlusSpecEntry[];
   players: MythicPlusPlayerEntry[];
+  standings?: MythicPlusStandingEntry[];
 }
 
 /** When the data was exported, or undefined when the index has no valid timestamp. */

@@ -3,7 +3,21 @@
     <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
       <a class="player-card" [class.picking]="pickMode()" [routerLink]="row.member.profileLink" (click)="onLink($event, row)">
         <span class="pick-box" *ngIf="pickMode()" aria-hidden="true"></span>
-        <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+        <span class="card-rank" [ngClass]="'q-' + row.quality">
+          <span class="rank-metric">
+            <span><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+            <span
+              *ngIf="row.change?.rank as rankChange"
+              class="rank-change"
+              [class.up]="rankChange > 0"
+              [class.down]="rankChange < 0"
+              [attr.title]="rankChangeLabel(rankChange)"
+              [attr.aria-label]="rankChangeLabel(rankChange)">
+              <span aria-hidden="true">{{ rankChange > 0 ? '▲' : '▼' }} {{ rankChange < 0 ? -rankChange : rankChange }}</span>
+            </span>
+            <span *ngIf="row.newSinceLastScan" class="player-new" title="New since the last scan">new</span>
+          </span>
+        </span>
         <span class="card-body">
           <span class="card-line">
             <span class="player-icons">
@@ -34,7 +48,17 @@
             </span>
           </ng-template>
         </span>
-        <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+        <span
+          class="card-score"
+          [class.has-score-change]="!!row.change?.score"
+          [class.score-gained]="(row.change?.score ?? 0) > 0">
+          <span><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+          <ng-container *ngIf="row.change?.score as scoreChange">
+            <span class="score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
+            <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
+          </ng-container>
+          <span *ngIf="row.newSinceLastScan" class="player-new" title="New since the last scan">new</span>
+        </span>
       </a>
     </li>
   </ol>
@@ -63,7 +87,7 @@
               {{ dungeon.shortName }}
             </th>
           </ng-template>
-          <th scope="col">Score</th>
+          <th scope="col" class="col-score-heading"><span>Score</span></th>
         </tr>
       </thead>
       <tbody>
@@ -75,7 +99,21 @@
           [class.picked]="pickedKeys().has(row.key)"
           (click)="openProfile(row)">
           <td class="col-pick" *ngIf="pickMode()"><span class="pick-box" aria-hidden="true"></span></td>
-          <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+          <td class="col-rank" [ngClass]="'q-' + row.quality">
+            <span class="rank-metric">
+              <span class="metric-value">{{ row.rank }}</span>
+              <span
+                *ngIf="row.change?.rank as rankChange"
+                class="rank-change"
+                [class.up]="rankChange > 0"
+                [class.down]="rankChange < 0"
+                [attr.title]="rankChangeLabel(rankChange)"
+                [attr.aria-label]="rankChangeLabel(rankChange)">
+                <span aria-hidden="true">{{ rankChange > 0 ? '▲' : '▼' }} {{ rankChange < 0 ? -rankChange : rankChange }}</span>
+              </span>
+              <span *ngIf="row.newSinceLastScan" class="player-new" title="New since the last scan">new</span>
+            </span>
+          </td>
           <td class="col-player">
             <span class="player-identity">
               <span class="player-icons">
@@ -116,7 +154,20 @@
               {{ best ? '+' + best.keyLevel : '–' }}
             </td>
           </ng-template>
-          <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+          <td class="col-score">
+            <span
+              class="score-metric"
+              [class.has-score-change]="!!row.change?.score"
+              [class.score-gained]="(row.change?.score ?? 0) > 0"
+              [attr.tabindex]="row.change?.score ? 0 : null">
+              <span class="metric-value">{{ row.score | number:'1.1-1' }}</span>
+              <ng-container *ngIf="row.change?.score as scoreChange">
+                <span class="score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
+                <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
+              </ng-container>
+              <span *ngIf="row.newSinceLastScan" class="player-new" title="New since the last scan">new</span>
+            </span>
+          </td>
         </tr>
 
         <tr class="empty-row" *ngIf="rows().length === 0">

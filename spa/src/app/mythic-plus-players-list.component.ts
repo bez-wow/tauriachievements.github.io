@@ -38,6 +38,22 @@ export class MythicPlusPlayersListComponent {
 
   readonly upgradeStars = upgradeStars;
 
+  rankChangeLabel(change: number): string {
+    return change > 0
+      ? `Climbed ${change} ${change === 1 ? 'rank' : 'ranks'} since the last scan`
+      : change < 0
+        ? `Fell ${Math.abs(change)} ${change === -1 ? 'rank' : 'ranks'} since the last scan`
+        : 'Rank unchanged since the last scan';
+  }
+
+  scoreChangeLabel(change: number): string {
+    return change > 0
+      ? `+${change.toFixed(1)} score since the last scan`
+      : change < 0
+        ? `−${Math.abs(change).toFixed(1)} score since the last scan`
+        : '0.0 score since the last scan';
+  }
+
   /** The highlighted player already scrolled to, so paging back to them doesn't scroll again. */
   private scrolledTo?: string;
 

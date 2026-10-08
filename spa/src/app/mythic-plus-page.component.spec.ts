@@ -86,6 +86,23 @@ describe('MythicPlusPageComponent data from two exports', () => {
     expect(dataFiles.refreshes).toBe(0);
     expect(page.runsByDungeon().get('cos')?.[0].roster[0].name).toBe('Exkeito');
   });
+
+  it('maps compact scan changes to overall season player rows only', () => {
+    const movement = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+    movement.index.previousGeneratedAt = '2026-10-07T09:30:00Z';
+    movement.index.standings = [[196, 1, 4.5, 2]];
+    const page = createPage(new FakeDataFiles(movement.index, movement));
+
+    expect(page.pagedPlayers()[0]).toMatchObject({
+      key: 'Exkeito|Evermoon',
+      change: { score: 4.5, rank: 2 },
+      newSinceLastScan: false
+    });
+
+    page.selectDungeon('cos');
+    expect(page.pagedPlayers()[0].change).toBeUndefined();
+    expect(page.pagedPlayers()[0].newSinceLastScan).toBe(false);
+  });
 });
 
 describe('MythicPlusPageComponent character and realm in the URL', () => {

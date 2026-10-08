@@ -89,6 +89,10 @@ export interface PlayerRow {
   member: MemberView;
   score: number;
   quality: RunQuality;
+  /** Changes since the previous scan. Positive rank means the player climbed. */
+  change?: { score: number; rank: number };
+  /** Present in this scan but absent from the previous one. */
+  newSinceLastScan?: boolean;
   /** One per dungeon in scope, in tile order; undefined where the character has no run. */
   bests: Array<BestRunCell | undefined>;
 }

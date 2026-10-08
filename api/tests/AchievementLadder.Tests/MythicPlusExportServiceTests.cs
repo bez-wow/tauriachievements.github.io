@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using MythicPlusExporter;
 using Tauri.Core.Infrastructure;
 
@@ -185,6 +186,123 @@ public sealed class MythicPlusExportServiceTests
             var tables = root.GetProperty("tables").GetString();
             Assert.Matches("^[0-9a-f]{12}$", tables);
             Assert.Equal(tables, hov.RootElement.GetProperty("tables").GetString());
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesScoreGainsAndRankMovementAgainstThePreviousScan()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            static Dictionary<(string Realm, int ChallengeId), string> Leaderboards(
+                params string[] hallsRuns
+            ) => new()
+            {
+                [(Evermoon, 197)] = LeaderboardJson(),
+                [(Evermoon, 200)] = LeaderboardJson(hallsRuns),
+            };
+
+            var firstAt = new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero);
+            var first = new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    IndexJson(),
+                    Leaderboards(
+                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
+                        Run(9, 2_000_000, 101, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, ""))
+                    )
+                ),
+                new FixedTimeProvider(firstAt)
+            );
+            await first.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            using (var firstIndex = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
+            ))
+            {
+                Assert.False(firstIndex.RootElement.TryGetProperty("previousGeneratedAt", out _));
+                Assert.All(
+                    firstIndex.RootElement.GetProperty("standings").EnumerateArray(),
+                    standing => Assert.Equal(2, standing.GetArrayLength())
+                );
+            }
+
+            var second = new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    IndexJson(),
+                    Leaderboards(
+                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
+                        Run(9, 2_000_000, 101, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, "")),
+                        Run(11, 2_000_000, 102, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, ""))
+                    )
+                ),
+                new FixedTimeProvider(firstAt.AddDays(1))
+            );
+            await second.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            using var secondIndex = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
+            );
+            var root = secondIndex.RootElement;
+            Assert.Equal("2026-10-07T09:30:00Z", root.GetProperty("previousGeneratedAt").GetString());
+
+            var names = root.GetProperty("players").EnumerateArray().Select(player => player[0].GetString()).ToList();
+            var standings = root.GetProperty("standings").EnumerateArray().ToList();
+            var alpha = standings[names.IndexOf("Alpha")];
+            var beta = standings[names.IndexOf("Beta")];
+
+            Assert.Equal((2, 0d, -1), (alpha[1].GetInt32(), alpha[2].GetDouble(), alpha[3].GetInt32()));
+            Assert.Equal(1, beta[1].GetInt32());
+            Assert.True(beta[2].GetDouble() > 0);
+            Assert.Equal(1, beta[3].GetInt32());
+
+            // The deployed index predates this feature on its first run. Removing the compact
+            // standings exercises the one-time migration that reconstructs them from run files.
+            var indexPath = Path.Combine(outputDirectory, "index.json");
+            var legacyIndex = JsonNode.Parse(File.ReadAllText(indexPath))!.AsObject();
+            legacyIndex.Remove("standings");
+            legacyIndex.Remove("previousGeneratedAt");
+            File.WriteAllText(indexPath, legacyIndex.ToJsonString());
+
+            var third = new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    IndexJson(),
+                    Leaderboards(
+                        Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
+                        Run(9, 2_000_000, 101, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, "")),
+                        Run(11, 2_000_000, 102, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, "")),
+                        Run(12, 2_000_000, 103, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
+                    )
+                ),
+                new FixedTimeProvider(firstAt.AddDays(2))
+            );
+            await third.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            using var migratedIndex = JsonDocument.Parse(File.ReadAllText(indexPath));
+            var migratedRoot = migratedIndex.RootElement;
+            Assert.Equal("2026-10-08T09:30:00Z", migratedRoot.GetProperty("previousGeneratedAt").GetString());
+            var migratedNames = migratedRoot.GetProperty("players").EnumerateArray().Select(player => player[0].GetString()).ToList();
+            var migratedStandings = migratedRoot.GetProperty("standings").EnumerateArray().ToList();
+            var migratedAlpha = migratedStandings[migratedNames.IndexOf("Alpha")];
+            Assert.Equal(1, migratedAlpha[1].GetInt32());
+            Assert.True(migratedAlpha[2].GetDouble() > 0);
+            Assert.Equal(1, migratedAlpha[3].GetInt32());
         }
         finally
         {

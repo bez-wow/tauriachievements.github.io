@@ -35,6 +35,7 @@
   td { height: 42px; padding: 0 8px; text-align: center; white-space: nowrap; }
 
   .col-player, .col-guild { text-align: left; }
+  .col-player { padding-left: 24px; }
 }
 
 .player-row {
@@ -57,6 +58,83 @@
 .col-level { color: #fff; font-size: 1rem; font-weight: 600; }
 .col-time, .col-score { font-variant-numeric: tabular-nums; }
 .col-score { color: #fff; font-size: .95rem; }
+.col-rank, .col-score { line-height: 1.1; }
+.metric-value { display: inline; }
+
+// The rank itself owns the centered width. Movement is positioned from its right edge, so a
+// one-, two- or three-digit rank remains centered in the column instead of shifting left.
+.rank-metric { position: relative; display: inline-block; }
+.rank-metric > .rank-change,
+.rank-metric > .player-new {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-left: 5px;
+  transform: translateY(-50%);
+}
+
+// Keep the current score centered at one stable point and attach its scan change to the right.
+// Both the heading and values move left together to leave room for that change in the last column.
+.score-metric { position: relative; display: inline-block; transform: translateX(-16px); }
+.col-score-heading span { display: inline-block; transform: translateX(-16px); }
+.score-metric > .player-new {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-left: 5px;
+  transform: translateY(-50%);
+}
+
+.rank-change,
+.player-new {
+  display: inline-block;
+  margin-left: 5px;
+  color: #8f8f8f;
+  font-size: .67rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-change.up { color: #61d887; }
+.rank-change.down { color: #ff7373; }
+.rank-change { font-size: .78rem; }
+.player-new { color: $gold; text-transform: uppercase; }
+
+.score-metric.score-gained,
+.card-score.score-gained { color: #61d887; }
+
+.has-score-change { cursor: pointer; }
+
+// Immediate scan-delta tooltip: deliberately no transition or delay.
+.score-tooltip {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  right: calc(100% + 8px);
+  padding: 6px 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.has-score-change:hover > .score-tooltip,
+.has-score-change:focus > .score-tooltip,
+.player-card:focus-visible .has-score-change > .score-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
 .col-guild { max-width: 200px; overflow: hidden; color: #9a9a9a; font-size: .8rem; text-overflow: ellipsis; }
 .col-best { width: 52px; color: #fff; font-size: .85rem; font-variant-numeric: tabular-nums; }
 td.over-time { color: #8a8a8a; }
@@ -193,7 +271,7 @@ td.over-time { color: #8a8a8a; }
   &.over-time b { color: #8a8a8a; }
 }
 
-.card-score { color: #fff; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.card-score { position: relative; color: #fff; font-size: .95rem; text-align: right; font-variant-numeric: tabular-nums; }
 
 .empty-cards {
   padding: 48px 16px;

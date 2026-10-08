@@ -84,6 +84,11 @@ interface RankedPlayer {
   rank: number;
 }
 
+interface PlayerStandingChange {
+  score: number;
+  rank: number;
+}
+
 /**
  * One character, from `?character=Name-Realm` (a profile's "Show runs" or rank links). The runs
  * view shows only their runs; the players view picks out their row.
@@ -347,6 +352,40 @@ export class MythicPlusPageComponent implements OnInit {
     return query.trim() ? ranked.filter(entry => memberNameMatches(entry.player.member, query)) : ranked;
   });
 
+  /**
+   * Scan-to-scan standings are overall season standings. Hide them in a scope whose ranks or
+   * scores have a different meaning instead of showing a misleading global comparison.
+   */
+  private readonly showStandingChanges = computed(() => {
+    const index = this.index();
+    return !!index?.previousGeneratedAt
+      && index.standings?.length === index.players.length
+      && this.period() === 'season'
+      && !this.selectedDungeon()
+      && this.realmFilter() === undefined
+      && this.classFilter() === undefined
+      && this.specFilter() === undefined;
+  });
+
+  /** One lookup built from the compact index array, not a second pass over the run files. */
+  private readonly standingChanges = computed(() => {
+    const index = this.index();
+    const changes = new Map<string, PlayerStandingChange>();
+    if (!index?.previousGeneratedAt || index.standings?.length !== index.players.length) {
+      return changes;
+    }
+
+    index.standings.forEach((standing, playerIndex) => {
+      const score = standing[2];
+      const rank = standing[3];
+      const player = index.players[playerIndex];
+      if (player && score !== undefined && rank !== undefined) {
+        changes.set(characterKey({ name: player[0], realm: player[1] }), { score, rank });
+      }
+    });
+    return changes;
+  });
+
   readonly resultCount = computed(() =>
     this.view() === 'players' ? this.filteredPlayers().length : this.filteredRows().length);
   readonly resultUnit = computed(() => {
@@ -382,25 +421,32 @@ export class MythicPlusPageComponent implements OnInit {
     const start = (this.currentPage() - 1) * size;
     const dungeons = this.playerDungeons();
     const topScore = this.rankedPlayers()[0]?.player.score ?? 0;
+    const showChanges = this.showStandingChanges();
+    const changes = this.standingChanges();
 
-    return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => ({
-      key: player.key,
-      rank,
-      member: toMemberView({ ...player.member, spec: player.primarySpec }),
-      score: player.score,
-      quality: scoreQuality(player.score, topScore),
-      bests: dungeons.map(dungeon => {
-        const run = player.bestRuns.get(dungeon.id);
-        return run && {
-          dungeon,
-          keyLevel: run.keyLevel,
-          timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
-          upgrades: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds),
-          clearTime: formatDuration(run.clearTimeSeconds),
-          score: run.score
-        };
-      })
-    }));
+    return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => {
+      const change = showChanges ? changes.get(player.key) : undefined;
+      return {
+        key: player.key,
+        rank,
+        member: toMemberView({ ...player.member, spec: player.primarySpec }),
+        score: player.score,
+        quality: scoreQuality(player.score, topScore),
+        change,
+        newSinceLastScan: showChanges && !change,
+        bests: dungeons.map(dungeon => {
+          const run = player.bestRuns.get(dungeon.id);
+          return run && {
+            dungeon,
+            keyLevel: run.keyLevel,
+            timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
+            upgrades: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds),
+            clearTime: formatDuration(run.clearTimeSeconds),
+            score: run.score
+          };
+        })
+      };
+    });
   });
 
   /** Runs view with a character filter: how many runs they have in the selected scope. */
