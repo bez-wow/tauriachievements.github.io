@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { injectCompactViewport } from './compact-viewport';
 import { MythicPlusRole, MythicPlusRun } from './mythic-plus';
@@ -38,6 +38,9 @@ export class MythicPlusSpecChartComponent {
   readonly runs = input.required<readonly MythicPlusRun[]>();
   readonly scopeLabel = input('All dungeons');
   readonly seasonName = input('');
+  readonly selectedClassId = input<number>();
+  readonly selectedSpec = input<string>();
+  readonly specSelect = output<{ classId: number; spec: string }>();
 
   readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
     { value: 'all', label: 'All roles' },
@@ -115,6 +118,14 @@ export class MythicPlusSpecChartComponent {
   });
 
   readonly unitLabel = computed(() => this.countMode() === 'characters' ? 'characters' : 'player slots');
+
+  isSelectedClass(classId: number): boolean {
+    return this.selectedClassId() === classId;
+  }
+
+  isSelectedSpec(classId: number, spec: string): boolean {
+    return this.isSelectedClass(classId) && (!this.selectedSpec() || this.selectedSpec() === spec);
+  }
 
   readonly subtitle = computed(() => {
     const { total, runCount } = this.popularity();

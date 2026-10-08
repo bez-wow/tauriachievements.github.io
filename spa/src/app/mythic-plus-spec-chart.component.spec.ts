@@ -51,4 +51,39 @@ describe('MythicPlusSpecChartComponent', () => {
     expect([chart.role(), chart.minLevel(), chart.countMode()]).toEqual(['all', 0, 'runs']);
     expect(chart.isFiltered()).toBe(false);
   });
+
+  it('selects the class and spec represented by a clicked bar', async () => {
+    await TestBed.configureTestingModule({ imports: [MythicPlusSpecChartComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(MythicPlusSpecChartComponent);
+    fixture.componentRef.setInput('runs', [run('a', 10, 'Restoration')]);
+    const selections: Array<{ classId: number; spec: string }> = [];
+    fixture.componentInstance.specSelect.subscribe(selection => selections.push(selection));
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const restorationBar = [...element.querySelectorAll<HTMLButtonElement>('.bar-slot')]
+      .find(bar => bar.getAttribute('aria-label')?.startsWith('Show Restoration Druid players'));
+    restorationBar?.click();
+
+    expect(selections).toEqual([{ classId: 11, spec: 'Restoration' }]);
+  });
+
+  it('highlights the class and spec selected in the players filters', async () => {
+    await TestBed.configureTestingModule({ imports: [MythicPlusSpecChartComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(MythicPlusSpecChartComponent);
+    fixture.componentRef.setInput('runs', [run('a', 10, 'Restoration')]);
+    fixture.componentRef.setInput('selectedClassId', 11);
+    fixture.componentRef.setInput('selectedSpec', 'Restoration');
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const restorationBar = [...element.querySelectorAll<HTMLButtonElement>('.bar-slot')]
+      .find(bar => bar.getAttribute('aria-label')?.startsWith('Show Restoration Druid players'));
+    const balanceBar = [...element.querySelectorAll<HTMLButtonElement>('.bar-slot')]
+      .find(bar => bar.getAttribute('aria-label')?.startsWith('Show Balance Druid players'));
+
+    expect(restorationBar?.classList.contains('filter-match')).toBe(true);
+    expect(balanceBar?.classList.contains('filter-match')).toBe(false);
+    expect(element.querySelector('.class-label.filter-match')?.textContent).toContain('Druid');
+  });
 });

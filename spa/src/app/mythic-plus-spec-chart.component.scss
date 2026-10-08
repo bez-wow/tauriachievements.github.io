@@ -129,7 +129,12 @@ $plot-height: 180px;
   height: 100%;
   align-items: flex-end;
   padding: 0 1px;
+  border: 0;
   border-radius: 4px 4px 0 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 
   // The hover `filter` makes the bar its own stacking context, which would trap the tooltip beneath
   // every bar painted after it — so lift the whole slot above its neighbours while it's active.
@@ -157,13 +162,22 @@ $plot-height: 180px;
   &.empty { height: 2px !important; background: #3a3a3a !important; }
 }
 
+// Mirrors the Players view's class/spec filter in the chart. The exact spec glows in its
+// class colour; with only a class filter, all of that class's specs are highlighted.
+.bar-slot.filter-match .bar {
+  box-shadow:
+    0 0 7px 2px color-mix(in srgb, var(--class-color) 85%, transparent),
+    0 0 20px 4px color-mix(in srgb, var(--class-color) 42%, transparent);
+  filter: brightness(1.22) saturate(1.15);
+}
+
 // The bar pointed at stays lit, the others step back.
 @media (hover: hover) {
   .plot:has(.bar-slot:hover) .bar-slot:not(:hover) .bar { opacity: .4; }
 }
 
 @include motion-safe {
-  .bar { transition: opacity var(--dur) ease; }
+  .bar { transition: opacity var(--dur) ease, box-shadow 420ms var(--ease-out), filter var(--dur) ease; }
 
   // First time on screen (RevealDirective): class by class, left to right, each spec a beat after
   // the one before; the share on the tallest bar fades in once its bar has grown.
@@ -231,6 +245,13 @@ $plot-height: 180px;
 
   img, .icon-placeholder { width: 20px; height: 20px; margin: 0 1px; border-radius: 3px; }
   img.empty { opacity: .35; filter: grayscale(1); }
+
+  .filter-match {
+    box-shadow: 0 0 8px 2px color-mix(in srgb, var(--class-color) 75%, transparent);
+    filter: brightness(1.2) saturate(1.15);
+  }
+
+  img.empty.filter-match { opacity: .8; }
 }
 
 .icon-placeholder { background: #2a2a2a; }
@@ -250,6 +271,13 @@ $plot-height: 180px;
 }
 
 .class-share { color: #8a8a8a; font-weight: 400; font-variant-numeric: tabular-nums; }
+
+.class-label.filter-match {
+  color: #fff;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--class-color) 75%, transparent);
+
+  .class-share { color: #d2d2d2; }
+}
 
 .chart-empty { padding: 40px 0; color: #9a9a9a; text-align: center; }
 

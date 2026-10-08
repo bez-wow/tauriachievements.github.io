@@ -71,16 +71,19 @@
           *ngFor="let group of groups(); let index = index; trackBy: trackGroup"
           [attr.data-flip]="group.classId"
           [style.--i]="index"
+          [style.--class-color]="group.color"
+          [class.filter-class]="isSelectedClass(group.classId)"
           [class.flip]="index >= groups().length / 2">
           <div class="bars">
-            <div
+            <button
               class="bar-slot"
+              type="button"
               appTapTooltip
               *ngFor="let spec of group.specs; let specIndex = index; trackBy: trackSpec"
               [style.--s]="specIndex"
-              role="img"
-              tabindex="0"
-              [attr.aria-label]="spec.spec + ' ' + group.className + ': ' + spec.shareLabel + ', ' + spec.count + ' of ' + popularity().total + ' ' + unitLabel()">
+              [class.filter-match]="isSelectedSpec(group.classId, spec.spec)"
+              [attr.aria-label]="'Show ' + spec.spec + ' ' + group.className + ' players: ' + spec.shareLabel + ', ' + spec.count + ' of ' + popularity().total + ' ' + unitLabel()"
+              (click)="specSelect.emit({ classId: group.classId, spec: spec.spec })">
               <span
                 class="bar"
                 [class.empty]="spec.count === 0"
@@ -94,7 +97,7 @@
                   <span class="tooltip-meta">{{ spec.count }} of {{ popularity().total }} {{ unitLabel() }}</span>
                 </span>
               </span>
-            </div>
+            </button>
           </div>
 
           <div class="spec-icons" aria-hidden="true">
@@ -105,12 +108,18 @@
                 alt=""
                 [title]="spec.spec"
                 [class.empty]="spec.count === 0"
+                [class.filter-match]="isSelectedSpec(group.classId, spec.spec)"
                 loading="lazy" />
-              <ng-template #iconPlaceholder><span class="icon-placeholder" [title]="spec.spec"></span></ng-template>
+              <ng-template #iconPlaceholder>
+                <span
+                  class="icon-placeholder"
+                  [class.filter-match]="isSelectedSpec(group.classId, spec.spec)"
+                  [title]="spec.spec"></span>
+              </ng-template>
             </ng-container>
           </div>
 
-          <div class="class-label">
+          <div class="class-label" [class.filter-match]="isSelectedClass(group.classId)">
             <img [src]="group.classIcon" alt="" />
             <span>{{ group.className }}</span>
             <span class="class-share">{{ group.shareLabel }}</span>

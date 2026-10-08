@@ -75,7 +75,10 @@
         class="spec-chart"
         [runs]="dungeonRuns()"
         [scopeLabel]="selectedDungeon()?.name ?? 'All dungeons'"
-        [seasonName]="period() === 'week' ? 'This week' : index()?.season?.name ?? ''" />
+        [seasonName]="period() === 'week' ? 'This week' : index()?.season?.name ?? ''"
+        [selectedClassId]="view() === 'players' ? classFilter() : undefined"
+        [selectedSpec]="view() === 'players' ? specFilter() : undefined"
+        (specSelect)="showSpecPlayers($event)" />
 
       <div class="toolbar" #leaderboard>
         <div class="toolbar-title">

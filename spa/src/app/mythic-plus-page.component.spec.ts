@@ -122,4 +122,14 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
     expect(page.realmOptions().map(option => option.label)).toEqual(['All realms', 'Evermoon', 'Tauri']);
     expect(page.activeFilterLabels()).toEqual(['Evermoon']);
   });
+
+  it('opens the players view with the class and spec selected from the popularity chart', async () => {
+    const page = await open('/mythic-plus');
+
+    page.showSpecPlayers({ classId: 11, spec: 'Restoration' });
+
+    expect(page.view()).toBe('players');
+    expect(page.classFilter()).toBe(11);
+    expect(page.specFilter()).toBe('Restoration');
+  });
 });

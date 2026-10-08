@@ -565,6 +565,15 @@ export class MythicPlusPageComponent implements OnInit {
     this.syncQueryParams();
   }
 
+  showSpecPlayers(selection: { classId: number; spec: string }): void {
+    this.view.set('players');
+    this.classFilter.set(selection.classId);
+    this.specFilter.set(selection.spec);
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+  }
+
   setPeriod(period: LeaderboardPeriod): void {
     if (period === this.period()) {
       return;
