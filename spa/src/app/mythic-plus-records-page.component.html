@@ -24,24 +24,6 @@
   </section>
 
   <ng-container *ngIf="!isLoading() && !loadError()">
-    <div class="realm-bar">
-      <div class="segmented" role="group" aria-label="Whose runs count" appGlide>
-        <button
-          type="button"
-          [class.active]="realm() === 'all'"
-          [attr.aria-pressed]="realm() === 'all'"
-          (click)="setRealm('all')">All realms</button>
-        <button
-          type="button"
-          [class.active]="realm() === 'wod'"
-          [attr.aria-pressed]="realm() === 'wod'"
-          (click)="setRealm('wod')">WoD</button>
-      </div>
-      <p class="realm-note">
-        {{ realm() === 'wod' ? 'Only runs on the WoD leaderboard.' : 'Evermoon and Tauri share one leaderboard. WoD has its own.' }}
-      </p>
-    </div>
-
     <dl class="summary">
       <div *ngFor="let tile of summary(); let index = index; trackBy: trackLabel">
         <dt>{{ tile.label }}</dt>

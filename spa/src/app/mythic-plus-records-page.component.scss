@@ -65,42 +65,6 @@ $depleted: #e06666;
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// All realms / WoD
-.realm-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-}
-
-.realm-note { color: #9a9a9a; font-size: .8rem; }
-
-// Same control as the stats page's.
-.segmented {
-  display: inline-flex;
-  padding: 3px;
-  border: 1px solid #333;
-  border-radius: 6px;
-  background: #111;
-  @include glide-pill;
-
-  button {
-    padding: 7px 14px;
-    border: 0;
-    border-radius: 4px;
-    background: transparent;
-    color: #bdbdbd;
-    font: inherit;
-    font-size: .85rem;
-    font-weight: 600;
-    cursor: pointer;
-
-    &:hover { color: #fff; }
-    &.active { background: #2e2716; color: $gold; }
-    &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
-  }
-}
-
 .summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -517,7 +481,7 @@ $depleted: #e06666;
 }
 
 @media (pointer: coarse) {
-  .back-link, .details-toggle, .segmented button { min-height: 40px; }
+  .back-link, .details-toggle { min-height: 40px; }
   .row-toggle { width: 40px; height: 40px; }
 }
 

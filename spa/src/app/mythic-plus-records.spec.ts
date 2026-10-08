@@ -9,7 +9,6 @@ import {
   dungeonRecords,
   formatHeldFor,
   openBounty,
-  runsOnRealm,
   serverFirsts
 } from './mythic-plus-records';
 
@@ -166,16 +165,6 @@ describe('dungeonBounties', () => {
 
     expect(dungeonBounties(runs, dungeons, NOW).map(bounty => [bounty.dungeon.id, bounty.level, bounty.attempts]))
       .toEqual([['hov', 17, 0], ['mos', 20, 1], ['nl', 20, 1]]);
-  });
-});
-
-describe('runsOnRealm', () => {
-  it('keeps only the WoD leaderboard runs for WoD', () => {
-    const evermoon = run('nl', 15, 1500, 0, [member('Progtrix'), member('Healer', 'Tauri')]);
-    const wod = run('nl', 15, 1500, 0, [member('Arrchangel', 'WoD')]);
-
-    expect(runsOnRealm([evermoon, wod], 'wod')).toEqual([wod]);
-    expect(runsOnRealm([evermoon, wod], 'all')).toEqual([evermoon, wod]);
   });
 });
 

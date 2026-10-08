@@ -111,6 +111,7 @@ describe('MythicPlusRecordsPageComponent', () => {
   it('shows each dungeon record, highest first, with how long it has stood', async () => {
     const { page, element } = await open('/mythic-plus/records');
 
+    expect(element.querySelector('.realm-bar')).toBeNull();
     expect(page.records().map(record => [record.dungeon.id, record.run?.keyLevel, record.heldFor])).toEqual([
       ['nl', 19, 'held for 2 days'],
       // The faster of the two +17s holds it.
@@ -182,32 +183,12 @@ describe('MythicPlusRecordsPageComponent', () => {
     ]);
   });
 
-  it('switches to the WoD leaderboard and keeps it in the address bar', async () => {
-    const { page, harness, element } = await open('/mythic-plus/records');
-    page.toggle('record', 'nl-1');
-
-    page.setRealm('wod');
-    harness.detectChanges();
-
-    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/records?realm=wod');
-    expect(page.expanded()).toEqual({});
-    expect(page.records().map(record => [record.dungeon.id, record.run?.keyLevel])).toEqual([
-      ['hov', 12], ['nl', undefined], ['mos', undefined]
-    ]);
-    expect(texts(element, '.record-empty')).toEqual(['Nobody has timed it yet.', 'Nobody has timed it yet.']);
-    expect(page.firsts().map(first => first.level)).toEqual([12]);
-    expect(page.serverBounty().level).toBe(13);
-    expect(page.bounties().map(bounty => [bounty.key, bounty.level])).toEqual([['nl', 2], ['mos', 2], ['hov', 13]]);
-  });
-
-  it('reads the realm and the firsts dungeon from the URL, and writes the dungeon back', async () => {
+  it('ignores a legacy realm filter and writes only the firsts dungeon to the URL', async () => {
     const { page } = await open('/mythic-plus/records?realm=wod&dungeon=hov');
 
-    expect(page.realm()).toBe('wod');
     expect(page.selectedFirstsDungeon()?.id).toBe('hov');
-    expect(page.firsts().map(first => first.level)).toEqual([12]);
+    expect(page.firsts().map(first => first.level)).toEqual([16, 12]);
 
-    page.setRealm('all');
     page.setFirstsDungeon('mos');
     expect(page.firsts().map(first => first.level)).toEqual([17, 15]);
     expect(TestBed.inject(Location).path()).toBe('/mythic-plus/records?dungeon=mos');

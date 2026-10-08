@@ -25,19 +25,16 @@ import { dungeonTimers } from './mythic-plus-activity';
 import {
   Bounty,
   FIRSTS_FROM_LEVEL,
-  RecordsRealm,
   bestTimedRun,
   dungeonBounties,
   dungeonRecords,
   formatHeldFor,
   openBounty,
-  runsOnRealm,
   serverFirsts
 } from './mythic-plus-records';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
 import { MemberView, RunView, toRunView } from './mythic-plus-views';
 import { CountUpDirective } from './count-up.directive';
-import { GlideDirective } from './glide.directive';
 import { RevealDirective } from './reveal.directive';
 import { DataFileService } from './services/data-file.service';
 import { SpotlightDirective } from './spotlight.directive';
@@ -94,7 +91,6 @@ interface SummaryTile {
     BackToTopButtonComponent,
     FilterDropdownComponent,
     MythicPlusRunDetailsComponent,
-    GlideDirective,
     RevealDirective,
     CountUpDirective,
     SpotlightDirective
@@ -122,7 +118,8 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
-  readonly allRuns = signal<readonly MythicPlusRun[]>([]);
+  /** All Tauri, Evermoon and WoD runs share one records leaderboard. */
+  readonly runs = signal<readonly MythicPlusRun[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   /** Set once files from another export made the page load everything again. */
@@ -130,7 +127,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   /** "Held for" and recent claims count from here: when the runs were loaded. */
   readonly now = signal(Date.now());
 
-  readonly realm = signal<RecordsRealm>(this.route.snapshot.queryParamMap.get('realm') === 'wod' ? 'wod' : 'all');
   /** The firsts of one dungeon (`?dungeon=`), or of all of them. */
   readonly firstsDungeon = signal<string | undefined>(this.route.snapshot.queryParamMap.get('dungeon') ?? undefined);
   /** The open run in each list, so opening a first doesn't close a record further up. */
@@ -142,9 +138,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
   /** Run colours are relative to the season's best run, as on the leaderboard. */
   private readonly seasonBestScore = computed(() => Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
-
-  /** The runs on the chosen realms. */
-  readonly runs = computed(() => runsOnRealm(this.allRuns(), this.realm()));
 
   readonly records = computed<RecordCard[]>(() => {
     const now = this.now();
@@ -180,7 +173,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     const records = this.records();
     const top = records[0]?.run;
     const bounty = this.serverBounty();
-    const week = currentAffixWeek(this.allRuns());
+    const week = currentAffixWeek(this.runs());
     const weekRuns = week ? this.runs().filter(run => Date.parse(run.completedAt) >= week.since) : [];
     const weekBest = bestTimedRun(weekRuns, this.timers());
     return [
@@ -208,15 +201,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     this.loadData();
   }
 
-  setRealm(realm: RecordsRealm): void {
-    if (realm === this.realm()) {
-      return;
-    }
-    this.realm.set(realm);
-    this.expanded.set({});
-    this.writeUrl();
-  }
-
   setFirstsDungeon(value: FilterDropdownValue): void {
     this.firstsDungeon.set(typeof value === 'string' ? value : undefined);
     this.writeUrl();
@@ -234,7 +218,6 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     return record.dungeon.id;
   }
 
-  /** Kept tiles roll their number to the new one when the realm switch changes it. */
   trackLabel(index: number, tile: SummaryTile): string {
     return tile.label;
   }
@@ -278,7 +261,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
           const decode = createRunDecoder(index);
           this.index.set(index);
-          this.allRuns.set(files.flatMap(file => decode(file)));
+          this.runs.set(files.flatMap(file => decode(file)));
           this.now.set(Date.now());
           this.isLoading.set(false);
         },
@@ -318,7 +301,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: {
-        realm: this.realm() === 'wod' ? 'wod' : null,
+        realm: null,
         dungeon: this.firstsDungeonId() ?? null
       }
     });

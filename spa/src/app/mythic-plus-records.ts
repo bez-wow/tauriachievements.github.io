@@ -1,6 +1,5 @@
 import { MythicPlusDungeon, MythicPlusRun } from './mythic-plus';
 import { DungeonTimers, dungeonTimers, isTimed } from './mythic-plus-activity';
-import { realmSlug } from './mythic-plus-profile';
 
 /*
  * The pure parts of /mythic-plus/records: the highest key timed in each dungeon, the first group
@@ -21,19 +20,6 @@ export const CLAIM_SHOWN_FOR_MS = 7 * 24 * 60 * 60 * 1000;
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
-
-/** Whose runs count: every realm's, or only the WoD leaderboard's. */
-export type RecordsRealm = 'all' | 'wod';
-
-/**
- * Evermoon and Tauri share one leaderboard. WoD has its own, and its groups never mix with the
- * other two, so a run with a WoD character in it is a WoD run.
- */
-export function runsOnRealm<T extends Pick<MythicPlusRun, 'roster'>>(runs: readonly T[], realm: RecordsRealm): readonly T[] {
-  return realm === 'wod'
-    ? runs.filter(run => run.roster.some(member => realmSlug(member.realm) === 'wod'))
-    : runs;
-}
 
 /** Higher key first; at the same key the faster clear, then the earlier one. */
 export function compareRecords(a: RecordRun, b: RecordRun): number {
