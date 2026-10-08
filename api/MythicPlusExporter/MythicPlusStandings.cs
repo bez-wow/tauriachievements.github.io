@@ -49,48 +49,44 @@ public static class MythicPlusStandings
         }
 
         var ranked = dataset
-            .Players.Select((player, index) => new MythicPlusStanding(
-                player.Name,
-                player.Realm,
-                RoundScore(scores[index]),
-                Rank: 0
-            ))
+            .Players.Select(
+                (player, index) =>
+                    new MythicPlusStanding(
+                        player.Name,
+                        player.Realm,
+                        RoundScore(scores[index]),
+                        Rank: 0
+                    )
+            )
             .OrderByDescending(standing => standing.Score)
             // Matches the browser's `name|realm` tie-break in rankPlayers().
-            .ThenBy(
-                standing => $"{standing.Name}|{standing.Realm}",
-                StringComparer.Ordinal
-            )
+            .ThenBy(standing => $"{standing.Name}|{standing.Realm}", StringComparer.Ordinal)
             .Select((standing, index) => standing with { Rank = index + 1 })
-            .ToDictionary(
-                standing => (standing.Realm, standing.Name),
-                standing => standing
-            );
+            .ToDictionary(standing => (standing.Realm, standing.Name), standing => standing);
 
         // Keep the index aligned with the player lookup table for a compact JSON representation.
-        return dataset
-            .Players.Select(player => ranked[(player.Realm, player.Name)])
-            .ToList();
+        return dataset.Players.Select(player => ranked[(player.Realm, player.Name)]).ToList();
     }
 
     public static IReadOnlyList<MythicPlusStanding> Compare(
         IReadOnlyList<MythicPlusStanding> current,
         IReadOnlyDictionary<(string Realm, string Name), MythicPlusStanding> previous
-    ) => current
-        .Select(standing =>
-        {
-            if (!previous.TryGetValue((standing.Realm, standing.Name), out var old))
+    ) =>
+        current
+            .Select(standing =>
             {
-                return standing;
-            }
+                if (!previous.TryGetValue((standing.Realm, standing.Name), out var old))
+                {
+                    return standing;
+                }
 
-            return standing with
-            {
-                ScoreChange = RoundScore(standing.Score - old.Score),
-                RankChange = old.Rank - standing.Rank,
-            };
-        })
-        .ToList();
+                return standing with
+                {
+                    ScoreChange = RoundScore(standing.Score - old.Score),
+                    RankChange = old.Rank - standing.Rank,
+                };
+            })
+            .ToList();
 
     internal static double RoundScore(double score)
     {

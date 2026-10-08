@@ -12,8 +12,8 @@ namespace MythicPlusExporter;
 /// Writes the files the /mythic-plus page reads (contract: spa/src/app/mythic-plus.ts).
 /// <para>
 /// <c>index.json</c> holds when the leaderboards were read (<c>generatedAt</c>, UTC ISO 8601),
-    /// a fingerprint of the lookup tables (<c>tables</c>), the season, dungeons, affixes, compact
-    /// scan-to-scan standings and the shared lookup tables themselves:
+/// a fingerprint of the lookup tables (<c>tables</c>), the season, dungeons, affixes, compact
+/// scan-to-scan standings and the shared lookup tables themselves:
 /// <c>specs</c> as objects, <c>players</c> as <c>[name, realm, guild, class, race, gender]</c>.
 /// </para>
 /// <para>
@@ -69,15 +69,16 @@ public static class MythicPlusFileWriter
 
         await AtomicFile.WriteAsync(
             Path.Combine(outputDirectory, IndexFileName),
-            (stream, token) => WriteIndexAsync(
-                stream,
-                dataset,
-                standings,
-                generatedAt,
-                previousGeneratedAt,
-                tables,
-                token
-            ),
+            (stream, token) =>
+                WriteIndexAsync(
+                    stream,
+                    dataset,
+                    standings,
+                    generatedAt,
+                    previousGeneratedAt,
+                    tables,
+                    token
+                ),
             cancellationToken
         );
 
@@ -132,10 +133,7 @@ public static class MythicPlusFileWriter
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
-        writer.WriteString(
-            "generatedAt",
-            FormatTimestamp(generatedAt)
-        );
+        writer.WriteString("generatedAt", FormatTimestamp(generatedAt));
         if (previousGeneratedAt is not null)
         {
             writer.WriteString("previousGeneratedAt", FormatTimestamp(previousGeneratedAt.Value));

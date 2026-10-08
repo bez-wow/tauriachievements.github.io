@@ -78,7 +78,8 @@ public sealed class MythicPlusExportService(
         }
 
         var currentStandings = MythicPlusStandings.Build(dataset);
-        var comparable = previous.SeasonId == MythicPlusCatalog.Season.Id
+        var comparable =
+            previous.SeasonId == MythicPlusCatalog.Season.Id
             && previous.GeneratedAt is not null
             && previous.Standings.Count > 0;
         var standings = comparable
@@ -109,11 +110,13 @@ public sealed class MythicPlusExportService(
             using var document = JsonDocument.Parse(File.ReadAllBytes(indexPath));
             var root = document.RootElement;
             var runCount = ReadRunCount(root);
-            var seasonId = root.TryGetProperty("season", out var season)
+            var seasonId =
+                root.TryGetProperty("season", out var season)
                 && season.TryGetProperty("id", out var id)
                     ? id.GetString()
                     : null;
-            var generatedAt = root.TryGetProperty("generatedAt", out var generated)
+            var generatedAt =
+                root.TryGetProperty("generatedAt", out var generated)
                 && DateTimeOffset.TryParse(generated.GetString(), out var parsedGeneratedAt)
                     ? parsedGeneratedAt
                     : (DateTimeOffset?)null;
@@ -127,12 +130,7 @@ public sealed class MythicPlusExportService(
                 standings = ReadLegacyStandings(root, players);
             }
 
-            return new PreviousMythicPlusSnapshot(
-                runCount,
-                seasonId,
-                generatedAt,
-                standings
-            );
+            return new PreviousMythicPlusSnapshot(runCount, seasonId, generatedAt, standings);
         }
         catch (Exception error) when (error is JsonException or IOException)
         {
@@ -165,7 +163,9 @@ public sealed class MythicPlusExportService(
 
         return players
             .EnumerateArray()
-            .Where(player => player.ValueKind == JsonValueKind.Array && player.GetArrayLength() >= 2)
+            .Where(player =>
+                player.ValueKind == JsonValueKind.Array && player.GetArrayLength() >= 2
+            )
             .Select(player => (player[1].GetString() ?? "", player[0].GetString() ?? ""))
             .ToList();
     }
@@ -241,8 +241,10 @@ public sealed class MythicPlusExportService(
             var file = document.RootElement;
             if (
                 expectedTables is not null
-                && (!file.TryGetProperty("tables", out var fileTables)
-                    || fileTables.GetString() != expectedTables)
+                && (
+                    !file.TryGetProperty("tables", out var fileTables)
+                    || fileTables.GetString() != expectedTables
+                )
             )
             {
                 return [];
@@ -284,12 +286,15 @@ public sealed class MythicPlusExportService(
         }
 
         var ranked = players
-            .Select((player, index) => new MythicPlusStanding(
-                player.Name,
-                player.Realm,
-                MythicPlusStandings.RoundScore(scores[index]),
-                Rank: 0
-            ))
+            .Select(
+                (player, index) =>
+                    new MythicPlusStanding(
+                        player.Name,
+                        player.Realm,
+                        MythicPlusStandings.RoundScore(scores[index]),
+                        Rank: 0
+                    )
+            )
             .OrderByDescending(standing => standing.Score)
             .ThenBy(standing => $"{standing.Name}|{standing.Realm}", StringComparer.Ordinal)
             .Select((standing, index) => standing with { Rank = index + 1 });

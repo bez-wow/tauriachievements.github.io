@@ -201,11 +201,12 @@ public sealed class MythicPlusExportServiceTests
         {
             static Dictionary<(string Realm, int ChallengeId), string> Leaderboards(
                 params string[] hallsRuns
-            ) => new()
-            {
-                [(Evermoon, 197)] = LeaderboardJson(),
-                [(Evermoon, 200)] = LeaderboardJson(hallsRuns),
-            };
+            ) =>
+                new()
+                {
+                    [(Evermoon, 197)] = LeaderboardJson(),
+                    [(Evermoon, 200)] = LeaderboardJson(hallsRuns),
+                };
 
             var firstAt = new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero);
             var first = new MythicPlusExportService(
@@ -214,7 +215,13 @@ public sealed class MythicPlusExportServiceTests
                     IndexJson(),
                     Leaderboards(
                         Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                        Run(9, 2_000_000, 101, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, ""))
+                        Run(
+                            9,
+                            2_000_000,
+                            101,
+                            [],
+                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+                        )
                     )
                 ),
                 new FixedTimeProvider(firstAt)
@@ -224,9 +231,11 @@ public sealed class MythicPlusExportServiceTests
                 CancellationToken.None
             );
 
-            using (var firstIndex = JsonDocument.Parse(
-                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
-            ))
+            using (
+                var firstIndex = JsonDocument.Parse(
+                    File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
+                )
+            )
             {
                 Assert.False(firstIndex.RootElement.TryGetProperty("previousGeneratedAt", out _));
                 Assert.All(
@@ -241,8 +250,20 @@ public sealed class MythicPlusExportServiceTests
                     IndexJson(),
                     Leaderboards(
                         Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                        Run(9, 2_000_000, 101, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, "")),
-                        Run(11, 2_000_000, 102, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, ""))
+                        Run(
+                            9,
+                            2_000_000,
+                            101,
+                            [],
+                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+                        ),
+                        Run(
+                            11,
+                            2_000_000,
+                            102,
+                            [],
+                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+                        )
                     )
                 ),
                 new FixedTimeProvider(firstAt.AddDays(1))
@@ -256,14 +277,23 @@ public sealed class MythicPlusExportServiceTests
                 File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
             );
             var root = secondIndex.RootElement;
-            Assert.Equal("2026-10-07T09:30:00Z", root.GetProperty("previousGeneratedAt").GetString());
+            Assert.Equal(
+                "2026-10-07T09:30:00Z",
+                root.GetProperty("previousGeneratedAt").GetString()
+            );
 
-            var names = root.GetProperty("players").EnumerateArray().Select(player => player[0].GetString()).ToList();
+            var names = root.GetProperty("players")
+                .EnumerateArray()
+                .Select(player => player[0].GetString())
+                .ToList();
             var standings = root.GetProperty("standings").EnumerateArray().ToList();
             var alpha = standings[names.IndexOf("Alpha")];
             var beta = standings[names.IndexOf("Beta")];
 
-            Assert.Equal((2, 0d, -1), (alpha[1].GetInt32(), alpha[2].GetDouble(), alpha[3].GetInt32()));
+            Assert.Equal(
+                (2, 0d, -1),
+                (alpha[1].GetInt32(), alpha[2].GetDouble(), alpha[3].GetInt32())
+            );
             Assert.Equal(1, beta[1].GetInt32());
             Assert.True(beta[2].GetDouble() > 0);
             Assert.Equal(1, beta[3].GetInt32());
@@ -282,8 +312,20 @@ public sealed class MythicPlusExportServiceTests
                     IndexJson(),
                     Leaderboards(
                         Run(10, 2_000_000, 100, [], Member("Alpha", Evermoon, 6, "Blood", 0, "")),
-                        Run(9, 2_000_000, 101, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, "")),
-                        Run(11, 2_000_000, 102, [], Member("Beta", Evermoon, 10, "Brewmaster", 0, "")),
+                        Run(
+                            9,
+                            2_000_000,
+                            101,
+                            [],
+                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+                        ),
+                        Run(
+                            11,
+                            2_000_000,
+                            102,
+                            [],
+                            Member("Beta", Evermoon, 10, "Brewmaster", 0, "")
+                        ),
                         Run(12, 2_000_000, 103, [], Member("Alpha", Evermoon, 6, "Blood", 0, ""))
                     )
                 ),
@@ -296,8 +338,15 @@ public sealed class MythicPlusExportServiceTests
 
             using var migratedIndex = JsonDocument.Parse(File.ReadAllText(indexPath));
             var migratedRoot = migratedIndex.RootElement;
-            Assert.Equal("2026-10-08T09:30:00Z", migratedRoot.GetProperty("previousGeneratedAt").GetString());
-            var migratedNames = migratedRoot.GetProperty("players").EnumerateArray().Select(player => player[0].GetString()).ToList();
+            Assert.Equal(
+                "2026-10-08T09:30:00Z",
+                migratedRoot.GetProperty("previousGeneratedAt").GetString()
+            );
+            var migratedNames = migratedRoot
+                .GetProperty("players")
+                .EnumerateArray()
+                .Select(player => player[0].GetString())
+                .ToList();
             var migratedStandings = migratedRoot.GetProperty("standings").EnumerateArray().ToList();
             var migratedAlpha = migratedStandings[migratedNames.IndexOf("Alpha")];
             Assert.Equal(1, migratedAlpha[1].GetInt32());
