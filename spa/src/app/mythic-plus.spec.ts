@@ -295,6 +295,18 @@ describe('rankPlayers', () => {
     ]);
     // Shown with the spec of their highest run.
     expect(ranked[0].member.spec).toBe('Havoc');
+    expect(ranked[0].primarySpec).toBe('Havoc');
+  });
+
+  it('identifies the spec a character played in the most runs', () => {
+    const [pashao] = rankPlayers([
+      run('a', 'hov', 180, [member('Pashao', 'Vengeance')]),
+      run('b', 'eoa', 210, [member('Pashao', 'Havoc')]),
+      run('c', 'brh', 170, [member('Pashao', 'Vengeance')])
+    ]);
+
+    expect(pashao.member.spec).toBe('Havoc');
+    expect(pashao.primarySpec).toBe('Vengeance');
   });
 
   it('scores a spec filter on the runs played as that spec only', () => {

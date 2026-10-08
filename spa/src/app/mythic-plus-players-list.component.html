@@ -6,7 +6,12 @@
         <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
         <span class="card-body">
           <span class="card-line">
-            <img class="card-class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
+            <span class="player-icons">
+              <img class="class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
+              <span class="spec-icon" *ngIf="row.member.specIcon" [title]="row.member.spec">
+                <img [src]="row.member.specIcon" alt="" />
+              </span>
+            </span>
             <span class="card-name" [style.color]="row.member.color">{{ row.member.name }}</span>
             <span class="card-realm">{{ row.member.realm }}</span>
           </span>
@@ -74,7 +79,12 @@
           <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
           <td class="col-player">
             <span class="player-identity">
-              <img [src]="row.member.classIcon" [alt]="row.member.className" />
+              <span class="player-icons">
+                <img class="class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
+                <span class="spec-icon" *ngIf="row.member.specIcon" [title]="row.member.spec">
+                  <img [src]="row.member.specIcon" alt="" />
+                </span>
+              </span>
               <a
                 class="member-link"
                 [routerLink]="row.member.profileLink"

@@ -386,7 +386,7 @@ export class MythicPlusPageComponent implements OnInit {
     return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => ({
       key: player.key,
       rank,
-      member: toMemberView(player.member),
+      member: toMemberView({ ...player.member, spec: player.primarySpec }),
       score: player.score,
       quality: scoreQuality(player.score, topScore),
       bests: dungeons.map(dungeon => {

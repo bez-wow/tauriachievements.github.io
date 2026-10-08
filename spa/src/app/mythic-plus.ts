@@ -337,6 +337,8 @@ export interface PlayerScore {
   key: string;
   /** The character as they appear in their highest-scoring run, so with that run's spec. */
   member: MythicPlusMember;
+  /** Their most-played spec in these runs; the highest-scoring run's spec wins a count tie. */
+  primarySpec: string;
   score: number;
   /** The character's best run in each dungeon they have played, by dungeon id. */
   bestRuns: ReadonlyMap<string, MythicPlusRun>;
@@ -354,7 +356,12 @@ export function rankPlayers(
   runs: readonly MythicPlusRun[],
   include?: (member: MythicPlusMember) => boolean
 ): PlayerScore[] {
-  const players = new Map<string, { member: MythicPlusMember; topRun: MythicPlusRun; bestRuns: Map<string, MythicPlusRun> }>();
+  const players = new Map<string, {
+    member: MythicPlusMember;
+    topRun: MythicPlusRun;
+    bestRuns: Map<string, MythicPlusRun>;
+    specRuns: Map<string, number>;
+  }>();
 
   for (const run of runs) {
     for (const member of run.roster) {
@@ -365,12 +372,13 @@ export function rankPlayers(
       const key = characterKey(member);
       let player = players.get(key);
       if (!player) {
-        player = { member, topRun: run, bestRuns: new Map() };
+        player = { member, topRun: run, bestRuns: new Map(), specRuns: new Map() };
         players.set(key, player);
       } else if (isBetterRun(run, player.topRun)) {
         player.member = member;
         player.topRun = run;
       }
+      player.specRuns.set(member.spec, (player.specRuns.get(member.spec) ?? 0) + 1);
 
       const best = player.bestRuns.get(run.dungeon);
       if (!best || isBetterRun(run, best)) {
@@ -385,8 +393,17 @@ export function rankPlayers(
       total += run.score;
     }
 
+    let primarySpec = player.member.spec;
+    let primarySpecRuns = player.specRuns.get(primarySpec) ?? 0;
+    for (const [spec, count] of player.specRuns) {
+      if (count > primarySpecRuns) {
+        primarySpec = spec;
+        primarySpecRuns = count;
+      }
+    }
+
     // Scores carry one decimal; rounding keeps float noise out of ties.
-    return { key, member: player.member, score: Math.round(total * 10) / 10, bestRuns: player.bestRuns };
+    return { key, member: player.member, primarySpec, score: Math.round(total * 10) / 10, bestRuns: player.bestRuns };
   }).sort((a, b) => b.score - a.score || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 

@@ -145,6 +145,14 @@ describe('MythicPlusPlayersListComponent', () => {
     expect(card.getAttribute('href')).toBe('/mythic-plus/character/evermoon/Alpha');
   });
 
+  it('shows the primary spec icon after the class icon in cards and table rows', () => {
+    for (const cards of [true, false]) {
+      const icons = render(cards).nativeElement.querySelector('.player-icons');
+      expect(icons.querySelector('.class-icon')).not.toBeNull();
+      expect(icons.querySelector('.spec-icon')?.getAttribute('title')).toBe('Arms');
+    }
+  });
+
   it('opens the profile from anywhere on a table row, and links the name to it', () => {
     const fixture = render(false);
     const router = TestBed.inject(Router);

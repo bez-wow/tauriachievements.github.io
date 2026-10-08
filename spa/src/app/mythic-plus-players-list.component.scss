@@ -65,8 +65,15 @@ td.over-time { color: #8a8a8a; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
 
-  img { width: 20px; height: 20px; border-radius: 3px; }
+.player-icons { display: inline-flex; flex: none; align-items: center; gap: 3px; }
+.class-icon, .spec-icon { width: 20px; height: 20px; border-radius: 3px; }
+
+.spec-icon {
+  overflow: hidden;
+
+  img { display: block; width: 100%; height: 100%; transform: scale(1.2); }
 }
 
 .player-realm { color: #8a8a8a; font-size: .75rem; }
@@ -154,7 +161,6 @@ td.over-time { color: #8a8a8a; }
   white-space: nowrap;
 }
 
-.card-class-icon { width: 20px; height: 20px; flex: none; border-radius: 3px; }
 .card-name { overflow: hidden; font-size: .95rem; font-weight: 700; text-overflow: ellipsis; }
 .card-realm { color: #8a8a8a; font-size: .75rem; }
 
