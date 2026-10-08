@@ -9,6 +9,7 @@ $depleted: #e06666;
 
 @include caret;
 @include visually-hidden;
+@include details-reveal;
 
 .records-page {
   display: flex;
@@ -81,6 +82,7 @@ $depleted: #e06666;
   border: 1px solid #333;
   border-radius: 6px;
   background: #111;
+  @include glide-pill;
 
   button {
     padding: 7px 14px;
@@ -167,6 +169,8 @@ $depleted: #e06666;
 }
 
 .record-card {
+  position: relative;
+  isolation: isolate;
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -179,6 +183,44 @@ $depleted: #e06666;
 
   &.expanded { border-top-color: $gold; background: #24201a; }
   &.unclaimed { border-top-color: #333; }
+}
+
+.record-card { @include spotlight-card; }
+
+// The level in gold that catches the light once as the card comes in (a highlight swept across
+// text-clipped gold); at rest it's plain gold.
+.record-level .level-value {
+  background: linear-gradient(100deg, $gold 38%, #fff3c2 50%, $gold 62%) 100% 0 / 300% 100% no-repeat;
+  background-clip: text;
+  color: transparent;
+}
+
+.record-level .star { display: inline-block; }
+
+// First time on screen (RevealDirective): the cards rise in one after another (`translate`, so the
+// hover lift's `transform` still works), then each level shines and its stars light up in turn.
+@include motion-safe {
+  .record-grid[data-reveal='pending'] {
+    .record-card { opacity: 0; }
+    .star { opacity: 0; }
+  }
+
+  .record-grid[data-reveal='in'] {
+    .record-card {
+      animation: mp-card-rise 640ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 70ms);
+    }
+
+    .level-value {
+      animation: mp-level-shine 1.3s var(--ease-in-out) both;
+      animation-delay: calc(var(--i, 0) * 70ms + 380ms);
+    }
+
+    .star {
+      animation: mp-star-pop 560ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 70ms + 720ms + var(--s, 0) * 120ms);
+    }
+  }
 }
 
 .record-head {
@@ -253,14 +295,51 @@ $depleted: #e06666;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
   list-style: none;
 
+  // The rail: dark, with gold filling it from the top (all of it without motion; as you scroll
+  // through the list where scroll-driven animations exist; once on reveal elsewhere).
   &::before {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 47px;
     width: 2px;
-    background: #2e2716;
+    background: linear-gradient($gold, rgba(247, 181, 0, .3)) top / 100% 100% no-repeat, #2e2716;
     content: '';
+  }
+}
+
+@include motion-safe {
+  .timeline[data-reveal='pending'] .first { opacity: 0; }
+
+  .timeline[data-reveal='in'] {
+    &::before { animation: mp-rail-fill 1.2s var(--ease-in-out) both; }
+
+    .first {
+      animation: mp-first-in 520ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 55ms);
+    }
+
+    .first-level {
+      animation: mp-pill-pop 560ms var(--ease-spring) both;
+      animation-delay: calc(var(--i, 0) * 55ms + 60ms);
+    }
+
+    // The highest level timed so far sends out one ring of light.
+    .first:first-child .first-level {
+      animation: mp-pill-pop 560ms var(--ease-spring) both, mp-crown-ring 1.4s ease-out 600ms both;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .timeline { view-timeline: --firsts block; }
+
+    .timeline::before,
+    .timeline[data-reveal='in']::before {
+      animation: mp-rail-fill linear both;
+      animation-duration: auto;
+      animation-timeline: --firsts;
+      animation-range: entry 20% cover 60%;
+    }
   }
 }
 
@@ -349,17 +428,32 @@ $depleted: #e06666;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
 }
 
+// A seal still up for grabs: its dashed ring turns slowly and it glows, breathing. The ring is its
+// own layer so the number stays still.
 .server-bounty-level {
+  position: relative;
   display: grid;
   width: 76px;
   height: 76px;
   place-items: center;
-  border: 2px dashed $gold;
   border-radius: 50%;
   color: $gold;
   font-size: 1.6rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+
+  &::before {
+    position: absolute;
+    inset: 0;
+    border: 2px dashed $gold;
+    border-radius: 50%;
+    content: '';
+  }
+}
+
+@include motion-safe {
+  .server-bounty-level { animation: mp-seal-glow 3.2s ease-in-out infinite alternate; }
+  .server-bounty-level::before { animation: mp-seal-turn 24s linear infinite; }
 }
 
 .bounty-body {

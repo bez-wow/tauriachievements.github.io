@@ -19,8 +19,7 @@ import {
   currentAffixWeek,
   exportedAt,
   formatClock,
-  sharesTables,
-  upgradeStars
+  sharesTables
 } from './mythic-plus';
 import { dungeonTimers } from './mythic-plus-activity';
 import {
@@ -37,11 +36,18 @@ import {
 } from './mythic-plus-records';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
 import { MemberView, RunView, toRunView } from './mythic-plus-views';
+import { CountUpDirective } from './count-up.directive';
+import { GlideDirective } from './glide.directive';
+import { RevealDirective } from './reveal.directive';
 import { DataFileService } from './services/data-file.service';
+import { SpotlightDirective } from './spotlight.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
 /** A list a run can be opened in; the same run can sit in both. */
 type RecordsSection = 'record' | 'first';
+
+/** The stars of a timed +0 to +3, by upgrade count (see starSlots). */
+const STAR_SLOTS: ReadonlyArray<readonly number[]> = [[], [0], [0, 1], [0, 1, 2]];
 
 interface RecordCard {
   dungeon: MythicPlusDungeon;
@@ -87,7 +93,11 @@ interface SummaryTile {
     UpdateBarComponent,
     BackToTopButtonComponent,
     FilterDropdownComponent,
-    MythicPlusRunDetailsComponent
+    MythicPlusRunDetailsComponent,
+    GlideDirective,
+    RevealDirective,
+    CountUpDirective,
+    SpotlightDirective
   ],
   templateUrl: './mythic-plus-records-page.component.html',
   styleUrl: './mythic-plus-records-page.component.scss',
@@ -103,7 +113,11 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   private readonly location = inject(Location);
 
   readonly firstsFromLevel = FIRSTS_FROM_LEVEL;
-  readonly upgradeStars = upgradeStars;
+
+  /** One entry per star of a +1 / +2 / +3 upgrade, each its own element so they light up in turn. */
+  starSlots(upgrades: number): readonly number[] {
+    return STAR_SLOTS[upgrades] ?? STAR_SLOTS[0];
+  }
 
   readonly index = signal<MythicPlusIndex | undefined>(undefined);
   readonly lastEdited = computed(() => exportedAt(this.index()));
@@ -218,6 +232,11 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
   trackRecord(index: number, record: RecordCard): string {
     return record.dungeon.id;
+  }
+
+  /** Kept tiles roll their number to the new one when the realm switch changes it. */
+  trackLabel(index: number, tile: SummaryTile): string {
+    return tile.label;
   }
 
   trackFirst(index: number, first: FirstRow): number {

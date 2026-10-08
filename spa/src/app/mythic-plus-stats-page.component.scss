@@ -137,6 +137,7 @@ $plot-height: 200px;
   border: 1px solid #333;
   border-radius: 6px;
   background: #111;
+  @include shared.glide-pill;
 
   button {
     padding: 7px 14px;
@@ -328,13 +329,13 @@ $plot-height: 200px;
   outline: none;
 
   &:focus-visible, &.tooltip-open { z-index: 3; }
-  &:focus-visible .tooltip, &.tooltip-open .tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible .tooltip, &.tooltip-open .tooltip { @include shared.tooltip-shown; }
   &:focus-visible .stack, &.tooltip-open .stack { filter: brightness(1.2); }
   &:focus-visible { box-shadow: inset 0 0 0 2px $gold; }
 
   @media (hover: hover) {
     &:hover { z-index: 3; }
-    &:hover .tooltip { opacity: 1; visibility: visible; }
+    &:hover .tooltip { @include shared.tooltip-shown; }
     &:hover .stack { filter: brightness(1.2); }
   }
 }
@@ -348,9 +349,58 @@ $plot-height: 200px;
   flex-direction: column-reverse;
   overflow: hidden;
   border-radius: 3px 3px 0 0;
+  transform-origin: bottom;
   transition: height .25s ease;
 
   .segment { flex: none; }
+}
+
+// The column pointed at stays lit, the others step back.
+@media (hover: hover) {
+  .columns:hover .column:not(:hover) .stack { opacity: .4; }
+  .dungeon-rows:has(.track:hover) .track:not(:hover) { opacity: .4; }
+}
+
+@include shared.motion-safe {
+  // A switch (Key level / Timed, Fortified / Tyrannical) or a period change reshapes the bars:
+  // each segment recolours and slides to its new size instead of the bar being redrawn.
+  .stack {
+    transition: height var(--dur-slow) var(--ease-out), opacity var(--dur) ease;
+
+    .segment { transition: height var(--dur-slow) var(--ease-out), background-color var(--dur-slow) ease; }
+  }
+
+  .track {
+    transition: opacity var(--dur) ease;
+
+    .segment { transition: width var(--dur-slow) var(--ease-out), background-color var(--dur-slow) ease; }
+  }
+
+  // First time on screen (RevealDirective): the columns rise left to right within half a second,
+  // however many days there are, and the dungeon bars grow from the left one row after another.
+  .column-chart[data-reveal='pending'] .stack { transform: scaleY(0); }
+
+  .column-chart[data-reveal='in'] .stack {
+    animation: mp-grow-y 700ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) / var(--columns, 1) * 520ms);
+  }
+
+  .dungeon-rows[data-reveal='pending'] {
+    .track { transform: scaleX(0); }
+    .dungeon-value { opacity: 0; }
+  }
+
+  .dungeon-rows[data-reveal='in'] {
+    .track {
+      animation: mp-grow-x 800ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 55ms);
+    }
+
+    .dungeon-value {
+      animation: mp-label-slide 420ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 55ms + 260ms);
+    }
+  }
 }
 
 .x-labels {
@@ -386,6 +436,7 @@ $plot-height: 200px;
   visibility: hidden;
   pointer-events: none;
   transition: opacity .12s ease;
+  @include shared.tooltip-pop;
 
   strong { color: #fff; font-size: .9rem; }
 }
@@ -443,6 +494,7 @@ $plot-height: 200px;
   height: 14px;
   gap: 2px;
   outline: none;
+  transform-origin: left;
 
   .segment { min-width: 0; height: 100%; }
   .segment:first-child { border-radius: 3px 0 0 3px; }
@@ -453,13 +505,13 @@ $plot-height: 200px;
   .tooltip { bottom: calc(100% + 6px); left: 0; }
 
   &:focus-visible, &.tooltip-open { z-index: 3; }
-  &:focus-visible .tooltip, &.tooltip-open .tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible .tooltip, &.tooltip-open .tooltip { @include shared.tooltip-shown; }
   &:focus-visible .segment, &.tooltip-open .segment { filter: brightness(1.2); }
   &:focus-visible { box-shadow: 0 0 0 2px $gold; }
 
   @media (hover: hover) {
     &:hover { z-index: 3; }
-    &:hover .tooltip { opacity: 1; visibility: visible; }
+    &:hover .tooltip { @include shared.tooltip-shown; }
     &:hover .segment { filter: brightness(1.2); }
   }
 }

@@ -33,10 +33,9 @@
         <span class="card-score"><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
         <span class="caret" aria-hidden="true"></span>
       </button>
-      <app-mythic-plus-run-details
-        *ngIf="isExpanded(row.id)"
-        [id]="'run-details-' + row.id"
-        [run]="row" />
+      <div class="details-reveal" *ngIf="isExpanded(row.id)" [id]="'run-details-' + row.id" animate.leave="details-leaving">
+        <div class="details-clip"><app-mythic-plus-run-details [run]="row" /></div>
+      </div>
     </li>
   </ol>
 </ng-container>
@@ -149,8 +148,10 @@
             </td>
           </tr>
 
-          <tr class="details-row" *ngIf="isExpanded(row.id)" [id]="'run-details-' + row.id">
-            <td [attr.colspan]="completed() ? 11 : 10"><app-mythic-plus-run-details [run]="row" /></td>
+          <tr class="details-row" *ngIf="isExpanded(row.id)" [id]="'run-details-' + row.id" animate.leave="details-leaving">
+            <td [attr.colspan]="completed() ? 11 : 10">
+              <div class="details-reveal"><div class="details-clip"><app-mythic-plus-run-details [run]="row" /></div></div>
+            </td>
           </tr>
         </ng-container>
 

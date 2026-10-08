@@ -65,8 +65,12 @@ import {
   toMemberView,
   toRunView
 } from './mythic-plus-views';
+import { CountUpDirective } from './count-up.directive';
+import { characterTransitionName } from './motion';
+import { RevealDirective } from './reveal.directive';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
+import { SpotlightDirective } from './spotlight.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 import { UpdateBarComponent } from './update-bar.component';
 
@@ -146,10 +150,14 @@ const formatScore = (score: number) => score.toLocaleString('en-GB', { minimumFr
     BackToTopButtonComponent,
     TapTooltipDirective,
     ScrollToEndDirective,
-    MythicPlusRunsListComponent
+    MythicPlusRunsListComponent,
+    CountUpDirective,
+    RevealDirective,
+    SpotlightDirective
   ],
   templateUrl: './mythic-plus-profile-page.component.html',
-  styleUrl: './mythic-plus-profile-page.component.scss',
+  // The motion lives in its own stylesheet; see the top of it.
+  styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusProfilePageComponent implements OnInit {
@@ -208,6 +216,15 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly classCrest = computed(() => {
     const player = this.player();
     return player && getClassCrestPath(player.member.class);
+  });
+  /** Shared with their compare column, so the crest and name fly between the two pages. */
+  readonly crestTransition = computed(() => {
+    const key = this.player()?.key;
+    return key ? characterTransitionName(key, 'crest') : null;
+  });
+  readonly nameTransition = computed(() => {
+    const key = this.player()?.key;
+    return key ? characterTransitionName(key, 'name') : null;
   });
   /** The leaderboard's runs view, showing only this character's runs. */
   readonly showRunsParams = computed<Params>(() => {
@@ -526,6 +543,15 @@ export class MythicPlusProfilePageComponent implements OnInit {
 
   trackCharacter(index: number, character: CharacterLink | TeammateView): string {
     return character.key;
+  }
+
+  // Kept elements let a teammate's profile roll the numbers over instead of building the tiles anew.
+  trackLabel(index: number, item: { label: string }): string {
+    return item.label;
+  }
+
+  trackScope(index: number, tile: RankTile): string {
+    return tile.scope;
   }
 
   loadData(): void {

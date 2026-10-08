@@ -25,7 +25,7 @@
 
   <ng-container *ngIf="!isLoading() && !loadError()">
     <div class="realm-bar">
-      <div class="segmented" role="group" aria-label="Whose runs count">
+      <div class="segmented" role="group" aria-label="Whose runs count" appGlide>
         <button
           type="button"
           [class.active]="realm() === 'all'"
@@ -43,9 +43,9 @@
     </div>
 
     <dl class="summary">
-      <div *ngFor="let tile of summary()">
+      <div *ngFor="let tile of summary(); let index = index; trackBy: trackLabel">
         <dt>{{ tile.label }}</dt>
-        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+        <dd><span [appCountUp]="tile.value" [countUpDelay]="index * 60"></span><span class="summary-note">{{ tile.note }}</span></dd>
       </div>
     </dl>
 
@@ -56,11 +56,15 @@
         <p>The highest key timed in each dungeon. At the same key, the faster clear holds the record.</p>
       </header>
 
-      <!-- A record's details open under its row of cards, across the whole grid (grid-auto-flow: dense). -->
-      <div class="record-grid">
-        <ng-container *ngFor="let record of records(); trackBy: trackRecord">
+      <!-- A record's details open under its row of cards, across the whole grid (grid-auto-flow: dense).
+           The cards rise in one after another the first time they're on screen, each level catching
+           the light once and its stars lighting up in turn. -->
+      <div class="record-grid" [appReveal]="2400">
+        <ng-container *ngFor="let record of records(); let index = index; trackBy: trackRecord">
           <article
             class="record-card"
+            appSpotlight
+            [style.--i]="index"
             [class.expanded]="record.run && isExpanded('record', record.run.id)"
             [class.unclaimed]="!record.run"
             [attr.aria-labelledby]="'record-' + record.dungeon.id">
@@ -68,7 +72,9 @@
               <img [src]="record.dungeon.icon" alt="" loading="lazy" />
               <h3 [id]="'record-' + record.dungeon.id">{{ record.dungeon.name }}</h3>
               <span class="record-level" *ngIf="record.run as run">
-                +{{ run.keyLevel }}<span class="level-star" [title]="'Timed, +' + run.upgrades">{{ upgradeStars(run.upgrades) }}<span class="visually-hidden"> timed +{{ run.upgrades }}</span></span>
+                <span class="level-value">+{{ run.keyLevel }}</span><span class="level-star" [title]="'Timed, +' + run.upgrades"><span
+                  class="star" *ngFor="let star of starSlots(run.upgrades)" [style.--s]="star" aria-hidden="true">★</span><span
+                  class="visually-hidden"> timed +{{ run.upgrades }}</span></span>
               </span>
             </header>
 
@@ -97,10 +103,11 @@
           </article>
 
           <div
-            class="record-details"
+            class="record-details details-reveal"
             *ngIf="record.run && isExpanded('record', record.run.id)"
-            [id]="'record-details-' + record.run.id">
-            <app-mythic-plus-run-details [run]="record.run" />
+            [id]="'record-details-' + record.run.id"
+            animate.leave="details-leaving">
+            <div class="details-clip"><app-mythic-plus-run-details [run]="record.run" /></div>
           </div>
         </ng-container>
       </div>
@@ -130,10 +137,12 @@
         </div>
       </header>
 
-      <ol class="timeline" *ngIf="firsts().length; else noFirsts">
+      <!-- Levels pop in down the rail the first time it's on screen; the rail fills as you scroll. -->
+      <ol class="timeline" *ngIf="firsts().length; else noFirsts" [appReveal]="1800">
         <li
           class="first"
-          *ngFor="let first of firsts(); trackBy: trackFirst"
+          *ngFor="let first of firsts(); let index = index; trackBy: trackFirst"
+          [style.--i]="index"
           [class.expanded]="isExpanded('first', first.run.id)">
           <div class="first-row" (click)="toggle('first', first.run.id)">
             <span class="first-level">+{{ first.level }}</span>
@@ -156,10 +165,13 @@
               <span class="caret" aria-hidden="true"></span>
             </button>
           </div>
-          <app-mythic-plus-run-details
+          <div
+            class="details-reveal"
             *ngIf="isExpanded('first', first.run.id)"
             [id]="'first-details-' + first.run.id"
-            [run]="first.run" />
+            animate.leave="details-leaving">
+            <div class="details-clip"><app-mythic-plus-run-details [run]="first.run" /></div>
+          </div>
         </li>
       </ol>
       <ng-template #noFirsts>

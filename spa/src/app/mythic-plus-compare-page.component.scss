@@ -212,11 +212,31 @@ $plot-height: 220px;
 
 .player-head {
   position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
   min-width: 0;
+}
+
+// Carried between pages (characterTransitionName); see ::view-transition-group(*.character).
+.crest img, .player-name { view-transition-class: character; }
+
+// A glow in the class colour behind each crest; brighter while the column is pointed at.
+.crest { @include crest-glow(16px); }
+
+@media (hover: hover) {
+  .player-head:hover .crest { @include crest-glow-lit; }
+}
+
+@include motion-safe {
+  // Column by column: the crest rises in, then its glow blooms. `backwards`, so the hover above
+  // still eases once the entrance is over. The frame only fades, and quickly: while it is see-through
+  // or moved it paints its own glow over its background, so the rise is on the image inside it.
+  .crest { animation: mp-fade-in 280ms ease backwards; animation-delay: calc(var(--col, 0) * 110ms); }
+  .crest img { animation: mp-crest-in 620ms var(--ease-spring) backwards; animation-delay: calc(var(--col, 0) * 110ms); }
+  .crest::before { animation: mp-aura-in 900ms var(--ease-out) backwards; animation-delay: calc(var(--col, 0) * 110ms + 300ms); }
 }
 
 .crest {
@@ -292,6 +312,20 @@ $plot-height: 220px;
 }
 
 .score-row .stat-delta { font-size: .8rem; }
+
+// The numbers count up (CountUpDirective, 900 ms plus 40 ms a row). As they land, the best of
+// each row turns from grey to gold with a flash of light, then the gaps behind it fade in.
+@include motion-safe {
+  .versus td.best .stat-number {
+    animation: mp-leader-in 1s var(--ease-out) both;
+    animation-delay: calc(var(--row, 0) * 40ms + 780ms);
+  }
+
+  .versus .stat-delta {
+    animation: mp-delta-in 420ms var(--ease-out) both;
+    animation-delay: calc(var(--row, 0) * 40ms + 1050ms);
+  }
+}
 
 // Best run per dungeon
 .dungeons-table {
@@ -405,6 +439,20 @@ svg.line {
   .stroke { fill: none; stroke-linejoin: round; stroke-width: 2; }
 }
 
+@include motion-safe {
+  // Drawn in from the left once, by uncovering it (the stroke doesn't scale with the chart, so a
+  // dash-offset draw would come out uneven). The clip reaches past the edges, so lines along the
+  // top or bottom aren't cut; `backwards` drops it once done.
+  svg.line { animation: mp-line-draw 1.4s var(--ease-in-out) backwards; }
+
+  // Score / Gap: the lines morph between their two shapes, and the dots follow.
+  svg.line .stroke { transition: d 700ms var(--ease-out); }
+  .dot { transition: bottom 700ms var(--ease-out); }
+
+  // New axis labels and gridlines fade in rather than appear.
+  .y-axis span, .gridlines span { animation: mp-fade-in var(--dur-slow) ease both; }
+}
+
 .columns { position: relative; height: $plot-height; }
 
 .column {
@@ -413,13 +461,13 @@ svg.line {
   outline: none;
 
   &:focus-visible, &.tooltip-open { z-index: 3; background: rgba(255, 255, 255, .05); }
-  &:focus-visible .tooltip, &.tooltip-open .tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible .tooltip, &.tooltip-open .tooltip { @include tooltip-shown; }
   &:focus-visible .dot, &.tooltip-open .dot { opacity: 1; }
   &:focus-visible { box-shadow: inset 0 0 0 2px $gold; }
 
   @media (hover: hover) {
     &:hover { z-index: 3; background: rgba(255, 255, 255, .05); }
-    &:hover .tooltip { opacity: 1; visibility: visible; }
+    &:hover .tooltip { @include tooltip-shown; }
     &:hover .dot { opacity: 1; }
   }
 }
@@ -464,6 +512,7 @@ svg.line {
   visibility: hidden;
   pointer-events: none;
   transition: opacity .12s ease;
+  @include tooltip-pop;
 }
 
 .flip .tooltip { right: calc(100% + 6px); left: auto; }
@@ -522,6 +571,7 @@ svg.line {
   border-radius: 6px;
   background: #111;
   align-self: center;
+  @include glide-pill;
 
   button {
     padding: 3px 12px;
@@ -578,8 +628,16 @@ svg.line {
   opacity: .85;
 }
 
-.lead-left .lead-bar { border-radius: 4px 0 0 4px; }
-.lead-right .lead-bar { border-radius: 0 4px 4px 0; }
+.lead-left .lead-bar { border-radius: 4px 0 0 4px; transform-origin: right; }
+.lead-right .lead-bar { border-radius: 0 4px 4px 0; transform-origin: left; }
+
+// Each bar grows out from the middle line towards the leader, one row after another.
+@include motion-safe {
+  .lead-bar {
+    animation: mp-grow-x 700ms var(--ease-out) both;
+    animation-delay: calc(var(--row, 0) * 45ms + 200ms);
+  }
+}
 
 // The number sits on the side away from the bar, beside the middle line.
 .lead-value {

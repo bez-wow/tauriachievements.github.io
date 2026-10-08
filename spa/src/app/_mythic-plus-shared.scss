@@ -77,6 +77,189 @@ $phone-breakpoint: 640px;
   }
 }
 
+// Motion. Durations and easings are the --dur-* / --ease-* tokens, and every keyframe is a global
+// mp-* one, all in src/scss/_motion.scss (which says why the keyframes can't live here).
+
+// What's inside only plays for readers who haven't asked their system for less motion.
+@mixin motion-safe {
+  @media (prefers-reduced-motion: no-preference) { @content; }
+}
+
+// The highlight of a segmented switch slides to the picked option (GlideDirective). Include it in
+// the switch's own rule. Until the directive has placed the highlight, `.active` keeps its own
+// background, so the switch never shows without one.
+@mixin glide-pill($background: #2e2716, $radius: 4px) {
+  position: relative;
+  isolation: isolate;
+
+  &.glide-ready::before {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: var(--glide-w);
+    height: var(--glide-h);
+    border-radius: $radius;
+    background: $background;
+    box-shadow: inset 0 0 0 1px rgba(247, 181, 0, .14), 0 0 12px rgba(247, 181, 0, .1);
+    content: '';
+    transform: translate(var(--glide-x), var(--glide-y));
+    pointer-events: none;
+  }
+
+  &.glide-ready > .active { background: transparent; }
+
+  @include motion-safe {
+    &.glide-ready::before {
+      transition: transform 460ms var(--ease-spring), width 460ms var(--ease-spring), height 460ms var(--ease-spring);
+    }
+
+    > button { transition: color var(--dur) ease; }
+  }
+}
+
+// The same for a picker of tiles: a gold frame drawn over the tiles glides to the picked one.
+@mixin glide-frame($radius: 6px) {
+  position: relative;
+
+  &.glide-ready::after {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: var(--glide-w);
+    height: var(--glide-h);
+    border: 1px solid $gold;
+    border-radius: $radius;
+    box-shadow: 0 0 14px rgba(247, 181, 0, .28), inset 0 0 12px rgba(247, 181, 0, .08);
+    content: '';
+    transform: translate(var(--glide-x), var(--glide-y));
+    pointer-events: none;
+  }
+
+  &.glide-ready > .active { border-color: transparent; box-shadow: none; }
+
+  @include motion-safe {
+    &.glide-ready::after {
+      transition: transform 520ms var(--ease-spring), width 520ms var(--ease-spring), height 520ms var(--ease-spring);
+    }
+  }
+}
+
+// A soft glow in the class colour (--class-color) behind a crest. `crest-glow-lit` brightens and
+// widens it, e.g. while the crest or its column is pointed at. The parent needs `isolation: isolate`
+// so the glow sits under the crest but above the parent's own background. Don't move, scale or fade
+// the crest itself for long: that makes it a stacking context, which pulls the glow in front of the
+// crest's background. Animate the image inside it instead. A view-transition-name does the same, so
+// it goes on the image too.
+@mixin crest-glow($spread, $strength: 50%) {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: -$spread;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--class-color) $strength, transparent), transparent);
+    content: '';
+    filter: blur(6px);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  @include motion-safe {
+    &::before { transition: opacity var(--dur) ease, scale 420ms var(--ease-spring); }
+  }
+}
+
+@mixin crest-glow-lit($opacity: .95, $scale: 1.12) {
+  &::before { opacity: $opacity; scale: $scale; }
+}
+
+// Mouse only: the card's edge lights up gold where the pointer is (SpotlightDirective sets
+// --spot-x / --spot-y), with a faint glow inside, and the card lifts towards it.
+@mixin spotlight-card {
+  position: relative;
+  isolation: isolate;
+
+  @media (hover: hover) {
+    &::before,
+    &::after {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      content: '';
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--dur) ease;
+    }
+
+    &::before {
+      z-index: -1;
+      background: radial-gradient(360px circle at var(--spot-x, 50%) var(--spot-y, 0), rgba(247, 181, 0, .07), transparent 60%);
+    }
+
+    // A 1px ring: the gradient shows only between the padding box and the border box.
+    &::after {
+      z-index: 1;
+      padding: 1px;
+      background: radial-gradient(220px circle at var(--spot-x, 50%) var(--spot-y, 0), rgba(247, 181, 0, .75), transparent 70%);
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+    }
+
+    &:hover::before,
+    &:hover::after { opacity: 1; }
+
+    @include motion-safe {
+      transition: transform 420ms var(--ease-spring), box-shadow var(--dur) ease, border-color var(--dur-fast) ease;
+
+      &:hover { box-shadow: 0 16px 40px rgba(0, 0, 0, .6); transform: translateY(-2px); }
+    }
+  }
+}
+
+// A panel that opens and closes by height instead of popping in and out. Markup: the element the
+// *ngIf sits on carries `animate.leave="details-leaving"` and is (or, for a table row, holds) a
+// `.details-reveal`, whose one child `.details-clip` holds the content.
+@mixin details-reveal {
+  .details-reveal { display: grid; grid-template-rows: 1fr; }
+  .details-clip { min-height: 0; overflow: hidden; }
+
+  @include motion-safe {
+    .details-reveal { animation: mp-details-open var(--dur-slow) var(--ease-out); }
+    .details-clip > * { animation: mp-details-content-in var(--dur-slow) var(--ease-out); }
+    .details-reveal.details-leaving,
+    .details-leaving .details-reveal { animation: mp-details-close var(--dur) var(--ease-in-out) forwards; }
+    // A table row can't shrink by itself: it fades for as long as the panel inside it takes to close,
+    // which is what Angular waits for before removing it.
+    tr.details-leaving { animation: mp-fade-out var(--dur) var(--ease-in-out) forwards; }
+  }
+}
+
+// Chart tooltips grow out of what they point at instead of only fading in. The separate scale and
+// translate properties add to whatever transform a tooltip already has (e.g. translateX(-50%)).
+// `tooltip-pop` goes on the tooltip, `tooltip-shown` in each rule that opens it.
+@mixin tooltip-pop {
+  @include motion-safe {
+    scale: .96;
+    translate: 0 4px;
+    transition:
+      opacity var(--dur-fast) ease,
+      scale var(--dur) var(--ease-spring),
+      translate var(--dur) var(--ease-spring),
+      visibility 0s linear var(--dur-fast);
+  }
+}
+
+@mixin tooltip-shown {
+  opacity: 1;
+  visibility: visible;
+  scale: 1;
+  translate: 0 0;
+  transition-delay: 0s;
+}
+
 // A sideways-scrolling table. position: relative makes it the containing block of the
 // visually-hidden labels (position: absolute) inside its cells. Without it they'd hang off the
 // page's right edge when the table is scrolled wider than the phone, and mobile Chrome would

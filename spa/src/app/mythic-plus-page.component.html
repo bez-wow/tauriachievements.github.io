@@ -18,7 +18,7 @@
 
   <ng-container *ngIf="!isLoading() && !loadError()">
     <div class="period-bar">
-      <div class="view-switch" role="group" aria-label="Show the whole season or this week">
+      <div class="view-switch" role="group" aria-label="Show the whole season or this week" appGlide>
         <button
           type="button"
           [class.active]="period() === 'season'"
@@ -34,7 +34,7 @@
       <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" />
     </div>
 
-    <nav class="dungeon-picker" aria-label="Filter runs by dungeon">
+    <nav class="dungeon-picker" aria-label="Filter runs by dungeon" appGlide>
       <button
         type="button"
         class="dungeon-tile"
@@ -84,7 +84,7 @@
           <ng-container *ngTemplateOutlet="pagerStatus"></ng-container>
         </div>
         <div class="toolbar-actions">
-          <div class="view-switch" role="group" aria-label="Order runs" *ngIf="view() === 'runs'">
+          <div class="view-switch" role="group" aria-label="Order runs" *ngIf="view() === 'runs'" appGlide>
             <button
               type="button"
               [class.active]="runOrder() === 'best'"
@@ -104,7 +104,7 @@
             </svg>
             {{ compareMode() ? 'Stop comparing' : 'Compare' }}
           </button>
-          <div class="view-switch" role="group" aria-label="Rank runs or players">
+          <div class="view-switch" role="group" aria-label="Rank runs or players" appGlide>
             <button
               type="button"
               [class.active]="view() === 'runs'"
@@ -255,17 +255,19 @@
     </ng-container>
   </ng-container>
   <!-- Compare: who is picked, and opening the comparison. -->
-  <aside class="compare-tray" *ngIf="compareMode()" aria-label="Players picked to compare">
+  <aside class="compare-tray" *ngIf="compareMode()" aria-label="Players picked to compare" animate.leave="tray-leaving">
     <p class="compare-tray-hint" *ngIf="!picked().length">
       Click up to {{ compareLimit }} players to compare<ng-container *ngIf="view() !== 'players'"> on the Players view</ng-container>.
     </p>
     <ul class="compare-picks" *ngIf="picked().length">
-      <li *ngFor="let pick of picked()">
-        <span [style.color]="pick.color">{{ pick.name }}</span>
+      <!-- Each name is named like its column's name on the compare page, so Compare carries it there. -->
+      <li *ngFor="let pick of picked(); trackBy: trackPick" animate.leave="chip-leaving">
+        <span class="compare-pick-name" [style.color]="pick.color" [style.view-transition-name]="pick.nameTransition">{{ pick.name }}</span>
         <button type="button" (click)="removePick(pick.key)" [attr.aria-label]="'Remove ' + pick.name">×</button>
       </li>
     </ul>
-    <span class="compare-count">{{ picked().length }} / {{ compareLimit }}</span>
+    <!-- A new count is a new element, so it bumps each time a pick is added or removed. -->
+    <span class="compare-count"><span class="compare-count-value" *ngFor="let count of [picked().length]">{{ count }}</span> / {{ compareLimit }}</span>
     <button type="button" class="compare-cancel" (click)="cancelCompare()">Cancel</button>
     <a class="compare-go" [class.disabled]="picked().length < 2" [attr.aria-disabled]="picked().length < 2"
       routerLink="/mythic-plus/compare" [queryParams]="compareParams()">

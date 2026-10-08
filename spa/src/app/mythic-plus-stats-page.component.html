@@ -33,7 +33,7 @@
 
   <ng-container *ngIf="!isLoading() && !loadError()">
     <div class="period-bar">
-      <div class="segmented" role="group" aria-label="Show the whole season or this week">
+      <div class="segmented" role="group" aria-label="Show the whole season or this week" appGlide>
         <button
           type="button"
           [class.active]="period() === 'season'"
@@ -49,10 +49,11 @@
       <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" />
     </div>
 
+    <!-- The numbers count up, one tile after another; switching period rolls them to the new ones. -->
     <dl class="summary">
-      <div *ngFor="let item of summary()">
+      <div *ngFor="let item of summary(); let index = index; trackBy: trackLabel">
         <dt>{{ item.label }}</dt>
-        <dd>{{ item.value }}</dd>
+        <dd [appCountUp]="item.value" [countUpDelay]="index * 60"></dd>
       </div>
     </dl>
 
@@ -63,7 +64,7 @@
           <h2 id="days-title">Runs per day</h2>
           <p class="chart-subtitle">Days in your local time · shaded by affix week</p>
         </div>
-        <div class="segmented" role="group" aria-label="Split each day by">
+        <div class="segmented" role="group" aria-label="Split each day by" appGlide>
           <button type="button" [class.active]="daySplit() === 'level'" [attr.aria-pressed]="daySplit() === 'level'"
             (click)="daySplit.set('level')">Key level</button>
           <button type="button" [class.active]="daySplit() === 'result'" [attr.aria-pressed]="daySplit() === 'result'"
@@ -82,7 +83,7 @@
 
       <!-- Wider than a phone: opens on the newest days, at the right end. -->
       <div class="chart-scroll" *ngIf="dayBars().length; else noRuns" [appScrollToEnd]="period() + dayBars().length">
-        <div class="column-chart days" [style.--columns]="dayBars().length">
+        <div class="column-chart days" [style.--columns]="dayBars().length" appReveal>
           <div class="y-axis" aria-hidden="true">
             <span *ngFor="let line of dayGridlines()" [style.bottom.%]="line.position">{{ line.value }}</span>
           </div>
@@ -106,7 +107,8 @@
               <div
                 class="column"
                 appTapTooltip
-                *ngFor="let bar of dayBars()"
+                *ngFor="let bar of dayBars(); let index = index; trackBy: trackDay"
+                [style.--i]="index"
                 [class.flip]="bar.flip"
                 [class.middle]="bar.middle"
                 [class.wide]="bar.wide"
@@ -116,7 +118,7 @@
                 [attr.aria-label]="bar.longLabel + ': ' + bar.day.total + ' runs' + (bar.partial ? ' so far' : '')">
                 <span class="stack" [style.height.%]="bar.heightPercent">
                   <span
-                    *ngFor="let segment of bar.segments"
+                    *ngFor="let segment of bar.segments; trackBy: trackPosition"
                     [class]="'segment ' + segment.key"
                     [style.height.%]="segment.percent"></span>
                 </span>
@@ -145,7 +147,7 @@
             <h2 id="dungeons-title">Runs per dungeon</h2>
             <p class="chart-subtitle">Most-run first</p>
           </div>
-          <div class="segmented" role="group" aria-label="Split each dungeon by">
+          <div class="segmented" role="group" aria-label="Split each dungeon by" appGlide>
             <button type="button" [class.active]="dungeonSplit() === 'result'" [attr.aria-pressed]="dungeonSplit() === 'result'"
               (click)="dungeonSplit.set('result')">Timed / depleted</button>
             <button type="button" [class.active]="dungeonSplit() === 'week'" [attr.aria-pressed]="dungeonSplit() === 'week'"
@@ -157,8 +159,8 @@
             <i [class]="'swatch ' + segment.key"></i>{{ segment.label }}
           </li>
         </ul>
-        <ol class="dungeon-rows">
-          <li *ngFor="let row of dungeons()">
+        <ol class="dungeon-rows" appReveal>
+          <li *ngFor="let row of dungeons(); let index = index; trackBy: trackDungeonRow" [style.--i]="index">
             <span class="dungeon-name" [title]="row.dungeon.name">
               <img [src]="row.dungeon.icon" alt="" loading="lazy" />{{ row.dungeon.shortName }}
             </span>
@@ -168,7 +170,7 @@
               role="img"
               tabindex="0"
               [attr.aria-label]="row.dungeon.name + ': ' + row.runs + ' runs, ' + row.segments[0].count + ' ' + row.segments[0].label.toLowerCase() + ', ' + row.segments[1].count + ' ' + row.segments[1].label.toLowerCase()">
-              <span *ngFor="let segment of row.segments" [class]="'segment ' + segment.key" [style.width.%]="segment.width"></span>
+              <span *ngFor="let segment of row.segments; trackBy: trackPosition" [class]="'segment ' + segment.key" [style.width.%]="segment.width"></span>
               <span class="tooltip" aria-hidden="true">
                 <strong>{{ row.dungeon.name }}</strong>
                 <span class="tooltip-row" *ngFor="let segment of row.segments">
@@ -209,7 +211,7 @@
           </div>
         </header>
         <div class="chart-controls">
-          <div class="segmented" role="group" aria-label="Split each key level by">
+          <div class="segmented" role="group" aria-label="Split each key level by" appGlide>
             <button type="button" [class.active]="levelSplit() === 'result'" [attr.aria-pressed]="levelSplit() === 'result'"
               (click)="levelSplit.set('result')">Timed / depleted</button>
             <button type="button" [class.active]="levelSplit() === 'week'" [attr.aria-pressed]="levelSplit() === 'week'"
@@ -220,7 +222,7 @@
           <li *ngFor="let segment of levelLegend()"><i [class]="'swatch ' + segment.key"></i>{{ segment.label }}</li>
         </ul>
         <div class="chart-scroll" *ngIf="levelBars().length; else noRuns">
-          <div class="column-chart levels" [style.--columns]="levelBars().length">
+          <div class="column-chart levels" [style.--columns]="levelBars().length" appReveal>
             <div class="y-axis" aria-hidden="true">
               <span *ngFor="let line of levelGridlines()" [style.bottom.%]="line.position">{{ line.value }}</span>
             </div>
@@ -232,7 +234,8 @@
                 <div
                   class="column"
                   appTapTooltip
-                  *ngFor="let bar of levelBars()"
+                  *ngFor="let bar of levelBars(); let index = index; trackBy: trackLevel"
+                  [style.--i]="index"
                   [class.flip]="bar.flip"
                   [class.middle]="bar.middle"
                   [class.wide]="bar.wide"
@@ -240,7 +243,7 @@
                   tabindex="0"
                   [attr.aria-label]="'+' + bar.level + ': ' + bar.runs + ' runs, ' + bar.timedRate + ' timed'">
                   <span class="stack" [style.height.%]="bar.heightPercent">
-                    <span *ngFor="let segment of bar.segments" [class]="'segment ' + segment.key" [style.height.%]="segment.percent"></span>
+                    <span *ngFor="let segment of bar.segments; trackBy: trackPosition" [class]="'segment ' + segment.key" [style.height.%]="segment.percent"></span>
                   </span>
                   <span class="tooltip" aria-hidden="true">
                     <strong>+{{ bar.level }} · {{ bar.runs | number }} {{ bar.runs === 1 ? 'run' : 'runs' }}</strong>

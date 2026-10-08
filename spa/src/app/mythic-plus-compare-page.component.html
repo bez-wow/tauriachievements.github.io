@@ -73,28 +73,34 @@
           <thead>
             <tr>
               <th scope="col" class="col-label"><span class="visually-hidden">Stat</span></th>
-              <th scope="col" class="col-player" *ngFor="let player of players(); trackBy: trackKey">
-                <div class="player-head" [style.--class-color]="player.member.color">
+              <!-- Crest and name keep their view-transition-name across page changes: adding or removing a
+                   player slides the others into their new columns, a leaderboard pick's name flies into its
+                   column, and a profile's crest and name fly in from (and back to) its header. -->
+              <th scope="col" class="col-player" *ngFor="let player of players(); let column = index; trackBy: trackKey">
+                <div class="player-head" [style.--class-color]="player.member.color" [style.--col]="column">
                   <!-- Down to one player there is nothing left to compare, so back to the leaderboard. -->
                   <a class="remove" [routerLink]="players().length > 2 ? '/mythic-plus/compare' : '/mythic-plus'"
                     [queryParams]="players().length > 2 ? removeParams(player.key) : null"
                     [attr.aria-label]="'Remove ' + player.member.name" title="Remove from the comparison">×</a>
-                  <span class="crest"><img [src]="player.crest" [alt]="player.member.className" /></span>
-                  <a class="player-name" [routerLink]="player.member.profileLink" [style.color]="player.member.color">{{ player.member.name }}</a>
+                  <span class="crest"><img [src]="player.crest" [alt]="player.member.className" [style.view-transition-name]="player.crestTransition" /></span>
+                  <a class="player-name" [routerLink]="player.member.profileLink" [style.color]="player.member.color"
+                    [style.view-transition-name]="player.nameTransition">{{ player.member.name }}</a>
                   <span class="player-meta">{{ player.member.realm }} · {{ player.member.spec }} {{ player.member.className }}</span>
                   <span class="player-guild" *ngIf="player.member.guild">&lt;{{ player.member.guild }}&gt;</span>
                 </div>
               </th>
             </tr>
           </thead>
+          <!-- Everyone's numbers count up together, row after row; as they land the best of each row
+               lights up in gold and the gaps behind it fade in. -->
           <tbody>
-            <tr *ngFor="let stat of stats(); let first = first" [class.score-row]="first">
+            <tr *ngFor="let stat of stats(); let first = first; let row = index" [class.score-row]="first" [style.--row]="row">
               <th scope="row" class="col-label">
                 {{ stat.label }}
                 <span class="stat-hint" *ngIf="stat.hint">{{ stat.hint }}</span>
               </th>
               <td *ngFor="let cell of stat.cells; let i = index" [class.best]="cell.best">
-                <span class="stat-value">{{ cell.text }}<span class="stat-delta" *ngIf="cell.delta">{{ cell.delta }}</span></span>
+                <span class="stat-value"><span class="stat-number" [appCountUp]="cell.text" [countUpDelay]="row * 40"></span><span class="stat-delta" *ngIf="cell.delta">{{ cell.delta }}</span></span>
                 <span class="stat-sub" *ngIf="cell.sub">{{ cell.sub }}</span>
               </td>
             </tr>
@@ -111,7 +117,7 @@
             At the end of each day in your local time · shaded by affix week ·
             <span class="hint-hover">hover a day for everyone's score</span><span class="hint-touch">tap a day for everyone's score</span>
           </p>
-          <div class="view-switch" role="group" aria-label="Chart">
+          <div class="view-switch" role="group" aria-label="Chart" appGlide>
             <button type="button" [class.active]="chartMode() === 'score'" [attr.aria-pressed]="chartMode() === 'score'"
               (click)="chartMode.set('score')">Score</button>
             <button type="button" [class.active]="chartMode() === 'gap'" [attr.aria-pressed]="chartMode() === 'gap'"
@@ -138,21 +144,22 @@
                   <em><img *ngFor="let affix of band.affixes" [src]="affix.icon" alt="" loading="lazy" /></em>
                 </span>
               </div>
+              <!-- The lines draw in from the left once; Score / Gap then morphs them (CSS `d`). -->
               <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-                <polyline *ngFor="let line of chart.lines" class="stroke" [attr.points]="line.points" [style.stroke]="line.color"
-                  vector-effect="non-scaling-stroke" />
+                <path *ngFor="let line of chart.lines; trackBy: trackPosition" class="stroke" [attr.d]="line.path"
+                  [style.d]="line.cssPath" [style.stroke]="line.color" vector-effect="non-scaling-stroke" />
               </svg>
               <div class="columns">
                 <div
                   class="column"
                   appTapTooltip
-                  *ngFor="let point of chart.points"
+                  *ngFor="let point of chart.points; trackBy: trackPosition"
                   [class.flip]="point.flip"
                   [class.middle]="point.middle"
                   role="img"
                   tabindex="0"
                   [attr.aria-label]="point.longLabel">
-                  <span class="dot" *ngFor="let score of point.scores" [style.bottom.%]="score.bottom" [style.background]="score.color"></span>
+                  <span class="dot" *ngFor="let score of point.scores; trackBy: trackPosition" [style.bottom.%]="score.bottom" [style.background]="score.color"></span>
                   <span class="tooltip" aria-hidden="true">
                     <span>{{ point.longLabel }}</span>
                     <span class="tooltip-row" *ngFor="let score of point.scores">
@@ -192,7 +199,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of dungeonRows()">
+              <tr *ngFor="let row of dungeonRows(); let rowIndex = index" [style.--row]="rowIndex">
                 <th scope="row" class="col-label">
                   <span class="dungeon-name"><img [src]="row.dungeon.icon" alt="" />{{ row.dungeon.name }}</span>
                 </th>
@@ -215,7 +222,7 @@
               </tr>
             </tbody>
             <tfoot *ngIf="totalLead() as lead">
-              <tr>
+              <tr [style.--row]="dungeonRows().length">
                 <th scope="row" class="col-label">Score</th>
                 <td><span class="total-score" [ngClass]="'q-' + players()[0].quality">{{ players()[0].player.score | number:'1.1-1' }}</span></td>
                 <td class="col-lead"><ng-container *ngTemplateOutlet="leadBar; context: { $implicit: lead }"></ng-container></td>

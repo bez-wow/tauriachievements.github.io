@@ -4,7 +4,10 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { injectCompactViewport } from './compact-viewport';
 import { MythicPlusRole, MythicPlusRun } from './mythic-plus';
 import { ClassShare, SpecShare, formatShare, shareTicks, specPopularity } from './mythic-plus-stats';
+import { FlipDirective } from './flip.directive';
+import { GlideDirective } from './glide.directive';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
+import { RevealDirective } from './reveal.directive';
 import { TapTooltipDirective } from './tap-tooltip.directive';
 
 type RoleFilter = MythicPlusRole | 'all';
@@ -26,7 +29,7 @@ interface ClassGroup extends Omit<ClassShare, 'specs'> {
 @Component({
   selector: 'app-mythic-plus-spec-chart',
   standalone: true,
-  imports: [CommonModule, TapTooltipDirective],
+  imports: [CommonModule, TapTooltipDirective, GlideDirective, RevealDirective, FlipDirective],
   templateUrl: './mythic-plus-spec-chart.component.html',
   styleUrls: ['./mythic-plus-spec-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

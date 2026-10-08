@@ -1,3 +1,6 @@
+// Easing and duration tokens, the page-change transition and the M+ keyframes.
+@use 'motion';
+
 :root {
   // Height of the fixed header (app-update-bar); sticky elements sit below it.
   --update-bar-height: 36px;

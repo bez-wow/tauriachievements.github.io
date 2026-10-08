@@ -66,6 +66,8 @@ import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import { UpdateBarComponent } from './update-bar.component';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
+import { GlideDirective } from './glide.directive';
+import { characterTransitionName } from './motion';
 
 interface RankedRun {
   run: MythicPlusRun;
@@ -123,7 +125,8 @@ function parseSpecFilter(classId: number | undefined, value: string | null): str
     MythicPlusRunsListComponent,
     MythicPlusPlayersListComponent,
     FilterDropdownComponent,
-    MobileFilterToggleComponent
+    MobileFilterToggleComponent,
+    GlideDirective
   ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
@@ -463,11 +466,13 @@ export class MythicPlusPageComponent implements OnInit {
     return this.comparePicks().map(pick => {
       const found = findCharacters(characters, pick.realm, pick.name)[0];
       const character = found ?? pick;
+      const key = characterKey(character);
       return {
-        key: characterKey(character),
+        key,
         name: character.name,
         realm: character.realm,
-        color: (found && getClassColor(found.classId)) ?? '#e0e0e0'
+        color: (found && getClassColor(found.classId)) ?? '#e0e0e0',
+        nameTransition: characterTransitionName(key, 'name')
       };
     });
   });
@@ -629,6 +634,10 @@ export class MythicPlusPageComponent implements OnInit {
 
   trackDungeon(index: number, dungeon: MythicPlusDungeon): string {
     return dungeon.id;
+  }
+
+  trackPick(index: number, pick: { key: string }): string {
+    return pick.key;
   }
 
   /**

@@ -20,18 +20,21 @@
 
   <ng-container *ngIf="!isLoading() && !loadError()">
     <ng-container *ngIf="player() && member() as member; else noProfile">
-      <header class="profile-header">
-        <span class="profile-crest" [style.--class-color]="member.color">
-          <img [src]="classCrest()" [alt]="member.className" width="256" height="256" />
+      <!-- Comes in as one piece: the crest rises with its class-colour glow (brighter on hover), the
+           name and specs follow, the numbers count up and the score flashes in its colour as it
+           lands. The crest and name fly in from, and back to, a compare column (characterTransitionName). -->
+      <header class="profile-header" [style.--class-color]="member.color">
+        <span class="profile-crest">
+          <img [src]="classCrest()" [alt]="member.className" width="256" height="256" [style.view-transition-name]="crestTransition()" />
         </span>
         <div class="profile-identity">
-          <h1 [style.color]="member.color">{{ member.name }}</h1>
+          <h1 [style.color]="member.color" [style.view-transition-name]="nameTransition()">{{ member.name }}</h1>
           <p class="profile-meta">
             <span>{{ member.realm }}</span>
             <span *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
           </p>
           <ul class="profile-specs" aria-label="Specs played">
-            <li *ngFor="let spec of specs()">
+            <li *ngFor="let spec of specs(); let index = index" [style.--i]="index">
               <span class="spec-icon" *ngIf="spec.icon"><img [src]="spec.icon" alt="" /></span>
               <span>{{ spec.spec }} {{ member.className }}</span>
               <span class="spec-runs">{{ spec.runs | number }} {{ spec.runs === 1 ? 'run' : 'runs' }}</span>
@@ -39,7 +42,8 @@
           </ul>
         </div>
         <div class="profile-score">
-          <span class="profile-score-value" [ngClass]="'q-' + quality()">{{ player()?.score | number:'1.1-1' }}</span>
+          <span class="profile-score-value" [ngClass]="'q-' + quality()"
+            [appCountUp]="(player()?.score | number:'1.1-1') ?? ''" [countUpDelay]="150"></span>
           <span class="profile-score-label">Mythic+ score<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></span>
         </div>
         <div class="profile-actions">
@@ -51,7 +55,7 @@
           </a>
         </div>
         <!-- Compare with: search a player, or pick several on the leaderboard. -->
-        <div class="compare-with" *ngIf="compareOpen()">
+        <div class="compare-with" *ngIf="compareOpen()" animate.leave="panel-leaving">
           <label class="character-search">
             <span>Compare {{ member.name }} with</span>
             <input
@@ -79,17 +83,20 @@
           </a>
         </div>
         <dl class="profile-summary">
-          <div *ngFor="let item of summary()">
+          <div *ngFor="let item of summary(); let index = index; trackBy: trackLabel">
             <dt>{{ item.label }}</dt>
-            <dd>{{ item.value }}</dd>
+            <dd [appCountUp]="item.value" [countUpDelay]="200 + index * 60"></dd>
           </div>
         </dl>
       </header>
 
+      <!-- The tiles rise in one after another; under the mouse their edge lights up and they lift. -->
       <nav class="ranks" aria-label="Ranks, each opening the players leaderboard where it is">
         <a
           class="rank-tile"
-          *ngFor="let tile of ranks()"
+          appSpotlight
+          *ngFor="let tile of ranks(); let index = index; trackBy: trackScope"
+          [style.--i]="index"
           routerLink="/mythic-plus"
           [queryParams]="tile.queryParams">
           <span class="rank-scope">{{ tile.scope }}</span>
@@ -179,7 +186,7 @@
           </header>
           <ol class="teammates" *ngIf="teammates().length; else noTeammates">
             <li *ngFor="let mate of teammates(); trackBy: trackCharacter" class="teammate-item">
-              <a class="teammate" [routerLink]="mate.member.profileLink">
+              <a class="teammate" [routerLink]="mate.member.profileLink" [style.--class-color]="mate.member.color">
                 <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
                 <span class="teammate-body">
                   <span class="teammate-name" [style.color]="mate.member.color">{{ mate.member.name }}</span>
@@ -217,8 +224,10 @@
           <button type="button" class="more-runs clear-day" *ngIf="selectedDay()" (click)="selectDay(undefined)">Clear</button>
         </header>
         <!-- Wider than a phone in a long season: opens on the newest days, at the right end. -->
+        <!-- The first time it's on screen the line draws in from the left, and each day they played
+             pops its dot as the line reaches it. -->
         <div class="chart-scroll" [appScrollToEnd]="chart.points.length">
-          <div class="line-chart" [style.--columns]="chart.points.length">
+          <div class="line-chart" [style.--columns]="chart.points.length" [appReveal]="2000">
             <div class="y-axis" aria-hidden="true">
               <span *ngFor="let line of chart.gridlines" [style.bottom.%]="line.position">{{ line.value }}</span>
             </div>
@@ -242,7 +251,8 @@
                 <div
                   class="column"
                   appTapTooltip
-                  *ngFor="let point of chart.points"
+                  *ngFor="let point of chart.points; let index = index"
+                  [style.--i]="index"
                   [class.flip]="point.flip"
                   [class.middle]="point.middle"
                   [class.played]="point.day.runs > 0"

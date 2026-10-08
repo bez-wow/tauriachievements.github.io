@@ -32,11 +32,14 @@ import {
   weekSummaries
 } from './mythic-plus-activity';
 import { injectCompactViewport } from './compact-viewport';
+import { CountUpDirective } from './count-up.directive';
 import { FilterDropdownComponent } from './filter-dropdown.component';
+import { GlideDirective } from './glide.directive';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
+import { RevealDirective } from './reveal.directive';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
 import { TapTooltipDirective } from './tap-tooltip.directive';
@@ -111,7 +114,10 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     TapTooltipDirective,
     FilterDropdownComponent,
     MythicPlusWeekAffixesComponent,
-    ScrollToEndDirective
+    ScrollToEndDirective,
+    GlideDirective,
+    RevealDirective,
+    CountUpDirective
   ],
   templateUrl: './mythic-plus-stats-page.component.html',
   styleUrl: './mythic-plus-stats-page.component.scss',
@@ -333,6 +339,28 @@ export class MythicPlusStatsPageComponent implements OnInit {
 
   hideAffixTooltip(): void {
     this.affixTooltip.set(undefined);
+  }
+
+  // Kept elements are what lets a switch or a filter animate the charts into their new shape.
+  trackLabel(index: number, item: { label: string }): string {
+    return item.label;
+  }
+
+  trackDay(index: number, bar: DayBar): string {
+    return bar.day.day;
+  }
+
+  trackLevel(index: number, bar: { level: number }): number {
+    return bar.level;
+  }
+
+  trackDungeonRow(index: number, row: { dungeon: { id: string } }): string {
+    return row.dungeon.id;
+  }
+
+  /** Segments by position, so switching the split recolours and resizes them rather than replacing them. */
+  trackPosition(index: number): number {
+    return index;
   }
 
   setLevelDungeon(value: FilterDropdownValue): void {

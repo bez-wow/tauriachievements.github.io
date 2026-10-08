@@ -1,0 +1,145 @@
+// The character profile's motion. Kept apart from mythic-plus-profile-page.component.scss, which
+// was already close to the per-component style budget; loaded after it (styleUrls), so where both
+// style the same thing, these rules win. Keyframes are the global mp-* ones (src/scss/_motion.scss).
+@use './mythic-plus-shared' as *;
+
+// Header -------------------------------------------------------------------------------------------
+
+// A faint wash of the class colour (--class-color, set from the template) spreading from the crest.
+// --crest-centre is the middle of the crest inside the header.
+.profile-header {
+  position: relative;
+  isolation: isolate;
+  --crest-centre: 64px 62px;
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(480px circle at var(--crest-centre), color-mix(in srgb, var(--class-color) 13%, transparent), transparent 70%);
+    content: '';
+    pointer-events: none;
+  }
+}
+
+// The crest on a glow of the class colour, stronger than on the compare page to carry the bigger
+// crest over the header's wash; it flares while the crest is pointed at, and the crest image lifts
+// towards the pointer. Crest image and name are carried to and from a compare column
+// (characterTransitionName).
+.profile-crest { @include crest-glow(28px, 75%); }
+
+.profile-crest img,
+.profile-identity h1 { view-transition-class: character; }
+
+@media (hover: hover) {
+  .profile-crest:hover {
+    @include crest-glow-lit(1, 1.18);
+
+    img { scale: 1.06; translate: 0 -2px; }
+  }
+}
+
+// The header comes in as one piece: the crest rises, then its glow blooms; the name and specs
+// follow; the numbers count up (CountUpDirective) and the score flashes in its colour as it lands.
+// Only the crest's image moves; the crest itself just fades, briefly (see crest-glow).
+@include motion-safe {
+  .profile-header::before { animation: mp-fade-in 900ms ease backwards; }
+  .profile-crest { animation: mp-fade-in 280ms ease backwards; }
+
+  .profile-crest img {
+    transition: scale 420ms var(--ease-spring), translate 420ms var(--ease-spring);
+    animation: mp-crest-in 680ms var(--ease-spring) backwards;
+  }
+
+  .profile-crest::before { animation: mp-aura-in 1s var(--ease-out) 300ms backwards; }
+  .profile-identity h1 { animation: mp-rise 520ms var(--ease-out) 80ms backwards; }
+  .profile-meta { animation: mp-rise 520ms var(--ease-out) 140ms backwards; }
+
+  .profile-specs li {
+    animation: mp-chip-in 460ms var(--ease-spring) backwards;
+    animation-delay: calc(220ms + var(--i, 0) * 70ms);
+  }
+
+  .profile-score-label { animation: mp-rise 520ms var(--ease-out) 200ms backwards; }
+  // The score counts up for 900 ms after 150 ms, then flashes.
+  .profile-score-value { animation: mp-score-land 1.1s var(--ease-out) 1000ms backwards; }
+  .profile-actions { animation: mp-rise 520ms var(--ease-out) 260ms backwards; }
+  .action-link { transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease; }
+
+  // Compare: slides down into place, and back up as it closes (animate.leave).
+  .compare-with { animation: mp-panel-in 320ms var(--ease-out); }
+  .compare-with.panel-leaving { animation: mp-panel-out var(--dur-fast) ease-in forwards; }
+}
+
+// Ranks ----------------------------------------------------------------------------------------------
+
+// Under the mouse a tile's edge lights up where the pointer is, and it lifts (SpotlightDirective).
+.rank-tile { @include spotlight-card; }
+
+// One after another, right behind the header, so no empty band shows under it. `translate`, so the
+// hover lift's `transform` still works.
+@include motion-safe {
+  .rank-tile {
+    animation: mp-card-rise 560ms var(--ease-out) backwards;
+    animation-delay: calc(120ms + var(--i, 0) * 60ms);
+  }
+}
+
+// Best run per dungeon, teammates -------------------------------------------------------------------
+
+// The row pointed at is lit faintly; the table itself never animates in. A teammate's class icon
+// glows in their class colour (--class-color, set from the template) and lifts, like the crest.
+@media (hover: hover) {
+  .bests tbody tr:hover { background: rgba(255, 255, 255, .03); }
+
+  .teammate:hover .teammate-icon {
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--class-color) 85%, transparent));
+    scale: 1.12;
+  }
+}
+
+@include motion-safe {
+  .bests tbody tr, .teammate { transition: background-color var(--dur-fast) ease; }
+  .teammate-icon { transition: filter var(--dur) ease, scale 380ms var(--ease-spring); }
+}
+
+// Score over the season ----------------------------------------------------------------------------
+
+// Tooltips grow out of their day instead of only fading in.
+.tooltip { @include tooltip-pop; }
+
+.column:focus-visible .tooltip,
+.column.tooltip-open .tooltip { @include tooltip-shown; }
+
+@media (hover: hover) {
+  .column:hover .tooltip { @include tooltip-shown; }
+}
+
+// First time on screen (RevealDirective): the line draws in from the left at an even pace, and each
+// day they played pops its dot as the line gets there (its share of the way across, in time).
+@include motion-safe {
+  .line-chart[data-reveal='pending'] {
+    svg.line { clip-path: inset(-12px 100% -12px -12px); }
+    .played .dot { opacity: 0; }
+  }
+
+  .line-chart[data-reveal='in'] {
+    svg.line { animation: mp-line-draw 1.3s linear backwards; }
+
+    .played .dot {
+      animation: mp-dot-pop 420ms var(--ease-spring) backwards;
+      animation-delay: calc(var(--i, 0) / var(--columns, 1) * 1.3s);
+    }
+  }
+
+  .column { transition: background-color var(--dur-fast) ease; }
+  .dot { transition: transform 300ms var(--ease-spring), box-shadow var(--dur) ease; }
+}
+
+// Phones ---------------------------------------------------------------------------------------------
+
+@media (max-width: $phone-breakpoint) {
+  .profile-header { --crest-centre: 44px 44px; }
+  .profile-crest::before { inset: -20px; }
+}

@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MythicPlusDungeonFile, MythicPlusIndex, MythicPlusRunEntry, NEWER_DATA_MESSAGE } from './mythic-plus';
 import { MythicPlusProfilePageComponent } from './mythic-plus-profile-page.component';
 import { DataFileService } from './services/data-file.service';
@@ -89,7 +89,18 @@ async function open(url: string, dataFiles = new FakeDataFiles()) {
 }
 
 describe('MythicPlusProfilePageComponent', () => {
-  beforeEach(() => vi.spyOn(console, 'error').mockImplementation(() => undefined));
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    // The score and totals count up (CountUpDirective); asking for reduced motion shows them at once.
+    vi.stubGlobal('matchMedia', (media: string) => ({
+      media,
+      matches: media.includes('prefers-reduced-motion: reduce'),
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined
+    }));
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
 
   it('shows the character the URL names: score, ranks, bests, teammates and runs', async () => {
     const { page, element } = await open('/mythic-plus/character/evermoon/Progtrix');

@@ -7,6 +7,9 @@ import { getClassCrestPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
+import { CountUpDirective } from './count-up.directive';
+import { GlideDirective } from './glide.directive';
+import { characterTransitionName } from './motion';
 import {
   CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
@@ -47,6 +50,9 @@ interface ComparedPlayer {
   quality: string;
   /** Their runs, newest first. */
   runs: MythicPlusRun[];
+  /** `view-transition-name`s of their crest and name (characterTransitionName). */
+  crestTransition: string;
+  nameTransition: string;
 }
 
 /** One line of the summary table: a cell per player, the best one marked. */
@@ -115,7 +121,9 @@ const GAP_TICKS = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000];
     UpdateBarComponent,
     BackToTopButtonComponent,
     TapTooltipDirective,
-    ScrollToEndDirective
+    ScrollToEndDirective,
+    GlideDirective,
+    CountUpDirective
   ],
   templateUrl: './mythic-plus-compare-page.component.html',
   styleUrl: './mythic-plus-compare-page.component.scss',
@@ -168,7 +176,9 @@ export class MythicPlusComparePageComponent implements OnInit {
       color: colors[position],
       quality: scoreQuality(player.score, top),
       runs: this.allRuns().filter(run => runIncludesCharacter(run, player.key))
-        .sort((a, b) => a.completedAt < b.completedAt ? 1 : a.completedAt > b.completedAt ? -1 : 0)
+        .sort((a, b) => a.completedAt < b.completedAt ? 1 : a.completedAt > b.completedAt ? -1 : 0),
+      crestTransition: characterTransitionName(player.key, 'crest'),
+      nameTransition: characterTransitionName(player.key, 'name')
     }));
   });
   readonly missing = computed(() => {
@@ -390,10 +400,12 @@ export class MythicPlusComparePageComponent implements OnInit {
       points,
       bands,
       viewBox: `0 0 ${count} 100`,
-      lines: players.map((player, index) => ({
-        color: player.color,
-        points: timelines[index].map((day, position) => `${position + 0.5},${(100 - bottomOf(index, position)).toFixed(2)}`).join(' ')
-      })),
+      lines: players.map((player, index) => {
+        const path = `M${timelines[index].map((day, position) => `${position + 0.5},${(100 - bottomOf(index, position)).toFixed(2)}`).join(' L')}`;
+        // The same path as a CSS `d`, which (unlike the attribute) can transition: Score / Gap
+        // morphs the lines between their two shapes. Browsers without CSS `d` use the attribute.
+        return { color: player.color, path, cssPath: `path("${path}")` };
+      }),
       gridlines: gapMode
         ? gapTicks.map(value => ({ value: value ? `−${value.toLocaleString('en-GB')}` : 'Best', position: gapPercent(-value) }))
         : ticks.map(value => ({ value: value.toLocaleString('en-GB'), position: percentOf(value, top) }))
@@ -447,6 +459,11 @@ export class MythicPlusComparePageComponent implements OnInit {
 
   trackKey(index: number, item: { key: string }): string {
     return item.key;
+  }
+
+  /** Lines and days by position, so Score / Gap moves them instead of drawing new ones. */
+  trackPosition(index: number): number {
+    return index;
   }
 
   loadData(): void {

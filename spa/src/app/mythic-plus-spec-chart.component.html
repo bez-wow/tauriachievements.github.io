@@ -25,7 +25,7 @@
         (click)="resetFilters()">
         Reset
       </button>
-      <div class="segmented" role="group" aria-label="Filter by role">
+      <div class="segmented" role="group" aria-label="Filter by role" appGlide>
         <button
           *ngFor="let option of roleOptions"
           type="button"
@@ -33,7 +33,7 @@
           [attr.aria-pressed]="role() === option.value"
           (click)="role.set(option.value)">{{ option.label }}</button>
       </div>
-      <div class="segmented" role="group" aria-label="Minimum key level">
+      <div class="segmented" role="group" aria-label="Minimum key level" appGlide>
         <button
           *ngFor="let option of levelOptions"
           type="button"
@@ -42,7 +42,7 @@
           [attr.aria-pressed]="minLevel() === option.value"
           (click)="minLevel.set(option.value)">{{ option.label }}</button>
       </div>
-      <div class="segmented" role="group" aria-label="How characters are counted">
+      <div class="segmented" role="group" aria-label="How characters are counted" appGlide>
         <button
           *ngFor="let option of countOptions"
           type="button"
@@ -54,12 +54,14 @@
   </header>
 
   <div class="chart-scroll" id="spec-chart-body" *ngIf="showBody() && popularity().total > 0">
-    <div class="chart">
+    <!-- The bars grow in the first time the chart is on screen; after that a filter reshapes it
+         (appFlip): classes slide to their new order and bars grow or shrink to their new share. -->
+    <div class="chart" appReveal>
       <div class="y-axis" aria-hidden="true">
         <span *ngFor="let line of gridlines()" [style.bottom.%]="line.position">{{ line.value }}%</span>
       </div>
 
-      <div class="plot">
+      <div class="plot" [appFlip]="groups()">
         <div class="gridlines" aria-hidden="true">
           <span *ngFor="let line of gridlines()" [style.bottom.%]="line.position"></span>
         </div>
@@ -67,18 +69,22 @@
         <div
           class="class-group"
           *ngFor="let group of groups(); let index = index; trackBy: trackGroup"
+          [attr.data-flip]="group.classId"
+          [style.--i]="index"
           [class.flip]="index >= groups().length / 2">
           <div class="bars">
             <div
               class="bar-slot"
               appTapTooltip
-              *ngFor="let spec of group.specs; trackBy: trackSpec"
+              *ngFor="let spec of group.specs; let specIndex = index; trackBy: trackSpec"
+              [style.--s]="specIndex"
               role="img"
               tabindex="0"
               [attr.aria-label]="spec.spec + ' ' + group.className + ': ' + spec.shareLabel + ', ' + spec.count + ' of ' + popularity().total + ' ' + unitLabel()">
               <span
                 class="bar"
                 [class.empty]="spec.count === 0"
+                [attr.data-flip-height]="group.classId + '-' + spec.spec"
                 [style.height.%]="spec.heightPercent"
                 [style.background-color]="group.color">
                 <span class="bar-value" *ngIf="spec.showValue">{{ spec.shareLabel }}</span>

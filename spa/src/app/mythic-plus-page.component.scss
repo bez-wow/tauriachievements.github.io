@@ -29,6 +29,9 @@
   grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
   gap: 6px;
   margin-bottom: 10px;
+
+  // The gold frame glides to the picked dungeon.
+  @include glide-frame;
 }
 
 .dungeon-tile {
@@ -55,6 +58,15 @@
   &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
   &.active { border-color: $gold; background: #231d0a; color: $gold; box-shadow: 0 0 12px rgba(247, 181, 0, .2); }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+
+  // The icon lifts towards the pointer.
+  @include motion-safe {
+    img, .dungeon-tile-all { transition: transform 360ms var(--ease-spring), box-shadow var(--dur) ease; }
+
+    @media (hover: hover) {
+      &:hover img, &:hover .dungeon-tile-all { box-shadow: 0 6px 12px rgba(0, 0, 0, .5); transform: translateY(-2px) scale(1.04); }
+    }
+  }
 }
 
 .dungeon-tile-all {
@@ -140,6 +152,7 @@
   border: 1px solid #333;
   border-radius: 6px;
   background: #111;
+  @include glide-pill;
 
   button {
     padding: 5px 14px;
@@ -452,6 +465,20 @@
 }
 
 .compare-count { color: #8a8a8a; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.compare-count-value { display: inline-block; }
+
+// The tray springs up from the bottom edge and drops back on Cancel; a pick pops in, shrinks away
+// when removed, and the count bumps. `translate` adds to the tray's centring transform.
+@include motion-safe {
+  .compare-tray { animation: mp-tray-in 520ms var(--ease-spring) both; }
+  .compare-tray.tray-leaving { animation: mp-tray-out var(--dur) var(--ease-in-out) forwards; }
+  .compare-picks li { animation: mp-chip-in 420ms var(--ease-spring) both; }
+  .compare-picks li.chip-leaving { animation: mp-chip-out var(--dur-fast) ease-in forwards; }
+  .compare-count-value { animation: mp-count-bump 420ms var(--ease-spring); }
+}
+
+// Carried into the compare page's column names; see characterTransitionName.
+.compare-pick-name { view-transition-class: character; }
 
 .compare-cancel {
   padding: 7px 12px;

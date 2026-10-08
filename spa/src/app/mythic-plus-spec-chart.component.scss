@@ -1,3 +1,5 @@
+@use './mythic-plus-shared' as *;
+
 $plot-height: 180px;
 
 :host { display: block; }
@@ -57,6 +59,7 @@ $plot-height: 180px;
   border: 1px solid #333;
   border-radius: 6px;
   background: #111;
+  @include glide-pill;
 
   button {
     padding: 7px 14px;
@@ -133,25 +136,53 @@ $plot-height: 180px;
   // .tooltip-open is a tap on a touch screen (appTapTooltip). :hover only counts for a mouse:
   // touch browsers keep it on the last tapped bar, which would hold its tooltip open.
   &:focus-visible, &.tooltip-open { z-index: 3; }
-  &:focus-visible .tooltip, &.tooltip-open .tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible .tooltip, &.tooltip-open .tooltip { @include tooltip-shown; }
   &.tooltip-open .bar { filter: brightness(1.2); }
 
   @media (hover: hover) {
     &:hover { z-index: 3; }
-    &:hover .tooltip { opacity: 1; visibility: visible; }
+    &:hover .tooltip { @include tooltip-shown; }
     &:hover .bar { filter: brightness(1.2); }
   }
   &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
 }
 
+// Heights change with the filters through FlipDirective (data-flip-height), not a transition.
 .bar {
   position: relative;
   width: 100%;
   border-radius: 4px 4px 0 0;
-  transition: height .25s ease;
 
   // An unplayed spec keeps a hairline stub so its slot still reads as a spec.
   &.empty { height: 2px !important; background: #3a3a3a !important; }
+}
+
+// The bar pointed at stays lit, the others step back.
+@media (hover: hover) {
+  .plot:has(.bar-slot:hover) .bar-slot:not(:hover) .bar { opacity: .4; }
+}
+
+@include motion-safe {
+  .bar { transition: opacity var(--dur) ease; }
+
+  // First time on screen (RevealDirective): class by class, left to right, each spec a beat after
+  // the one before; the share on the tallest bar fades in once its bar has grown.
+  .chart[data-reveal='pending'] {
+    .bar { transform: scaleY(0); }
+    .bar-value { opacity: 0; }
+  }
+
+  .chart[data-reveal='in'] {
+    .bar {
+      animation: mp-bar-grow 760ms var(--ease-spring) both;
+      animation-delay: calc(var(--i, 0) * 45ms + var(--s, 0) * 40ms);
+    }
+
+    .bar-value {
+      animation: mp-label-rise 420ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 45ms + 380ms);
+    }
+  }
 }
 
 .bar-value {
@@ -186,6 +217,7 @@ $plot-height: 180px;
   visibility: hidden;
   pointer-events: none;
   transition: opacity .12s ease;
+  @include tooltip-pop;
 
   strong { color: #fff; font-size: .9rem; }
 }
