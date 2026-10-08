@@ -150,7 +150,49 @@ $plot-height: 180px;
   line-height: 1;
 }
 
+.profile-score-metric { position: relative; display: inline-block; }
+.profile-score-value.score-gained { color: #61d887; }
+.profile-score-metric.has-score-change { cursor: pointer; }
+
+// Immediate scan-delta tooltip: deliberately no transition or delay.
+.scan-score-tooltip {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  right: calc(100% + 10px);
+  padding: 6px 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.profile-score-metric.has-score-change:hover > .scan-score-tooltip,
+.profile-score-metric.has-score-change:focus > .scan-score-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
 .profile-score-label { color: #9a9a9a; font-size: .78rem; }
+
+.profile-new {
+  display: inline-block;
+  margin-left: 5px;
+  color: $gold;
+  font-size: .67rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
 
 .profile-actions {
   display: flex;
@@ -219,7 +261,21 @@ $plot-height: 180px;
 }
 
 .rank-scope { color: #9a9a9a; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-.rank-value { color: #fff; font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.rank-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.profile-rank-change { font-size: inherit; }
+.profile-rank-change.up { color: #61d887; }
+.profile-rank-change.down { color: #ff7373; }
+.rank-value > .profile-new { margin-left: 0; }
 
 .rank-label {
   display: flex;
@@ -685,6 +741,13 @@ svg.line {
   }
 
   .profile-score-value { font-size: 2rem; }
+
+  .scan-score-tooltip {
+    top: calc(100% + 8px);
+    right: auto;
+    left: 0;
+    transform: none;
+  }
 
   .profile-actions { justify-content: stretch; }
   .action-link { flex: 1 1 0; text-align: center; }

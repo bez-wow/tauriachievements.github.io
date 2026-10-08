@@ -42,9 +42,25 @@
           </ul>
         </div>
         <div class="profile-score">
-          <span class="profile-score-value" [ngClass]="'q-' + quality()"
-            [appCountUp]="(player()?.score | number:'1.1-1') ?? ''" [countUpDelay]="150"></span>
-          <span class="profile-score-label">Mythic+ score<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></span>
+          <span
+            class="profile-score-metric"
+            [class.has-score-change]="!!scanChange()?.score"
+            [attr.tabindex]="scanChange()?.score ? 0 : null">
+            <span
+              class="profile-score-value"
+              [ngClass]="'q-' + quality()"
+              [class.score-gained]="(scanChange()?.score ?? 0) > 0"
+              [appCountUp]="(player()?.score | number:'1.1-1') ?? ''"
+              [countUpDelay]="150"></span>
+            <ng-container *ngIf="scanChange()?.score as scoreChange">
+              <span class="scan-score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
+              <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
+            </ng-container>
+          </span>
+          <span class="profile-score-label">
+            Mythic+ score<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container>
+            <span *ngIf="scanChange()?.isNew" class="profile-new" title="New since the last scan">new</span>
+          </span>
         </div>
         <div class="profile-actions">
           <a class="action-link" routerLink="/mythic-plus" [queryParams]="showRunsParams()">Show runs on the leaderboard</a>
@@ -100,7 +116,19 @@
           routerLink="/mythic-plus"
           [queryParams]="tile.queryParams">
           <span class="rank-scope">{{ tile.scope }}</span>
-          <span class="rank-value">#{{ tile.rank | number }}</span>
+          <span class="rank-value">
+            <span>#{{ tile.rank | number }}</span>
+            <span
+              *ngIf="tile.rankChange as rankChange"
+              class="profile-rank-change"
+              [class.up]="rankChange > 0"
+              [class.down]="rankChange < 0"
+              [attr.title]="rankChangeLabel(rankChange)"
+              [attr.aria-label]="rankChangeLabel(rankChange)">
+              <span aria-hidden="true">{{ rankChange > 0 ? '▲' : '▼' }} {{ rankChange < 0 ? -rankChange : rankChange }}</span>
+            </span>
+            <span *ngIf="tile.newSinceLastScan" class="profile-new" title="New since the last scan">new</span>
+          </span>
           <span class="rank-label">
             <span class="rank-icon" *ngIf="tile.icon"><img [src]="tile.icon" alt="" /></span>
             {{ tile.label }}

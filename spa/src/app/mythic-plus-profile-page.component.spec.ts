@@ -4,7 +4,13 @@ import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Observable, of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MythicPlusDungeonFile, MythicPlusIndex, MythicPlusRunEntry, NEWER_DATA_MESSAGE } from './mythic-plus';
+import {
+  MythicPlusDungeonFile,
+  MythicPlusIndex,
+  MythicPlusRunEntry,
+  MythicPlusStandingEntry,
+  NEWER_DATA_MESSAGE
+} from './mythic-plus';
 import { MythicPlusProfilePageComponent } from './mythic-plus-profile-page.component';
 import { DataFileService } from './services/data-file.service';
 
@@ -57,14 +63,18 @@ const fileFor = (path: string, tables = index.tables): MythicPlusDungeonFile => 
 class FakeDataFiles {
   refreshes = 0;
   /** Dungeon files carry another export's tables until refresh() when set. */
-  constructor(private staleTables?: string, private readonly staysStale = false) {}
+  constructor(
+    private staleTables?: string,
+    private readonly staysStale = false,
+    private readonly servedIndex = index
+  ) {}
 
   getJson<T>(): Observable<T> {
-    return of(index as T);
+    return of(this.servedIndex as T);
   }
 
   fetchJson<T>(path: string): Observable<T> {
-    return of(fileFor(path, this.staleTables ?? index.tables) as T);
+    return of(fileFor(path, this.staleTables ?? this.servedIndex.tables) as T);
   }
 
   refresh(): void {
@@ -125,6 +135,26 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.teammates().map(mate => [mate.member.name, mate.runs])).toEqual([['Tank', 2], ['Healer', 1], ['Lili', 1]]);
     expect(page.historyRows().map(row => row.completedAt.slice(0, 10))).toEqual(['2026-09-19', '2026-09-18', '2026-09-17']);
     expect(page.timeline().at(-1)?.score).toBe(290);
+  });
+
+  it('shows score gain and overall rank movement from the previous scan', async () => {
+    const standings: MythicPlusStandingEntry[] = index.players.map(() => [0, 0]);
+    standings[0] = [290, 1, 12.3, 4];
+    const changedIndex: MythicPlusIndex = {
+      ...index,
+      previousGeneratedAt: '2026-10-07T12:00:00Z',
+      standings
+    };
+    const { page, element } = await open(
+      '/mythic-plus/character/evermoon/Progtrix',
+      new FakeDataFiles(undefined, false, changedIndex)
+    );
+
+    expect(page.scanChange()).toEqual({ score: 12.3, rank: 4, isNew: false });
+    expect(element.querySelector('.profile-score-value')?.classList).toContain('score-gained');
+    expect(element.querySelector('.scan-score-tooltip')?.textContent).toBe('+12.3 score since the last scan');
+    expect(element.querySelectorAll('.profile-rank-change')).toHaveLength(1);
+    expect(element.querySelector('.profile-rank-change')?.textContent?.trim()).toBe('▲ 4');
   });
 
   it('finds a name typed in another case and puts the real one in the address bar', async () => {

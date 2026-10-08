@@ -26,6 +26,7 @@ import {
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
   PlayerScore,
+  characterKey,
   createRunDecoder,
   exportedAt,
   keystoneUpgrades,
@@ -86,6 +87,14 @@ interface RankTile {
   total: number;
   top: string;
   queryParams: Params;
+  rankChange?: number;
+  newSinceLastScan?: boolean;
+}
+
+interface ProfileScanChange {
+  score?: number;
+  rank?: number;
+  isNew: boolean;
 }
 
 interface DungeonBest {
@@ -251,6 +260,25 @@ export class MythicPlusProfilePageComponent implements OnInit {
 
   readonly quality = computed(() => scoreQuality(this.player()?.score ?? 0, this.ranking()[0]?.score ?? 0));
 
+  /** This character's score and overall-rank movement since the preceding export. */
+  readonly scanChange = computed<ProfileScanChange | undefined>(() => {
+    const index = this.index();
+    const player = this.player();
+    if (!index?.previousGeneratedAt || !player || index.standings?.length !== index.players.length) {
+      return undefined;
+    }
+
+    const position = index.players.findIndex(entry => characterKey({ name: entry[0], realm: entry[1] }) === player.key);
+    const standing = position >= 0 ? index.standings[position] : undefined;
+    if (!standing) {
+      return undefined;
+    }
+
+    return standing[2] === undefined || standing[3] === undefined
+      ? { isNew: true }
+      : { score: standing[2], rank: standing[3], isNew: false };
+  });
+
   readonly specs = computed(() => {
     const player = this.player();
     return player
@@ -301,7 +329,9 @@ export class MythicPlusProfilePageComponent implements OnInit {
         icon,
         ...found,
         top: formatTopPercent(found),
-        queryParams: { view: 'players', ...filters, character: characterParam(member), page: page > 1 ? page : undefined }
+        queryParams: { view: 'players', ...filters, character: characterParam(member), page: page > 1 ? page : undefined },
+        rankChange: scope === 'Overall' ? this.scanChange()?.rank : undefined,
+        newSinceLastScan: scope === 'Overall' && this.scanChange()?.isNew
       }];
     };
 
@@ -326,6 +356,22 @@ export class MythicPlusProfilePageComponent implements OnInit {
   });
 
   readonly upgradeStars = upgradeStars;
+
+  rankChangeLabel(change: number): string {
+    return change > 0
+      ? `Climbed ${change} ${change === 1 ? 'rank' : 'ranks'} since the last scan`
+      : change < 0
+        ? `Fell ${Math.abs(change)} ${change === -1 ? 'rank' : 'ranks'} since the last scan`
+        : 'Rank unchanged since the last scan';
+  }
+
+  scoreChangeLabel(change: number): string {
+    return change > 0
+      ? `+${change.toFixed(1)} score since the last scan`
+      : change < 0
+        ? `−${Math.abs(change).toFixed(1)} score since the last scan`
+        : '0.0 score since the last scan';
+  }
 
   // Score over the season
   private readonly weeks = computed(() => affixWeeks(this.allRuns()));
