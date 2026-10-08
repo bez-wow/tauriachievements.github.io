@@ -80,7 +80,6 @@
       <div class="toolbar" #leaderboard>
         <div class="toolbar-title">
           <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
-          <span *ngIf="selectedDungeonTimer() as timer">Timer {{ timer }}</span>
           <ng-container *ngTemplateOutlet="pagerStatus"></ng-container>
         </div>
         <div class="toolbar-actions">
@@ -132,7 +131,7 @@
           </a>
           <a class="scoring-link" routerLink="/mythic-plus/scoring">
             <span class="scoring-link-icon" aria-hidden="true">?</span>
-            How are scores calculated?
+            Scoring Rules
           </a>
         </div>
       </div>
@@ -294,6 +293,7 @@
         Last <span aria-hidden="true">»</span>
       </button>
     </div>
+    <span class="pager-timer" *ngIf="!atBottom && selectedDungeonTimer() as timer">Timer {{ timer }}</span>
     <!-- At the top it sits beside the title instead, so the filters fit beside the buttons. -->
     <ng-container *ngIf="atBottom"><ng-container *ngTemplateOutlet="pagerStatus"></ng-container></ng-container>
   </nav>

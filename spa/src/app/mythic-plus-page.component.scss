@@ -323,7 +323,12 @@
 }
 
 .pager-buttons { display: flex; gap: 8px; }
-.pager-status { color: #9a9a9a; font-size: .8rem; }
+.pager-status,
+.pager-timer {
+  color: #9a9a9a;
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+}
 
 // Loading / error
 .feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
@@ -384,7 +389,7 @@
   // Four equal buttons, page count under them.
   .pager { flex-direction: column; align-items: stretch; gap: 6px; }
   .pager-buttons button { flex: 1 1 0; padding: 6px 4px; }
-  .pager-status { text-align: center; }
+  .pager-status, .pager-timer { text-align: center; }
 
   // Filters button (players view) and the search share the first row; the class and spec
   // dropdowns and Reset open on the row under them.
