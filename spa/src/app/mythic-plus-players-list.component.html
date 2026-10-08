@@ -8,7 +8,7 @@
           <span class="card-line">
             <span class="player-icons">
               <img class="class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
-              <span class="spec-icon" *ngIf="row.member.specIcon" [title]="row.member.spec">
+              <span class="spec-icon" *ngIf="row.member.specIcon">
                 <img [src]="row.member.specIcon" alt="" />
               </span>
             </span>
@@ -73,7 +73,6 @@
           [class.alt]="odd"
           [class.highlighted]="row.key === highlightKey()"
           [class.picked]="pickedKeys().has(row.key)"
-          [title]="pickMode() ? 'Pick ' + row.member.name + ' to compare' : 'Open the profile of ' + row.member.name"
           (click)="openProfile(row)">
           <td class="col-pick" *ngIf="pickMode()"><span class="pick-box" aria-hidden="true"></span></td>
           <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
@@ -81,7 +80,7 @@
             <span class="player-identity">
               <span class="player-icons">
                 <img class="class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
-                <span class="spec-icon" *ngIf="row.member.specIcon" [title]="row.member.spec">
+                <span class="spec-icon" *ngIf="row.member.specIcon">
                   <img [src]="row.member.specIcon" alt="" />
                 </span>
               </span>
@@ -89,11 +88,9 @@
                 class="member-link"
                 [routerLink]="row.member.profileLink"
                 [style.color]="row.member.color"
-                [attr.aria-label]="row.member.name + ', ' + row.member.spec + ' ' + row.member.className"
-                (click)="onLink($event, row)">{{ row.member.name }}<span class="member-tooltip" aria-hidden="true">
-                  <img [src]="row.member.classIcon" alt="" />
-                  <span class="member-tooltip-spec" *ngIf="row.member.specIcon"><img [src]="row.member.specIcon" alt="" /></span>
-                  <span>{{ row.member.spec }} {{ row.member.className }}</span>
+                [attr.aria-label]="'Open the profile of ' + row.member.name"
+                (click)="onLink($event, row)">{{ row.member.name }}<span class="profile-tooltip" aria-hidden="true">
+                  {{ pickMode() ? 'Pick ' + row.member.name + ' to compare' : 'Open the profile of ' + row.member.name }}
                 </span></a>
               <span class="player-realm">{{ row.member.realm }}</span>
             </span>

@@ -149,7 +149,8 @@ describe('MythicPlusPlayersListComponent', () => {
     for (const cards of [true, false]) {
       const icons = render(cards).nativeElement.querySelector('.player-icons');
       expect(icons.querySelector('.class-icon')).not.toBeNull();
-      expect(icons.querySelector('.spec-icon')?.getAttribute('title')).toBe('Arms');
+      expect(icons.querySelector('.spec-icon img')).not.toBeNull();
+      expect(icons.querySelector('.spec-icon')?.getAttribute('title')).toBeNull();
     }
   });
 
@@ -162,6 +163,17 @@ describe('MythicPlusPlayersListComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/mythic-plus', 'character', 'evermoon', 'Alpha']);
     expect(fixture.nativeElement.querySelector('.player-row a.member-link').getAttribute('href'))
       .toBe('/mythic-plus/character/evermoon/Alpha');
+  });
+
+  it('shows only the immediate profile tooltip on a player row', () => {
+    const element: HTMLElement = render(false).nativeElement;
+    const row = element.querySelector('.player-row');
+
+    expect(row?.getAttribute('title')).toBeNull();
+    expect(row?.querySelector('.member-tooltip')).toBeNull();
+    const tooltip = row?.querySelector('.profile-tooltip');
+    expect(tooltip?.textContent?.trim()).toBe('Open the profile of Alpha');
+    expect(tooltip?.parentElement?.classList).toContain('member-link');
   });
 
   it('picks out the highlighted player', () => {

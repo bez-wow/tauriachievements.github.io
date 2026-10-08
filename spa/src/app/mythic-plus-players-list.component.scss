@@ -85,37 +85,30 @@ td.over-time { color: #8a8a8a; }
   font-size: .85rem;
   text-decoration: none;
 
-  &:focus-visible { text-decoration: underline; }
-  &:focus-visible .member-tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible {
+    text-decoration: underline;
+
+    .profile-tooltip { opacity: 1; visibility: visible; }
+  }
 
   @media (hover: hover) {
-    &:hover { text-decoration: underline; }
-    &:hover .member-tooltip { opacity: 1; visibility: visible; }
+    &:hover {
+      text-decoration: underline;
+
+      .profile-tooltip { opacity: 1; visibility: visible; }
+    }
   }
 }
 
-.member-tooltip {
+.profile-tooltip {
   @include tooltip-box;
   z-index: 5;
-  bottom: calc(100% - 2px);
+  bottom: calc(100% - 3px);
   left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 4px;
-  font-size: .85rem;
+  padding: 6px 9px;
+  font-size: .8rem;
   white-space: nowrap;
   transform: translateX(-50%);
-
-  img { display: block; width: 20px; height: 20px; }
-}
-
-.member-tooltip-spec {
-  width: 20px;
-  height: 20px;
-  overflow: hidden;
-
-  img { transform: scale(1.2); }
 }
 
 .empty-row td { height: 120px; color: #9a9a9a; white-space: normal; }
