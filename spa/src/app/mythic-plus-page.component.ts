@@ -44,6 +44,7 @@ import {
   sharesTables
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
+import { COMPARE_LIMIT, compareParam, parseCompareParam } from './mythic-plus-compare';
 import { characterParam, characterProfileLink, findCharacters, parseCharacterParam, realmSlug } from './mythic-plus-profile';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { MythicPlusSpecChartComponent } from './mythic-plus-spec-chart.component';
@@ -161,6 +162,8 @@ export class MythicPlusPageComponent implements OnInit {
   readonly expandedRunId = signal<string | undefined>(undefined);
   readonly view = signal<LeaderboardView>(
     this.route.snapshot.queryParamMap.get('view') === 'players' ? 'players' : 'runs');
+  /** List runs best first (by score) or newest first. */
+  readonly runOrder = signal<'best' | 'latest'>(this.route.snapshot.queryParamMap.get('sort') === 'latest' ? 'latest' : 'best');
   /** Players view only: one realm (its slug), one class, and optionally one of its specs. */
   readonly realmFilter = signal<string | undefined>(this.route.snapshot.queryParamMap.get('realm')?.toLowerCase() || undefined);
   readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
@@ -301,13 +304,25 @@ export class MythicPlusPageComponent implements OnInit {
   readonly filteredRows = computed<RankedRun[]>(() => {
     const ranked = this.rankedRuns();
     const character = this.characterFilter();
-    if (character) {
-      return ranked.filter(entry => runIncludesCharacter(entry.run, character.key));
-    }
-
     const query = this.search();
-    return query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
+    const rows = character
+      ? ranked.filter(entry => runIncludesCharacter(entry.run, character.key))
+      : query.trim() ? ranked.filter(entry => runIncludesPlayer(entry.run, query)) : ranked;
+    // Newest first keeps each run's score rank, so you can see how good the latest runs are.
+    return this.runOrder() === 'latest'
+      ? [...rows].sort((a, b) => Date.parse(b.run.completedAt) - Date.parse(a.run.completedAt) || a.rank - b.rank)
+      : rows;
   });
+
+  setRunOrder(order: 'best' | 'latest'): void {
+    if (order === this.runOrder()) {
+      return;
+    }
+    this.runOrder.set(order);
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+  }
 
   /** Characters in the selected scope by player score; only worked out once the players view is opened. */
   private readonly rankedPlayers = computed<RankedPlayer[]>(() => {
@@ -433,6 +448,63 @@ export class MythicPlusPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+  }
+
+  // Compare: pick players on the players view, then open /mythic-plus/compare with them.
+  readonly compareLimit = COMPARE_LIMIT;
+  /** On with `?compare=` (from a profile's or the compare page's "pick on the leaderboard"). */
+  readonly compareMode = signal(this.route.snapshot.queryParamMap.has('compare'));
+  private readonly comparePicks = signal(parseCompareParam(this.route.snapshot.queryParamMap.get('compare')));
+  /** Where Cancel goes back to; a `?compare=` link comes from outside the leaderboard, so the default view. */
+  private viewBeforeCompare: LeaderboardView = 'runs';
+  /** The picks, with their class colour once the export is loaded. */
+  readonly picked = computed(() => {
+    const characters = this.indexCharacters();
+    return this.comparePicks().map(pick => {
+      const found = findCharacters(characters, pick.realm, pick.name)[0];
+      const character = found ?? pick;
+      return {
+        key: characterKey(character),
+        name: character.name,
+        realm: character.realm,
+        color: (found && getClassColor(found.classId)) ?? '#e0e0e0'
+      };
+    });
+  });
+  readonly pickedKeys = computed(() => new Set(this.picked().map(pick => pick.key)));
+  readonly compareParams = computed(() => ({ players: compareParam(this.picked()) }));
+
+  toggleCompareMode(): void {
+    this.compareMode.update(on => !on);
+    if (this.compareMode()) {
+      this.viewBeforeCompare = this.view();
+      this.setView('players');
+    }
+    this.syncQueryParams();
+  }
+
+  togglePick(row: PlayerRow): void {
+    if (this.pickedKeys().has(row.key)) {
+      this.removePick(row.key);
+      return;
+    }
+    this.comparePicks.update(picks =>
+      picks.length < COMPARE_LIMIT ? [...picks, { name: row.member.name, realm: row.member.realm }] : picks);
+    this.syncQueryParams();
+  }
+
+  removePick(key: string): void {
+    const characters = this.indexCharacters();
+    this.comparePicks.update(picks => picks.filter(pick =>
+      characterKey(findCharacters(characters, pick.realm, pick.name)[0] ?? pick) !== key));
+    this.syncQueryParams();
+  }
+
+  cancelCompare(): void {
+    this.comparePicks.set([]);
+    this.compareMode.set(false);
+    this.setView(this.viewBeforeCompare);
+    this.syncQueryParams();
   }
 
   retryLoad(): void {
@@ -574,12 +646,14 @@ export class MythicPlusPageComponent implements OnInit {
         dungeon: this.selectedDungeon()?.id ?? null,
         period: this.period() === 'week' ? 'week' : null,
         view: players ? 'players' : null,
+        sort: !players && this.runOrder() === 'latest' ? 'latest' : null,
         // The filters only apply to the players view; they wait there when the runs view is open.
         realm: players ? this.realmFilter() ?? null : null,
         class: players ? this.classFilter() ?? null : null,
         spec: players ? this.specFilter() ?? null : null,
         character: character ? characterParam(character) : null,
-        page: this.currentPage() > 1 ? this.currentPage() : null
+        page: this.currentPage() > 1 ? this.currentPage() : null,
+        compare: this.compareMode() ? compareParam(this.picked()) || null : null
       }
     });
 

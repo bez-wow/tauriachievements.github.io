@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { upgradeStars } from './mythic-plus';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
@@ -27,7 +27,34 @@ export class MythicPlusRunsListComponent {
   /** Names the list for screen readers. */
   readonly caption = input('Mythic+ runs ranked by score');
 
+  /** A Completed column ("12 min ago"). */
+  readonly completed = input(false);
+  /** Set, the Rank and Completed headers sort best / newest first (arrow on the active one). */
+  readonly runOrder = input<'best' | 'latest'>();
+  readonly runOrderChange = output<'best' | 'latest'>();
+
   readonly toggleRun = output<string>();
+
+  /** Ticks every minute so "12 min ago" stays current. */
+  private readonly now = signal(Date.now());
+
+  constructor() {
+    const clock = setInterval(() => this.now.set(Date.now()), 60_000);
+    inject(DestroyRef).onDestroy(() => clearInterval(clock));
+  }
+
+  /** "12 min ago", "5 h ago", "3 d ago", like raider.io's run lists. */
+  completedAgo(completedAt: string): string {
+    const minutes = Math.max(0, Math.floor((this.now() - Date.parse(completedAt)) / 60_000));
+    if (minutes < 1) {
+      return 'just now';
+    }
+    if (minutes < 60) {
+      return `${minutes} min ago`;
+    }
+    const hours = Math.floor(minutes / 60);
+    return hours < 24 ? `${hours} h ago` : `${Math.floor(hours / 24)} d ago`;
+  }
 
   readonly upgradeStars = upgradeStars;
 

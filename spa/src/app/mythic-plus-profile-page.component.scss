@@ -485,6 +485,22 @@ svg.line {
 
 .played .dot { opacity: 1; }
 
+// The day picked for the runs list.
+.played { cursor: pointer; }
+.column.selected { background: rgba(247, 181, 0, .12); }
+.column.selected .dot { transform: translate(-50%, 50%) scale(1.5); box-shadow: 0 0 0 2px $gold; }
+.clear-day { margin-left: auto; padding: 4px 14px; font-size: .8rem; align-self: center; }
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $gold;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
 .x-labels {
   margin-top: 6px;
 
@@ -705,4 +721,55 @@ svg.line {
   }
 
   .not-found { margin-top: 8px; padding: 16px; }
+}
+
+// Compare: the "compare with" search under the header's links, and a compare link per teammate.
+button.action-link { font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
+.action-link.active { border-color: $gold; color: #fff; }
+
+.compare-with {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #141414;
+  grid-column: 1 / -1;
+}
+
+.compare-pick-link {
+  align-self: flex-start;
+  color: $gold;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+// The teammate row, then a compare link at its right; brighter on hover.
+.teammate-item { display: flex; align-items: center; gap: 2px; }
+.teammate-item .teammate { min-width: 0; flex: 1 1 auto; }
+
+.teammate-compare {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  border-radius: 4px;
+  opacity: .35;
+  transition: opacity .12s ease;
+
+  svg { width: 13px; height: 13px; fill: $gold; }
+
+  &:hover { background: #2a2a2a; opacity: 1; }
+  &:focus-visible { opacity: 1; outline: 2px solid $gold; }
+}
+
+.teammate-item:hover .teammate-compare { opacity: .8; }
+
+@media (hover: none) {
+  .teammate-compare { width: 40px; height: 40px; opacity: .8; }
 }

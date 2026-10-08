@@ -52,7 +52,13 @@
       <thead>
         <tr>
           <th scope="col" class="col-toggle"><span class="visually-hidden">Details</span></th>
-          <th scope="col">Rank</th>
+          <th scope="col" *ngIf="!runOrder()">Rank</th>
+          <th scope="col" *ngIf="runOrder() as order" [attr.aria-sort]="order === 'best' ? 'ascending' : null">
+            <button type="button" class="completed-sort" (click)="runOrderChange.emit('best')"
+              [title]="order === 'best' ? 'Best rank first.' : 'Click for best rank first.'">
+              Rank<span aria-hidden="true">{{ order === 'best' ? ' ▼' : '' }}</span>
+            </button>
+          </th>
           <th scope="col">Dungeon</th>
           <th scope="col">Level</th>
           <th scope="col">Time</th>
@@ -82,6 +88,14 @@
             </span>
           </th>
           <th scope="col">Score</th>
+          <th scope="col" class="col-completed" *ngIf="completed()">
+            <button type="button" class="completed-sort" *ngIf="runOrder() as order; else completedLabel"
+              (click)="runOrderChange.emit('latest')" [attr.aria-sort]="order === 'latest' ? 'descending' : null"
+              [title]="order === 'latest' ? 'Newest first.' : 'Click for newest first.'">
+              Completed<span aria-hidden="true">{{ order === 'latest' ? ' ▼' : '' }}</span>
+            </button>
+            <ng-template #completedLabel>Completed</ng-template>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -130,15 +144,18 @@
               </ng-container>
             </td>
             <td class="col-score">{{ row.score | number:'1.1-1' }}</td>
+            <td class="col-completed" *ngIf="completed()" [title]="row.completedAt | date:'EEE, d MMM y · HH:mm'">
+              <time [attr.datetime]="row.completedAt">{{ completedAgo(row.completedAt) }}</time>
+            </td>
           </tr>
 
           <tr class="details-row" *ngIf="isExpanded(row.id)" [id]="'run-details-' + row.id">
-            <td colspan="10"><app-mythic-plus-run-details [run]="row" /></td>
+            <td [attr.colspan]="completed() ? 11 : 10"><app-mythic-plus-run-details [run]="row" /></td>
           </tr>
         </ng-container>
 
         <tr class="empty-row" *ngIf="rows().length === 0">
-          <td colspan="10">{{ emptyMessage() }}</td>
+          <td [attr.colspan]="completed() ? 11 : 10">{{ emptyMessage() }}</td>
         </tr>
       </tbody>
     </table>

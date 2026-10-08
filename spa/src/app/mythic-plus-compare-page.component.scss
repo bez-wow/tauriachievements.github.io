@@ -1,0 +1,599 @@
+@use './mythic-plus-shared' as *;
+
+// Same palette as the character profile: dark cards, gold accent.
+$timed: #7fdc8f;
+$depleted: #e06666;
+$plot-height: 220px;
+
+:host { display: block; width: 100%; }
+
+@include quality-colors;
+@include visually-hidden;
+
+.compare-page {
+  display: flex;
+  width: min(1240px, 100%);
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  color: #e0e0e0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  color: #bdbdbd;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  span { color: $gold; font-size: 1.1rem; }
+
+  &:hover { color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// Loading / error
+.feedback { display: flex; min-height: 280px; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+
+.feedback button {
+  padding: 9px 15px;
+  border: 1px solid $gold;
+  border-radius: 5px;
+  background: #231d0a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, .15);
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// Title and the add-a-player search
+.compare-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.compare-title {
+  h1 { color: #fff; font-size: 2rem; line-height: 1.15; }
+  p { color: #9a9a9a; font-size: .85rem; }
+}
+
+.compare-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.add-player {
+  position: relative;
+  width: 260px;
+
+  input {
+    width: 100%;
+    height: 34px;
+    padding: 6px 10px;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    background: #111;
+    color: #e0e0e0;
+    font: inherit;
+    font-size: .85rem;
+
+    &:focus { border-color: $gold; outline: none; }
+  }
+}
+
+.search-results {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6);
+  list-style: none;
+
+  a {
+    display: grid;
+    min-height: 36px;
+    grid-template-columns: 20px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-decoration: none;
+
+    &:hover, &:focus-visible { background: #262626; outline: none; }
+  }
+
+  img { width: 20px; height: 20px; border-radius: 3px; }
+}
+
+.result-name { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.result-realm { color: #8a8a8a; font-size: .75rem; }
+.result-score { color: #fff; font-size: .8rem; font-variant-numeric: tabular-nums; }
+
+.search-empty {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 2px;
+  color: #9a9a9a;
+  font-size: .78rem;
+}
+
+.action-link {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.missing { color: $depleted; font-size: .85rem; }
+
+.card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.empty-compare p { padding: 20px 0; color: #bdbdbd; text-align: center; }
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+
+  h2 { color: #fff; font-size: 1rem; line-height: 1.3; }
+}
+
+.card-subtitle { color: #9a9a9a; font-size: .75rem; line-height: 1.4; }
+
+.table-scroll { @include table-scroll; }
+
+// Side by side: a label column, then one column per player.
+.compare-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: .85rem;
+
+  th, td { padding: 8px 12px; border-bottom: 1px solid #2a2a2a; text-align: center; vertical-align: middle; }
+  .col-label { width: 190px; color: #bdbdbd; font-weight: 600; text-align: left; }
+  td { min-width: 150px; font-variant-numeric: tabular-nums; }
+
+}
+
+// The summary table sits on the page as its own card.
+.table-scroll:has(> .compare-table:not(.dungeons-table)) {
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.compare-table:not(.dungeons-table) thead th { padding-top: 16px; border-bottom-color: #333; }
+
+.player-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.crest {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  margin-bottom: 4px;
+  border: 1px solid color-mix(in srgb, var(--class-color) 40%, #333);
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--class-color) 24%, transparent), #111 70%);
+
+  img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
+}
+
+.player-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+}
+
+.player-meta, .player-guild { max-width: 100%; overflow: hidden; color: #9a9a9a; font-size: .72rem; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+
+.remove {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: #8a8a8a;
+  font-size: 1rem;
+  line-height: 1;
+  text-decoration: none;
+
+  &:hover { background: #2a2a2a; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; }
+}
+
+.stat-value { position: relative; display: inline-block; color: #fff; font-size: 1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.score-row .stat-value { font-size: 1.5rem; }
+.stat-sub { display: block; color: #8a8a8a; font-size: .72rem; }
+.stat-hint { display: block; color: #6f6f6f; font-size: .7rem; font-weight: 400; }
+
+// Side by side: the best value in gold, the others quieter with how far behind they are.
+.versus {
+  td .stat-value { color: #a8a8a8; font-weight: 600; }
+  td.best .stat-value { color: $gold; font-weight: 800; }
+  td.best .stat-sub { color: #bdbdbd; }
+
+  // Best run per dungeon: the others fade back.
+  td:not(.best) .run-main { opacity: .5; }
+}
+
+// Beside the value, out of the flow, so the value stays centred.
+.stat-delta {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 6px);
+  color: #7a7a7a;
+  font-size: .72rem;
+  font-weight: 600;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.score-row .stat-delta { font-size: .8rem; }
+
+// Best run per dungeon
+.dungeons-table {
+  thead th { padding-top: 0; color: #9a9a9a; font-size: .8rem; font-weight: 700; }
+  td { padding: 6px 12px; }
+}
+
+.dungeon-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #e0e0e0;
+
+  img { width: 24px; height: 24px; border-radius: 3px; }
+}
+
+.run-main {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.run-key { color: #fff; font-size: .95rem; font-weight: 700; }
+.run-key.over-time { color: #8a8a8a; }
+.level-star { margin-left: 2px; color: $gold; font-size: .7rem; letter-spacing: -1px; }
+.run-time { display: block; color: #9a9a9a; font-size: .72rem; font-variant-numeric: tabular-nums; }
+.run-time.over-time { color: #6f6f6f; }
+
+.dungeons-table tbody tr:hover { background: rgba(255, 255, 255, .03); }
+.not-played { color: #6f6f6f; font-style: italic; }
+
+// Score over the season: a line per player, a hit target per day.
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+
+  li { display: inline-flex; align-items: center; gap: 6px; color: #e0e0e0; font-size: .8rem; font-weight: 600; }
+}
+
+.swatch { display: inline-block; width: 12px; height: 3px; flex: none; border-radius: 2px; }
+
+.chart-scroll { @include table-scroll; }
+
+.line-chart {
+  display: grid;
+  min-width: max(100%, calc(var(--columns) * 14px));
+  grid-template-columns: 48px minmax(0, 1fr);
+  padding: 10px 4px 0 0;
+}
+
+.y-axis {
+  position: relative;
+  height: $plot-height;
+
+  span {
+    position: absolute;
+    right: 8px;
+    color: #8a8a8a;
+    font-size: .69rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    transform: translateY(50%);
+  }
+}
+
+.plot { position: relative; }
+
+.gridlines,
+.week-bands,
+svg.line {
+  position: absolute;
+  inset: 0 0 auto;
+  height: $plot-height;
+  pointer-events: none;
+}
+
+.gridlines span { position: absolute; right: 0; left: 0; height: 1px; background: #2a2a2a; }
+.gridlines span:first-child { background: #484848; }
+
+.week-bands, .columns, .x-labels {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+}
+
+.week-bands {
+  span { position: relative; border-left: 1px dashed #333; }
+  span:first-child { border-left: 0; }
+  .shade { background: rgba(255, 255, 255, .025); }
+
+  em {
+    position: absolute;
+    top: 3px;
+    right: 2px;
+    left: 4px;
+    display: flex;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  img { width: 14px; height: 14px; flex: none; border-radius: 2px; opacity: .8; }
+}
+
+svg.line {
+  width: 100%;
+  overflow: visible;
+
+  .stroke { fill: none; stroke-linejoin: round; stroke-width: 2; }
+}
+
+.columns { position: relative; height: $plot-height; }
+
+.column {
+  position: relative;
+  height: 100%;
+  outline: none;
+
+  &:focus-visible, &.tooltip-open { z-index: 3; background: rgba(255, 255, 255, .05); }
+  &:focus-visible .tooltip, &.tooltip-open .tooltip { opacity: 1; visibility: visible; }
+  &:focus-visible .dot, &.tooltip-open .dot { opacity: 1; }
+  &:focus-visible { box-shadow: inset 0 0 0 2px $gold; }
+
+  @media (hover: hover) {
+    &:hover { z-index: 3; background: rgba(255, 255, 255, .05); }
+    &:hover .tooltip { opacity: 1; visibility: visible; }
+    &:hover .dot { opacity: 1; }
+  }
+}
+
+// Each player's dot shows on the day pointed at.
+.dot {
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #1b1b1b;
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, 50%);
+  box-sizing: content-box;
+}
+
+.x-labels {
+  margin-top: 6px;
+
+  span { overflow: visible; color: #8a8a8a; font-size: .69rem; text-align: center; white-space: nowrap; }
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  bottom: 40%;
+  left: calc(100% + 6px);
+  display: flex;
+  min-width: 180px;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 9px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #0d0d0d;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .6);
+  color: #bdbdbd;
+  font-size: .72rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease;
+}
+
+.flip .tooltip { right: calc(100% + 6px); left: auto; }
+
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e0e0e0;
+
+  b { margin-left: auto; padding-left: 12px; color: #fff; font-variant-numeric: tabular-nums; }
+  em { color: $timed; font-style: normal; }
+}
+
+.hint-touch { display: none; }
+
+@media (hover: none) {
+  .hint-hover { display: none; }
+  .hint-touch { display: inline; }
+}
+
+
+@media (pointer: coarse) {
+  .back-link, .action-link { min-height: 40px; }
+}
+
+@media (max-width: $phone-breakpoint) {
+  .compare-page { padding-top: 32px; }
+  .compare-title h1 { font-size: 1.5rem; }
+  .add-player { width: 100%; }
+  .compare-tools { width: 100%; }
+  .compare-table .col-label { width: 110px; }
+  .compare-table td { min-width: 120px; }
+  .crest { width: 44px; height: 44px; }
+
+  .line-chart {
+    min-width: max(100%, calc(var(--columns) * 8px));
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding-right: 14px;
+  }
+
+  .column.middle .tooltip { right: auto; left: 50%; transform: translateX(-50%); }
+  .tooltip { display: none; }
+  .column:focus-visible .tooltip, .column.tooltip-open .tooltip { display: flex; }
+
+  @media (hover: hover) {
+    .column:hover .tooltip { display: flex; }
+  }
+}
+
+// Score / Gap switch, as on the leaderboard.
+.view-switch {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  align-self: center;
+
+  button {
+    padding: 3px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &.active { background: #2e2716; color: $gold; }
+    &:focus-visible { outline: 2px solid $gold; }
+  }
+}
+
+.tooltip-row i { color: $depleted; font-style: normal; font-variant-numeric: tabular-nums; }
+
+// Two players: a Lead column between them, a bar from its middle towards the leader.
+.dungeons-table.duel {
+  .col-lead { width: 34%; padding: 6px 4px; }
+  tfoot th, tfoot td { border-bottom: 0; padding-top: 12px; }
+}
+
+.total-score { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.lead {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  height: 22px;
+
+  // The middle line: level.
+  &::before {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 50%;
+    width: 1px;
+    background: #444;
+    content: '';
+  }
+}
+
+.lead-half { display: flex; height: 8px; }
+.lead-left { justify-content: flex-end; }
+.lead-right { justify-content: flex-start; }
+
+.lead-bar {
+  min-width: 3px;
+  height: 100%;
+  opacity: .85;
+}
+
+.lead-left .lead-bar { border-radius: 4px 0 0 4px; }
+.lead-right .lead-bar { border-radius: 0 4px 4px 0; }
+
+// The number sits on the side away from the bar, beside the middle line.
+.lead-value {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 8px);
+  color: #e0e0e0;
+  font-size: .75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.lead.right .lead-value { right: calc(50% + 8px); left: auto; }
+.lead.level .lead-value { left: 50%; color: #8a8a8a; transform: translate(-50%, -50%); }
+.lead.level::before { display: none; }

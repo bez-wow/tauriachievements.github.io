@@ -34,6 +34,7 @@ export class FilterDropdownComponent {
   @Input() showIcons = false;
   @Input() highlightWhenSelected = false;
   @Input() compact = false;
+  @Input() disabled = false;
 
   @Output() readonly selectionChange = new EventEmitter<FilterDropdownValue>();
 

@@ -54,6 +54,11 @@ export const routes: Routes = [
       .then(module => module.MythicPlusRecordsPageComponent)
   },
   {
+    path: 'mythic-plus/compare',
+    loadComponent: () => import('./mythic-plus-compare-page.component')
+      .then(module => module.MythicPlusComparePageComponent)
+  },
+  {
     path: 'mythic-plus/character/:realm/:name',
     loadComponent: () => import('./mythic-plus-profile-page.component')
       .then(module => module.MythicPlusProfilePageComponent)

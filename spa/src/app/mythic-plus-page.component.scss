@@ -80,8 +80,9 @@
 
 .toolbar-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 12px;
+  gap: 4px 12px;
 
   h2 { color: #fff; font-size: 1.2rem; }
   span { color: #9a9a9a; font-size: .85rem; font-variant-numeric: tabular-nums; }
@@ -209,10 +210,9 @@
   font-weight: 700;
   cursor: pointer;
 
-  span { color: $gold; font-size: .75rem; }
-
-  &:hover { border-color: $gold; color: #fff; }
+  &:hover:not(:disabled) { border-color: $gold; color: #fff; }
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &:disabled { opacity: .45; cursor: default; }
 }
 
 // The character from `?character=`; the runs list shows only their runs until it's removed.
@@ -381,4 +381,103 @@
   .character-chip { flex: 1 1 100%; order: -2; }
   .filter-slot { flex: 1 1 0; width: auto; min-width: 0; }
   .filters-collapsed .collapsible-filter { display: none; }
+  // These rows wrap anyway, so Reset only shows once something is filtered, after the dropdowns.
+  .filter-reset { order: 1; }
+  .filter-reset:disabled { display: none; }
 }
+
+// Compare: the toggle in the toolbar, and the tray of picks along the bottom while picking.
+.compare-toggle {
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.active { border-color: $gold; color: #fff; }
+}
+
+.compare-tray {
+  position: fixed;
+  z-index: 50;
+  bottom: 16px;
+  left: 50%;
+  display: flex;
+  width: min(900px, calc(100% - 24px));
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(247, 181, 0, .45);
+  border-radius: 8px;
+  background: #121212;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .75);
+  transform: translateX(-50%);
+}
+
+.compare-tray-hint { flex: 1 1 auto; color: #bdbdbd; font-size: .85rem; }
+
+.compare-picks {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px 3px 10px;
+    border-radius: 4px;
+    background: #262626;
+    font-size: .85rem;
+    font-weight: 700;
+  }
+
+  button {
+    width: 20px;
+    height: 20px;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: #8a8a8a;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover { background: #3a3a3a; color: #fff; }
+  }
+}
+
+.compare-count { color: #8a8a8a; font-size: .8rem; font-variant-numeric: tabular-nums; }
+
+.compare-cancel {
+  padding: 7px 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .8rem;
+  cursor: pointer;
+
+  &:hover { color: #fff; }
+}
+
+.compare-go {
+  padding: 7px 16px;
+  border-radius: 6px;
+  background: $gold;
+  color: #111;
+  font-size: .85rem;
+  font-weight: 800;
+  text-decoration: none;
+
+  &:hover { filter: brightness(1.1); }
+  &.disabled { background: #3a3a3a; color: #8a8a8a; pointer-events: none; }
+}
+
+// Room under the last rows so the tray does not cover them.
+:host:has(.compare-tray) .mplus-page { padding-bottom: 110px; }

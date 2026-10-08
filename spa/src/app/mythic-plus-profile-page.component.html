@@ -44,8 +44,38 @@
         </div>
         <div class="profile-actions">
           <a class="action-link" routerLink="/mythic-plus" [queryParams]="showRunsParams()">Show runs on the leaderboard</a>
+          <button type="button" class="action-link" [class.active]="compareOpen()" [attr.aria-expanded]="compareOpen()"
+            (click)="compareOpen.set(!compareOpen())">Compare</button>
           <a class="action-link" [href]="member.armoryUrl" target="_blank" rel="noopener noreferrer">
             Armory <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <!-- Compare with: search a player, or pick several on the leaderboard. -->
+        <div class="compare-with" *ngIf="compareOpen()">
+          <label class="character-search">
+            <span>Compare {{ member.name }} with</span>
+            <input
+              type="search"
+              placeholder="Player name…"
+              autocomplete="off"
+              spellcheck="false"
+              [value]="compareQuery()"
+              (input)="onCompareSearch($event)"
+              (keydown.escape)="compareOpen.set(false)" />
+          </label>
+          <ol class="character-results" *ngIf="compareResults().length">
+            <li *ngFor="let result of compareResults(); trackBy: trackCharacter">
+              <a routerLink="/mythic-plus/compare" [queryParams]="compareParams(result.member)">
+                <img [src]="result.member.classIcon" [alt]="result.member.className" />
+                <span class="result-name" [style.color]="result.member.color">{{ result.member.name }}</span>
+                <span class="result-realm">{{ result.member.realm }}</span>
+                <span class="result-score">{{ result.score | number:'1.1-1' }}</span>
+              </a>
+            </li>
+          </ol>
+          <p class="search-empty" *ngIf="compareQuery().trim() && !compareResults().length">No player by that name.</p>
+          <a class="compare-pick-link" routerLink="/mythic-plus" [queryParams]="comparePickParams()">
+            Or pick up to 3 more on the leaderboard <span aria-hidden="true">›</span>
           </a>
         </div>
         <dl class="profile-summary">
@@ -148,7 +178,7 @@
             <p class="card-subtitle">Most runs together, and their best key together</p>
           </header>
           <ol class="teammates" *ngIf="teammates().length; else noTeammates">
-            <li *ngFor="let mate of teammates(); trackBy: trackCharacter">
+            <li *ngFor="let mate of teammates(); trackBy: trackCharacter" class="teammate-item">
               <a class="teammate" [routerLink]="mate.member.profileLink">
                 <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
                 <span class="teammate-body">
@@ -161,6 +191,13 @@
                     {{ mate.dungeon }} +{{ mate.keyLevel }}<span class="level-star" *ngIf="mate.upgrades > 0">{{ upgradeStars(mate.upgrades) }}</span>
                   </span>
                 </span>
+              </a>
+              <a class="teammate-compare" routerLink="/mythic-plus/compare" [queryParams]="compareParams(mate.member)"
+                [attr.aria-label]="'Compare with ' + mate.member.name" [title]="'Compare with ' + mate.member.name">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <rect x="1.5" y="3" width="5.5" height="10" rx="1" />
+                  <rect x="9" y="3" width="5.5" height="10" rx="1" />
+                </svg>
               </a>
             </li>
           </ol>
@@ -175,8 +212,9 @@
           <h2 id="timeline-title">Score over the season</h2>
           <p class="card-subtitle">
             At the end of each day in your local time · shaded by affix week ·
-            <span class="hint-hover">hover a day for its runs</span><span class="hint-touch">tap a day for its runs</span>
+            <span class="hint-hover">hover a day for its runs, click to list them</span><span class="hint-touch">tap a day for its runs</span>
           </p>
+          <button type="button" class="more-runs clear-day" *ngIf="selectedDay()" (click)="selectDay(undefined)">Clear</button>
         </header>
         <!-- Wider than a phone in a long season: opens on the newest days, at the right end. -->
         <div class="chart-scroll" [appScrollToEnd]="chart.points.length">
@@ -208,6 +246,9 @@
                   [class.flip]="point.flip"
                   [class.middle]="point.middle"
                   [class.played]="point.day.runs > 0"
+                  [class.selected]="point.day.day === selectedDay()"
+                  (click)="selectDay(point.day.day, point.day.runs)"
+                  (keydown.enter)="selectDay(point.day.day, point.day.runs)"
                   role="img"
                   tabindex="0"
                   [attr.aria-label]="point.ariaLabel">
@@ -233,14 +274,18 @@
       <section class="history" aria-labelledby="history-title">
         <header class="history-header">
           <h2 id="history-title">Runs</h2>
-          <p>{{ runs().length | number }} this season, newest first. Rank is the run's place among every run of the season.</p>
+          <p *ngIf="!selectedDayLabel()">{{ runs().length | number }} this season, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. Rank is the run's place among every run of the season.</p>
+          <p *ngIf="selectedDayLabel() as label">{{ historyRuns().length | number }} on {{ label }}, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. <button type="button" class="link-button" (click)="selectDay(undefined)">Show all</button></p>
         </header>
         <app-mythic-plus-runs-list
-          caption="Mythic+ runs, newest first"
+          [caption]="historyOrder() === 'best' ? 'Mythic+ runs, best rank first' : 'Mythic+ runs, newest first'"
           emptyMessage="No runs this season."
           [rows]="historyRows()"
           [expandedRunId]="expandedRunId()"
           [cards]="cards()"
+          [completed]="true"
+          [runOrder]="historyOrder()"
+          (runOrderChange)="setHistoryOrder($event)"
           (toggleRun)="toggleRun($event)" />
         <button type="button" class="more-runs" *ngIf="nextRuns()" (click)="showMoreRuns()">
           Show {{ nextRuns() }} more {{ nextRuns() === 1 ? 'run' : 'runs' }}

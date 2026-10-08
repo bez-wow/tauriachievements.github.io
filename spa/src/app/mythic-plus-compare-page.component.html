@@ -1,0 +1,247 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="compare-page">
+  <a class="back-link" routerLink="/mythic-plus" [queryParams]="{ view: 'players' }">
+    <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
+  </a>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Charging the keystones...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError()">
+    <header class="compare-header">
+      <div class="compare-title">
+        <h1>Compare</h1>
+        <p>
+          Up to {{ limit }} characters side by side<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container>.
+          The best of them in gold, how far behind under the others.
+        </p>
+      </div>
+
+      <!-- Who is compared, and adding more. -->
+      <div class="compare-tools">
+        <label class="add-player" *ngIf="players().length < limit">
+          <span class="visually-hidden">Add a player to compare</span>
+          <input
+            type="search"
+            placeholder="Add a player…"
+            autocomplete="off"
+            spellcheck="false"
+            [value]="searchQuery()"
+            (input)="onSearch($event)"
+            (keydown.escape)="clearSearch()" />
+          <ol class="search-results" *ngIf="searchResults().length">
+            <li *ngFor="let result of searchResults(); trackBy: trackKey">
+              <a routerLink="/mythic-plus/compare" [queryParams]="addParams(result.member)" (click)="clearSearch()">
+                <img [src]="result.member.classIcon" [alt]="result.member.className" />
+                <span class="result-name" [style.color]="result.member.color">{{ result.member.name }}</span>
+                <span class="result-realm">{{ result.member.realm }}</span>
+                <span class="result-score">{{ result.score | number:'1.1-1' }}</span>
+              </a>
+            </li>
+          </ol>
+          <span class="search-empty" *ngIf="searchQuery().trim() && !searchResults().length">No player by that name.</span>
+        </label>
+        <a class="action-link" routerLink="/mythic-plus" [queryParams]="pickParams()">Pick on the leaderboard</a>
+      </div>
+    </header>
+
+    <p class="missing" *ngIf="missing().length">
+      Not found in this season's runs:
+      <ng-container *ngFor="let character of missing(); let last = last">{{ character.name }} ({{ character.realm }}){{ last ? '' : ', ' }}</ng-container>
+    </p>
+
+    <section class="card empty-compare" *ngIf="players().length < 2">
+      <p *ngIf="!players().length">Pick two or more players to compare: search above, or pick them on the leaderboard's players view.</p>
+      <p *ngIf="players().length === 1">Add one more player to compare with {{ players()[0].member.name }}.</p>
+    </section>
+
+    <ng-container *ngIf="players().length">
+      <!-- One column per player: who they are, their score. -->
+      <div class="table-scroll">
+        <table class="compare-table" [class.versus]="players().length > 1" [style.--players]="players().length">
+          <thead>
+            <tr>
+              <th scope="col" class="col-label"><span class="visually-hidden">Stat</span></th>
+              <th scope="col" class="col-player" *ngFor="let player of players(); trackBy: trackKey">
+                <div class="player-head" [style.--class-color]="player.member.color">
+                  <!-- Down to one player there is nothing left to compare, so back to the leaderboard. -->
+                  <a class="remove" [routerLink]="players().length > 2 ? '/mythic-plus/compare' : '/mythic-plus'"
+                    [queryParams]="players().length > 2 ? removeParams(player.key) : null"
+                    [attr.aria-label]="'Remove ' + player.member.name" title="Remove from the comparison">×</a>
+                  <span class="crest"><img [src]="player.crest" [alt]="player.member.className" /></span>
+                  <a class="player-name" [routerLink]="player.member.profileLink" [style.color]="player.member.color">{{ player.member.name }}</a>
+                  <span class="player-meta">{{ player.member.realm }} · {{ player.member.spec }} {{ player.member.className }}</span>
+                  <span class="player-guild" *ngIf="player.member.guild">&lt;{{ player.member.guild }}&gt;</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stat of stats(); let first = first" [class.score-row]="first">
+              <th scope="row" class="col-label">
+                {{ stat.label }}
+                <span class="stat-hint" *ngIf="stat.hint">{{ stat.hint }}</span>
+              </th>
+              <td *ngFor="let cell of stat.cells; let i = index" [class.best]="cell.best">
+                <span class="stat-value">{{ cell.text }}<span class="stat-delta" *ngIf="cell.delta">{{ cell.delta }}</span></span>
+                <span class="stat-sub" *ngIf="cell.sub">{{ cell.sub }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Score over the season, a line each. -->
+      <section class="card" aria-labelledby="timeline-title" *ngIf="chart() as chart">
+        <header class="card-header">
+          <h2 id="timeline-title">Score over the season</h2>
+          <p class="card-subtitle">
+            <ng-container *ngIf="chartMode() === 'gap'">Points behind the best of them, small gaps stretched ·</ng-container>
+            At the end of each day in your local time · shaded by affix week ·
+            <span class="hint-hover">hover a day for everyone's score</span><span class="hint-touch">tap a day for everyone's score</span>
+          </p>
+          <div class="view-switch" role="group" aria-label="Chart">
+            <button type="button" [class.active]="chartMode() === 'score'" [attr.aria-pressed]="chartMode() === 'score'"
+              (click)="chartMode.set('score')">Score</button>
+            <button type="button" [class.active]="chartMode() === 'gap'" [attr.aria-pressed]="chartMode() === 'gap'"
+              (click)="chartMode.set('gap')" title="Points behind the best of them each day">Gap</button>
+          </div>
+          <ul class="legend">
+            <li *ngFor="let player of players(); trackBy: trackKey"><span class="swatch" [style.background]="player.color"></span>{{ player.member.name }}</li>
+          </ul>
+        </header>
+        <div class="chart-scroll" [appScrollToEnd]="chart.points.length">
+          <div class="line-chart" [style.--columns]="chart.points.length">
+            <div class="y-axis" aria-hidden="true">
+              <span *ngFor="let line of chart.gridlines" [style.bottom.%]="line.position">{{ line.value }}</span>
+            </div>
+            <div class="plot">
+              <div class="gridlines" aria-hidden="true">
+                <span *ngFor="let line of chart.gridlines" [style.bottom.%]="line.position"></span>
+              </div>
+              <div class="week-bands" aria-hidden="true">
+                <span
+                  *ngFor="let band of chart.bands"
+                  [class.shade]="band.shade"
+                  [style.grid-column]="band.start + ' / span ' + band.span">
+                  <em><img *ngFor="let affix of band.affixes" [src]="affix.icon" alt="" loading="lazy" /></em>
+                </span>
+              </div>
+              <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <polyline *ngFor="let line of chart.lines" class="stroke" [attr.points]="line.points" [style.stroke]="line.color"
+                  vector-effect="non-scaling-stroke" />
+              </svg>
+              <div class="columns">
+                <div
+                  class="column"
+                  appTapTooltip
+                  *ngFor="let point of chart.points"
+                  [class.flip]="point.flip"
+                  [class.middle]="point.middle"
+                  role="img"
+                  tabindex="0"
+                  [attr.aria-label]="point.longLabel">
+                  <span class="dot" *ngFor="let score of point.scores" [style.bottom.%]="score.bottom" [style.background]="score.color"></span>
+                  <span class="tooltip" aria-hidden="true">
+                    <span>{{ point.longLabel }}</span>
+                    <span class="tooltip-row" *ngFor="let score of point.scores">
+                      <span class="swatch" [style.background]="score.color"></span>
+                      {{ score.name }}
+                      <b>{{ score.score | number:'1.1-1' }}</b>
+                      <i *ngIf="score.gap < 0">{{ score.gap | number:'1.1-1' }}</i>
+                      <em *ngIf="score.runs">{{ score.runs }} {{ score.runs === 1 ? 'run' : 'runs' }}</em>
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div class="x-labels" aria-hidden="true">
+                <span *ngFor="let point of chart.points">{{ point.showLabel ? point.label : '' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Best run per dungeon, the best of them in gold. -->
+      <section class="card" aria-labelledby="dungeons-title">
+        <header class="card-header">
+          <h2 id="dungeons-title">Best run per dungeon</h2>
+          <p class="card-subtitle" *ngIf="players().length === 2">The bar grows towards whoever leads, by how much</p>
+          <p class="card-subtitle" *ngIf="players().length > 2">The best of them stands out</p>
+        </header>
+        <div class="table-scroll">
+          <table class="compare-table dungeons-table" [class.versus]="players().length > 1" [class.duel]="players().length === 2">
+            <thead>
+              <tr>
+                <th scope="col" class="col-label">Dungeon</th>
+                <ng-container *ngFor="let player of players(); let i = index; trackBy: trackKey">
+                  <th scope="col" class="col-lead" *ngIf="i === 1 && players().length === 2">Lead</th>
+                  <th scope="col" [style.color]="player.member.color">{{ player.member.name }}</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of dungeonRows()">
+                <th scope="row" class="col-label">
+                  <span class="dungeon-name"><img [src]="row.dungeon.icon" alt="" />{{ row.dungeon.name }}</span>
+                </th>
+                <ng-container *ngFor="let cell of row.cells; let i = index">
+                <td class="col-lead" *ngIf="i === 1 && row.lead as lead">
+                  <ng-container *ngTemplateOutlet="leadBar; context: { $implicit: lead }"></ng-container>
+                </td>
+                <td [class.best]="cell.best">
+                  <ng-container *ngIf="cell.run as run; else notPlayed">
+                    <span class="run-main">
+                      <span class="run-key" [class.over-time]="run.upgrades === 0">
+                        +{{ run.keyLevel }}<span class="level-star" *ngIf="run.upgrades > 0">{{ upgradeStars(run.upgrades) }}</span>
+                      </span>
+                    </span>
+                    <span class="run-time" [class.over-time]="run.upgrades === 0">{{ run.clearTime }}</span>
+                  </ng-container>
+                  <ng-template #notPlayed><span class="not-played">Not played</span></ng-template>
+                </td>
+                </ng-container>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="totalLead() as lead">
+              <tr>
+                <th scope="row" class="col-label">Score</th>
+                <td><span class="total-score" [ngClass]="'q-' + players()[0].quality">{{ players()[0].player.score | number:'1.1-1' }}</span></td>
+                <td class="col-lead"><ng-container *ngTemplateOutlet="leadBar; context: { $implicit: lead }"></ng-container></td>
+                <td><span class="total-score" [ngClass]="'q-' + players()[1].quality">{{ players()[1].player.score | number:'1.1-1' }}</span></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- A bar from the middle towards the leader, its length the size of the lead. -->
+          <ng-template #leadBar let-lead>
+            <span class="lead" [class.level]="!lead.points" [class.right]="lead.side === 1"
+              [attr.aria-label]="lead.points ? (players()[lead.side].member.name + ' ahead by ' + lead.points) : 'Level'">
+              <span class="lead-half lead-left">
+                <span class="lead-bar" *ngIf="lead.side === 0 && lead.points" [style.width.%]="lead.width" [style.background]="lead.color"></span>
+              </span>
+              <span class="lead-half lead-right">
+                <span class="lead-bar" *ngIf="lead.side === 1 && lead.points" [style.width.%]="lead.width" [style.background]="lead.color"></span>
+              </span>
+              <span class="lead-value">{{ lead.points ? '+' + (lead.points | number:'1.1-1') : 'Level' }}</span>
+            </span>
+          </ng-template>
+        </div>
+      </section>
+
+    </ng-container>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

@@ -37,7 +37,7 @@ import {
   sharesTables,
   upgradeStars
 } from './mythic-plus';
-import { affixWeeks, countTicks, dungeonTimers, isTimed, weekIndexAt } from './mythic-plus-activity';
+import { affixWeeks, countTicks, dungeonTimers, isTimed, localDay, weekIndexAt } from './mythic-plus-activity';
 import {
   ScopeRank,
   ScoreDay,
@@ -52,6 +52,7 @@ import {
   scoreOverTime,
   specsPlayed
 } from './mythic-plus-profile';
+import { compareParam } from './mythic-plus-compare';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { specIconFor } from './mythic-plus-stats';
 import {
@@ -390,18 +391,34 @@ export class MythicPlusProfilePageComponent implements OnInit {
   // Run history
   readonly expandedRunId = linkedSignal<string | undefined, string | undefined>({ source: this.key, computation: () => undefined });
   readonly historyLimit = linkedSignal<string | undefined, number>({ source: this.key, computation: () => this.pageSize() });
+  /** Newest first (default) or best season rank first. */
+  readonly historyOrder = linkedSignal<string | undefined, 'best' | 'latest'>({ source: this.key, computation: () => 'latest' });
+  /** A day clicked on the score chart (YYYY-MM-DD, local); the runs list shows only that day. */
+  readonly selectedDay = linkedSignal<string | undefined, string | undefined>({ source: this.key, computation: () => undefined });
+  readonly selectedDayLabel = computed(() => {
+    const day = this.selectedDay();
+    return day ? new Date(`${day}T12:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : undefined;
+  });
+  /** The runs the list shows, in its order, before "Show more". */
+  readonly historyRuns = computed(() => {
+    const day = this.selectedDay();
+    const runs = day ? this.runs().filter(run => localDay(new Date(run.completedAt)) === day) : this.runs();
+    const ranks = this.runRanks();
+    const rankOf = (id: string) => ranks.get(id) || Number.MAX_SAFE_INTEGER;
+    return this.historyOrder() === 'best' ? [...runs].sort((a, b) => rankOf(a.id) - rankOf(b.id)) : runs;
+  });
   readonly historyRows = computed<RunRow[]>(() => {
     const dungeons = this.dungeonsById();
     const affixes = this.affixesById();
     const bestScore = this.seasonBestScore();
     const ranks = this.runRanks();
-    return this.runs().slice(0, this.historyLimit()).flatMap(run => {
+    return this.historyRuns().slice(0, this.historyLimit()).flatMap(run => {
       const dungeon = dungeons.get(run.dungeon);
       return dungeon ? [{ ...toRunView(run, dungeon, affixes, bestScore), rank: ranks.get(run.id) ?? 0 }] : [];
     });
   });
   /** How many runs "Show more" adds; 0 once every run is shown. */
-  readonly nextRuns = computed(() => Math.min(this.pageSize(), Math.max(0, this.runs().length - this.historyLimit())));
+  readonly nextRuns = computed(() => Math.min(this.pageSize(), Math.max(0, this.historyRuns().length - this.historyLimit())));
 
   readonly teammates = computed<TeammateView[]>(() => {
     const key = this.key();
@@ -434,6 +451,34 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
+  // Compare: a "compare with" search beside the links out, and a compare link per teammate.
+  readonly compareOpen = linkedSignal<string | undefined, boolean>({ source: this.key, computation: () => false });
+  readonly compareQuery = linkedSignal<string | undefined, string>({ source: this.key, computation: () => '' });
+  readonly compareResults = computed<CharacterLink[]>(() => {
+    const query = this.compareQuery().trim();
+    const key = this.key();
+    return query
+      ? this.ranking()
+        .filter(player => player.key !== key && memberNameMatches(player.member, query))
+        .slice(0, 8)
+        .map(toCharacterLink)
+      : [];
+  });
+  /** The leaderboard's players view in pick mode, this character already picked. */
+  readonly comparePickParams = computed<Params>(() => {
+    const member = this.player()?.member;
+    return member ? { view: 'players', compare: characterParam(member) } : {};
+  });
+
+  compareParams(other: { name: string; realm: string }): Params {
+    const member = this.player()?.member;
+    return { players: compareParam(member ? [member, other] : [other]) };
+  }
+
+  onCompareSearch(event: Event): void {
+    this.compareQuery.set((event.target as HTMLInputElement).value);
+  }
+
   constructor() {
     // A typed /evermoon/progtrix that found Progtrix: show the address to share, Progtrix's own.
     effect(() => {
@@ -450,6 +495,25 @@ export class MythicPlusProfilePageComponent implements OnInit {
 
   toggleRun(runId: string): void {
     this.expandedRunId.update(current => current === runId ? undefined : runId);
+  }
+
+  /** Clicking a day with runs shows only its runs; clicking it again (or Clear) shows them all. */
+  selectDay(day: string | undefined, runs = 1): void {
+    if (!runs) {
+      return;
+    }
+    this.selectedDay.update(current => current === day ? undefined : day);
+    this.historyLimit.set(this.pageSize());
+    this.expandedRunId.set(undefined);
+  }
+
+  setHistoryOrder(order: 'best' | 'latest'): void {
+    if (order === this.historyOrder()) {
+      return;
+    }
+    this.historyOrder.set(order);
+    this.historyLimit.set(this.pageSize());
+    this.expandedRunId.set(undefined);
   }
 
   showMoreRuns(): void {

@@ -1,7 +1,8 @@
 <ng-container *ngIf="cards(); else table">
   <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon" *ngIf="rows().length; else empty">
-    <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()">
-      <a class="player-card" [routerLink]="row.member.profileLink">
+    <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
+      <a class="player-card" [class.picking]="pickMode()" [routerLink]="row.member.profileLink" (click)="onLink($event, row)">
+        <span class="pick-box" *ngIf="pickMode()" aria-hidden="true"></span>
         <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
         <span class="card-body">
           <span class="card-line">
@@ -44,6 +45,7 @@
       <caption class="visually-hidden">Mythic+ players ranked by score: the sum of their best run in each dungeon</caption>
       <thead>
         <tr>
+          <th scope="col" class="col-pick" *ngIf="pickMode()"><span class="visually-hidden">Picked</span></th>
           <th scope="col">Rank</th>
           <th scope="col" class="col-player">Player</th>
           <th scope="col" class="col-guild">Guild</th>
@@ -65,8 +67,10 @@
           *ngFor="let row of rows(); let odd = odd; trackBy: trackPlayer"
           [class.alt]="odd"
           [class.highlighted]="row.key === highlightKey()"
-          [title]="'Open the profile of ' + row.member.name"
+          [class.picked]="pickedKeys().has(row.key)"
+          [title]="pickMode() ? 'Pick ' + row.member.name + ' to compare' : 'Open the profile of ' + row.member.name"
           (click)="openProfile(row)">
+          <td class="col-pick" *ngIf="pickMode()"><span class="pick-box" aria-hidden="true"></span></td>
           <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
           <td class="col-player">
             <span class="player-identity">
@@ -76,7 +80,7 @@
                 [routerLink]="row.member.profileLink"
                 [style.color]="row.member.color"
                 [attr.aria-label]="row.member.name + ', ' + row.member.spec + ' ' + row.member.className"
-                (click)="$event.stopPropagation()">{{ row.member.name }}<span class="member-tooltip" aria-hidden="true">
+                (click)="onLink($event, row)">{{ row.member.name }}<span class="member-tooltip" aria-hidden="true">
                   <img [src]="row.member.classIcon" alt="" />
                   <span class="member-tooltip-spec" *ngIf="row.member.specIcon"><img [src]="row.member.specIcon" alt="" /></span>
                   <span>{{ row.member.spec }} {{ row.member.className }}</span>
@@ -109,7 +113,7 @@
         </tr>
 
         <tr class="empty-row" *ngIf="rows().length === 0">
-          <td [attr.colspan]="singleDungeon() ? 6 : dungeons().length + 4">{{ emptyMessage() }}</td>
+          <td [attr.colspan]="(singleDungeon() ? 6 : dungeons().length + 4) + (pickMode() ? 1 : 0)">{{ emptyMessage() }}</td>
         </tr>
       </tbody>
     </table>

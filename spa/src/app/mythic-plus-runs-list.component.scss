@@ -69,7 +69,7 @@
 .col-level { color: #fff; font-size: 1rem; font-weight: 600; }
 .col-time, .col-score { font-variant-numeric: tabular-nums; }
 .col-score { color: #fff; font-size: .95rem; }
-.depleted .col-level, .depleted .col-time { color: #8a8a8a; }
+.depleted .col-level, .depleted .col-time, .depleted .col-completed { color: #8a8a8a; }
 
 // Holds the clipped icon and its tooltip side by side, so the crop below can't cut the tooltip off.
 .affix {
@@ -234,4 +234,22 @@
   background: #1b1b1b;
   color: #9a9a9a;
   text-align: center;
+}
+
+// When each run was completed (same look as Time), and the Best / Latest order.
+.col-completed {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.completed-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover { color: #fff; }
+  &:focus-visible { outline: 2px solid #f7b500; outline-offset: 2px; }
 }

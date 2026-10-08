@@ -203,3 +203,26 @@ td.over-time { color: #8a8a8a; }
   color: #9a9a9a;
   text-align: center;
 }
+
+// Compare: a tick box per player while picking.
+.col-pick { width: 34px; text-align: center; }
+
+.pick-box {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  place-items: center;
+  border: 1px solid #6a6a6a;
+  border-radius: 3px;
+  background: #111;
+  vertical-align: middle;
+}
+
+.picked .pick-box { border-color: $gold; background: $gold; }
+.picked .pick-box::after { content: '✓'; color: #111; font-size: .75rem; font-weight: 900; line-height: 1; }
+
+.player-row.picked,
+.player-cards li.picked { background: #3a3220; }
+
+.player-card.picking { grid-template-columns: 16px 32px minmax(0, 1fr) auto; }

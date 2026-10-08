@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input, output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MythicPlusDungeon, upgradeStars } from './mythic-plus';
 import { BestRunCell, PlayerRow } from './mythic-plus-views';
@@ -30,6 +30,11 @@ export class MythicPlusPlayersListComponent {
   readonly cards = input(false);
   /** `characterKey` of a player to pick out, e.g. one who followed a rank from their profile. */
   readonly highlightKey = input<string | undefined>();
+  /** Compare: clicking a player picks them instead of opening their profile. */
+  readonly pickMode = input(false);
+  /** `characterKey`s already picked. */
+  readonly pickedKeys = input<ReadonlySet<string>>(new Set());
+  readonly pick = output<PlayerRow>();
 
   readonly upgradeStars = upgradeStars;
 
@@ -51,7 +56,20 @@ export class MythicPlusPlayersListComponent {
 
   /** A click anywhere on a table row; the name inside it is a link of its own. */
   openProfile(row: PlayerRow): void {
+    if (this.pickMode()) {
+      this.pick.emit(row);
+      return;
+    }
     this.router.navigate(row.member.profileLink);
+  }
+
+  /** A name link or card: in pick mode it picks, otherwise it opens the profile as a link. */
+  onLink(event: Event, row: PlayerRow): void {
+    event.stopPropagation();
+    if (this.pickMode()) {
+      event.preventDefault();
+      this.pick.emit(row);
+    }
   }
 
   trackPlayer(index: number, row: PlayerRow): string {
