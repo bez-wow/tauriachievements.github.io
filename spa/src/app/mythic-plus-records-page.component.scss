@@ -38,8 +38,8 @@ $depleted: #e06666;
 }
 
 .page-header {
-  h1 { margin-bottom: 6px; color: #fff; font-size: 1.6rem; line-height: 1.25; }
-  p { color: #bdbdbd; line-height: 1.55; }
+  h1 { display: inline; margin-right: 8px; color: #fff; font-size: 1.6rem; line-height: 1.25; }
+  p { display: inline; color: #bdbdbd; line-height: 1.55; }
 }
 
 // Loading / error
