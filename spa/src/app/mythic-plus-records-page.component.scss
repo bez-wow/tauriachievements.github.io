@@ -467,7 +467,7 @@ $depleted: #e06666;
 
 .bounty-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -523,6 +523,8 @@ $depleted: #e06666;
 
 // Narrower screens: each first stacks its date, dungeon and time beside the level, the group under them.
 @media (max-width: $cards-breakpoint) {
+  .bounty-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
   .timeline::before { left: 37px; }
 
   .first-row {
@@ -547,6 +549,8 @@ $depleted: #e06666;
   .page-header h1 { font-size: 1.35rem; }
 
   .section-filter { width: 100%; }
+
+  .bounty-grid { grid-template-columns: minmax(0, 1fr); }
 
   .server-bounty { gap: 8px 14px; padding: 14px; }
   .server-bounty-level { width: 56px; height: 56px; font-size: 1.2rem; }
