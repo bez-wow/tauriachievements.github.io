@@ -1,0 +1,229 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <!-- No visible header or back link: the page opens on the toolbar. The heading is for screen readers. -->
+  <h1 class="visually-hidden">Character leaderboard, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <section class="section" aria-label="Character leaderboard">
+    <div class="toolbar" *ngIf="index() as loadedIndex">
+      <div class="toolbar-switches">
+        <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
+          <button
+            type="button"
+            role="tab"
+            *ngFor="let entry of metrics"
+            [class.active]="metric() === entry.id"
+            [attr.aria-selected]="metric() === entry.id"
+            (click)="setMetric(entry.id)">{{ entry.label }}</button>
+        </div>
+        <app-raid-difficulty-switch
+          [difficulties]="loadedIndex.difficulties"
+          [selected]="difficulty()?.slug"
+          label="Rank on difficulty"
+          (selectedChange)="setDifficulty($event)" />
+      </div>
+
+      <div class="filters">
+        <!-- Always there, greyed out until a filter is set, as on the M+ leaderboard. -->
+        <button
+          type="button"
+          class="filter-reset"
+          [disabled]="!hasFilters()"
+          aria-label="Reset class, spec and realm filters"
+          (click)="resetFilters()">
+          Reset
+        </button>
+        <div class="filter-slot class-slot">
+          <app-filter-dropdown
+            dropdownId="raidLeaderboardClass"
+            triggerId="raidLeaderboardClassTrigger"
+            ariaLabel="Filter by class"
+            [options]="classOptions()"
+            [widthLabels]="classWidthLabels"
+            [selectedValue]="classFilter()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            (selectionChange)="setClassFilter($event)" />
+        </div>
+        <div class="filter-slot">
+          <app-filter-dropdown
+            dropdownId="raidLeaderboardSpec"
+            triggerId="raidLeaderboardSpecTrigger"
+            ariaLabel="Filter by spec"
+            [options]="specOptions()"
+            [widthLabels]="specWidthLabels()"
+            [selectedValue]="specFilter()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            [disabled]="classFilter() === undefined"
+            (selectionChange)="setSpecFilter($event)" />
+        </div>
+        <div class="filter-slot">
+          <app-filter-dropdown
+            dropdownId="raidLeaderboardRealm"
+            triggerId="raidLeaderboardRealmTrigger"
+            ariaLabel="Filter by realm"
+            [options]="realmOptions"
+            [widthLabels]="realmWidthLabels"
+            [selectedValue]="realmFilter()"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            (selectionChange)="setRealmFilter($event)" />
+        </div>
+        <label class="search">
+          <span class="visually-hidden">Find a character</span>
+          <input type="search" placeholder="Find a character" [value]="search()" (input)="setSearch($any($event.target).value)" />
+        </label>
+      </div>
+    </div>
+
+    <!-- The score, explained. The Score heading's (i) opens it. -->
+    <aside id="score-help" class="score-help" *ngIf="showHelp()" aria-labelledby="score-help-title">
+      <header class="help-head">
+        <h2 id="score-help-title">How is the score calculated?</h2>
+        <button type="button" class="help-close" aria-label="Close the explanation" (click)="showHelp.set(false)">×</button>
+      </header>
+
+      <div class="help-body">
+        <div class="help-text">
+          <p>
+            On each boss, the character's best {{ metric().toUpperCase() }} is compared to the best {{ metric().toUpperCase() }}
+            anyone did on that boss. These relative performances are added together and averaged. The average then
+            sets the score, out of an arbitrary maximum of {{ maxScore }}: the character's score is the maximum score
+            times their performance.
+          </p>
+
+          <div class="help-example">
+            <p class="help-label">Example: character's DPS on the boss / best DPS on the boss = relative performance</p>
+            <ol>
+              <li><span>Boss 1</span><span class="help-math">10 / 100</span><strong>10%</strong></li>
+              <li><span>Boss 2</span><span class="help-math">160 / 200</span><strong>80%</strong></li>
+              <li><span>Boss 3</span><span class="help-math">300 / 1000</span><strong>30%</strong></li>
+              <li><span>Boss 4</span><span class="help-math">0 / 1000</span><strong>0%</strong></li>
+            </ol>
+            <p>Overall performance: (10 + 80 + 30 + 0) / 4 = <strong>30%</strong></p>
+            <p>Score: {{ maxScore }} × 0.3 = 2090.7, rounded down to <strong>2090</strong></p>
+            <p class="muted">The example raid has only four bosses, and the character didn't kill the last one.</p>
+          </div>
+
+          <h3>Why not use average DPS/HPS?</h3>
+          <p>
+            With a plain average, the bosses where very high DPS or HPS is possible would count for more of a
+            character's overall performance. Comparing each boss to its own best makes every boss count the same.
+          </p>
+          <p>
+            On WotLK's Flame Leviathan, for example, you can do 300k+ DPS, while on most other bosses it's under 10k.
+            With average DPS, doing really well on Flame Leviathan would be enough and the other bosses would hardly
+            matter. Other raids have the same problem, to a lesser degree.
+          </p>
+        </div>
+
+        <div class="help-tops" *ngIf="difficulty() as current">
+          <h3>What 100% is on <span class="difficulty-text" [ngClass]="current.slug">{{ current.name }}</span></h3>
+          <ol class="top-list">
+            <li *ngFor="let top of bossTops()">
+              <img [src]="top.boss.portrait" alt="" loading="lazy" />
+              <span class="top-boss">{{ top.boss.shortName }}</span>
+              <span class="top-value" *ngIf="top.best as best; else noTop">
+                <strong>{{ formatPerSecond(best.value) }}</strong>
+                <span [style.color]="classColor(best.character.classId)">{{ best.character.name }}</span>
+              </span>
+              <ng-template #noTop><span class="muted">Not killed</span></ng-template>
+            </li>
+          </ol>
+          <p class="muted">
+            Each boss counts the character's best kill on this difficulty. A boss nobody has killed is left out.
+            A score is always measured against these bests. With a spec picked, each character is scored
+            on the kills they played as that spec; the other filters only hide rows.
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <div class="feedback" *ngIf="isLoading()">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Reading the logs...</p>
+    </div>
+
+    <div class="feedback error" *ngIf="!isLoading() && loadError()">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="loadData()">Try again</button>
+    </div>
+
+    <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
+      <div class="table-scroll" *ngIf="rankings().length">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" scope="col">#</th>
+              <th scope="col" class="col-character">Character</th>
+              <th scope="col" class="center phone-hidden col-guild">Guild</th>
+              <th scope="col" class="center phone-hidden col-realm">Realm</th>
+              <th scope="col" class="center col-score">
+                <span class="score-head">
+                  <button
+                    type="button"
+                    class="info-button"
+                    aria-controls="score-help"
+                    [attr.aria-expanded]="showHelp()"
+                    title="How is the score calculated?"
+                    (click)="showHelp.set(!showHelp())">
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <circle class="info-disc" cx="8" cy="8" r="8" />
+                      <rect class="info-mark" x="7" y="7" width="2" height="5" rx="1" />
+                      <circle class="info-mark" cx="8" cy="4.6" r="1.15" />
+                    </svg>
+                    <span class="visually-hidden">How is the score calculated?</span>
+                  </button>
+                  Score
+                </span>
+              </th>
+              <th scope="col" class="num center col-bosses">Bosses</th>
+              <th scope="col" class="num center col-optional col-ilvl">Item level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of shownRankings(); trackBy: trackScore">
+              <td class="rank" [ngClass]="'q-' + scoreTier(entry)">{{ entry.rank }}</td>
+              <td>
+                <span class="character">
+                  <img [src]="entry.spec?.icon || classIcon(entry.character.classId)" [title]="entry.spec?.name ?? ''" alt="" loading="lazy" />
+                  <img class="race-icon" [src]="raceIcon(entry.character)" alt="" loading="lazy" />
+                  <span class="character-line">
+                    <a
+                      class="character-name"
+                      [style.color]="classColor(entry.character.classId)"
+                      [routerLink]="characterLink(entry.character)"
+                      [queryParams]="{ difficulty: current.slug, metric: metric() }">{{ entry.character.name }}</a>
+                  </span>
+                </span>
+              </td>
+              <td class="center phone-hidden guild" [ngClass]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
+              <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
+              <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
+              <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
+              <td class="num center col-optional col-ilvl">{{ entry.itemLevel }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="empty-note" *ngIf="!total()">
+        {{ search() ? 'Nothing matches "' + search() + '".' : 'Nobody matches these filters on ' + current.name + '.' }}
+      </p>
+
+      <nav class="pager" *ngIf="pages() > 1" aria-label="Pages">
+        <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹ Previous</button>
+        <span>Page {{ currentPage() }} of {{ pages() }} · {{ total() | number }} characters</span>
+        <button type="button" [disabled]="currentPage() === pages()" (click)="goToPage(currentPage() + 1)">Next ›</button>
+      </nav>
+    </ng-container>
+  </section>
+</main>
+
+<app-back-to-top-button />

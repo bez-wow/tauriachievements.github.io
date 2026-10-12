@@ -18,15 +18,28 @@
     (click)="toggleMenu()"
     (focus)="onTriggerFocus()"
     (keydown)="onTriggerKeydown($event)">
-    <ng-container *ngIf="showIcons">
-      <img
-        *ngIf="hasSelectedIcon"
-        [src]="displaySelectedIcon"
-        [alt]="displaySelectedLabel + ' icon'"
-        class="option-icon" />
-      <span *ngIf="!hasSelectedIcon" class="option-icon placeholder"></span>
+    <ng-container *ngIf="widthLabels; else currentSelection">
+      <!-- Every label the dropdown can show shares one cell with the current one, out of sight:
+           the trigger keeps the widest one's width whatever is picked. -->
+      <span class="trigger-fit">
+        <span class="trigger-current"><ng-container *ngTemplateOutlet="currentSelection" /></span>
+        <span class="trigger-sizer" *ngFor="let label of widthLabels" aria-hidden="true">
+          <span *ngIf="showIcons" class="option-icon"></span>
+          <span class="option-label">{{ label }}</span>
+        </span>
+      </span>
     </ng-container>
-    <span class="option-label" [style.color]="displaySelectedColor">{{ displaySelectedLabel }}</span>
+    <ng-template #currentSelection>
+      <ng-container *ngIf="showIcons">
+        <img
+          *ngIf="hasSelectedIcon"
+          [src]="displaySelectedIcon"
+          [alt]="displaySelectedLabel + ' icon'"
+          class="option-icon" />
+        <span *ngIf="!hasSelectedIcon" class="option-icon placeholder"></span>
+      </ng-container>
+      <span class="option-label" [style.color]="displaySelectedColor">{{ displaySelectedLabel }}</span>
+    </ng-template>
   </button>
 
   <div

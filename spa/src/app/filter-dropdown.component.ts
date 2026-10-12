@@ -35,6 +35,12 @@ export class FilterDropdownComponent {
   @Input() highlightWhenSelected = false;
   @Input() compact = false;
   @Input() disabled = false;
+  /**
+   * Every label the dropdown can ever show, not only today's options. The trigger then reserves
+   * the widest one's width (and an icon's, with showIcons), so it never cuts a name short or
+   * changes width. Size its container to the content (width: auto, flex: none) to use it.
+   */
+  @Input() widthLabels?: ReadonlyArray<string>;
 
   @Output() readonly selectionChange = new EventEmitter<FilterDropdownValue>();
 

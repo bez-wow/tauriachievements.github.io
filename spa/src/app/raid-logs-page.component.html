@@ -1,0 +1,177 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <header class="raid-hero">
+    <div class="hero-text">
+      <p class="eyebrow">Raid Logs</p>
+      <h1>{{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+      <p>Every boss kill on Evermoon, Tauri and Warriors of Darkness: who killed what, how fast, and who did the most damage and healing.</p>
+      <a class="hero-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: difficulty()?.slug }">
+        Character leaderboard <span aria-hidden="true">›</span>
+      </a>
+    </div>
+    <app-raid-difficulty-switch
+      *ngIf="index() as loaded"
+      [difficulties]="loaded.difficulties"
+      [selected]="difficulty()?.slug"
+      label="Show kills on difficulty"
+      (selectedChange)="setDifficulty($event)" />
+  </header>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Reading the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
+    <dl class="summary">
+      <div *ngFor="let tile of summary(); trackBy: trackLabel">
+        <dt>{{ tile.label }}</dt>
+        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+      </div>
+    </dl>
+
+    <!-- Bosses -->
+    <section class="section" aria-labelledby="bosses-title">
+      <header class="section-header">
+        <h2 id="bosses-title">Bosses <span class="difficulty-text" [ngClass]="current.slug">{{ current.name }}</span></h2>
+        <p>Open a boss for its damage and healing rankings and every kill.</p>
+      </header>
+
+      <div class="boss-grid" [appReveal]="1400">
+        <a
+          class="boss-card"
+          *ngFor="let card of bossCards(); let index = index; trackBy: trackBoss"
+          [style.--i]="index"
+          [routerLink]="bossLink(card.boss)"
+          [queryParams]="{ difficulty: current.slug }"
+          [class.untouched]="!card.kills">
+          <header class="boss-head">
+            <img class="boss-portrait" [src]="card.boss.portrait" alt="" loading="lazy" />
+            <div class="boss-title">
+              <span class="boss-number">Boss {{ card.boss.index + 1 }}</span>
+              <h3>{{ card.boss.shortName }}</h3>
+            </div>
+            <span class="boss-kills"><strong>{{ card.kills | number }}</strong> kills</span>
+          </header>
+
+          <dl class="boss-stats" *ngIf="card.kills; else noKills">
+            <div *ngIf="card.fastest as fastest">
+              <dt>Fastest</dt>
+              <dd><strong>{{ formatFightTime(fastest.fightMs) }}</strong> <span class="stat-sub">{{ fastest.guild?.name || 'Pickup group' }}</span></dd>
+            </div>
+            <div *ngIf="card.dps as dps">
+              <dt>Top DPS</dt>
+              <dd>
+                <strong>{{ formatPerSecond(dps.perSecond) }}</strong>
+                <span class="stat-sub" [style.color]="classColor(dps.classId)">{{ dps.name }}</span>
+              </dd>
+            </div>
+            <div *ngIf="card.hps as hps">
+              <dt>Top HPS</dt>
+              <dd>
+                <strong>{{ formatPerSecond(hps.perSecond) }}</strong>
+                <span class="stat-sub" [style.color]="classColor(hps.classId)">{{ hps.name }}</span>
+              </dd>
+            </div>
+          </dl>
+          <ng-template #noKills><p class="boss-alive">Not killed on {{ current.name }} yet.</p></ng-template>
+        </a>
+      </div>
+    </section>
+
+    <!-- Guild progression -->
+    <section class="section" aria-labelledby="progression-title">
+      <header class="section-header">
+        <h2 id="progression-title">Guild progression</h2>
+        <p>Most bosses down first; at the same count, whoever got there first. Kills in a pickup group don't count.</p>
+      </header>
+
+      <div class="table-scroll" *ngIf="progression().length; else noGuilds">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" scope="col">#</th>
+              <th scope="col">Guild</th>
+              <th scope="col">Progress</th>
+              <th scope="col" class="col-optional">Reached</th>
+              <th scope="col" class="num">Kills</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of shownProgression(); trackBy: trackGuild" [class.cleared]="row.killed === row.firsts.length">
+              <td class="rank">{{ row.rank }}</td>
+              <td>
+                <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
+                  <span class="faction" [ngClass]="'faction-' + row.guild.faction" aria-hidden="true"></span>
+                  <span class="strong">{{ row.guild.name }}</span>
+                  <span class="muted phone-hidden">{{ row.guild.realm }}</span>
+                </a>
+              </td>
+              <td>
+                <span class="progress">
+                  <span class="progress-count difficulty-text" [ngClass]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
+                  <span class="pips" aria-hidden="true">
+                    <span
+                      class="pip"
+                      *ngFor="let boss of pipBosses()"
+                      [class.down]="!!row.firsts[boss.index]"
+                      [ngClass]="current.slug"
+                      [title]="pipTitle(boss, row.firsts[boss.index])"></span>
+                  </span>
+                </span>
+              </td>
+              <td class="col-optional muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
+              <td class="num">{{ row.kills | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noGuilds><p class="empty-note">No guild has a kill on {{ current.name }} yet.</p></ng-template>
+
+      <button
+        type="button"
+        class="more-button"
+        *ngIf="progression().length > previewSize"
+        [attr.aria-expanded]="showAllGuilds()"
+        (click)="showAllGuilds.set(!showAllGuilds())">
+        {{ showAllGuilds() ? 'Show the top ' + previewSize : 'Show all ' + progression().length + ' guilds' }}
+      </button>
+    </section>
+
+    <!-- Latest kills -->
+    <section class="section" aria-labelledby="recent-title">
+      <header class="section-header">
+        <h2 id="recent-title">Latest kills</h2>
+        <p>Open a kill for its damage, healing and loot.</p>
+      </header>
+
+      <ol class="kill-list">
+        <li *ngFor="let kill of recentKills(); trackBy: trackKill">
+          <a class="kill-row" [routerLink]="logLink(kill)">
+            <img class="kill-portrait" [src]="kill.boss.portrait" alt="" loading="lazy" />
+            <span class="kill-main">
+              <span class="kill-boss">{{ kill.boss.shortName }}</span>
+              <span class="kill-guild">
+                <span class="faction" [ngClass]="'faction-' + kill.faction" aria-hidden="true"></span>
+                {{ kill.guild?.name || 'Pickup group' }}
+              </span>
+            </span>
+            <span class="kill-time">{{ formatFightTime(kill.fightMs) }}</span>
+            <time class="kill-ago" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ ago(kill) }}</time>
+          </a>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

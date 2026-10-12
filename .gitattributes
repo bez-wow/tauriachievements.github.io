@@ -1,2 +1,4 @@
 # MythicPlusExporter writes LF; keep it LF on checkout so autocrlf does not warn on every add/commit.
 spa/src/mythic-plus-data/** text eol=lf
+# RaidLogExporter writes LF as well.
+spa/src/raid-log-data/** text eol=lf
