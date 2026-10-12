@@ -126,22 +126,9 @@ td.rank { font-weight: 700; }
 .character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
 .character-line .character-name { flex: none; }
 .character-guild { min-width: 0; overflow: hidden; color: $raid-muted; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+// The Score column, heading and numbers, is centred.
+th.score, td.score { font-variant-numeric: tabular-nums; text-align: center; }
 td.score { font-size: .95rem; }
-
-// One bar per boss, as tall as the character's share of the best on it.
-.boss-bars { display: inline-flex; height: 22px; align-items: flex-end; gap: 3px; vertical-align: middle; }
-
-.boss-bar {
-  display: flex;
-  width: 8px;
-  height: 100%;
-  align-items: flex-end;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, .07);
-  overflow: hidden;
-}
-
-.boss-bar-fill { display: block; width: 100%; min-height: 0; border-radius: 2px 2px 0 0; }
 
 .faction-cell { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }

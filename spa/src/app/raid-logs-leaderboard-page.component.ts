@@ -15,9 +15,7 @@ import { GlideDirective } from './glide.directive';
 import { CLASS_NAMES, RunQuality, scoreQuality } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
-  BossPerformance,
   FACTION_NAMES,
-  ITEM_QUALITY_COLORS,
   MAX_SCORE,
   RAID_PAGE_SIZE,
   RaidBoss,
@@ -34,7 +32,6 @@ import {
   formatPerSecond,
   nameMatches,
   pageCount,
-  performanceQuality,
   raidCharacterLink,
   rankScores,
   realmSlug,
@@ -152,13 +149,10 @@ export class RaidLogsLeaderboardPageComponent {
   /** The top score in view; the score colours measure against it, as the M+ leaderboard's ranks do. */
   private readonly topScore = computed(() => this.ranked()[0]?.score ?? 0);
 
-  /** The per-boss bars' order: the order raiders kill the bosses. */
-  readonly barBosses = computed(() => bossesInKillOrder(this.index()?.bosses ?? []));
-
-  /** What 100% is on each boss: the best anyone did there, in the bars' order. Read only while the explanation is open. */
+  /** What 100% is on each boss: the best anyone did there, in kill order. Read only while the explanation is open. */
   readonly bossTops = computed<BossTop[]>(() => {
     const scores = this.allScores();
-    return this.barBosses().map(boss => {
+    return bossesInKillOrder(this.index()?.bosses ?? []).map(boss => {
       let best: BossTop['best'];
       for (const entry of scores) {
         const value = entry.bosses[boss.index].value;
@@ -294,25 +288,8 @@ export class RaidLogsLeaderboardPageComponent {
     return scoreQuality(entry.score, this.topScore());
   }
 
-  qualityColor(relative: number): string {
-    return ITEM_QUALITY_COLORS[performanceQuality(relative)];
-  }
-
-  /** A per-boss bar's tooltip: `Nythendra: 82% of the best (412.3k DPS)`. */
-  barTitle(entry: BossPerformance): string {
-    if (!entry.best) {
-      return `${entry.boss.shortName}: no kill`;
-    }
-    const percent = Math.round(entry.relative * 1000) / 10;
-    return `${entry.boss.shortName}: ${percent}% of the best (${formatPerSecond(entry.value)} ${this.metric().toUpperCase()})`;
-  }
-
   trackScore(index: number, entry: RankedScore): string {
     return characterKey(entry.character);
-  }
-
-  trackBoss(index: number, boss: RaidBoss): string {
-    return boss.slug;
   }
 
   private loadDifficulty(index: RaidLogsIndex): void {

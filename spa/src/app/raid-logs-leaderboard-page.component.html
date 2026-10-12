@@ -150,7 +150,7 @@
             <tr>
               <th class="rank" scope="col">#</th>
               <th scope="col">Character</th>
-              <th scope="col" class="num">
+              <th scope="col" class="score">
                 <span class="score-head">
                   <button
                     type="button"
@@ -169,7 +169,6 @@
                   Score
                 </span>
               </th>
-              <th scope="col" class="col-optional">Per boss</th>
               <th scope="col" class="num">Bosses</th>
               <th scope="col" class="num col-optional">Item level</th>
               <th scope="col" class="phone-hidden">Faction</th>
@@ -192,17 +191,7 @@
                   </span>
                 </span>
               </td>
-              <td class="num strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
-              <td class="col-optional">
-                <span class="boss-bars" aria-hidden="true">
-                  <span class="boss-bar" *ngFor="let boss of barBosses(); trackBy: trackBoss" [title]="barTitle(entry.bosses[boss.index])">
-                    <span
-                      class="boss-bar-fill"
-                      [style.height.%]="entry.bosses[boss.index].relative * 100"
-                      [style.background]="qualityColor(entry.bosses[boss.index].relative)"></span>
-                  </span>
-                </span>
-              </td>
+              <td class="strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
               <td class="num">{{ entry.killed }}/{{ entry.bosses.length }}</td>
               <td class="num col-optional">{{ entry.itemLevel }}</td>
               <td class="phone-hidden">
