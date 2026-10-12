@@ -126,8 +126,8 @@ td.rank { font-weight: 700; }
 .character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
 .character-line .character-name { flex: none; }
 .character-guild { min-width: 0; overflow: hidden; color: $raid-muted; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
-// The Score column, heading and numbers, is centred.
-th.score, td.score { font-variant-numeric: tabular-nums; text-align: center; }
+// Score, Bosses, Item level and Faction: heading and values centred.
+th.center, td.center { text-align: center; }
 td.score { font-size: .95rem; }
 
 .faction-cell { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }

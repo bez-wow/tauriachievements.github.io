@@ -150,7 +150,7 @@
             <tr>
               <th class="rank" scope="col">#</th>
               <th scope="col">Character</th>
-              <th scope="col" class="score">
+              <th scope="col" class="center">
                 <span class="score-head">
                   <button
                     type="button"
@@ -169,9 +169,9 @@
                   Score
                 </span>
               </th>
-              <th scope="col" class="num">Bosses</th>
-              <th scope="col" class="num col-optional">Item level</th>
-              <th scope="col" class="phone-hidden">Faction</th>
+              <th scope="col" class="num center">Bosses</th>
+              <th scope="col" class="num center col-optional">Item level</th>
+              <th scope="col" class="center phone-hidden">Faction</th>
             </tr>
           </thead>
           <tbody>
@@ -191,10 +191,10 @@
                   </span>
                 </span>
               </td>
-              <td class="strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
-              <td class="num">{{ entry.killed }}/{{ entry.bosses.length }}</td>
-              <td class="num col-optional">{{ entry.itemLevel }}</td>
-              <td class="phone-hidden">
+              <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
+              <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
+              <td class="num center col-optional">{{ entry.itemLevel }}</td>
+              <td class="center phone-hidden">
                 <span class="faction-cell" [ngClass]="'faction-text-' + entry.faction">
                   <span class="faction" [ngClass]="'faction-' + entry.faction" aria-hidden="true"></span>
                   {{ factionName(entry.faction) }}
