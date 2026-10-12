@@ -33,33 +33,54 @@
             <span>{{ member.realm }}</span>
             <span *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
           </p>
+          <!-- With two specs or more each pill shows the profile in that spec only, and All in every
+               spec; only the pressed pill is outlined. A single spec stays a plain pill with a gold edge. -->
           <ul class="profile-specs" aria-label="Specs played">
-            <li *ngFor="let spec of specs(); let index = index" [style.--i]="index">
-              <span class="spec-icon" *ngIf="spec.icon"><img [src]="spec.icon" alt="" /></span>
-              <span>{{ spec.spec }} {{ member.className }}</span>
-              <span class="spec-runs">{{ spec.runs | number }} {{ spec.runs === 1 ? 'run' : 'runs' }}</span>
+            <li *ngIf="specs().length > 1" [style.--i]="0">
+              <button type="button" class="spec-pill all-specs" [attr.aria-pressed]="!selectedSpec()" (click)="selectSpec(undefined)">
+                <span>All</span>
+                <span class="spec-runs">{{ runs().length | number }} {{ runs().length === 1 ? 'run' : 'runs' }}</span>
+              </button>
+            </li>
+            <li *ngFor="let spec of specs(); let index = index" [style.--i]="index + 1">
+              <button
+                *ngIf="specs().length > 1; else staticSpec"
+                type="button"
+                class="spec-pill"
+                [attr.aria-pressed]="spec.spec === selectedSpec()"
+                (click)="selectSpec(spec.spec)">
+                <ng-container *ngTemplateOutlet="specPill; context: { $implicit: spec }"></ng-container>
+              </button>
+              <ng-template #staticSpec>
+                <span class="spec-pill main"><ng-container *ngTemplateOutlet="specPill; context: { $implicit: spec }"></ng-container></span>
+              </ng-template>
             </li>
           </ul>
+          <ng-template #specPill let-spec>
+            <span class="spec-icon" *ngIf="spec.icon"><img [src]="spec.icon" alt="" /></span>
+            <span>{{ spec.spec }}</span>
+            <span class="spec-runs">{{ spec.runs | number }} {{ spec.runs === 1 ? 'run' : 'runs' }}</span>
+          </ng-template>
         </div>
         <div class="profile-score">
           <span
             class="profile-score-metric"
-            [class.has-score-change]="!!scanChange()?.score"
-            [attr.tabindex]="scanChange()?.score ? 0 : null">
+            [class.has-score-change]="!!headerScanChange()?.score"
+            [attr.tabindex]="headerScanChange()?.score ? 0 : null">
             <span
               class="profile-score-value"
               [ngClass]="'q-' + quality()"
-              [class.score-gained]="(scanChange()?.score ?? 0) > 0"
-              [appCountUp]="(player()?.score | number:'1.1-1') ?? ''"
+              [class.score-gained]="(headerScanChange()?.score ?? 0) > 0"
+              [appCountUp]="(shownScore()?.score | number:'1.1-1') ?? ''"
               [countUpDelay]="150"></span>
-            <ng-container *ngIf="scanChange()?.score as scoreChange">
+            <ng-container *ngIf="headerScanChange()?.score as scoreChange">
               <span class="scan-score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
               <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
             </ng-container>
           </span>
           <span class="profile-score-label">
-            Mythic+ score<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container>
-            <span *ngIf="scanChange()?.isNew" class="profile-new" title="New since the last scan">new</span>
+            {{ selectedSpec() ?? 'Mythic+' }} score<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container>
+            <span *ngIf="headerScanChange()?.isNew" class="profile-new" title="New since the last scan">new</span>
           </span>
         </div>
         <div class="profile-actions">
@@ -155,7 +176,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let best of dungeonBests()" [class.not-played]="!best.run">
+              <tr *ngFor="let best of dungeonBests(); trackBy: trackBest" [class.not-played]="!best.run">
                 <th scope="row">
                   <span class="dungeon-name">
                     <img [src]="best.dungeon.icon" alt="" loading="lazy" />{{ best.dungeon.name }}
@@ -176,7 +197,7 @@
                   <td class="num date"><time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time></td>
                 </ng-container>
                 <ng-template #notPlayedCells>
-                  <td class="not-played-cell" colspan="4">Not played</td>
+                  <td class="not-played-cell" colspan="4">{{ notPlayedLabel() }}</td>
                 </ng-template>
               </tr>
             </tbody>
@@ -184,7 +205,7 @@
 
           <ng-template #bestCards>
             <ol class="best-cards">
-              <li *ngFor="let best of dungeonBests()" [class.not-played]="!best.run">
+              <li *ngFor="let best of dungeonBests(); trackBy: trackBest" [class.not-played]="!best.run">
                 <img class="best-card-icon" [src]="best.dungeon.icon" alt="" loading="lazy" />
                 <span class="best-card-body">
                   <span class="best-card-name">{{ best.dungeon.name }}</span>
@@ -193,7 +214,7 @@
                     <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
                     · <time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time>
                   </span>
-                  <ng-template #notPlayedMeta><span class="best-card-meta">Not played</span></ng-template>
+                  <ng-template #notPlayedMeta><span class="best-card-meta">{{ notPlayedLabel() }}</span></ng-template>
                 </span>
                 <ng-container *ngIf="best.run as run">
                   <span class="level" [class.over-time]="run.upgrades === 0">
@@ -312,8 +333,8 @@
       <section class="history" aria-labelledby="history-title">
         <header class="history-header">
           <h2 id="history-title">Runs</h2>
-          <p *ngIf="!selectedDayLabel()">{{ runs().length | number }} this season, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. Rank is the run's place among every run of the season.</p>
-          <p *ngIf="selectedDayLabel() as label">{{ historyRuns().length | number }} on {{ label }}, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. <button type="button" class="link-button" (click)="selectDay(undefined)">Show all</button></p>
+          <p *ngIf="!selectedDayLabel()">{{ specRuns().length | number }}<ng-container *ngIf="selectedSpec() as spec"> as {{ spec }}</ng-container> this season, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. Rank is the run's place among every run of the season.</p>
+          <p *ngIf="selectedDayLabel() as label">{{ historyRuns().length | number }}<ng-container *ngIf="selectedSpec() as spec"> as {{ spec }}</ng-container> on {{ label }}, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. <button type="button" class="link-button" (click)="selectDay(undefined)">Show all</button></p>
         </header>
         <app-mythic-plus-runs-list
           [caption]="historyOrder() === 'best' ? 'Mythic+ runs, best rank first' : 'Mythic+ runs, newest first'"

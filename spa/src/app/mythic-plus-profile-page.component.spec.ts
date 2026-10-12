@@ -119,10 +119,12 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelector('h1')?.textContent).toBe('Progtrix');
     expect(element.querySelector('.profile-crest img')?.getAttribute('src')).toBe('assets/class-crests/10.webp');
     expect(element.querySelector('.profile-score-value')?.textContent).toBe('290.0');
-    // Their top run was as Windwalker; Mistweaver comes after.
-    expect([...element.querySelectorAll('.profile-specs li')]
-      .map(item => [...item.querySelectorAll(':scope > span:not(.spec-icon)')].map(span => span.textContent?.trim())))
-      .toEqual([['Windwalker Monk', '2 runs'], ['Mistweaver Monk', '1 run']]);
+    // All first; their top run was as Windwalker, so it comes before Mistweaver.
+    expect([...element.querySelectorAll('.spec-pill')]
+      .map(pill => [...pill.querySelectorAll(':scope > span:not(.spec-icon)')].map(span => span.textContent?.trim())))
+      .toEqual([['All', '3 runs'], ['Windwalker', '2 runs'], ['Mistweaver', '1 run']]);
+    expect([...element.querySelectorAll('.spec-pill')].map(pill => pill.getAttribute('aria-pressed')))
+      .toEqual(['true', 'false', 'false']);
 
     // Tank also has 290; the tie goes by name, as on the players view.
     expect(page.ranks().map(tile => [tile.scope, tile.rank, tile.total])).toEqual([
@@ -145,7 +147,7 @@ describe('MythicPlusProfilePageComponent', () => {
       previousGeneratedAt: '2026-10-07T12:00:00Z',
       standings
     };
-    const { page, element } = await open(
+    const { page, harness, element } = await open(
       '/mythic-plus/character/evermoon/Progtrix',
       new FakeDataFiles(undefined, false, changedIndex)
     );
@@ -155,6 +157,94 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(element.querySelector('.scan-score-tooltip')?.textContent).toBe('+12.3 score since the last scan');
     expect(element.querySelectorAll('.profile-rank-change')).toHaveLength(1);
     expect(element.querySelector('.profile-rank-change')?.textContent?.trim()).toBe('▲ 4');
+
+    // A spec score never sits next to the overall score's change; the Overall tile keeps its own.
+    page.selectSpec('Mistweaver');
+    harness.detectChanges();
+    expect(element.querySelector('.profile-score-value')?.classList).not.toContain('score-gained');
+    expect(element.querySelector('.scan-score-tooltip')).toBeNull();
+    expect(element.querySelectorAll('.profile-rank-change')).toHaveLength(1);
+  });
+
+  it('shows the profile in one spec when its pill is clicked, and in every spec again', async () => {
+    const { page, harness, element } = await open('/mythic-plus/character/evermoon/Progtrix');
+    const location = TestBed.inject(Location);
+    const pills = () => [...element.querySelectorAll<HTMLButtonElement>('button.spec-pill')];
+    const click = (pill: number) => {
+      pills()[pill].click();
+      harness.detectChanges();
+    };
+
+    click(2);
+    expect(page.selectedSpec()).toBe('Mistweaver');
+    expect(location.path()).toBe('/mythic-plus/character/evermoon/Progtrix?spec=Mistweaver');
+    expect(pills().map(pill => pill.getAttribute('aria-pressed'))).toEqual(['false', 'false', 'true']);
+    expect(element.querySelector('.profile-score-value')?.textContent).toBe('120.0');
+    expect(element.querySelector('.profile-score-label')?.textContent?.trim()).toMatch(/^Mistweaver score/);
+    expect(page.summary().map(item => item.value)).toEqual(['1', '0%', '-']);
+    // Overall, Realm and Class stay the character's; the Spec tile ranks them among Mistweavers.
+    expect(page.ranks().map(tile => [tile.scope, tile.label, tile.rank, tile.total])).toEqual([
+      ['Overall', 'All realms', 1, 6], ['Realm', 'Evermoon', 1, 4], ['Class', 'Monk', 1, 2], ['Spec', 'Mistweaver Monk', 1, 1]
+    ]);
+    expect(page.ranks()[3].queryParams).toEqual({
+      view: 'players', class: 10, spec: 'Mistweaver', character: 'Progtrix-Evermoon', page: undefined
+    });
+    expect(page.dungeonBests().map(best => best.run?.score)).toEqual([120, undefined, undefined]);
+    expect(element.textContent).toContain('Not played as Mistweaver');
+    expect(page.teammates().map(mate => mate.member.name)).toEqual(['Lili']);
+    expect(page.historyRows().map(row => row.completedAt.slice(0, 10))).toEqual(['2026-09-18']);
+    expect(element.querySelector('.history-header p')?.textContent).toContain('1 as Mistweaver this season');
+    expect(page.timeline().at(-1)?.score).toBe(120);
+
+    // The pressed pill again shows every spec; so does All.
+    click(2);
+    expect(page.selectedSpec()).toBeUndefined();
+    expect(location.path()).toBe('/mythic-plus/character/evermoon/Progtrix');
+    expect(element.querySelector('.profile-score-value')?.textContent).toBe('290.0');
+    expect(page.historyRows()).toHaveLength(3);
+
+    click(1);
+    expect(page.selectedSpec()).toBe('Windwalker');
+    expect(page.ranks()[3]).toMatchObject({ label: 'Windwalker Monk', rank: 1, total: 2 });
+    click(0);
+    expect(page.selectedSpec()).toBeUndefined();
+    expect(pills().map(pill => pill.getAttribute('aria-pressed'))).toEqual(['true', 'false', 'false']);
+  });
+
+  it('opens in the spec ?spec= names and keeps it when fixing the name in the address bar', async () => {
+    const { page, element } = await open('/mythic-plus/character/evermoon/progtrix?spec=Mistweaver');
+
+    expect(page.selectedSpec()).toBe('Mistweaver');
+    expect(element.querySelector('.profile-score-value')?.textContent).toBe('120.0');
+    expect(TestBed.inject(Location).path()).toBe('/mythic-plus/character/evermoon/Progtrix?spec=Mistweaver');
+  });
+
+  it('ignores a ?spec= the character has not played', async () => {
+    const { page } = await open('/mythic-plus/character/evermoon/Progtrix?spec=Blood');
+
+    expect(page.selectedSpec()).toBeUndefined();
+    expect(page.shownScore()?.score).toBe(290);
+  });
+
+  it('keeps the pill of a character with one spec static', async () => {
+    const { page, element } = await open('/mythic-plus/character/evermoon/Tank?spec=Blood');
+
+    expect(element.querySelector('button.spec-pill')).toBeNull();
+    expect([...element.querySelectorAll('.spec-pill')]
+      .map(pill => [...pill.querySelectorAll(':scope > span:not(.spec-icon)')].map(span => span.textContent?.trim())))
+      .toEqual([['Blood', '2 runs']]);
+    expect(page.selectedSpec()).toBeUndefined();
+  });
+
+  it('opens another character in all their specs', async () => {
+    const { harness, page } = await open('/mythic-plus/character/evermoon/Progtrix');
+    page.selectSpec('Mistweaver');
+
+    await harness.navigateByUrl('/mythic-plus/character/evermoon/Lili', MythicPlusProfilePageComponent);
+    expect(page.selectedSpec()).toBeUndefined();
+
+    await harness.navigateByUrl('/mythic-plus/character/evermoon/Progtrix', MythicPlusProfilePageComponent);
+    expect(page.selectedSpec()).toBeUndefined();
   });
 
   it('finds a name typed in another case and puts the real one in the address bar', async () => {
