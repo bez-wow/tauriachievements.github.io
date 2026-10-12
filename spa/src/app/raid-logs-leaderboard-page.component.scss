@@ -18,14 +18,21 @@
 // DPS/HPS and the difficulty side by side, the filters to their right.
 .toolbar-switches { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
-// On a wide screen it all stays on one row: the dropdowns and the search give up a little width
+// Each dropdown is as wide as the longest label it can ever show (widthLabels), so none is cut
+// short. Phones keep the shared row of ranking-toolbar, where they split the width.
+@media (min-width: 641px) {
+  .filter-slot { flex: none; width: auto; }
+}
+
+// On a wide screen it all stays on one row. Reset and the class dropdown share the room left
+// between the difficulty switch and the dropdowns, half each; the search gives up a little width
 // before anything wraps.
 @media (min-width: 1140px) {
   .toolbar { flex-wrap: nowrap; gap: 12px; }
   .toolbar-switches { flex: none; flex-wrap: nowrap; }
   .filters { min-width: 0; flex: 1 1 auto; flex-wrap: nowrap; justify-content: flex-end; }
-  .filter-reset { flex: none; }
-  .filter-slot { width: auto; min-width: 118px; flex: 0 1 160px; }
+  .filter-reset { flex: 1 0 auto; justify-content: center; }
+  .class-slot { flex: 1 0 auto; }
   .search { min-width: 120px; flex: 0 1 190px; }
   .search input { width: 100%; }
 }

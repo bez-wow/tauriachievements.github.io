@@ -206,6 +206,15 @@ export class RaidLogsLeaderboardPageComponent {
     ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
   ];
 
+  /**
+   * Every label each dropdown can show, whatever the tab and class: each keeps its longest one's
+   * width ("Death Knight", "Beast Mastery"), so picking never cuts a name or moves the toolbar.
+   */
+  readonly classWidthLabels: ReadonlyArray<string> = ['All classes', ...Object.values(CLASS_NAMES)];
+  readonly specWidthLabels = computed<string[]>(() =>
+    ['All specs', ...new Set([...(this.index()?.specs.values() ?? [])].map(spec => spec.name))]);
+  readonly realmWidthLabels: ReadonlyArray<string> = this.realmOptions.map(option => option.label);
+
   readonly characterLink = raidCharacterLink;
   readonly classIcon = getClassIconPath;
   readonly formatPerSecond = formatPerSecond;

@@ -36,12 +36,13 @@
           (click)="resetFilters()">
           Reset
         </button>
-        <div class="filter-slot">
+        <div class="filter-slot class-slot">
           <app-filter-dropdown
             dropdownId="raidLeaderboardClass"
             triggerId="raidLeaderboardClassTrigger"
             ariaLabel="Filter by class"
             [options]="classOptions()"
+            [widthLabels]="classWidthLabels"
             [selectedValue]="classFilter()"
             [showIcons]="true"
             [compact]="true"
@@ -54,6 +55,7 @@
             triggerId="raidLeaderboardSpecTrigger"
             ariaLabel="Filter by spec"
             [options]="specOptions()"
+            [widthLabels]="specWidthLabels()"
             [selectedValue]="specFilter()"
             [showIcons]="true"
             [compact]="true"
@@ -67,6 +69,7 @@
             triggerId="raidLeaderboardRealmTrigger"
             ariaLabel="Filter by realm"
             [options]="realmOptions"
+            [widthLabels]="realmWidthLabels"
             [selectedValue]="realmFilter()"
             [compact]="true"
             [highlightWhenSelected]="true"

@@ -71,6 +71,30 @@
   }
 }
 
+// widthLabels: the current selection and every possible label stacked in one grid cell; only
+// the current one shows. overflow: hidden keeps the hidden labels from widening the page when
+// the trigger is squeezed (phones), and the current label then ends in an ellipsis.
+.trigger-fit {
+  display: grid;
+  grid-template-columns: minmax(0, auto);
+  min-width: 0;
+  overflow: hidden;
+  gap: inherit;
+}
+
+.trigger-current,
+.trigger-sizer {
+  display: inline-flex;
+  grid-area: 1 / 1;
+  align-items: center;
+  gap: inherit;
+  min-width: 0;
+}
+
+.trigger-sizer {
+  visibility: hidden;
+}
+
 .dropdown.has-selection .dropdown-trigger {
   border-color: rgba(247, 181, 0, 0.55);
   background: linear-gradient(135deg, rgba(78, 54, 12, 0.96), rgba(46, 31, 7, 0.98));
