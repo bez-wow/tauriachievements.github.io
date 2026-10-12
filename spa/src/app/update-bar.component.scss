@@ -188,15 +188,16 @@
 
 .site-nav-panel {
   position: absolute;
-  top: calc(100% + 2px);
+  top: 100%;
   left: 0;
-  width: 360px;
+  width: 336px;
   max-width: calc(100vw - 20px);
-  padding: 6px;
-  border: 1px solid rgba(247, 181, 0, 0.2);
-  border-radius: 14px;
-  background: linear-gradient(160deg, rgba(27, 27, 33, 0.99), rgba(10, 10, 14, 0.99));
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.4);
+  padding: 4px 0;
+  overflow: hidden;
+  border: 1px solid #242424;
+  border-radius: 4px;
+  background: #111;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.72);
   animation: site-nav-panel-in var(--dur-fast) var(--ease-out);
 
   &[hidden] {
@@ -214,91 +215,60 @@
 .site-nav-pages {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   list-style: none;
 }
 
 .site-nav-page {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 22px minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
-  padding: 9px 10px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  color: #eef0f4;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  color: #f4f4f4;
   text-decoration: none;
-  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.055);
+    background: #202020;
+    color: #fff;
   }
 
   &:focus-visible {
-    outline: none;
-    border-color: rgba(247, 181, 0, 0.45);
-    background: rgba(255, 255, 255, 0.055);
+    outline: 2px solid #f7b500;
+    outline-offset: -2px;
+    background: #202020;
   }
 
   &.is-current {
-    border-color: rgba(247, 181, 0, 0.26);
-    background: rgba(247, 181, 0, 0.08);
-
-    .site-nav-page-label {
-      color: #ffe28a;
-    }
-
-    .site-nav-page-icon {
-      border-color: rgba(247, 181, 0, 0.4);
-    }
+    background: #282828;
+    color: #f7b500;
   }
+}
+
+.site-nav-pages li:last-child .site-nav-page {
+  border-bottom: 0;
 }
 
 .site-nav-page-icon {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.045);
+  width: 22px;
+  height: 22px;
   font-size: 1.05rem;
   line-height: 1;
 }
 
-.site-nav-page-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
 .site-nav-page-label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.84rem;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-
-.site-nav-page-tag {
-  padding: 1px 6px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  color: #9aa1ad;
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.site-nav-page-description {
-  color: #8f96a3;
-  font-size: 0.74rem;
-  font-weight: 400;
-  letter-spacing: 0.1px;
-  line-height: 1.35;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .site-nav-backdrop {
