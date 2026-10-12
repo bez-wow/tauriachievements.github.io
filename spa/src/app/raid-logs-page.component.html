@@ -122,10 +122,10 @@
                   <span class="pips" aria-hidden="true">
                     <span
                       class="pip"
-                      *ngFor="let first of row.firsts; let bossIndex = index"
-                      [class.down]="!!first"
+                      *ngFor="let boss of pipBosses()"
+                      [class.down]="!!row.firsts[boss.index]"
                       [ngClass]="current.slug"
-                      [title]="pipTitle(bosses()[bossIndex], first)"></span>
+                      [title]="pipTitle(boss, row.firsts[boss.index])"></span>
                   </span>
                 </span>
               </td>

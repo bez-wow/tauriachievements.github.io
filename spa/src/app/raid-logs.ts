@@ -263,6 +263,21 @@ const BOSS_PORTRAITS: Readonly<Record<string, string>> = {
   xavius: 'assets/emerald-nightmare/07-xavious.png'
 };
 
+/**
+ * The order the progress squares and the per-boss bars show the bosses in: the order raiders kill
+ * them, not the Dungeon Journal's that the files use.
+ */
+const KILL_ORDER: ReadonlyArray<string> = ['nythendra', 'ursoc', 'dragons-of-nightmare', 'elerethe-renferal', 'ilgynoth', 'cenarius', 'xavius'];
+
+/** The bosses in kill order. One the order doesn't name goes after them, in raid order. */
+export function bossesInKillOrder<T extends Pick<RaidBoss, 'slug' | 'index'>>(bosses: readonly T[]): T[] {
+  const place = (boss: T) => {
+    const position = KILL_ORDER.indexOf(boss.slug);
+    return position < 0 ? KILL_ORDER.length + boss.index : position;
+  };
+  return [...bosses].sort((a, b) => place(a) - place(b));
+}
+
 export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
 
 export const ROLE_NAMES: Readonly<Record<RaidRole, string>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };

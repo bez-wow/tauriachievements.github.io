@@ -10,6 +10,7 @@ import {
   decodeBossFile,
   decodeGenders,
   decodeIndex,
+  bossesInKillOrder,
   defaultDifficulty,
   fastestKills,
   formatAgo,
@@ -271,6 +272,15 @@ describe('fastestKills and speedRank', () => {
     const heroic = index.kills.filter(kill => kill.difficulty.id === 15 && kill.boss === nythendra);
     expect(fastestKills(heroic).map(kill => kill.logId)).toEqual([13, 10]);
     expect(speedRank({ realm: 'WoD', logId: 10 }, heroic)).toBe(2);
+  });
+});
+
+describe('bossesInKillOrder', () => {
+  it('puts the bosses in the order raiders kill them', () => {
+    const slugs = ['nythendra', 'ilgynoth', 'elerethe-renferal', 'ursoc', 'dragons-of-nightmare', 'cenarius', 'xavius', 'new-boss'];
+    const bosses = slugs.map((slug, bossIndex) => ({ slug, index: bossIndex }));
+    expect(bossesInKillOrder(bosses).map(boss => boss.slug)).toEqual(
+      ['nythendra', 'ursoc', 'dragons-of-nightmare', 'elerethe-renferal', 'ilgynoth', 'cenarius', 'xavius', 'new-boss']);
   });
 });
 

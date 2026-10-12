@@ -27,6 +27,7 @@ import {
   RaidLogsIndex,
   RaidMetric,
   RankedScore,
+  bossesInKillOrder,
   characterKey,
   countsFor,
   defaultDifficulty,
@@ -151,13 +152,16 @@ export class RaidLogsLeaderboardPageComponent {
   /** The top score in view; the score colours measure against it, as the M+ leaderboard's ranks do. */
   private readonly topScore = computed(() => this.ranked()[0]?.score ?? 0);
 
-  /** What 100% is on each boss: the best anyone did there. Read only while the explanation is open. */
+  /** The per-boss bars' order: the order raiders kill the bosses. */
+  readonly barBosses = computed(() => bossesInKillOrder(this.index()?.bosses ?? []));
+
+  /** What 100% is on each boss: the best anyone did there, in the bars' order. Read only while the explanation is open. */
   readonly bossTops = computed<BossTop[]>(() => {
     const scores = this.allScores();
-    return (this.index()?.bosses ?? []).map((boss, bossIndex) => {
+    return this.barBosses().map(boss => {
       let best: BossTop['best'];
       for (const entry of scores) {
-        const value = entry.bosses[bossIndex].value;
+        const value = entry.bosses[boss.index].value;
         if (value > (best?.value ?? 0)) {
           best = { value, character: entry.character };
         }
@@ -307,8 +311,8 @@ export class RaidLogsLeaderboardPageComponent {
     return characterKey(entry.character);
   }
 
-  trackBoss(index: number, entry: BossPerformance): string {
-    return entry.boss.slug;
+  trackBoss(index: number, boss: RaidBoss): string {
+    return boss.slug;
   }
 
   private loadDifficulty(index: RaidLogsIndex): void {

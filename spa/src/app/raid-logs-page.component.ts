@@ -13,6 +13,7 @@ import {
   RaidKill,
   RaidLogsIndex,
   RaidPerformer,
+  bossesInKillOrder,
   defaultDifficulty,
   encounterKey,
   fastestKills,
@@ -80,6 +81,8 @@ export class RaidLogsPageComponent implements OnInit {
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
   readonly showAllGuilds = signal(false);
   readonly bosses = computed(() => this.index()?.bosses ?? []);
+  /** The progress squares' order: the order raiders kill the bosses. */
+  readonly pipBosses = computed(() => bossesInKillOrder(this.bosses()));
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];

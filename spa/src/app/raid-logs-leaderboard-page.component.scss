@@ -11,7 +11,7 @@
 @include difficulty-colors;
 @include ranking-toolbar;
 @include pager;
-// After raid-table, so a score's quality colour wins over its white.
+// After raid-table, so the rank's and the score's quality colour win over their grey and white.
 @include quality-colors;
 
 .raid-page { @include raid-page; }
@@ -119,6 +119,7 @@
 .top-value strong { color: #fff; }
 
 // The table
+td.rank { font-weight: 700; }
 .race-icon { border-radius: 50%; }
 
 // Name and guild on one line; the guild gives way first when space runs out.

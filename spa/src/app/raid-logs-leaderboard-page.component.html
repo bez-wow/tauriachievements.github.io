@@ -177,7 +177,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let entry of shownRankings(); trackBy: trackScore">
-              <td class="rank">{{ entry.rank }}</td>
+              <td class="rank" [ngClass]="'q-' + scoreTier(entry)">{{ entry.rank }}</td>
               <td>
                 <span class="character">
                   <img [src]="entry.spec?.icon || classIcon(entry.character.classId)" [title]="entry.spec?.name ?? ''" alt="" loading="lazy" />
@@ -195,8 +195,11 @@
               <td class="num strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
               <td class="col-optional">
                 <span class="boss-bars" aria-hidden="true">
-                  <span class="boss-bar" *ngFor="let boss of entry.bosses; trackBy: trackBoss" [title]="barTitle(boss)">
-                    <span class="boss-bar-fill" [style.height.%]="boss.relative * 100" [style.background]="qualityColor(boss.relative)"></span>
+                  <span class="boss-bar" *ngFor="let boss of barBosses(); trackBy: trackBoss" [title]="barTitle(entry.bosses[boss.index])">
+                    <span
+                      class="boss-bar-fill"
+                      [style.height.%]="entry.bosses[boss.index].relative * 100"
+                      [style.background]="qualityColor(entry.bosses[boss.index].relative)"></span>
                   </span>
                 </span>
               </td>
