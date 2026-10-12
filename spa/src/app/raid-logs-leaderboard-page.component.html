@@ -27,6 +27,15 @@
       </div>
 
       <div class="filters">
+        <!-- Always there, greyed out until a filter is set, as on the M+ leaderboard. -->
+        <button
+          type="button"
+          class="filter-reset"
+          [disabled]="!hasFilters()"
+          aria-label="Reset class, spec and realm filters"
+          (click)="resetFilters()">
+          Reset
+        </button>
         <div class="filter-slot">
           <app-filter-dropdown
             dropdownId="raidLeaderboardClass"
@@ -151,6 +160,7 @@
               <th class="rank" scope="col">#</th>
               <th scope="col">Character</th>
               <th scope="col" class="center phone-hidden">Guild</th>
+              <th scope="col" class="center phone-hidden">Realm</th>
               <th scope="col" class="center">
                 <span class="score-head">
                   <button
@@ -191,6 +201,7 @@
                 </span>
               </td>
               <td class="center phone-hidden guild" [ngClass]="'faction-text-' + entry.faction" [title]="factionName(entry.faction)">{{ entry.character.guild }}</td>
+              <td class="center phone-hidden muted">{{ entry.character.realm }}</td>
               <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
               <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
               <td class="num center col-optional">{{ entry.itemLevel }}</td>

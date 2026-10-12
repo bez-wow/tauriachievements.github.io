@@ -20,13 +20,34 @@
 
 // On a wide screen it all stays on one row: the dropdowns and the search give up a little width
 // before anything wraps.
-@media (min-width: 1100px) {
+@media (min-width: 1140px) {
   .toolbar { flex-wrap: nowrap; gap: 12px; }
   .toolbar-switches { flex: none; flex-wrap: nowrap; }
   .filters { min-width: 0; flex: 1 1 auto; flex-wrap: nowrap; justify-content: flex-end; }
+  .filter-reset { flex: none; }
   .filter-slot { width: auto; min-width: 118px; flex: 0 1 160px; }
   .search { min-width: 120px; flex: 0 1 190px; }
   .search input { width: 100%; }
+}
+
+// Reset, before the dropdowns: the M+ leaderboard's.
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 7px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: $gold; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &:disabled { opacity: .45; cursor: default; }
 }
 
 // The (i) in the Score heading.
@@ -123,7 +144,7 @@ td.rank { font-weight: 700; }
 
 .character-line { display: flex; min-width: 0; align-items: baseline; }
 .character-line .character-name { flex: none; }
-// Score, Bosses, Item level and Guild: heading and values centred.
+// Every column after the character: heading and values centred.
 th.center, td.center { text-align: center; }
 td.score { font-size: .95rem; }
 
@@ -146,4 +167,10 @@ td.guild { font-weight: 600; }
   .character-line { max-width: 150px; }
   .character-line .character-name { max-width: 100%; }
   .col-optional { display: none; }
+  // The three dropdowns keep a row to themselves; Reset goes beside the search, and only once
+  // there's something to reset.
+  .filter-slot { flex: 1 1 28%; }
+  .search { order: 1; width: auto; flex: 1 1 60%; }
+  .filter-reset { order: 2; }
+  .filter-reset:disabled { display: none; }
 }

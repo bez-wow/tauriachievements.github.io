@@ -108,6 +108,8 @@ export class RaidLogsLeaderboardPageComponent {
   readonly search = signal(this.query.get('q') ?? '');
   readonly page = signal(Math.max(1, parseNumber(this.query.get('page')) ?? 1));
   readonly showHelp = signal(false);
+  readonly hasFilters = computed(() =>
+    this.classFilter() !== undefined || this.specFilter() !== undefined || this.realmFilter() !== undefined);
   /** The ladder's gender where the raid logs have it wrong; until it loads, the raid logs' own. */
   private readonly genders = toSignal(this.data.genders(), { initialValue: new Map<string, number>() as ReadonlyMap<string, number> });
 
@@ -253,6 +255,15 @@ export class RaidLogsLeaderboardPageComponent {
 
   setSpecFilter(value: FilterDropdownValue): void {
     this.specFilter.set(typeof value === 'number' ? value : undefined);
+    this.page.set(1);
+    this.writeUrl();
+  }
+
+  /** Clears class, spec and realm, as the M+ leaderboard's Reset does; the search stays. */
+  resetFilters(): void {
+    this.classFilter.set(undefined);
+    this.specFilter.set(undefined);
+    this.realmFilter.set(undefined);
     this.page.set(1);
     this.writeUrl();
   }
