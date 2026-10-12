@@ -172,18 +172,25 @@ export class RaidLogsLeaderboardPageComponent {
   readonly shownRankings = computed(() =>
     this.rankings().slice((this.currentPage() - 1) * RAID_PAGE_SIZE, this.currentPage() * RAID_PAGE_SIZE));
 
-  /** "All classes", then the classes A to Z. */
-  readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All classes' },
-    ...Object.entries(CLASS_NAMES)
-      .sort(([, a], [, b]) => a.localeCompare(b))
-      .map(([id, name]) => ({
-        value: Number(id),
-        label: name,
-        icon: getClassIconPath(Number(id)),
-        color: getClassColor(Number(id))
-      }))
-  ];
+  /** "All classes", then the classes the tab ranks A to Z: on HPS only those with a healing spec. */
+  readonly classOptions = computed<FilterDropdownOption[]>(() => {
+    const metric = this.metric();
+    const ranked = new Set([...(this.index()?.specs.values() ?? [])]
+      .filter(spec => countsFor(metric, spec))
+      .map(spec => spec.classId));
+    return [
+      { value: undefined, label: 'All classes' },
+      ...Object.entries(CLASS_NAMES)
+        .filter(([id]) => ranked.has(Number(id)))
+        .sort(([, a], [, b]) => a.localeCompare(b))
+        .map(([id, name]) => ({
+          value: Number(id),
+          label: name,
+          icon: getClassIconPath(Number(id)),
+          color: getClassColor(Number(id))
+        }))
+    ];
+  });
 
   /** The picked class's specs that the tab ranks: healers on HPS, everyone else on DPS. */
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
@@ -220,6 +227,7 @@ export class RaidLogsLeaderboardPageComponent {
       .subscribe({
         next: index => {
           this.index.set(index);
+          this.fitFiltersToTab();
           this.loadDifficulty(index);
         },
         error: error => this.fail(error)
@@ -241,17 +249,40 @@ export class RaidLogsLeaderboardPageComponent {
       return;
     }
     this.metric.set(metric);
-    // A spec the other tab doesn't rank would empty the list.
-    if (this.specFilter() !== undefined && !this.specOptions().some(option => option.value === this.specFilter())) {
-      this.specFilter.set(undefined);
-    }
+    this.fitFiltersToTab();
     this.page.set(1);
     this.writeUrl();
   }
 
+  /**
+   * Clears a class or spec the tab doesn't rank (a Warrior on HPS): it would empty the list, and
+   * the dropdown would show no label for it. Then picks the spec of a class with only one the
+   * tab ranks (a Shaman on HPS is Restoration). Runs on a tab switch and once a URL's filters
+   * meet the index.
+   */
+  private fitFiltersToTab(): void {
+    if (this.classFilter() !== undefined && !this.classOptions().some(option => option.value === this.classFilter())) {
+      this.classFilter.set(undefined);
+      this.specFilter.set(undefined);
+    }
+    if (this.specFilter() !== undefined && !this.specOptions().some(option => option.value === this.specFilter())) {
+      this.specFilter.set(undefined);
+    }
+    this.specFilter.update(spec => spec ?? this.onlyRankedSpec());
+  }
+
+  /**
+   * The picked class's spec when it is the only one the tab ranks: every healing class but the
+   * Priest on HPS. No class has just one on DPS.
+   */
+  private onlyRankedSpec(): number | undefined {
+    const specs = this.specOptions().filter(option => option.value !== undefined);
+    return specs.length === 1 ? specs[0].value as number : undefined;
+  }
+
   setClassFilter(value: FilterDropdownValue): void {
     this.classFilter.set(typeof value === 'number' ? value : undefined);
-    this.specFilter.set(undefined);
+    this.specFilter.set(this.onlyRankedSpec());
     this.page.set(1);
     this.writeUrl();
   }
