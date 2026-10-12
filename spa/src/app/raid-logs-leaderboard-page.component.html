@@ -4,34 +4,26 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="raid-page">
-  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
-    <span aria-hidden="true">‹</span> Back to Raid Logs
-  </a>
-
-  <header class="raid-hero">
-    <div class="hero-text">
-      <p class="eyebrow">Raid Logs · {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</p>
-      <h1>Character leaderboard</h1>
-      <p>One score per character: their best kill of every boss, measured against the best anyone did on it.</p>
-    </div>
-    <app-raid-difficulty-switch
-      *ngIf="index() as loadedIndex"
-      [difficulties]="loadedIndex.difficulties"
-      [selected]="difficulty()?.slug"
-      label="Rank on difficulty"
-      (selectedChange)="setDifficulty($event)" />
-  </header>
+  <!-- No visible header or back link: the page opens on the toolbar. The heading is for screen readers. -->
+  <h1 class="visually-hidden">Character leaderboard, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
   <section class="section" aria-label="Character leaderboard">
-    <div class="toolbar" *ngIf="index()">
-      <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
-        <button
-          type="button"
-          role="tab"
-          *ngFor="let entry of metrics"
-          [class.active]="metric() === entry.id"
-          [attr.aria-selected]="metric() === entry.id"
-          (click)="setMetric(entry.id)">{{ entry.label }}</button>
+    <div class="toolbar" *ngIf="index() as loadedIndex">
+      <div class="toolbar-switches">
+        <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
+          <button
+            type="button"
+            role="tab"
+            *ngFor="let entry of metrics"
+            [class.active]="metric() === entry.id"
+            [attr.aria-selected]="metric() === entry.id"
+            (click)="setMetric(entry.id)">{{ entry.label }}</button>
+        </div>
+        <app-raid-difficulty-switch
+          [difficulties]="loadedIndex.difficulties"
+          [selected]="difficulty()?.slug"
+          label="Rank on difficulty"
+          (selectedChange)="setDifficulty($event)" />
       </div>
 
       <div class="filters">

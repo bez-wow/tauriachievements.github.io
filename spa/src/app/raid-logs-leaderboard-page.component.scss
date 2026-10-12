@@ -3,7 +3,6 @@
 :host { display: block; width: 100%; }
 
 @include visually-hidden;
-@include back-link;
 @include feedback;
 @include sections;
 @include raid-table;
@@ -15,27 +14,19 @@
 
 .raid-page { @include raid-page; }
 
-// The overview's hero: the title over a faint emerald and nightmare-purple haze.
-.raid-hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px 24px;
-  padding: 22px 22px 20px;
-  border: 1px solid $raid-line;
-  border-radius: 10px;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(64, 200, 120, .16), transparent 48%),
-    radial-gradient(circle at 92% 110%, rgba(120, 40, 160, .2), transparent 52%),
-    #101210;
+// DPS/HPS and the difficulty side by side, the filters to their right.
+.toolbar-switches { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
-  h1 { margin: 2px 0 6px; color: #fff; font-size: 1.8rem; line-height: 1.2; }
-  p { max-width: 640px; margin: 0; color: #bdbdbd; line-height: 1.55; }
+// On a wide screen it all stays on one row: the dropdowns and the search give up a little width
+// before anything wraps.
+@media (min-width: 1100px) {
+  .toolbar { flex-wrap: nowrap; gap: 12px; }
+  .toolbar-switches { flex: none; flex-wrap: nowrap; }
+  .filters { min-width: 0; flex: 1 1 auto; flex-wrap: nowrap; justify-content: flex-end; }
+  .filter-slot { width: auto; min-width: 118px; flex: 0 1 160px; }
+  .search { min-width: 120px; flex: 0 1 190px; }
+  .search input { width: 100%; }
 }
-
-.raid-hero .eyebrow { color: $gold; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.hero-text { min-width: 0; flex: 1 1 360px; }
 
 // The (i) in the Score heading.
 .score-head { display: inline-flex; align-items: center; gap: 6px; }
@@ -159,8 +150,6 @@ td.score { font-size: .95rem; }
 
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
-  .raid-hero { padding: 16px; }
-  .raid-hero h1 { font-size: 1.4rem; }
   .score-help { padding: 14px; }
   .help-example li { grid-template-columns: 54px 1fr auto; }
   // The spec icon is enough beside the score on a phone.
