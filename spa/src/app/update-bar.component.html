@@ -175,32 +175,29 @@
       <span>Hall of Fame</span>
     </a>
     <a
-      class="nav-drawer-link nav-drawer-link--new"
+      class="nav-drawer-link"
       routerLink="/mythic-plus"
       routerLinkActive="active"
       [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }"
       (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">🗝️</span>
-      <span class="nav-drawer-link-label">M+ Leaderboard</span>
-      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
+      <span>M+ Leaderboard</span>
     </a>
     <a
-      class="nav-drawer-link nav-drawer-link--new"
+      class="nav-drawer-link"
       routerLink="/mythic-plus/stats"
       routerLinkActive="active"
       (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">⏱️</span>
-      <span class="nav-drawer-link-label">M+ Stats</span>
-      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
+      <span>M+ Stats</span>
     </a>
     <a
-      class="nav-drawer-link nav-drawer-link--new"
+      class="nav-drawer-link"
       routerLink="/mythic-plus/records"
       routerLinkActive="active"
       (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">🥇</span>
-      <span class="nav-drawer-link-label">M+ Records</span>
-      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
+      <span>M+ Records</span>
     </a>
     <a
       class="nav-drawer-link nav-drawer-link--new"
@@ -213,12 +210,13 @@
       <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
     </a>
     <a
-      class="nav-drawer-link"
+      class="nav-drawer-link nav-drawer-link--new"
       routerLink="/raid-logs/leaderboard"
       routerLinkActive="active"
       (click)="closeNav()">
-      <span class="nav-drawer-icon" aria-hidden="true">🐉</span>
-      <span>Raid Leaderboard</span>
+      <span class="nav-drawer-icon" aria-hidden="true">🎯</span>
+      <span class="nav-drawer-link-label">Raid Leaderboard</span>
+      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
     </a>
   </nav>
 
