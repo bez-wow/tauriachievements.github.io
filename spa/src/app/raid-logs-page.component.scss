@@ -1,0 +1,178 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include feedback;
+@include summary-tiles;
+@include sections;
+@include raid-table;
+@include difficulty-colors;
+@include faction-marks;
+
+.raid-page { @include raid-page; }
+
+// The raid's name over a faint emerald and nightmare-purple haze.
+.raid-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding: 22px 22px 20px;
+  border: 1px solid $raid-line;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(64, 200, 120, .16), transparent 48%),
+    radial-gradient(circle at 92% 110%, rgba(120, 40, 160, .2), transparent 52%),
+    #101210;
+
+  h1 { margin: 2px 0 6px; color: #fff; font-size: 1.8rem; line-height: 1.2; }
+  p { max-width: 640px; margin: 0; color: #bdbdbd; line-height: 1.55; }
+}
+
+.raid-hero .eyebrow {
+  color: $gold;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.hero-text { min-width: 0; flex: 1 1 360px; }
+
+// Bosses
+.boss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 10px;
+}
+
+.boss-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid $raid-line;
+  border-radius: 8px;
+  background: $raid-card;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, translate var(--dur) var(--ease-out);
+
+  &:hover { border-color: rgba(247, 181, 0, .4); background: #1a1a1a; translate: 0 -2px; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &.untouched { opacity: .7; }
+}
+
+.boss-head { display: flex; align-items: center; gap: 12px; }
+.boss-portrait { @include boss-portrait(48px); }
+.boss-title { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.boss-title h3 { overflow: hidden; margin: 0; color: #fff; font-size: 1rem; text-overflow: ellipsis; white-space: nowrap; }
+.boss-number { color: $raid-muted; font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; }
+.boss-kills { color: $raid-muted; font-size: .8rem; white-space: nowrap; }
+.boss-kills strong { color: #fff; font-size: 1rem; }
+
+.boss-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+
+  > div { min-width: 0; padding: 8px; border-radius: 5px; background: rgba(255, 255, 255, .03); }
+  dt { color: $raid-muted; font-size: .68rem; text-transform: uppercase; }
+  dd { display: flex; min-width: 0; flex-direction: column; margin: 2px 0 0; }
+  strong { color: #fff; font-variant-numeric: tabular-nums; }
+}
+
+.stat-sub { overflow: hidden; color: #bdbdbd; font-size: .74rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.boss-alive { margin: 0; color: $raid-muted; font-size: .85rem; }
+
+@include motion-safe {
+  .boss-grid[data-reveal='pending'] .boss-card { opacity: 0; }
+
+  .boss-grid[data-reveal='in'] .boss-card {
+    animation: mp-card-rise 560ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
+
+// Progression
+.guild-name { display: inline-flex; align-items: center; gap: 8px; }
+tr.cleared .guild-name .strong { color: $gold; }
+
+.progress { display: inline-flex; align-items: center; gap: 10px; }
+.progress-count { min-width: 2.4em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pips { display: inline-flex; gap: 3px; }
+
+.pip {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 3px;
+  background: #222;
+
+  @each $slug, $color in $difficulty-colors {
+    &.down.#{$slug} { border-color: rgba($color, .6); background: rgba($color, .75); }
+  }
+}
+
+.more-button {
+  align-self: center;
+  padding: 7px 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #e0e0e0;
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// Latest kills
+.kill-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kill-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid $raid-line;
+  border-radius: 6px;
+  background: $raid-card;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover { border-color: rgba(247, 181, 0, .4); }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.kill-portrait { @include boss-portrait(34px); }
+.kill-main { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.kill-boss { overflow: hidden; color: #fff; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.kill-guild { display: inline-flex; overflow: hidden; align-items: center; gap: 6px; color: #bdbdbd; font-size: .8rem; white-space: nowrap; }
+.kill-time { color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; }
+.kill-ago { min-width: 4.6em; color: $raid-muted; font-size: .78rem; text-align: right; }
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .raid-hero { padding: 18px 16px; }
+  .raid-hero h1 { font-size: 1.45rem; }
+  .boss-stats { grid-template-columns: 1fr; }
+  .boss-stats > div { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .boss-stats dd { flex-direction: row-reverse; align-items: baseline; gap: 8px; }
+  .col-optional { display: none; }
+  // The count says it; the pips would push the table wider than the phone.
+  .pips { display: none; }
+}

@@ -1,0 +1,218 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
+    <span aria-hidden="true">‹</span> Back to Raid Logs
+  </a>
+
+  <!-- The other bosses, to switch without going back. -->
+  <nav class="boss-picker" aria-label="Pick a boss" *ngIf="index() as loaded">
+    <a
+      *ngFor="let other of loaded.bosses; trackBy: trackBoss"
+      class="boss-pick"
+      [class.active]="other === boss()"
+      [attr.aria-current]="other === boss() ? 'page' : null"
+      [routerLink]="bossLink(other)"
+      [queryParams]="bossQueryParams()"
+      [title]="other.name">
+      <img [src]="other.portrait" alt="" loading="lazy" />
+      <span>{{ other.shortName }}</span>
+    </a>
+  </nav>
+
+  <header class="boss-header" *ngIf="boss() as current">
+    <img class="boss-portrait" [src]="current.portrait" alt="" />
+    <div class="boss-heading">
+      <p class="eyebrow">Boss {{ current.index + 1 }} · {{ index()?.raid?.name }}</p>
+      <h1>{{ current.name }}</h1>
+    </div>
+    <app-raid-difficulty-switch
+      *ngIf="index() as loaded"
+      [difficulties]="loaded.difficulties"
+      [selected]="difficulty()?.slug"
+      [killCounts]="bossKillCounts()"
+      label="Show kills on difficulty"
+      (selectedChange)="setDifficulty($event)" />
+  </header>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Reading the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
+    <dl class="summary">
+      <div *ngFor="let tile of summary(); trackBy: trackLabel">
+        <dt>{{ tile.label }}</dt>
+        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+      </div>
+    </dl>
+
+    <section class="section" aria-label="Rankings and kills">
+      <div class="toolbar">
+        <div class="view-switch" role="tablist" aria-label="What to list" appGlide>
+          <button
+            type="button"
+            role="tab"
+            *ngFor="let entry of tabs"
+            [class.active]="tab() === entry.id"
+            [attr.aria-selected]="tab() === entry.id"
+            (click)="setTab(entry.id)">{{ entry.label }}</button>
+        </div>
+
+        <div class="filters">
+          <ng-container *ngIf="isRanking()">
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidBossRealm"
+                triggerId="raidBossRealmTrigger"
+                ariaLabel="Filter by realm"
+                [options]="realmOptions"
+                [selectedValue]="realmFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setRealmFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidBossClass"
+                triggerId="raidBossClassTrigger"
+                ariaLabel="Filter by class"
+                [options]="classOptions"
+                [selectedValue]="classFilter()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setClassFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidBossSpec"
+                triggerId="raidBossSpecTrigger"
+                ariaLabel="Filter by spec"
+                [options]="specOptions()"
+                [selectedValue]="specFilter()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                [disabled]="classFilter() === undefined"
+                (selectionChange)="setSpecFilter($event)" />
+            </div>
+          </ng-container>
+          <label class="search">
+            <span class="visually-hidden">{{ isRanking() ? 'Find a character' : 'Find a guild' }}</span>
+            <input
+              type="search"
+              [placeholder]="isRanking() ? 'Find a character' : 'Find a guild'"
+              [value]="search()"
+              (input)="setSearch($any($event.target).value)" />
+          </label>
+        </div>
+      </div>
+
+      <p class="list-note" *ngIf="isRanking()">
+        Each character's best kill. {{ tab() === 'hps' ? 'Healing counts absorbs; only healers are ranked.' : 'Damage done over the length of the fight; healers are ranked under Healing.' }}
+      </p>
+
+      <!-- Damage / Healing -->
+      <div class="table-scroll" *ngIf="isRanking() && rankings().length">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" scope="col">#</th>
+              <th scope="col">Character</th>
+              <th scope="col" class="num">{{ tab() === 'hps' ? 'HPS' : 'DPS' }}</th>
+              <th scope="col" class="num col-optional">Item level</th>
+              <th scope="col">Kill</th>
+              <th scope="col" class="col-optional">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of shownRankings(); trackBy: trackPerformance">
+              <td class="rank">{{ entry.rank }}</td>
+              <td>
+                <span class="character">
+                  <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" alt="" loading="lazy" />
+                  <span class="character-text">
+                    <a
+                      class="character-name"
+                      [style.color]="classColor(entry.member.character.classId)"
+                      [routerLink]="characterLink(entry.member.character)"
+                      [queryParams]="{ difficulty: current.slug }">{{ entry.member.character.name }}</a>
+                    <span class="character-sub">{{ entry.member.spec?.name }} · {{ entry.member.character.realm }}<ng-container *ngIf="entry.member.character.guild"> · {{ entry.member.character.guild }}</ng-container></span>
+                  </span>
+                </span>
+              </td>
+              <td class="num strong">{{ formatPerSecond(entry.value) }}</td>
+              <td class="num col-optional">{{ entry.member.itemLevel }}</td>
+              <td>
+                <a class="kill-link" [routerLink]="logLink(entry.kill)">
+                  <span class="strong">{{ formatFightTime(entry.kill.fightMs) }}</span>
+                  <span class="muted">{{ entry.kill.guild?.name || 'Pickup group' }}</span>
+                </a>
+              </td>
+              <td class="col-optional muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Fastest / latest kills -->
+      <div class="table-scroll" *ngIf="!isRanking() && killRows().length">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" scope="col">#</th>
+              <th scope="col">Guild</th>
+              <th scope="col" class="num">Time</th>
+              <th scope="col" class="num col-optional">Players</th>
+              <th scope="col" class="num col-optional">Deaths</th>
+              <th scope="col" class="num col-optional">Wipes</th>
+              <th scope="col">Date</th>
+              <th scope="col" class="col-optional"><span class="visually-hidden">Log</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of shownKillRows(); trackBy: trackKillRow">
+              <td class="rank">{{ row.rank }}</td>
+              <td>
+                <span class="guild-cell">
+                  <span class="faction" [ngClass]="'faction-' + row.kill.faction" aria-hidden="true"></span>
+                  <a *ngIf="row.kill.guild?.name; else pickup" class="strong" [routerLink]="guildLink(row.kill.guild!)" [queryParams]="{ difficulty: current.slug }">{{ row.kill.guild!.name }}</a>
+                  <ng-template #pickup><span class="muted">Pickup group</span></ng-template>
+                  <span class="muted realm phone-hidden">{{ row.kill.guild?.realm || row.kill.realm }}</span>
+                </span>
+              </td>
+              <td class="num strong"><a [routerLink]="logLink(row.kill)">{{ formatFightTime(row.kill.fightMs) }}</a></td>
+              <td class="num col-optional">{{ row.kill.members.length }}</td>
+              <td class="num col-optional">{{ row.kill.deaths }}</td>
+              <td class="num col-optional">{{ row.kill.wipes }}</td>
+              <td class="muted"><time [attr.datetime]="row.kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="row.kill.killedAt | date:'d MMM y, HH:mm'">{{ tab() === 'latest' ? ago(row.kill) : (row.kill.killedAt | date:'d MMM') }}</time></td>
+              <td class="col-optional"><a class="log-link" [routerLink]="logLink(row.kill)">View log <span aria-hidden="true">›</span></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="empty-note" *ngIf="!total()">
+        {{ search() ? 'Nothing matches "' + search() + '".' : 'Nothing to show for these filters.' }}
+      </p>
+
+      <nav class="pager" *ngIf="pages() > 1" aria-label="Pages">
+        <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹ Previous</button>
+        <span>Page {{ currentPage() }} of {{ pages() }} · {{ total() | number }} {{ isRanking() ? 'characters' : 'kills' }}</span>
+        <button type="button" [disabled]="currentPage() === pages()" (click)="goToPage(currentPage() + 1)">Next ›</button>
+      </nav>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

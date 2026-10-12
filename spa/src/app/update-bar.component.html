@@ -202,17 +202,16 @@
       <span class="nav-drawer-link-label">M+ Records</span>
       <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
     </a>
-  </nav>
-
-  <section class="nav-drawer-soon" aria-label="Coming soon">
-    <span class="nav-drawer-section-title gold-text">Coming Soon</span>
-
-    <div class="nav-drawer-soon-item">
+    <a
+      class="nav-drawer-link nav-drawer-link--new"
+      routerLink="/raid-logs"
+      routerLinkActive="active"
+      (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">📖</span>
-      <span class="nav-drawer-soon-label">Raid Logs</span>
-      <span class="nav-drawer-soon-badge">Soon&trade;</span>
-    </div>
-  </section>
+      <span class="nav-drawer-link-label">Raid Logs</span>
+      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
+    </a>
+  </nav>
 
 </aside>
 

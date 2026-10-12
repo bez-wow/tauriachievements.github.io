@@ -5,6 +5,7 @@
 .DESCRIPTION
     Builds the solution once, then runs each job in order and stops at the first failure:
       MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
+      RaidLogs         RaidLogExporter          -> spa/src/raid-log-data (the /raid-logs pages)
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
       Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
@@ -25,7 +26,7 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('MythicPlus', 'MythicPlusNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
     [string]$From = 'MythicPlus',
 
     [switch]$NoPush,
@@ -46,6 +47,7 @@ $playersCsvRepoPath = 'spa/src/Players.csv'
 
 $steps = @(
     @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
+    @{ Name = 'RaidLogs'; Project = 'RaidLogExporter' },
     @{ Name = 'MythicPlusNames'; Project = 'MythicPlusGuildAndCharScan' },
     @{ Name = 'RealmFirst'; Project = 'RealmFirstAchievements' },
     @{ Name = 'Battlegrounds'; Project = 'BattlegroundCollector' },
@@ -65,6 +67,7 @@ $publishPaths = @(
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',
     'spa/src/mythic-plus-data',
+    'spa/src/raid-log-data',
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',
     'api/AchievementLadder/Data/Guilds/evermoon-guilds.txt',
     'api/AchievementLadder/Data/Guilds/wod-guilds.txt',

@@ -1,0 +1,118 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
+    <span aria-hidden="true">‹</span> Back to Raid Logs
+  </a>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Reading the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && guild() as current">
+    <header class="guild-header">
+      <span class="crest" [ngClass]="'faction-' + current.faction" aria-hidden="true">{{ current.name.charAt(0) }}</span>
+      <div class="guild-heading">
+        <p class="eyebrow">Guild · {{ index()?.raid?.name }}</p>
+        <h1>{{ current.name }}</h1>
+        <p class="guild-meta">
+          <span class="faction" [ngClass]="'faction-' + current.faction" aria-hidden="true"></span>
+          {{ current.faction === 1 ? 'Horde' : 'Alliance' }} · {{ current.realm }}
+          <a *ngIf="armoryUrl() as url" [href]="url" target="_blank" rel="noopener">Armory <span aria-hidden="true">↗</span></a>
+        </p>
+      </div>
+      <app-raid-difficulty-switch
+        *ngIf="index() as loaded"
+        [difficulties]="loaded.difficulties"
+        [selected]="difficulty()?.slug"
+        [killCounts]="killCounts()"
+        label="Show the guild's kills on difficulty"
+        (selectedChange)="setDifficulty($event)" />
+    </header>
+
+    <dl class="summary">
+      <div *ngFor="let tile of summary(); trackBy: trackLabel">
+        <dt>{{ tile.label }}</dt>
+        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+      </div>
+    </dl>
+
+    <section class="section" aria-labelledby="guild-bosses-title" *ngIf="difficulty() as diff">
+      <header class="section-header">
+        <h2 id="guild-bosses-title">Bosses <span class="difficulty-text" [ngClass]="diff.slug">{{ diff.name }}</span></h2>
+        <p>The guild's first and fastest kill of each boss.</p>
+      </header>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Boss</th>
+              <th scope="col">First kill</th>
+              <th scope="col" class="num">Fastest</th>
+              <th scope="col" class="num">Kills</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of bossRows(); trackBy: trackBoss" [class.alive]="!row.kills">
+              <td>
+                <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="{ difficulty: diff.slug }">
+                  <img [src]="row.boss.portrait" alt="" loading="lazy" />
+                  <span class="strong">{{ row.boss.shortName }}</span>
+                </a>
+              </td>
+              <td>
+                <a *ngIf="row.first as first; else notYet" [routerLink]="logLink(first)">{{ first.killedAt | date:'d MMM, HH:mm' }}</a>
+                <ng-template #notYet><span class="muted">Not killed yet</span></ng-template>
+              </td>
+              <td class="num">
+                <a *ngIf="row.fastest as fastest" class="strong" [routerLink]="logLink(fastest)">{{ formatFightTime(fastest.fightMs) }}</a>
+              </td>
+              <td class="num">{{ row.kills || '' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="guild-history-title">
+      <header class="section-header">
+        <h2 id="guild-history-title">Kill history</h2>
+        <p>Every kill on this difficulty, latest first.</p>
+      </header>
+
+      <ol class="history" *ngIf="history().length; else noKills">
+        <li *ngFor="let kill of history(); trackBy: trackKill">
+          <a [routerLink]="logLink(kill)">
+            <img [src]="kill.boss.portrait" alt="" loading="lazy" />
+            <span class="history-boss">{{ kill.boss.shortName }}</span>
+            <span class="history-time">{{ formatFightTime(kill.fightMs) }}</span>
+            <span class="history-players muted">{{ kill.memberCount }} players</span>
+            <time class="muted" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ kill.killedAt | date:'d MMM, HH:mm' }}</time>
+          </a>
+        </li>
+      </ol>
+      <ng-template #noKills><p class="empty-note">No kills on this difficulty.</p></ng-template>
+
+      <button
+        type="button"
+        class="more-button"
+        *ngIf="kills().length > historyPreview"
+        [attr.aria-expanded]="showAllKills()"
+        (click)="showAllKills.set(!showAllKills())">
+        {{ showAllKills() ? 'Show the latest ' + historyPreview : 'Show all ' + kills().length + ' kills' }}
+      </button>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />
