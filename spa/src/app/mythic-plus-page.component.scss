@@ -87,7 +87,7 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
-  scroll-margin-top: 64px;
+  scroll-margin-top: calc(var(--update-bar-height) + 28px);
 }
 
 .toolbar-title {

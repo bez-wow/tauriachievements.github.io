@@ -2,8 +2,8 @@
 @use 'motion';
 
 :root {
-  // Height of the fixed header (app-update-bar); sticky elements sit below it.
-  --update-bar-height: 36px;
+  // Height of the fixed site header; sticky elements sit below it.
+  --update-bar-height: 44px;
 }
 
 @media (max-width: 640px) {
