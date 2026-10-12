@@ -8,7 +8,8 @@ import {
   effect,
   inject,
   linkedSignal,
-  signal
+  signal,
+  untracked
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
@@ -195,6 +196,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
   private readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly urlRealm = computed(() => this.params().get('realm') ?? '');
   readonly urlName = computed(() => this.params().get('name') ?? '');
+  /** `?spec=` as the router last saw it; selectSpec writes the address bar without navigating. */
+  private readonly queryParams = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
@@ -258,8 +261,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
-  readonly quality = computed(() => scoreQuality(this.player()?.score ?? 0, this.ranking()[0]?.score ?? 0));
-
   /** This character's score and overall-rank movement since the preceding export. */
   readonly scanChange = computed<ProfileScanChange | undefined>(() => {
     const index = this.index();
@@ -287,8 +288,58 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
+  /** The spec pill clicked, or `?spec=` until one is; another character starts from their own URL. */
+  private readonly pickedSpec = linkedSignal<{ key?: string; spec?: string }, string | undefined>({
+    source: () => ({ key: this.key(), spec: this.queryParams().get('spec') ?? undefined }),
+    computation: ({ spec }) => spec
+  });
+  /** The spec the profile shows: one they played, when they played more than one. Undefined for all specs. */
+  readonly selectedSpec = computed(() => {
+    const spec = this.pickedSpec();
+    const specs = this.specs();
+    return specs.length > 1 && specs.some(played => played.spec === spec) ? spec : undefined;
+  });
+
+  /** Their runs in the selected spec, newest first; all their runs without one. */
+  readonly specRuns = computed(() => {
+    const spec = this.selectedSpec();
+    const key = this.key();
+    return spec
+      ? this.runs().filter(run => run.roster.some(member => member.spec === spec && characterKey(member) === key))
+      : this.runs();
+  });
+
+  /** One spec's players, each scored on their runs as it: the selected spec, else their main one (the Spec tile). */
+  private readonly specRanking = computed(() => {
+    const member = this.player()?.member;
+    const spec = this.selectedSpec() ?? member?.spec;
+    return member
+      ? rankPlayers(this.allRuns(), entry => entry.class === member.class && entry.spec === spec)
+      : [];
+  });
+
+  /** The header's score and the best run per dungeon: in the selected spec, or in all of them. */
+  readonly shownScore = computed<PlayerScore | undefined>(() => {
+    const key = this.key();
+    return this.selectedSpec() ? this.specRanking().find(entry => entry.key === key) : this.player();
+  });
+
+  /** Coloured against the top score of the same ranking, as on the players view. */
+  readonly quality = computed(() => {
+    const top = (this.selectedSpec() ? this.specRanking() : this.ranking())[0]?.score ?? 0;
+    return scoreQuality(this.shownScore()?.score ?? 0, top);
+  });
+
+  /** The header's change since the last scan is the overall one, so it hides behind a spec score. */
+  readonly headerScanChange = computed(() => this.selectedSpec() ? undefined : this.scanChange());
+
+  readonly notPlayedLabel = computed(() => {
+    const spec = this.selectedSpec();
+    return spec ? `Not played as ${spec}` : 'Not played';
+  });
+
   readonly summary = computed(() => {
-    const runs = this.runs();
+    const runs = this.specRuns();
     const timers = dungeonTimers(this.dungeons());
     const timed = runs.filter(run => isTimed(run, timers));
     const highest = Math.max(0, ...timed.map(run => run.keyLevel));
@@ -297,14 +348,6 @@ export class MythicPlusProfilePageComponent implements OnInit {
       { label: 'In time', value: `${Math.round(percentOf(timed.length, runs.length))}%` },
       { label: 'Highest timed key', value: highest ? `+${highest}` : '-' }
     ];
-  });
-
-  /** Players view links: a character keeps their spec ranks among players of their main spec only. */
-  private readonly specRanking = computed(() => {
-    const member = this.player()?.member;
-    return member
-      ? rankPlayers(this.allRuns(), entry => entry.class === member.class && entry.spec === member.spec)
-      : [];
   });
 
   readonly ranks = computed<RankTile[]>(() => {
@@ -316,6 +359,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const { key, member } = player;
     const realm = realmSlug(member.realm);
     const className = CLASS_NAMES[member.class] ?? 'Unknown';
+    const spec = this.selectedSpec() ?? member.spec;
     const ranking = this.ranking();
     const tile = (scope: string, label: string, found: ScopeRank | undefined, filters: Params, icon?: string): RankTile[] => {
       if (!found) {
@@ -340,13 +384,13 @@ export class MythicPlusProfilePageComponent implements OnInit {
       ...tile('Realm', member.realm, scopeRank(ranking, key, entry => realmSlug(entry.member.realm) === realm), { realm }),
       ...tile('Class', className, scopeRank(ranking, key, entry => entry.member.class === member.class),
         { class: member.class }, this.member()?.classIcon),
-      ...tile('Spec', `${member.spec} ${className}`, scopeRank(this.specRanking(), key),
-        { class: member.class, spec: member.spec }, specIconFor(member.class, member.spec))
+      ...tile('Spec', `${spec} ${className}`, scopeRank(this.specRanking(), key),
+        { class: member.class, spec }, specIconFor(member.class, spec))
     ];
   });
 
   readonly dungeonBests = computed<DungeonBest[]>(() => {
-    const bestRuns = this.player()?.bestRuns;
+    const bestRuns = this.shownScore()?.bestRuns;
     const affixes = this.affixesById();
     const bestScore = this.seasonBestScore();
     return this.dungeons().map(dungeon => {
@@ -388,7 +432,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   });
   readonly timeline = computed(() => {
     const { first, last } = this.seasonSpan();
-    return this.player() ? scoreOverTime(this.runs(), first, last) : [];
+    return this.player() ? scoreOverTime(this.specRuns(), first, last) : [];
   });
 
   readonly chart = computed(() => {
@@ -465,7 +509,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
   /** The runs the list shows, in its order, before "Show more". */
   readonly historyRuns = computed(() => {
     const day = this.selectedDay();
-    const runs = day ? this.runs().filter(run => localDay(new Date(run.completedAt)) === day) : this.runs();
+    const runs = day ? this.specRuns().filter(run => localDay(new Date(run.completedAt)) === day) : this.specRuns();
     const ranks = this.runRanks();
     const rankOf = (id: string) => ranks.get(id) || Number.MAX_SAFE_INTEGER;
     return this.historyOrder() === 'best' ? [...runs].sort((a, b) => rankOf(a.id) - rankOf(b.id)) : runs;
@@ -487,7 +531,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const key = this.key();
     const dungeons = this.dungeonsById();
     return key
-      ? frequentTeammates(this.runs(), key, TEAMMATE_COUNT).map(mate => {
+      ? frequentTeammates(this.specRuns(), key, TEAMMATE_COUNT).map(mate => {
         const dungeon = dungeons.get(mate.bestRun.dungeon);
         return {
           key: mate.key,
@@ -547,13 +591,37 @@ export class MythicPlusProfilePageComponent implements OnInit {
     effect(() => {
       const member = this.player()?.member;
       if (member && (member.name !== this.urlName() || realmSlug(member.realm) !== this.urlRealm())) {
-        this.location.replaceState(this.router.serializeUrl(this.router.createUrlTree(characterProfileLink(member))));
+        untracked(() => this.writeUrl(member));
       }
     });
   }
 
+  /**
+   * The character's own address, with the selected spec. Written straight into the address bar:
+   * navigating would scroll to the top and run a full-page view transition.
+   */
+  private writeUrl(member: { name: string; realm: string }): void {
+    const url = this.router.createUrlTree(characterProfileLink(member), { queryParams: { spec: this.selectedSpec() ?? null } });
+    this.location.replaceState(this.router.serializeUrl(url));
+  }
+
   ngOnInit(): void {
     this.loadData();
+  }
+
+  /** A spec pill: the profile in that spec only. All, or the selected pill again, shows every spec. */
+  selectSpec(spec: string | undefined): void {
+    const member = this.player()?.member;
+    const next = spec === this.selectedSpec() ? undefined : spec;
+    if (!member || next === this.selectedSpec()) {
+      return;
+    }
+
+    this.pickedSpec.set(next);
+    this.selectedDay.set(undefined);
+    this.historyLimit.set(this.pageSize());
+    this.expandedRunId.set(undefined);
+    this.writeUrl(member);
   }
 
   toggleRun(runId: string): void {
@@ -598,6 +666,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
 
   trackScope(index: number, tile: RankTile): string {
     return tile.scope;
+  }
+
+  trackBest(index: number, best: DungeonBest): string {
+    return best.dungeon.id;
   }
 
   loadData(): void {
