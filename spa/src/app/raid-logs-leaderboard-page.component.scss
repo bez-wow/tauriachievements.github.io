@@ -121,10 +121,10 @@
 // The table
 .race-icon { border-radius: 50%; }
 
-// Name and spec on one line; the spec gives way first when space runs out.
+// Name and guild on one line; the guild gives way first when space runs out.
 .character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
 .character-line .character-name { flex: none; }
-.character-spec { min-width: 0; overflow: hidden; color: $raid-muted; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+.character-guild { min-width: 0; overflow: hidden; color: $raid-muted; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
 td.score { font-size: .95rem; }
 
 // One bar per boss, as tall as the character's share of the best on it.
@@ -156,7 +156,7 @@ td.score { font-size: .95rem; }
   .help-example li { grid-template-columns: 54px 1fr auto; }
   // The spec icon is enough beside the score on a phone.
   .race-icon { display: none; }
-  // Only the spec cuts short; even a fraction of a pixel off the name would show an ellipsis.
+  // Only the guild cuts short; even a fraction of a pixel off the name would show an ellipsis.
   .character-line { max-width: 150px; }
   .character-line .character-name { max-width: 100%; }
   .col-optional { display: none; }
