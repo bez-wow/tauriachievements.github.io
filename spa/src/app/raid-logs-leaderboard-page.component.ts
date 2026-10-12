@@ -172,14 +172,17 @@ export class RaidLogsLeaderboardPageComponent {
   readonly shownRankings = computed(() =>
     this.rankings().slice((this.currentPage() - 1) * RAID_PAGE_SIZE, this.currentPage() * RAID_PAGE_SIZE));
 
+  /** "All classes", then the classes A to Z. */
   readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All classes' },
-    ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
-      value: Number(id),
-      label: name,
-      icon: getClassIconPath(Number(id)),
-      color: getClassColor(Number(id))
-    }))
+    ...Object.entries(CLASS_NAMES)
+      .sort(([, a], [, b]) => a.localeCompare(b))
+      .map(([id, name]) => ({
+        value: Number(id),
+        label: name,
+        icon: getClassIconPath(Number(id)),
+        color: getClassColor(Number(id))
+      }))
   ];
 
   /** The picked class's specs that the tab ranks: healers on HPS, everyone else on DPS. */
