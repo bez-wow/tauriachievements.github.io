@@ -115,20 +115,38 @@ $plot-height: 180px;
   margin: 4px 0 0;
   padding: 0;
   list-style: none;
+}
 
-  li {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 8px 3px 3px;
-    border-radius: 4px;
-    background: #262626;
-    font-size: .8rem;
-    font-weight: 600;
+.spec-pill {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
+  border: 0;
+  border-radius: 4px;
+  background: #262626;
+  color: inherit;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+
+  // A character's only spec, as their main spec looked before the pills could be clicked.
+  &.main { box-shadow: inset 0 0 0 1px rgba(247, 181, 0, .45); }
+  &.all-specs { padding-left: 9px; }
+}
+
+// Two specs or more: a pill shows the profile in that spec only, tinted in the class colour.
+button.spec-pill {
+  cursor: pointer;
+
+  &:hover { background: #303030; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+
+  &[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--class-color) 16%, #262626);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--class-color) 65%, transparent);
   }
-
-  // Their main spec, from their top-scoring run.
-  li:first-child { box-shadow: inset 0 0 0 1px rgba(247, 181, 0, .45); }
 }
 
 .spec-icon,
@@ -223,10 +241,11 @@ $plot-height: 180px;
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
+// Fixed-width columns: a number counting to a wider one (95% to 100%) doesn't push the next along.
 .profile-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(3.25rem, max-content));
+  gap: 8px 10px;
   margin: 6px 0 0;
   padding-top: 12px;
   border-top: 1px solid #2a2a2a;
@@ -711,6 +730,8 @@ svg.line {
 // Touch screens: every link and button at least 40 px tall.
 @media (pointer: coarse) {
   .back-link, .action-link, .more-runs { min-height: 40px; }
+  // Spec pills sit in a wrapping row under the name; 32 px keeps it compact.
+  button.spec-pill { min-height: 32px; }
 }
 
 @media (max-width: $cards-breakpoint) {
