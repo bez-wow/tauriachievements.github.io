@@ -1,426 +1,282 @@
+// The site header: sections with their page dropdowns.
+//
+// Up to 860 px wide the sections scroll sideways and a dropdown opens as a sheet across the
+// screen. The sheet is position: fixed inside a scroller, so no ancestor of it may have a
+// transform, filter, backdrop-filter, mask or contain: those would clip it or pin it to the strip.
+
 :host {
   display: block;
+  // Pages leave room for the 36 px one-row header they were designed with. The header is fixed,
+  // so this height moves each page down by the rest of --update-bar-height.
+  height: calc(var(--update-bar-height) - 36px);
 }
 
 .update-bar {
+  --site-bar-height: 44px;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: var(--update-bar-height);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(25, 25, 30, 0.95), rgba(10, 10, 14, 0.98));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-direction: column;
   color: #b8b8b8;
   font-size: 0.75rem;
   letter-spacing: 0.4px;
   z-index: 600;
+
+  // Above the backdrop and anything a page floats over its content.
+  &.is-menu-open {
+    z-index: 1200;
+  }
 }
 
-.update-bar-content {
-  position: relative;
-  width: 100%;
+.site-bar {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  grid-template-columns: minmax(116px, 1fr) max-content minmax(116px, 1fr);
   align-items: center;
-  gap: 10px;
-}
-
-.update-bar-nav-shell {
-  justify-self: start;
-  padding-left: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.nav-toggle {
-  display: inline-flex;
-  width: 28px;
-  min-height: 28px;
-  padding: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  color: #f2f4f8;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 3px;
-  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
-
-  &:hover,
-  &:focus-visible,
-  &.is-open {
-    border-color: rgba(247, 181, 0, 0.35);
-    background: rgba(247, 181, 0, 0.09);
-    color: #ffe28a;
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.14);
-  }
-}
-
-.nav-toggle-bar {
-  display: block;
-  width: 12px;
-  height: 1.5px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.home-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
-  color: #d4dae4;
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.45px;
-  line-height: 1;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
-
-  &:hover,
-  &:focus-visible,
-  &.active {
-    border-color: rgba(247, 181, 0, 0.38);
-    background: rgba(247, 181, 0, 0.09);
-    color: #ffe28a;
-  }
-
-  &:hover {
-    transform: translateY(-1px);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.14);
-  }
-}
-
-.nav-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(4, 4, 6, 0.58);
-  backdrop-filter: blur(2px);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.24s ease, visibility 0.24s ease;
-  z-index: 1100;
-
-  &.is-open {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
-.nav-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: calc(min(304px, 88vw) + env(safe-area-inset-left, 0px));
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
   padding-left: calc(10px + env(safe-area-inset-left, 0px));
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(160deg, rgba(24, 24, 30, 0.99), rgba(8, 8, 12, 0.99));
-  border-right: 1px solid rgba(247, 181, 0, 0.18);
-  box-shadow: 18px 0 48px rgba(0, 0, 0, 0.6);
-  transform: translateX(-100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1200;
-  overflow-y: auto;
-
-  &.is-open {
-    transform: translateX(0);
-  }
+  padding-right: calc(10px + env(safe-area-inset-right, 0px));
+  position: relative;
+  z-index: 2;
+  flex: 0 0 var(--site-bar-height);
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(25, 25, 30, 0.99), rgba(10, 10, 14, 0.995));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.nav-drawer-header {
+// Page-specific freshness lives in the left rail, opposite the utility links.
+.update-bar-status {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 6px 6px 10px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  justify-self: start;
+  min-width: 0;
 }
 
-.nav-drawer-title {
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
+// --- Sections ------------------------------------------------------------------------------------
+
+.site-nav {
+  position: relative;
+  justify-self: center;
+  width: max-content;
+  max-width: 100%;
+  align-self: stretch;
+  min-width: 0;
 }
 
-.nav-drawer-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: #cbd0d8;
-  cursor: pointer;
-  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    fill: none;
-  }
-
-  &:hover,
-  &:focus-visible {
-    border-color: rgba(247, 181, 0, 0.35);
-    background: rgba(247, 181, 0, 0.09);
-    color: #ffe28a;
-    outline: none;
-  }
-}
-
-.nav-drawer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nav-drawer-link {
+.site-nav-list {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  color: #cbd0d8;
-  text-decoration: none;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 50%;
-    width: 3px;
-    height: 0;
-    border-radius: 999px;
-    background: #f7b500;
-    box-shadow: 0 0 10px rgba(247, 181, 0, 0.5);
-    transform: translateY(-50%);
-    transition: height 0.18s ease;
-  }
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: #f2f4f8;
-  }
-
-  &.active {
-    border-color: rgba(247, 181, 0, 0.32);
-    background: rgba(247, 181, 0, 0.1);
-    color: #ffe28a;
-
-    &::before {
-      height: 18px;
-    }
-  }
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  height: 100%;
+  list-style: none;
 }
 
-.nav-drawer-icon {
-  width: 20px;
-  flex: 0 0 20px;
-  font-size: 1rem;
-  line-height: 1;
-  text-align: center;
+.site-nav-item {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
 }
 
-.nav-drawer-link-label {
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nav-drawer-link--new {
-  border-color: rgba(249, 115, 22, 0.18);
-  background: linear-gradient(90deg, rgba(249, 115, 22, 0.07), rgba(247, 181, 0, 0.025));
-
-  &:hover {
-    border-color: rgba(249, 115, 22, 0.34);
-    background: linear-gradient(90deg, rgba(249, 115, 22, 0.12), rgba(247, 181, 0, 0.05));
-  }
-}
-
-.nav-drawer-new-badge {
+.site-nav-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  flex: 0 0 auto;
-  margin-left: auto;
-  padding: 2px 7px 2px 5px;
+  gap: 7px;
+  height: 100%;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  border-right: 1px solid #050507;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.012);
+  color: #c3c9d3;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-fast) ease, background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+
+  &:hover {
+    background: #202024;
+    color: #fff;
+  }
+
+  &[aria-expanded="true"] {
+    background: #29251a;
+    color: #fff0b3;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(247, 181, 0, 0.55);
+  }
+
+  .is-current > & {
+    background: #29251a;
+    color: #fff0b3;
+    text-shadow: none;
+  }
+}
+
+.site-nav-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.site-nav-new {
+  padding: 1px 5px;
   border: 1px solid rgba(251, 146, 60, 0.48);
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.3), rgba(247, 181, 0, 0.17));
-  box-shadow: 0 0 9px rgba(249, 115, 22, 0.2);
+  border-radius: 3px;
+  background: #45250c;
   color: #ffd39b;
-  font-size: 0.69rem;
+  font-size: 0.6rem;
   font-weight: 900;
-  letter-spacing: 0.65px;
+  letter-spacing: 0.6px;
   line-height: 1.35;
   text-transform: uppercase;
-  white-space: nowrap;
-  animation: nav-new-pulse 2.4s ease-in-out infinite;
+}
 
-  span {
-    font-size: 0.69rem;
-    line-height: 1;
+// --- Dropdown ------------------------------------------------------------------------------------
+
+.site-nav-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: max(100%, var(--dropdown-width));
+  max-width: calc(100vw - 20px);
+  padding: 4px 0;
+  overflow: hidden;
+  border: 1px solid #242424;
+  border-radius: 4px;
+  background: #111;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.72);
+  animation: site-nav-panel-in var(--dur-fast) var(--ease-out);
+
+  &[hidden] {
+    display: none;
   }
 }
 
-@keyframes nav-new-pulse {
-  0%, 100% {
-    border-color: rgba(251, 146, 60, 0.42);
-    box-shadow: 0 0 7px rgba(249, 115, 22, 0.16);
-  }
-
-  50% {
-    border-color: rgba(251, 191, 36, 0.78);
-    box-shadow: 0 0 13px rgba(249, 115, 22, 0.38);
+@keyframes site-nav-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nav-drawer-new-badge {
-    animation: none;
-  }
-}
-
-.nav-drawer-soon {
+.site-nav-pages {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  list-style: none;
 }
 
-.nav-drawer-section-title {
-  padding: 0 6px 4px;
-  font-size: 0.69rem;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
-
-.nav-drawer-soon-item {
-  display: flex;
+.site-nav-page {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 10px;
-  border: 1px dashed rgba(247, 181, 0, 0.24);
-  background: rgba(247, 181, 0, 0.045);
-  color: #9aa1ad;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  cursor: default;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  color: #f4f4f4;
+  text-decoration: none;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+
+  &:hover {
+    background: #202020;
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f7b500;
+    outline-offset: -2px;
+    background: #202020;
+  }
+
+  &.is-current {
+    background: #282828;
+    color: #f7b500;
+  }
 }
 
-.nav-drawer-soon-label {
-  flex: 1 1 auto;
+.site-nav-pages li:last-child .site-nav-page {
+  border-bottom: 0;
+}
+
+.site-nav-page-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.site-nav-page-label {
   min-width: 0;
   overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.nav-drawer-soon-badge {
-  flex: 0 0 auto;
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid rgba(247, 181, 0, 0.34);
-  background: rgba(247, 181, 0, 0.12);
-  color: #ffe28a;
-  font-size: 0.69rem;
-  font-weight: 850;
-  letter-spacing: 0.5px;
-  line-height: 1.4;
-  text-transform: uppercase;
+.site-nav-backdrop {
+  display: none;
+}
+
+// --- Discord -------------------------------------------------------------------------------------
+
+.update-bar-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+}
+
+.update-status {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: #c9ced8;
+}
+
+.update-status-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.15px;
   white-space: nowrap;
 }
 
-.update-bar-text {
-  justify-self: center;
-  z-index: 1;
-  padding: 0 8px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  pointer-events: none;
+.update-status-label {
+  color: #ffd100;
+  font-weight: 800;
 }
 
-.update-date,
-.update-time {
+.update-status-date,
+.update-status-time {
   color: #f2f2f2;
   font-weight: 400;
 }
 
-.update-separator {
-  color: rgba(255, 255, 255, 0.38);
-  padding: 0 4px;
+.update-status-separator {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.62rem;
 }
 
-.update-gap {
-  display: inline-block;
-  width: 6px;
-  flex: 0 0 6px;
-}
-
-.update-zone {
+.update-status-zone {
   color: #c9ced8;
-  font-weight: 600;
-}
-
-.update-date.unavailable {
-  color: #a8adb8;
-  font-weight: 500;
-}
-
-.update-bar-actions {
-  justify-self: end;
-  padding-right: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+  font-weight: 800;
 }
 
 .discord-link {
@@ -428,7 +284,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 28px;
+  min-height: 30px;
   padding: 0 10px;
   border-radius: 8px;
   border: 1px solid #6f5b21;
@@ -436,10 +292,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
   color: #f8e7a4;
   text-decoration: none;
-  transition:
-    box-shadow 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 
   &:hover {
     border-color: #9b7d2c;
@@ -450,9 +303,7 @@
   &:focus-visible {
     outline: none;
     border-color: #c9a33b;
-    box-shadow:
-      0 0 0 2px rgba(247, 181, 0, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    box-shadow: 0 0 0 2px rgba(247, 181, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.025);
   }
 }
 
@@ -468,20 +319,126 @@
 .discord-logo {
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
   color: #5865f2;
   fill: currentColor;
-  flex-shrink: 0;
 }
 
-.gold-text {
-  color: #ffd700;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+@media (max-width: 1499px) {
+  .update-bar-actions {
+    gap: 3px;
+  }
+
+  .discord-link {
+    width: 34px;
+    padding: 0;
+  }
+
+  .discord-link-text {
+    display: none;
+  }
 }
+
+@media (max-width: 1023px) {
+  .site-bar {
+    grid-template-columns: minmax(96px, 1fr) max-content minmax(96px, 1fr);
+  }
+
+  .update-status-label,
+  .update-status-year,
+  .update-status-zone {
+    display: none;
+  }
+
+  .update-status-text {
+    gap: 4px;
+    font-size: 0.68rem;
+  }
+}
+
+// --- Narrow screens: the sections scroll and a dropdown is a sheet --------------------------------
+
+@media (max-width: 860px) {
+  .site-bar {
+    grid-template-columns: 96px minmax(0, 1fr) 71px;
+  }
+
+  .site-nav {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  // Fades the sections out under both edges, so a cut-off one reads as "there is more". The list
+  // is padded by the same widths, so nothing is faded once it is scrolled to an end.
+  .site-nav::before,
+  .site-nav::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+
+  .site-nav::before {
+    left: 0;
+    width: 14px;
+    background: linear-gradient(270deg, rgba(20, 20, 25, 0), rgba(20, 20, 25, 0.98));
+  }
+
+  .site-nav::after {
+    right: 0;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(12, 12, 16, 0), rgba(12, 12, 16, 0.98));
+  }
+
+  .site-nav-list {
+    justify-content: flex-start;
+    padding-left: 14px;
+    padding-right: 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .site-nav-panel {
+    position: fixed;
+    top: calc(var(--site-bar-height) + 6px);
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - var(--site-bar-height) - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .site-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    display: block;
+    background: rgba(4, 4, 6, 0.6);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur) ease, visibility var(--dur) ease;
+    z-index: 1100;
+
+    &.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+// --- Phones --------------------------------------------------------------------------------------
 
 @media (max-width: 640px) {
-  // Pages space their first content for the 30 px phone header they were designed with.
-  // The bar itself is fixed, so this host height moves each page down by the extra height.
+  // Phone pages were designed for a 30 px header.
   :host {
     height: calc(var(--update-bar-height) - 30px);
   }
@@ -490,61 +447,27 @@
     font-size: 0.7rem;
   }
 
-  // 40 px tap targets (the bar is 44 px tall here, see --update-bar-height).
-  .nav-toggle {
-    width: 40px;
-    min-height: 40px;
+  .site-bar {
+    grid-template-columns: 96px minmax(0, 1fr) 83px;
+    padding-left: calc(4px + env(safe-area-inset-left, 0px));
+    padding-right: calc(4px + env(safe-area-inset-right, 0px));
+    gap: 4px;
   }
 
-  .update-bar-content {
+  .site-nav-trigger {
+    height: 100%;
     gap: 6px;
-  }
-
-  .update-bar-nav-shell {
-    padding-left: 4px;
-    gap: 6px;
-  }
-
-  .home-link {
-    min-height: 40px;
-    padding: 0 10px;
-    font-size: 0.69rem;
-  }
-
-  // Two lines fit in the 44 px bar: wrap between the parts instead of running under the
-  // buttons, and stay inside the middle grid column.
-  .update-bar-text {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    padding: 0 4px;
-    max-width: 100%;
-    line-height: 1.25;
-    white-space: normal;
-
-    > * {
-      white-space: nowrap;
-    }
-  }
-
-  .update-bar-actions {
-    padding-right: 4px;
-    gap: 8px;
   }
 
   .discord-link {
     width: 40px;
     min-height: 40px;
-    padding: 0;
-    gap: 0;
   }
+}
 
-  .discord-link-text {
-    display: none;
-  }
-
-  .discord-logo {
-    width: 16px;
-    height: 16px;
+@media (prefers-reduced-motion: reduce) {
+  .site-nav-new,
+  .site-nav-panel {
+    animation: none;
   }
 }
