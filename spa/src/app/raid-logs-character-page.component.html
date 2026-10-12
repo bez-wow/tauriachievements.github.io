@@ -19,7 +19,6 @@
       *ngIf="index() as loadedIndex"
       [difficulties]="loadedIndex.difficulties"
       [selected]="loaded()?.difficulty?.slug"
-      [showCounts]="false"
       label="Look on another difficulty"
       (selectedChange)="setDifficulty($event)" />
     <button type="button" (click)="loadData()">Try again</button>
@@ -40,7 +39,6 @@
         *ngIf="index() as loadedIndex"
         [difficulties]="loadedIndex.difficulties"
         [selected]="loaded()?.difficulty?.slug"
-        [showCounts]="false"
         label="Show the character's kills on difficulty"
         (selectedChange)="setDifficulty($event)" />
     </header>

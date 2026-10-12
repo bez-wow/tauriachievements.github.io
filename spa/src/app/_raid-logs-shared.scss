@@ -178,12 +178,8 @@ $difficulty-colors: (
     background: #111;
 
     @include glide-pill;
-    // glide-pill makes the switch its own layer; one level up keeps the tooltips over the table
-    // that follows (its scroller is position: relative and would paint on top).
-    z-index: 1;
 
     button {
-      position: relative;
       display: inline-flex;
       align-items: center;
       gap: 7px;
@@ -200,29 +196,7 @@ $difficulty-colors: (
       &.active { background: #2e2716; color: #fff; }
       &:hover:not(:disabled) { color: #fff; }
       &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-      // Dimmed piece by piece, so the tooltip saying why stays readable.
-      &:disabled { cursor: not-allowed; }
-      &:disabled > :not(.difficulty-tooltip) { opacity: .4; }
-    }
-
-    // The kill count under the button. It shows at once, with no delay or fade, on a mouse hover
-    // or keyboard focus. Touch screens have no hover, and a tap would leave it stuck open.
-    .difficulty-tooltip {
-      @include tooltip-box;
-      z-index: 20;
-      top: calc(100% + 6px);
-      left: 50%;
-      padding: 5px 8px;
-      font-size: .75rem;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      transform: translateX(-50%);
-    }
-
-    button:focus-visible > .difficulty-tooltip { opacity: 1; visibility: visible; }
-
-    @media (hover: hover) {
-      button:hover > .difficulty-tooltip { opacity: 1; visibility: visible; }
+      &:disabled { opacity: .4; cursor: not-allowed; }
     }
 
     @media (max-width: 640px) {
