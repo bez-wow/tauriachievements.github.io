@@ -138,7 +138,19 @@
 .top-value { display: inline-flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .top-value strong { color: #fff; }
 
-// The table
+// The table. Fixed columns: their widths don't follow the rows, so switching difficulty, tab,
+// page or filter doesn't shift them. Character has room for the longest name (12 letters and
+// the two icons, 191px) and some air before Guild, the numbers sit close together on the right,
+// and Guild and Realm share the rest. A guild too long for its column ends in an ellipsis, with
+// the full name on hover.
+table { table-layout: fixed; }
+td { overflow: hidden; text-overflow: ellipsis; }
+th.rank { width: 56px; }
+th.col-character { width: 240px; }
+th.col-score { width: 120px; }
+th.col-bosses { width: 110px; }
+th.col-ilvl { width: 120px; }
+
 td.rank { font-weight: 700; }
 .race-icon { border-radius: 50%; }
 
@@ -152,6 +164,24 @@ td.score { font-size: .95rem; }
 td.guild { font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }
 .faction-text-1 { color: #e0605b; }
+
+// Narrower screens drop Item level, then Realm, so Guild keeps room for nearly every name.
+@media (max-width: 1100px) {
+  th.col-character { width: 200px; }
+  .col-ilvl { display: none; }
+}
+
+@media (max-width: 960px) {
+  th.col-character { width: 190px; }
+  th.col-guild { width: 190px; }
+}
+
+@media (max-width: 800px) {
+  th.col-guild { width: auto; }
+  th.col-score { width: 90px; }
+  th.col-bosses { width: 80px; }
+  .col-realm { display: none; }
+}
 
 @media (max-width: 900px) {
   .help-body { grid-template-columns: minmax(0, 1fr); }
@@ -167,6 +197,11 @@ td.guild { font-weight: 600; }
   .character-line { max-width: 150px; }
   .character-line .character-name { max-width: 100%; }
   .col-optional { display: none; }
+  // Only rank, character, score and bosses are left on a phone.
+  th.rank { width: 40px; }
+  th.col-character { width: auto; }
+  th.col-score { width: 74px; }
+  th.col-bosses { width: 70px; }
   // The three dropdowns keep a row to themselves; Reset goes beside the search, and only once
   // there's something to reset.
   .filter-slot { flex: 1 1 28%; }

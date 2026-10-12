@@ -158,10 +158,10 @@
           <thead>
             <tr>
               <th class="rank" scope="col">#</th>
-              <th scope="col">Character</th>
-              <th scope="col" class="center phone-hidden">Guild</th>
-              <th scope="col" class="center phone-hidden">Realm</th>
-              <th scope="col" class="center">
+              <th scope="col" class="col-character">Character</th>
+              <th scope="col" class="center phone-hidden col-guild">Guild</th>
+              <th scope="col" class="center phone-hidden col-realm">Realm</th>
+              <th scope="col" class="center col-score">
                 <span class="score-head">
                   <button
                     type="button"
@@ -180,8 +180,8 @@
                   Score
                 </span>
               </th>
-              <th scope="col" class="num center">Bosses</th>
-              <th scope="col" class="num center col-optional">Item level</th>
+              <th scope="col" class="num center col-bosses">Bosses</th>
+              <th scope="col" class="num center col-optional col-ilvl">Item level</th>
             </tr>
           </thead>
           <tbody>
@@ -200,11 +200,11 @@
                   </span>
                 </span>
               </td>
-              <td class="center phone-hidden guild" [ngClass]="'faction-text-' + entry.faction" [title]="factionName(entry.faction)">{{ entry.character.guild }}</td>
-              <td class="center phone-hidden muted">{{ entry.character.realm }}</td>
+              <td class="center phone-hidden guild" [ngClass]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
+              <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
               <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
               <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
-              <td class="num center col-optional">{{ entry.itemLevel }}</td>
+              <td class="num center col-optional col-ilvl">{{ entry.itemLevel }}</td>
             </tr>
           </tbody>
         </table>
