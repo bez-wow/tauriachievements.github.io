@@ -15,7 +15,7 @@ describe('findNavLocation', () => {
 
   it('ignores query strings, fragments, matrix params and a trailing slash', () => {
     expect(locate('/mythic-plus?dungeon=3&page=2')).toBe('Mythic+ / Leaderboard');
-    expect(locate('/mythic-plus/stats#weeks')).toBe('Mythic+ / Activity');
+    expect(locate('/mythic-plus/stats#weeks')).toBe('Mythic+ / Statistics');
     expect(locate('/guilds;realm=wod')).toBe('Ladder / Guild Rankings');
     expect(locate('/stats/')).toBe('Realm Stats / Realm Stats');
   });
@@ -23,9 +23,9 @@ describe('findNavLocation', () => {
   it('files deeper routes under the page they belong to', () => {
     expect(locate('/mythic-plus/character/tauri/Arthas')).toBe('Mythic+ / Leaderboard');
     expect(locate('/mythic-plus/compare?a=1&b=2')).toBe('Mythic+ / Leaderboard');
-    expect(locate('/raid-logs/boss/xavius-heroic')).toBe('Raids / Overview');
-    expect(locate('/raid-logs/log/evermoon/12345')).toBe('Raids / Overview');
-    expect(locate('/raid-logs/guild/tauri/Some%20Guild')).toBe('Raids / Overview');
+    expect(locate('/raid-logs/boss/xavius-heroic')).toBe('Raids / Raid Logs');
+    expect(locate('/raid-logs/log/evermoon/12345')).toBe('Raids / Raid Logs');
+    expect(locate('/raid-logs/guild/tauri/Some%20Guild')).toBe('Raids / Raid Logs');
     expect(locate('/raid-logs/character/tauri/Name')).toBe('Raids / Character Rankings');
   });
 
