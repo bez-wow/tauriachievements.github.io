@@ -7,7 +7,6 @@
 @include sections;
 @include raid-table;
 @include character-cell;
-@include faction-marks;
 @include difficulty-colors;
 @include ranking-toolbar;
 @include pager;
@@ -122,15 +121,14 @@
 td.rank { font-weight: 700; }
 .race-icon { border-radius: 50%; }
 
-// Name and guild on one line; the guild gives way first when space runs out.
-.character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
+.character-line { display: flex; min-width: 0; align-items: baseline; }
 .character-line .character-name { flex: none; }
-.character-guild { min-width: 0; overflow: hidden; color: $raid-muted; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
-// Score, Bosses, Item level and Faction: heading and values centred.
+// Score, Bosses, Item level and Guild: heading and values centred.
 th.center, td.center { text-align: center; }
 td.score { font-size: .95rem; }
 
-.faction-cell { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+// The guild in its side's colour: Alliance blue, Horde red.
+td.guild { font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }
 .faction-text-1 { color: #e0605b; }
 
@@ -144,7 +142,7 @@ td.score { font-size: .95rem; }
   .help-example li { grid-template-columns: 54px 1fr auto; }
   // The spec icon is enough beside the score on a phone.
   .race-icon { display: none; }
-  // Only the guild cuts short; even a fraction of a pixel off the name would show an ellipsis.
+  // Only a very long name is cut short.
   .character-line { max-width: 150px; }
   .character-line .character-name { max-width: 100%; }
   .col-optional { display: none; }
