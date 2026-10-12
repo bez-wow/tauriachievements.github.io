@@ -11,6 +11,8 @@
 @include difficulty-colors;
 @include ranking-toolbar;
 @include pager;
+// After raid-table, so a score's quality colour wins over its white.
+@include quality-colors;
 
 .raid-page { @include raid-page; }
 

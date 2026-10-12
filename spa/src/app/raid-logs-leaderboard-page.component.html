@@ -189,7 +189,7 @@
                   </span>
                 </span>
               </td>
-              <td class="num strong score">{{ entry.score }}</td>
+              <td class="num strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
               <td class="col-optional">
                 <span class="boss-bars" aria-hidden="true">
                   <span class="boss-bar" *ngFor="let boss of entry.bosses; trackBy: trackBoss" [title]="barTitle(boss)">

@@ -12,7 +12,7 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
-import { CLASS_NAMES } from './mythic-plus';
+import { CLASS_NAMES, RunQuality, scoreQuality } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   BossPerformance,
@@ -128,16 +128,20 @@ export class RaidLogsLeaderboardPageComponent {
     return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric()) : [];
   });
 
+  /** The filtered ranking, before the search: ranks hold across it, so a found character shows their real place. */
+  private readonly ranked = computed<RankedScore[]>(() => rankScores(this.scores(), {
+    classId: this.classFilter(),
+    faction: this.factionFilter(),
+    realm: this.realmFilter()
+  }));
+
   readonly rankings = computed<RankedScore[]>(() => {
-    // Ranks hold across the search, so a found character shows their real place.
-    const ranked = rankScores(this.scores(), {
-      classId: this.classFilter(),
-      faction: this.factionFilter(),
-      realm: this.realmFilter()
-    });
     const query = this.search();
-    return query ? ranked.filter(entry => nameMatches(entry.character.name, query)) : ranked;
+    return query ? this.ranked().filter(entry => nameMatches(entry.character.name, query)) : this.ranked();
   });
+
+  /** The top score in view; the score colours measure against it, as the M+ leaderboard's ranks do. */
+  private readonly topScore = computed(() => this.ranked()[0]?.score ?? 0);
 
   /** What 100% is on each boss: the best anyone did there. Read only while the explanation is open. */
   readonly bossTops = computed<BossTop[]>(() => {
@@ -263,6 +267,11 @@ export class RaidLogsLeaderboardPageComponent {
   /** The race icon, with the ladder's gender: the raid logs make nearly everyone male. */
   raceIcon(character: RaidCharacter): string {
     return getRaceIconPath(character.race, this.genders().get(characterKey(character)) ?? character.gender);
+  }
+
+  /** The score's colour, against the top score in view: the M+ leaderboard's scoreQuality. */
+  scoreTier(entry: RankedScore): RunQuality {
+    return scoreQuality(entry.score, this.topScore());
   }
 
   qualityColor(relative: number): string {
