@@ -44,49 +44,16 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-// --- Brand ---------------------------------------------------------------------------------------
-
-.brand {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 9px;
-  height: 36px;
-  padding: 0 4px;
-  border-radius: 10px;
-  color: #f2f4f8;
-  text-decoration: none;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(247, 181, 0, 0.24);
-  }
-
-  &:hover .brand-mark {
-    box-shadow: 0 0 0 1px rgba(247, 181, 0, 0.45), 0 0 14px rgba(247, 181, 0, 0.28);
-  }
-}
-
-.brand-mark {
+// Keep the left side open without shifting the navigation into the former brand position.
+.brand-spacer {
   display: block;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
-  transition: box-shadow var(--dur-fast) ease;
-}
-
-.brand-name {
-  display: none;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
+  flex: 0 0 36px;
+  height: 36px;
 }
 
 @media (min-width: 1180px) {
-  .brand-name {
-    display: inline;
+  .brand-spacer {
+    flex-basis: 172px;
   }
 }
 
@@ -491,11 +458,10 @@
   }
 
   // 40 px tap targets (the bar is 44 px tall).
-  .brand {
-    justify-content: center;
+  .brand-spacer {
     width: 40px;
+    flex-basis: 40px;
     height: 40px;
-    padding: 0;
   }
 
   .site-nav-trigger {
