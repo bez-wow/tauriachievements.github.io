@@ -1,0 +1,153 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: loaded()?.difficulty?.slug }">
+    <span aria-hidden="true">‹</span> Back to Raid Logs
+  </a>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Looking through the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <app-raid-difficulty-switch
+      *ngIf="index() as loadedIndex"
+      [difficulties]="loadedIndex.difficulties"
+      [selected]="loaded()?.difficulty?.slug"
+      label="Look on another difficulty"
+      (selectedChange)="setDifficulty($event)" />
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && character() as current">
+    <header class="character-header" [style.--class-color]="classColor(current.classId)">
+      <span class="crest"><img [src]="classCrest(current.classId)" alt="" /></span>
+      <div class="character-heading">
+        <p class="eyebrow">{{ mainSpec()?.name }} {{ className(current.classId) }} · {{ current.realm }}</p>
+        <h1 [style.color]="classColor(current.classId)">{{ current.name }}</h1>
+        <p class="character-meta">
+          <span *ngIf="current.guild">&lt;{{ current.guild }}&gt;</span>
+          <a *ngIf="armoryUrl() as url" [href]="url" target="_blank" rel="noopener">Armory <span aria-hidden="true">↗</span></a>
+        </p>
+      </div>
+      <app-raid-difficulty-switch
+        *ngIf="index() as loadedIndex"
+        [difficulties]="loadedIndex.difficulties"
+        [selected]="loaded()?.difficulty?.slug"
+        label="Show the character's kills on difficulty"
+        (selectedChange)="setDifficulty($event)" />
+    </header>
+
+    <dl class="summary">
+      <div *ngFor="let tile of summary(); trackBy: trackLabel">
+        <dt>{{ tile.label }}</dt>
+        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+      </div>
+    </dl>
+
+    <section class="section" aria-labelledby="character-bosses-title" *ngIf="loaded() as data">
+      <header class="section-header">
+        <h2 id="character-bosses-title">Bosses <span class="difficulty-text" [ngClass]="data.difficulty.slug">{{ data.difficulty.name }}</span></h2>
+        <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
+          <button type="button" role="tab" [class.active]="metric() === 'dps'" [attr.aria-selected]="metric() === 'dps'" (click)="setMetric('dps')">Damage</button>
+          <button type="button" role="tab" [class.active]="metric() === 'hps'" [attr.aria-selected]="metric() === 'hps'" (click)="setMetric('hps')">Healing</button>
+        </div>
+      </header>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Boss</th>
+              <th scope="col" class="num">Best {{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
+              <th scope="col" class="num" title="The best kill against the best anyone did on the boss">Of best</th>
+              <th scope="col" class="num">Rank</th>
+              <th scope="col" class="col-optional">Spec</th>
+              <th scope="col" class="num col-optional">Item level</th>
+              <th scope="col" class="num col-optional">Kills</th>
+              <th scope="col"><span class="visually-hidden">Log</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of bossRows(); trackBy: trackBoss" [class.alive]="!row.kills">
+              <td>
+                <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="{ difficulty: data.difficulty.slug, tab: metric() }">
+                  <img [src]="row.boss.portrait" alt="" loading="lazy" />
+                  <span class="strong">{{ row.boss.shortName }}</span>
+                </a>
+              </td>
+              <td class="num strong">{{ row.best ? formatPerSecond(row.value) : '' }}</td>
+              <td class="num strong" [style.color]="qualityColor(row.relative)">{{ row.best ? percent(row.relative) : '' }}</td>
+              <td class="num">
+                <span *ngIf="row.rank" class="rank-cell">#{{ row.rank }} <span class="muted phone-hidden">/ {{ row.ranked | number }}</span></span>
+              </td>
+              <td class="col-optional">
+                <span *ngIf="row.best?.member?.spec as spec" class="spec-cell">
+                  <img class="spec-icon" *ngIf="spec.icon" [src]="spec.icon" alt="" loading="lazy" /> {{ spec.name }}
+                </span>
+              </td>
+              <td class="num col-optional">{{ row.best?.member?.itemLevel ?? '' }}</td>
+              <td class="num col-optional">{{ row.kills || '' }}</td>
+              <td>
+                <a *ngIf="row.best as best" class="log-link" [routerLink]="logLink(best.kill)">Log <span aria-hidden="true">›</span></a>
+                <span *ngIf="!row.kills" class="muted">Not killed</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="list-note">
+        Rank among every character's best kill of the boss on this difficulty. {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
+        The score averages "Of best" over the bosses, out of {{ maxScore }}:
+        <a class="leaderboard-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: data.difficulty.slug, metric: metric() === 'hps' ? 'hps' : null }">see the leaderboard <span aria-hidden="true">›</span></a>
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="character-recent-title">
+      <header class="section-header">
+        <h2 id="character-recent-title">Latest kills</h2>
+      </header>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Boss</th>
+              <th scope="col" class="col-optional">Guild</th>
+              <th scope="col" class="col-optional">Spec</th>
+              <th scope="col" class="num">DPS</th>
+              <th scope="col" class="num">HPS</th>
+              <th scope="col" class="num col-optional">Time</th>
+              <th scope="col">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of recent(); trackBy: trackAppearance">
+              <td>
+                <a class="boss-cell" [routerLink]="logLink(entry.kill)">
+                  <img [src]="entry.kill.boss.portrait" alt="" loading="lazy" />
+                  <span class="strong">{{ entry.kill.boss.shortName }}</span>
+                </a>
+              </td>
+              <td class="col-optional">
+                <a *ngIf="entry.kill.guild?.name; else pickup" [routerLink]="guildLink(entry.kill.guild!)" [queryParams]="{ difficulty: entry.kill.difficulty.slug }">{{ entry.kill.guild!.name }}</a>
+                <ng-template #pickup><span class="muted">Pickup group</span></ng-template>
+              </td>
+              <td class="col-optional">{{ entry.member.spec?.name }}</td>
+              <td class="num" [class.strong]="metric() === 'dps'">{{ formatPerSecond(entry.member.dps) }}</td>
+              <td class="num" [class.strong]="metric() === 'hps'">{{ formatPerSecond(entry.member.hps) }}</td>
+              <td class="num col-optional">{{ formatFightTime(entry.kill.fightMs) }}</td>
+              <td class="muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

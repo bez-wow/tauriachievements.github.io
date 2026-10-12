@@ -256,6 +256,12 @@ public readonly record struct TauriApiResponseResult(
     /// <summary>The API's errorcode for a guild name that does not exist on the realm.</summary>
     public const int GuildNotFoundErrorCode = 13;
 
+    /// <summary>
+    /// The API's errorcode for a character name that does not exist on the realm (renamed,
+    /// deleted or moved away). Comes with HTTP 400, like a missing guild.
+    /// </summary>
+    public const int CharacterNotFoundErrorCode = 6;
+
     public static TauriApiResponseResult Success(JsonElement responseElement) =>
         new(true, responseElement, null);
 

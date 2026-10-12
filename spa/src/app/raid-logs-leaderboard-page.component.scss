@@ -1,0 +1,218 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include feedback;
+@include sections;
+@include raid-table;
+@include character-cell;
+@include difficulty-colors;
+@include ranking-toolbar;
+@include pager;
+// After raid-table, so the rank's and the score's quality colour win over their grey and white.
+@include quality-colors;
+
+.raid-page { @include raid-page; }
+
+// DPS/HPS and the difficulty side by side, the filters to their right.
+.toolbar-switches { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+// Each dropdown is as wide as the longest label it can ever show (widthLabels), so none is cut
+// short. Phones keep the shared row of ranking-toolbar, where they split the width.
+@media (min-width: 641px) {
+  .filter-slot { flex: none; width: auto; }
+}
+
+// On a wide screen it all stays on one row. Reset and the class dropdown share the room left
+// between the difficulty switch and the dropdowns, half each; the search gives up a little width
+// before anything wraps.
+@media (min-width: 1140px) {
+  .toolbar { flex-wrap: nowrap; gap: 12px; }
+  .toolbar-switches { flex: none; flex-wrap: nowrap; }
+  .filters { min-width: 0; flex: 1 1 auto; flex-wrap: nowrap; justify-content: flex-end; }
+  .filter-reset { flex: 1 0 auto; justify-content: center; }
+  .class-slot { flex: 1 0 auto; }
+  .search { min-width: 120px; flex: 0 1 190px; }
+  .search input { width: 100%; }
+}
+
+// Reset, before the dropdowns: the M+ leaderboard's.
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #3a3a3a;
+  border-radius: 7px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: $gold; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &:disabled { opacity: .45; cursor: default; }
+}
+
+// The (i) in the Score heading.
+.score-head { display: inline-flex; align-items: center; gap: 6px; }
+
+.info-button {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+
+  svg { width: 15px; height: 15px; }
+  .info-disc { fill: #bdbdbd; }
+  .info-mark { fill: $raid-card; }
+
+  &:hover .info-disc, &[aria-expanded='true'] .info-disc { fill: $gold; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// The explanation
+.score-help {
+  padding: 16px 18px 18px;
+  border: 1px solid rgba(247, 181, 0, .3);
+  border-radius: 8px;
+  background: $raid-card;
+  color: #cfcfcf;
+  font-size: .88rem;
+  line-height: 1.55;
+
+  h2 { margin: 0; color: #fff; font-size: 1.05rem; }
+  h3 { margin: 14px 0 6px; color: #fff; font-size: .92rem; }
+  p { margin: 0 0 8px; }
+  .muted { color: $raid-muted; font-size: .8rem; }
+}
+
+.help-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+
+.help-close {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.help-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px 28px; }
+
+.help-example {
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: $raid-card-raised;
+  font-variant-numeric: tabular-nums;
+
+  ol { display: grid; gap: 3px; margin: 0 0 10px; padding: 0; list-style: none; }
+  li { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; }
+  li span:first-child { color: $raid-muted; }
+  strong { color: #fff; }
+  p:last-child { margin-bottom: 0; }
+}
+
+.help-label { color: #bdbdbd; font-size: .8rem; }
+.help-math { color: #e0e0e0; }
+
+.help-tops h3 { margin-top: 0; }
+
+.top-list {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+
+  li { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 5px; background: $raid-card-raised; }
+  img { @include boss-portrait(26px); border-radius: 5px; }
+}
+
+.top-boss { min-width: 0; flex: 1; overflow: hidden; color: #e0e0e0; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.top-value { display: inline-flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.top-value strong { color: #fff; }
+
+// The table. Fixed columns: their widths don't follow the rows, so switching difficulty, tab,
+// page or filter doesn't shift them. Character has room for the longest name (12 letters and
+// the two icons, 191px) and some air before Guild, the numbers sit close together on the right,
+// and Guild and Realm share the rest. A guild too long for its column ends in an ellipsis, with
+// the full name on hover.
+table { table-layout: fixed; }
+td { overflow: hidden; text-overflow: ellipsis; }
+th.rank { width: 56px; }
+th.col-character { width: 240px; }
+th.col-score { width: 120px; }
+th.col-bosses { width: 110px; }
+th.col-ilvl { width: 120px; }
+
+td.rank { font-weight: 700; }
+.race-icon { border-radius: 50%; }
+
+.character-line { display: flex; min-width: 0; align-items: baseline; }
+.character-line .character-name { flex: none; }
+// Every column after the character: heading and values centred.
+th.center, td.center { text-align: center; }
+td.score { font-size: .95rem; }
+
+// The guild in its side's colour: Alliance blue, Horde red.
+td.guild { font-weight: 600; }
+.faction-text-0 { color: #6fa2f0; }
+.faction-text-1 { color: #e0605b; }
+
+// Narrower screens drop Item level, then Realm, so Guild keeps room for nearly every name.
+@media (max-width: 1100px) {
+  th.col-character { width: 200px; }
+  .col-ilvl { display: none; }
+}
+
+@media (max-width: 960px) {
+  th.col-character { width: 190px; }
+  th.col-guild { width: 190px; }
+}
+
+@media (max-width: 800px) {
+  th.col-guild { width: auto; }
+  th.col-score { width: 90px; }
+  th.col-bosses { width: 80px; }
+  .col-realm { display: none; }
+}
+
+@media (max-width: 900px) {
+  .help-body { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .score-help { padding: 14px; }
+  .help-example li { grid-template-columns: 54px 1fr auto; }
+  // The spec icon is enough beside the score on a phone.
+  .race-icon { display: none; }
+  // Only a very long name is cut short.
+  .character-line { max-width: 150px; }
+  .character-line .character-name { max-width: 100%; }
+  .col-optional { display: none; }
+  // Only rank, character, score and bosses are left on a phone.
+  th.rank { width: 40px; }
+  th.col-character { width: auto; }
+  th.col-score { width: 74px; }
+  th.col-bosses { width: 70px; }
+  // The three dropdowns keep a row to themselves; Reset goes beside the search, and only once
+  // there's something to reset.
+  .filter-slot { flex: 1 1 28%; }
+  .search { order: 1; width: auto; flex: 1 1 60%; }
+  .filter-reset { order: 2; }
+  .filter-reset:disabled { display: none; }
+}

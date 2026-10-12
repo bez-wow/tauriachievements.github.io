@@ -5,7 +5,9 @@
 .DESCRIPTION
     Builds the solution once, then runs each job in order and stops at the first failure:
       MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
+      RaidLogs         RaidLogExporter          -> spa/src/raid-log-data (the /raid-logs pages)
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
+      RaidLogNames     RaidLogGuildAndCharScan  -> new guilds, guildless characters from raid kills
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
       Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
@@ -25,7 +27,7 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('MythicPlus', 'MythicPlusNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RaidLogNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
     [string]$From = 'MythicPlus',
 
     [switch]$NoPush,
@@ -46,7 +48,9 @@ $playersCsvRepoPath = 'spa/src/Players.csv'
 
 $steps = @(
     @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
+    @{ Name = 'RaidLogs'; Project = 'RaidLogExporter' },
     @{ Name = 'MythicPlusNames'; Project = 'MythicPlusGuildAndCharScan' },
+    @{ Name = 'RaidLogNames'; Project = 'RaidLogGuildAndCharScan' },
     @{ Name = 'RealmFirst'; Project = 'RealmFirstAchievements' },
     @{ Name = 'Battlegrounds'; Project = 'BattlegroundCollector' },
     @{ Name = 'GuildCharacters'; Project = 'GuildCharacterExporter' },
@@ -65,6 +69,7 @@ $publishPaths = @(
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',
     'spa/src/mythic-plus-data',
+    'spa/src/raid-log-data',
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',
     'api/AchievementLadder/Data/Guilds/evermoon-guilds.txt',
     'api/AchievementLadder/Data/Guilds/wod-guilds.txt',

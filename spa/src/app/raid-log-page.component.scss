@@ -1,0 +1,163 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include back-link;
+@include feedback;
+@include summary-tiles;
+@include sections;
+@include raid-table;
+@include character-cell;
+@include difficulty-colors;
+@include faction-marks;
+
+.raid-page { @include raid-page; }
+
+.log-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 18px;
+  border: 1px solid $raid-line;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(64, 200, 120, .14), transparent 45%),
+    radial-gradient(circle at 95% 120%, rgba(120, 40, 160, .18), transparent 50%),
+    #101210;
+}
+
+.boss-portrait { @include boss-portrait(64px); }
+.log-heading { min-width: 0; flex: 1 1 280px; }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: #bdbdbd;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.log-heading h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+  color: #fff;
+  font-size: 1.55rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+
+  a { color: inherit; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  .faction { width: 12px; height: 12px; }
+}
+
+.log-meta { margin: 0; color: $raid-muted; font-size: .85rem; }
+
+.composition {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li { padding: 6px 10px; border-radius: 5px; background: rgba(255, 255, 255, .04); color: #bdbdbd; font-size: .8rem; }
+  strong { color: #fff; }
+}
+
+.view-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid $raid-line;
+  border-radius: 7px;
+  background: #111;
+
+  @include glide-pill;
+
+  button {
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &.active { background: #2e2716; color: #fff; }
+    &:hover { color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  }
+}
+
+// The amount bar: as long as the member's share of the top member's amount.
+.bar-col { width: 42%; min-width: 220px; }
+
+.bar-track {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  height: 24px;
+  align-items: center;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.bar { position: absolute; inset: 0 auto 0 0; opacity: .35; transform-origin: left; }
+.bar-label { position: relative; padding: 0 8px; color: #fff; font-size: .8rem; font-variant-numeric: tabular-nums; font-weight: 600; }
+// The raid-table .muted grey is too dark over a coloured bar.
+.bar-label .muted { color: rgba(255, 255, 255, .72); font-weight: 400; }
+
+@include motion-safe {
+  tbody[data-reveal='pending'] .bar { transform: scaleX(0); }
+
+  // All together: rows rippling in one after another was turned down on the M+ tables.
+  tbody[data-reveal='in'] .bar { animation: mp-grow-x 700ms var(--ease-out) both; }
+}
+
+// Loot
+.loot {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid $raid-line;
+    border-radius: 6px;
+    background: $raid-card;
+    font-size: .88rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { border-color: rgba(247, 181, 0, .4); }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  }
+
+  img { width: 32px; height: 32px; flex: none; border: 1px solid #000; border-radius: 4px; }
+}
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .log-header { padding: 14px; }
+  .boss-portrait { width: 52px; height: 52px; }
+  .log-heading h1 { font-size: 1.25rem; }
+  .bar-col { width: auto; min-width: 96px; }
+  .rank { display: none; }
+  .bar-label .muted { display: none; }
+  .col-optional { display: none; }
+}

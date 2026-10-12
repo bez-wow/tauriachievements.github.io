@@ -1,0 +1,130 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include back-link;
+@include feedback;
+@include summary-tiles;
+@include sections;
+@include raid-table;
+@include difficulty-colors;
+@include faction-marks;
+
+.raid-page { @include raid-page; }
+
+.guild-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 18px;
+  border: 1px solid $raid-line;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(64, 200, 120, .14), transparent 45%),
+    radial-gradient(circle at 95% 120%, rgba(120, 40, 160, .18), transparent 50%),
+    #101210;
+
+  app-raid-difficulty-switch { margin-left: auto; }
+}
+
+// The guild's initial on its faction's colour: guilds have no portrait to show.
+.crest {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgba(247, 181, 0, .3);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &.faction-0 { background: linear-gradient(160deg, #2c5aa0, #10213d); }
+  &.faction-1 { background: linear-gradient(160deg, #a02c2c, #3d1010); }
+}
+
+.guild-heading { min-width: 0; flex: 1 1 260px; }
+.guild-heading h1 { margin: 2px 0 4px; color: #fff; font-size: 1.6rem; line-height: 1.2; overflow-wrap: anywhere; }
+.eyebrow { margin: 0; color: $gold; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+.guild-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0;
+  color: #bdbdbd;
+  font-size: .85rem;
+
+  a { margin-left: 6px; color: $gold; font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+}
+
+.boss-cell { display: inline-flex; align-items: center; gap: 10px; }
+.boss-cell img { @include boss-portrait(30px); }
+tr.alive td { color: $raid-muted; }
+
+// Kill history
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) 4.5em 6.5em 8.5em;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 12px;
+    border: 1px solid $raid-line;
+    border-radius: 6px;
+    background: $raid-card;
+    color: inherit;
+    font-size: .88rem;
+    text-decoration: none;
+
+    &:hover { border-color: rgba(247, 181, 0, .4); }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  }
+
+  img { @include boss-portrait(30px); }
+  time { text-align: right; }
+}
+
+.history-boss { overflow: hidden; color: #fff; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.history-time { color: #fff; font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+.history-players { text-align: right; }
+.muted { color: $raid-muted; }
+
+.more-button {
+  align-self: center;
+  padding: 7px 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #e0e0e0;
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .boss-cell { gap: 8px; }
+  .boss-cell .strong { white-space: normal; }
+  .guild-header { padding: 14px; }
+  .guild-header app-raid-difficulty-switch { margin-left: 0; }
+  .crest { width: 52px; height: 52px; font-size: 1.4rem; }
+  .guild-heading h1 { font-size: 1.3rem; }
+  .history a { grid-template-columns: 30px minmax(0, 1fr) 4.2em 6em; }
+  .history-players { display: none; }
+}

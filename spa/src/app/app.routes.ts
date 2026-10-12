@@ -64,6 +64,36 @@ export const routes: Routes = [
       .then(module => module.MythicPlusProfilePageComponent)
   },
   {
+    path: 'raid-logs',
+    loadComponent: () => import('./raid-logs-page.component')
+      .then(module => module.RaidLogsPageComponent)
+  },
+  {
+    path: 'raid-logs/leaderboard',
+    loadComponent: () => import('./raid-logs-leaderboard-page.component')
+      .then(module => module.RaidLogsLeaderboardPageComponent)
+  },
+  {
+    path: 'raid-logs/boss/:boss',
+    loadComponent: () => import('./raid-logs-boss-page.component')
+      .then(module => module.RaidLogsBossPageComponent)
+  },
+  {
+    path: 'raid-logs/log/:realm/:id',
+    loadComponent: () => import('./raid-log-page.component')
+      .then(module => module.RaidLogPageComponent)
+  },
+  {
+    path: 'raid-logs/guild/:realm/:name',
+    loadComponent: () => import('./raid-logs-guild-page.component')
+      .then(module => module.RaidLogsGuildPageComponent)
+  },
+  {
+    path: 'raid-logs/character/:realm/:name',
+    loadComponent: () => import('./raid-logs-character-page.component')
+      .then(module => module.RaidLogsCharacterPageComponent)
+  },
+  {
     path: 'guild-realm-firsts',
     redirectTo: 'raid-history',
     pathMatch: 'full'

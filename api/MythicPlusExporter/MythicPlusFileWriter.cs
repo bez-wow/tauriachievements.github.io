@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -129,7 +128,7 @@ public static class MythicPlusFileWriter
     {
         var season = MythicPlusCatalog.Season;
         await using var writer = new Utf8JsonWriter(stream, WriterOptions);
-        var line = new LineWriter();
+        var line = new JsonLineWriter(WriterOptions);
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
@@ -227,7 +226,7 @@ public static class MythicPlusFileWriter
                     item.WriteEndArray();
                 }
             );
-            await FlushIfLargeAsync(writer, cancellationToken);
+            await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
         }
         writer.WriteEndArray();
 
@@ -251,7 +250,7 @@ public static class MythicPlusFileWriter
                     item.WriteEndArray();
                 }
             );
-            await FlushIfLargeAsync(writer, cancellationToken);
+            await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
         }
         writer.WriteEndArray();
 
@@ -269,7 +268,7 @@ public static class MythicPlusFileWriter
     )
     {
         await using var writer = new Utf8JsonWriter(stream, WriterOptions);
-        var line = new LineWriter();
+        var line = new JsonLineWriter(WriterOptions);
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
@@ -313,7 +312,7 @@ public static class MythicPlusFileWriter
                     item.WriteEndArray();
                 }
             );
-            await FlushIfLargeAsync(writer, cancellationToken);
+            await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
         }
 
         writer.WriteEndArray();
@@ -338,44 +337,6 @@ public static class MythicPlusFileWriter
         }
     }
 
-    private static async Task FlushIfLargeAsync(
-        Utf8JsonWriter writer,
-        CancellationToken cancellationToken
-    )
-    {
-        if (writer.BytesPending > 64 * 1024)
-        {
-            await writer.FlushAsync(cancellationToken);
-        }
-    }
-
     private static string FormatTimestamp(DateTimeOffset timestamp) =>
         timestamp.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
-
-    /// <summary>
-    /// Writes one array element on a line of its own. The element is rendered by a scratch
-    /// writer and handed over as a raw value, so the outer writer still places the commas.
-    /// </summary>
-    private sealed class LineWriter
-    {
-        private static readonly byte[] NewLine = "\n"u8.ToArray();
-
-        private readonly ArrayBufferWriter<byte> _buffer = new();
-        private readonly Utf8JsonWriter _itemWriter;
-
-        public LineWriter()
-        {
-            _itemWriter = new Utf8JsonWriter(_buffer, WriterOptions);
-        }
-
-        public void WriteTo(Utf8JsonWriter writer, Action<Utf8JsonWriter> writeItem)
-        {
-            _buffer.ResetWrittenCount();
-            _buffer.Write(NewLine);
-            _itemWriter.Reset(_buffer);
-            writeItem(_itemWriter);
-            _itemWriter.Flush();
-            writer.WriteRawValue(_buffer.WrittenSpan, skipInputValidation: true);
-        }
-    }
 }
