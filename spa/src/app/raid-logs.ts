@@ -546,11 +546,15 @@ export interface RankedScore extends CharacterScore {
  * is divided by the best anyone did there, so a boss where big numbers come easy weighs no more
  * than any other; the average over the bosses, times MAX_SCORE, is the score. A boss nobody has
  * killed is left out of the average. `bossKills` holds each boss's kills by boss index.
+ *
+ * With a spec, characters are scored on the kills they played as that spec only, as the M+
+ * leaderboard does; the best on each boss is still the best anyone did there, any spec.
  */
 export function scoreCharacters(
   bosses: readonly RaidBoss[],
   bossKills: ReadonlyArray<readonly RaidKillDetails[]>,
-  metric: RaidMetric
+  metric: RaidMetric,
+  specId?: number
 ): CharacterScore[] {
   interface Tally {
     latest: Appearance;
@@ -569,6 +573,12 @@ export function scoreCharacters(
           continue;
         }
 
+        const value = member[metric];
+        tops[bossIndex] = Math.max(tops[bossIndex], value);
+        if (specId !== undefined && member.spec.id !== specId) {
+          continue;
+        }
+
         const key = characterKey(member.character);
         let tally = tallies.get(key);
         if (!tally) {
@@ -583,12 +593,10 @@ export function scoreCharacters(
         const spec = tally.specs.get(member.spec) ?? { count: 0, at: 0 };
         tally.specs.set(member.spec, { count: spec.count + 1, at: Math.max(spec.at, kill.killedAt) });
 
-        const value = member[metric];
         const best = tally.bests[bossIndex];
         if (!best || value > best.member[metric] || (value === best.member[metric] && kill.killedAt < best.kill.killedAt)) {
           tally.bests[bossIndex] = { member, kill };
         }
-        tops[bossIndex] = Math.max(tops[bossIndex], value);
       }
     }
   });
@@ -627,7 +635,6 @@ export function scoreCharacters(
 
 export interface ScoreFilter {
   classId?: number;
-  faction?: number;
   realm?: string;
 }
 
@@ -635,7 +642,6 @@ export interface ScoreFilter {
 export function rankScores(scores: readonly CharacterScore[], filter: ScoreFilter = {}): RankedScore[] {
   return scores
     .filter(entry => (filter.classId === undefined || entry.character.classId === filter.classId)
-      && (filter.faction === undefined || entry.faction === filter.faction)
       && (filter.realm === undefined || realmSlug(entry.character.realm) === filter.realm))
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
 }

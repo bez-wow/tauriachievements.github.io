@@ -227,9 +227,19 @@ describe('scoreCharacters', () => {
 
   it('ranks the filtered rows from 1, keeping the scores', () => {
     const scores = scoreCharacters(bosses, bossKills, 'dps');
-    expect(rankScores(scores, { faction: 0 }).map(entry => [entry.rank, entry.character.name, entry.score])).toEqual([[1, 'Tank', 871]]);
+    expect(rankScores(scores, { classId: 2 }).map(entry => [entry.rank, entry.character.name, entry.score])).toEqual([[1, 'Tank', 871]]);
     expect(rankScores(scores, { classId: 8 }).map(entry => entry.rank)).toEqual([1, 2]);
     expect(rankScores(scores, { realm: 'wod' })).toEqual([]);
+  });
+
+  it('scores a spec on the kills played as it, against the best of any spec', () => {
+    // Example played Fire only on the first boss: 10 of the best 100 there, nothing elsewhere.
+    const fireOnly = scoreCharacters(bosses, bossKills, 'dps', fire.id);
+    expect(fireOnly.map(entry => [entry.character.name, entry.score, entry.killed])).toEqual([
+      ['Best', MAX_SCORE, 4],
+      ['Example', Math.floor(MAX_SCORE * .1 / 4), 1]
+    ]);
+    expect(fireOnly[1].spec?.name).toBe('Fire');
   });
 });
 

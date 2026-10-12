@@ -28,6 +28,7 @@ import {
   RaidMetric,
   RankedScore,
   characterKey,
+  countsFor,
   defaultDifficulty,
   formatPerSecond,
   nameMatches,
@@ -59,9 +60,6 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
 
 const REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
 
-/** `?faction=` spells the side out. */
-const FACTION_SLUGS: ReadonlyArray<string> = ['alliance', 'horde'];
-
 /**
  * /raid-logs/leaderboard: every character on one difficulty by score, their best kill of each
  * boss measured against the best anyone did there (see scoreCharacters). DPS ranks tanks and
@@ -82,7 +80,7 @@ const FACTION_SLUGS: ReadonlyArray<string> = ['alliance', 'horde'];
   ],
   templateUrl: './raid-logs-leaderboard-page.component.html',
   styleUrl: './raid-logs-leaderboard-page.component.scss',
-  // The class, faction and realm dropdowns need it (NG0201 without it).
+  // The class, spec and realm dropdowns need it (NG0201 without it).
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -107,7 +105,7 @@ export class RaidLogsLeaderboardPageComponent {
   private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? undefined);
   readonly metric = signal<RaidMetric>(this.query.get('metric') === 'hps' ? 'hps' : 'dps');
   readonly classFilter = signal<number | undefined>(parseNumber(this.query.get('class')));
-  readonly factionFilter = signal<number | undefined>(parseFaction(this.query.get('faction')));
+  readonly specFilter = signal<number | undefined>(parseNumber(this.query.get('spec')));
   readonly realmFilter = signal<string | undefined>(this.query.get('realm') ?? undefined);
   readonly search = signal(this.query.get('q') ?? '');
   readonly page = signal(Math.max(1, parseNumber(this.query.get('page')) ?? 1));
@@ -121,17 +119,27 @@ export class RaidLogsLeaderboardPageComponent {
       ?? defaultDifficulty(difficulties);
   });
 
-  /** Everyone's score; the filters only pick rows from it. */
-  readonly scores = computed(() => {
+  /** Everyone's score, every spec counted. What 100% is on each boss comes from it. */
+  private readonly allScores = computed(() => {
     const loaded = this.loaded();
     const index = this.index();
     return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric()) : [];
   });
 
+  /** With a spec picked, each character scored on the kills played as it; the other filters only pick rows. */
+  readonly scores = computed(() => {
+    const loaded = this.loaded();
+    const index = this.index();
+    const spec = this.specFilter();
+    if (spec === undefined) {
+      return this.allScores();
+    }
+    return loaded && index ? scoreCharacters(index.bosses, loaded.bossKills, this.metric(), spec) : [];
+  });
+
   /** The filtered ranking, before the search: ranks hold across it, so a found character shows their real place. */
   private readonly ranked = computed<RankedScore[]>(() => rankScores(this.scores(), {
     classId: this.classFilter(),
-    faction: this.factionFilter(),
     realm: this.realmFilter()
   }));
 
@@ -145,7 +153,7 @@ export class RaidLogsLeaderboardPageComponent {
 
   /** What 100% is on each boss: the best anyone did there. Read only while the explanation is open. */
   readonly bossTops = computed<BossTop[]>(() => {
-    const scores = this.scores();
+    const scores = this.allScores();
     return (this.index()?.bosses ?? []).map((boss, bossIndex) => {
       let best: BossTop['best'];
       for (const entry of scores) {
@@ -174,11 +182,14 @@ export class RaidLogsLeaderboardPageComponent {
     }))
   ];
 
-  readonly factionOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All factions' },
-    { value: 0, label: FACTION_NAMES[0] },
-    { value: 1, label: FACTION_NAMES[1] }
-  ];
+  /** The picked class's specs that the tab ranks: healers on HPS, everyone else on DPS. */
+  readonly specOptions = computed<FilterDropdownOption[]>(() => {
+    const classId = this.classFilter();
+    const metric = this.metric();
+    const specs = [...(this.index()?.specs.values() ?? [])]
+      .filter(spec => spec.classId === classId && countsFor(metric, spec));
+    return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
+  });
 
   readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All realms' },
@@ -227,18 +238,23 @@ export class RaidLogsLeaderboardPageComponent {
       return;
     }
     this.metric.set(metric);
+    // A spec the other tab doesn't rank would empty the list.
+    if (this.specFilter() !== undefined && !this.specOptions().some(option => option.value === this.specFilter())) {
+      this.specFilter.set(undefined);
+    }
     this.page.set(1);
     this.writeUrl();
   }
 
   setClassFilter(value: FilterDropdownValue): void {
     this.classFilter.set(typeof value === 'number' ? value : undefined);
+    this.specFilter.set(undefined);
     this.page.set(1);
     this.writeUrl();
   }
 
-  setFactionFilter(value: FilterDropdownValue): void {
-    this.factionFilter.set(typeof value === 'number' ? value : undefined);
+  setSpecFilter(value: FilterDropdownValue): void {
+    this.specFilter.set(typeof value === 'number' ? value : undefined);
     this.page.set(1);
     this.writeUrl();
   }
@@ -326,14 +342,13 @@ export class RaidLogsLeaderboardPageComponent {
 
   /** In-page filters keep the scroll position: no navigation, only the address bar changes. */
   private writeUrl(): void {
-    const faction = this.factionFilter();
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
       queryParams: {
         difficulty: this.difficulty()?.slug ?? null,
         metric: this.metric() === 'dps' ? null : this.metric(),
         class: this.classFilter() ?? null,
-        faction: faction === undefined ? null : FACTION_SLUGS[faction],
+        spec: this.specFilter() ?? null,
         realm: this.realmFilter() ?? null,
         q: this.search() || null,
         page: this.currentPage() > 1 ? this.currentPage() : null
@@ -346,9 +361,4 @@ export class RaidLogsLeaderboardPageComponent {
 function parseNumber(value: string | null): number | undefined {
   const number = value === null ? NaN : Number(value);
   return Number.isInteger(number) ? number : undefined;
-}
-
-function parseFaction(value: string | null): number | undefined {
-  const faction = FACTION_SLUGS.indexOf(value ?? '');
-  return faction < 0 ? undefined : faction;
 }

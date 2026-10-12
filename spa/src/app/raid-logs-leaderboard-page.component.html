@@ -41,14 +41,16 @@
         </div>
         <div class="filter-slot">
           <app-filter-dropdown
-            dropdownId="raidLeaderboardFaction"
-            triggerId="raidLeaderboardFactionTrigger"
-            ariaLabel="Filter by faction"
-            [options]="factionOptions"
-            [selectedValue]="factionFilter()"
+            dropdownId="raidLeaderboardSpec"
+            triggerId="raidLeaderboardSpecTrigger"
+            ariaLabel="Filter by spec"
+            [options]="specOptions()"
+            [selectedValue]="specFilter()"
+            [showIcons]="true"
             [compact]="true"
             [highlightWhenSelected]="true"
-            (selectionChange)="setFactionFilter($event)" />
+            [disabled]="classFilter() === undefined"
+            (selectionChange)="setSpecFilter($event)" />
         </div>
         <div class="filter-slot">
           <app-filter-dropdown
@@ -124,7 +126,8 @@
           </ol>
           <p class="muted">
             Each boss counts the character's best kill on this difficulty. A boss nobody has killed is left out.
-            The filters only hide rows: a score is always measured against everyone.
+            A score is always measured against these bests. With a spec picked, each character is scored
+            on the kills they played as that spec; the other filters only hide rows.
           </p>
         </div>
       </div>
