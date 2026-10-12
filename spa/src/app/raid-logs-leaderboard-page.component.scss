@@ -37,24 +37,6 @@
 .raid-hero .eyebrow { color: $gold; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .hero-text { min-width: 0; flex: 1 1 360px; }
 
-.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
-
-.help-toggle {
-  margin-left: 4px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: $gold;
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-
-  &:hover { color: #fff; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
-
 // The (i) in the Score heading.
 .score-head { display: inline-flex; align-items: center; gap: 6px; }
 

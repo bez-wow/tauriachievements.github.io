@@ -76,17 +76,7 @@
       </div>
     </div>
 
-    <p class="list-note" *ngIf="index()">
-      {{ metric() === 'hps' ? 'Healers, by healing plus absorbs.' : 'Tanks and damage dealers; healers are ranked under HPS.' }}
-      <button
-        type="button"
-        class="help-toggle"
-        aria-controls="score-help"
-        [attr.aria-expanded]="showHelp()"
-        (click)="showHelp.set(!showHelp())">How is the score calculated?</button>
-    </p>
-
-    <!-- The score, explained. Both the note's button and the Score heading's (i) open it. -->
+    <!-- The score, explained. The Score heading's (i) opens it. -->
     <aside id="score-help" class="score-help" *ngIf="showHelp()" aria-labelledby="score-help-title">
       <header class="help-head">
         <h2 id="score-help-title">How is the score calculated?</h2>

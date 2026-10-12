@@ -4,8 +4,9 @@ import { GlideDirective } from './glide.directive';
 import { RaidDifficulty } from './raid-logs';
 
 /**
- * LFR / Normal / Heroic / Mythic, with each difficulty's kill count. A difficulty nobody has a
- * kill on can't be picked.
+ * Normal / Heroic / Mythic, with each difficulty's kill count. A difficulty without a kill anywhere
+ * in the raid isn't shown (LFR, which the servers don't log); one without a kill of this boss
+ * can't be picked.
  */
 @Component({
   selector: 'app-raid-difficulty-switch',
@@ -15,7 +16,7 @@ import { RaidDifficulty } from './raid-logs';
     <div class="difficulty-switch" role="group" [attr.aria-label]="label" appGlide>
       <button
         type="button"
-        *ngFor="let difficulty of difficulties; trackBy: trackDifficulty"
+        *ngFor="let difficulty of shown; trackBy: trackDifficulty"
         [class.active]="difficulty.slug === selected"
         [attr.aria-pressed]="difficulty.slug === selected"
         [disabled]="!counts(difficulty)"
@@ -35,13 +36,17 @@ import { RaidDifficulty } from './raid-logs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidDifficultySwitchComponent {
-  @Input({ required: true }) difficulties: readonly RaidDifficulty[] = [];
+  @Input({ required: true }) set difficulties(value: readonly RaidDifficulty[]) {
+    this.shown = value.filter(difficulty => difficulty.kills > 0);
+  }
   @Input() selected?: string;
   @Input() label = 'Difficulty';
   @Input() showCounts = true;
   /** Kills per difficulty slug; defaults to each difficulty's raid-wide count. */
   @Input() killCounts?: ReadonlyMap<string, number>;
   @Output() readonly selectedChange = new EventEmitter<string>();
+
+  shown: readonly RaidDifficulty[] = [];
 
   counts(difficulty: RaidDifficulty): number {
     return this.killCounts ? this.killCounts.get(difficulty.slug) ?? 0 : difficulty.kills;
