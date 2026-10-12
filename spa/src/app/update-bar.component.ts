@@ -32,6 +32,13 @@ export class UpdateBarComponent {
   @Input() showLastUpdated = true;
 
   protected readonly sections = NAV_SECTIONS;
+  /** Content-sized dropdown widths: longest label plus roughly 20% breathing room. */
+  protected readonly dropdownWidths = new Map(
+    NAV_SECTIONS.map((section) => {
+      const longestLabel = Math.max(...section.pages.map((page) => Array.from(page.label).length));
+      return [section.id, `calc(60px + ${Math.ceil(longestLabel * 1.2)}ch)`] as const;
+    })
+  );
   /** The section whose dropdown is open, if any. */
   protected readonly openSectionId = signal<string | null>(null);
 
@@ -72,15 +79,21 @@ export class UpdateBarComponent {
     }
   }
 
-  /** With a dropdown already open, pointing at another section switches to it, as in a menu bar. */
+  /** Mouse users can browse the menus without clicking; touch and keyboard users still toggle them. */
   onTriggerPointerEnter(section: NavSection, event: PointerEvent): void {
-    const openId = this.openSectionId();
-    if (event.pointerType !== 'mouse' || openId === null || openId === section.id) {
+    if (event.pointerType !== 'mouse') {
       return;
     }
 
     this.hoverOpenedId = section.id;
     this.openSectionId.set(section.id);
+  }
+
+  /** Keep the menu open while the pointer is over either its trigger or its dropdown. */
+  onSectionPointerLeave(section: NavSection, event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && this.openSectionId() === section.id) {
+      this.closeMenu();
+    }
   }
 
   /** Tabbing out of a section closes its dropdown. Clicks elsewhere are handled on the document. */

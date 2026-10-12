@@ -1,6 +1,22 @@
 <header class="update-bar" [class.is-menu-open]="openSectionId() !== null">
   <div class="site-bar">
-    <span class="brand-spacer" aria-hidden="true"></span>
+    <div class="update-bar-status">
+      <span
+        class="update-status"
+        *ngIf="showLastUpdated && lastEdited"
+        [attr.aria-label]="lastEditedLabel + ' ' + (lastEdited | date:'MMM d, y, HH:mm':lastEditedTimeZone) + ' ' + lastEditedTimeZoneLabel"
+        [attr.title]="lastEditedLabel + ' ' + (lastEdited | date:'MMM d, y, HH:mm':lastEditedTimeZone) + ' ' + lastEditedTimeZoneLabel">
+        <span class="update-status-text">
+          <span class="update-status-label">{{ lastEditedLabel }}</span>
+          <span class="update-status-date">
+            {{ lastEdited | date:'MMM d':lastEditedTimeZone }}<span class="update-status-year">{{ lastEdited | date:', y':lastEditedTimeZone }}</span>
+          </span>
+          <span class="update-status-separator" aria-hidden="true">&bull;</span>
+          <time class="update-status-time">{{ lastEdited | date:'HH:mm':lastEditedTimeZone }}</time>
+          <span class="update-status-zone">{{ lastEditedTimeZoneLabel }}</span>
+        </span>
+      </span>
+    </div>
 
     <nav class="site-nav" aria-label="Primary">
       <ul class="site-nav-list">
@@ -10,7 +26,8 @@
           [class.is-current]="location()?.section === section"
           [class.is-open]="openSectionId() === section.id"
           [attr.data-nav-section]="section.id"
-          (focusout)="onSectionFocusOut(section, $event)">
+          (focusout)="onSectionFocusOut(section, $event)"
+          (pointerleave)="onSectionPointerLeave(section, $event)">
           <ng-container *ngIf="section.pages.length > 1; else directLink">
             <button
               type="button"
@@ -22,14 +39,12 @@
               <span class="site-nav-icon" aria-hidden="true">{{ section.icon }}</span>
               <span>{{ section.label }}</span>
               <span class="site-nav-new" *ngIf="section.isNew">New</span>
-              <svg class="site-nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
-                <path d="M3 4.5l3 3 3-3"/>
-              </svg>
             </button>
 
             <div
               class="site-nav-panel"
               [id]="'nav-panel-' + section.id"
+              [style.--dropdown-width]="dropdownWidths.get(section.id)"
               [hidden]="openSectionId() !== section.id">
               <ul class="site-nav-pages">
                 <li *ngFor="let page of section.pages">

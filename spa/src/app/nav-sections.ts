@@ -36,7 +36,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     icon: '🏆',
     pages: [
       { label: 'Players', icon: '🏆', path: '/', description: 'Character rankings by achievements, HKs, playtime and more' },
-      { label: 'Movers', icon: '📈', path: '/top-gainers', description: 'The biggest climbers since the previous snapshot' },
+      { label: 'Top Gainers', tab: 'Movers', icon: '📈', path: '/top-gainers', description: 'The biggest climbers since the previous snapshot' },
       { label: 'Compare', icon: '⚖️', path: '/compare', description: 'Two ladder characters head to head' },
       { label: 'Guild Rankings', tab: 'Guilds', icon: '🛡️', path: '/guilds', description: 'Guilds ranked by how many of the top characters they hold' }
     ]
@@ -46,8 +46,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'Achievements',
     icon: '💎',
     pages: [
-      { label: 'Browse', icon: '💎', path: '/rare-achievements', description: 'Who owns the rare PvP titles, mounts and KSM' },
-      { label: 'New Discoveries', icon: '✨', path: '/new-rare-characters', description: 'Rare titles, mounts and realm firsts found in the latest scan' },
+      { label: 'Rare Achievements', tab: 'Browse', icon: '💎', path: '/rare-achievements', description: 'Who owns the rare PvP titles, mounts and KSM' },
+      { label: 'New Rare Characters', tab: 'New Discoveries', icon: '✨', path: '/new-rare-characters', description: 'Rare titles, mounts and realm firsts found in the latest scan' },
       { label: 'Hall of Fame', icon: '👑', path: '/ap-chest-looters', description: 'The AP chest looters event leaderboard', tag: 'Archive' }
     ]
   },
@@ -56,18 +56,18 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'PvP',
     icon: '⚔️',
     pages: [
-      { label: 'BG Activity', icon: '⚔️', path: '/battleground', description: 'When battlegrounds start and how long matches last' },
-      { label: 'Rated BG', icon: '🏅', path: '/rated-battleground', description: 'Rated matches, map trends, player rankings and scoreboards' }
+      { label: 'Battlegrounds', tab: 'BG Activity', icon: '⚔️', path: '/battleground', description: 'When battlegrounds start and how long matches last' },
+      { label: 'Rated Battlegrounds', tab: 'Rated BG', icon: '🏅', path: '/rated-battleground', description: 'Rated matches, map trends, player rankings and scoreboards' }
     ]
   },
   {
     id: 'raids',
     label: 'Raids',
-    icon: '🐉',
-    isNew: true,
+    icon: '📖',
     pages: [
       {
-        label: 'Overview',
+        label: 'Raid Logs',
+        tab: 'Overview',
         icon: '📖',
         path: '/raid-logs',
         includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/guild'],
@@ -97,7 +97,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         includes: ['/mythic-plus/character', '/mythic-plus/compare', '/mythic-plus/scoring'],
         description: 'Run and player rankings by dungeon and spec'
       },
-      { label: 'Activity', icon: '⏱️', path: '/mythic-plus/stats', description: 'Runs by day, dungeon, key level and affix week' },
+      { label: 'Statistics', tab: 'Activity', icon: '⏱️', path: '/mythic-plus/stats', description: 'Runs by day, dungeon, key level and affix week' },
       { label: 'Records', icon: '🥇', path: '/mythic-plus/records', description: 'Dungeon records, server firsts and unclaimed bounties' }
     ]
   },
