@@ -8,6 +8,7 @@ import {
   RaidLogsIndexFile,
   RaidSpec,
   decodeBossFile,
+  decodeGenders,
   decodeIndex,
   defaultDifficulty,
   fastestKills,
@@ -124,6 +125,13 @@ describe('decodeBossFile', () => {
 
   it('shares one character object between the kills', () => {
     expect(kills[0].members[0].character).toBe(kills[1].members[0].character);
+  });
+});
+
+describe('decodeGenders', () => {
+  it('keys the corrected genders like characterKey', () => {
+    const genders = decodeGenders({ v: 1, female: { Evermoon: ['Sósa'], WoD: ['Ama'] }, male: { Tauri: ['Kael'] } });
+    expect([...genders.entries()]).toEqual([['tauri/Kael', 0], ['evermoon/Sósa', 1], ['wod/Ama', 1]]);
   });
 });
 

@@ -178,7 +178,7 @@
               <td>
                 <span class="character">
                   <img [src]="entry.spec?.icon || classIcon(entry.character.classId)" [title]="entry.spec?.name ?? ''" alt="" loading="lazy" />
-                  <img class="race-icon" [src]="raceIcon(entry.character.race, entry.character.gender)" alt="" loading="lazy" />
+                  <img class="race-icon" [src]="raceIcon(entry.character)" alt="" loading="lazy" />
                   <span class="character-line">
                     <a
                       class="character-name"

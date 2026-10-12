@@ -9,6 +9,9 @@ import { LEGION_SPECS } from './mythic-plus-stats';
 
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
 
+/** Written at build time by scripts/generate-raid-genders.js. */
+export const RAID_GENDERS_PATH = 'assets/data/raid-genders.json';
+
 export type RaidRole = 'tank' | 'healer' | 'dps';
 export type RaidMetric = 'dps' | 'hps';
 
@@ -118,6 +121,16 @@ export type RaidBossLogEntry = [
   members: RaidMemberEntry[],
   items: number[]
 ];
+
+/**
+ * The ladder's gender (Players.csv) for the raid characters whose gender the raid logs have
+ * wrong; the API reports nearly everyone as male. Names by realm.
+ */
+export interface RaidGendersFile {
+  v: number;
+  female: Record<string, string[]>;
+  male: Record<string, string[]>;
+}
 
 export interface RaidBossFile {
   version: number;
@@ -381,6 +394,19 @@ export function bossFilePath(boss: Pick<RaidBoss, 'slug'>, difficulty: Pick<Raid
 
 export function encounterKey(bossSlug: string, difficultySlug: string): string {
   return `${bossSlug}|${difficultySlug}`;
+}
+
+/** The corrected gender, 0 male and 1 female, by characterKey. */
+export function decodeGenders(file: RaidGendersFile): Map<string, number> {
+  const genders = new Map<string, number>();
+  for (const [gender, byRealm] of [[0, file.male], [1, file.female]] as const) {
+    for (const [realm, names] of Object.entries(byRealm ?? {})) {
+      for (const name of names) {
+        genders.set(characterKey({ name, realm }), gender);
+      }
+    }
+  }
+  return genders;
 }
 
 function decodeSpecs(entries: readonly RaidSpecEntry[]): Map<number, RaidSpec> {

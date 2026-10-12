@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { getClassIconPath } from '../utils/classIconHelper';
@@ -112,6 +112,8 @@ export class RaidLogsLeaderboardPageComponent {
   readonly search = signal(this.query.get('q') ?? '');
   readonly page = signal(Math.max(1, parseNumber(this.query.get('page')) ?? 1));
   readonly showHelp = signal(false);
+  /** The ladder's gender where the raid logs have it wrong; until it loads, the raid logs' own. */
+  private readonly genders = toSignal(this.data.genders(), { initialValue: new Map<string, number>() as ReadonlyMap<string, number> });
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -181,7 +183,6 @@ export class RaidLogsLeaderboardPageComponent {
 
   readonly characterLink = raidCharacterLink;
   readonly classIcon = getClassIconPath;
-  readonly raceIcon = getRaceIconPath;
   readonly formatPerSecond = formatPerSecond;
   readonly factionName = (faction: number) => FACTION_NAMES[faction] ?? '';
   readonly pageSize = RAID_PAGE_SIZE;
@@ -257,6 +258,11 @@ export class RaidLogsLeaderboardPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  /** The race icon, with the ladder's gender: the raid logs make nearly everyone male. */
+  raceIcon(character: RaidCharacter): string {
+    return getRaceIconPath(character.race, this.genders().get(characterKey(character)) ?? character.gender);
   }
 
   qualityColor(relative: number): string {

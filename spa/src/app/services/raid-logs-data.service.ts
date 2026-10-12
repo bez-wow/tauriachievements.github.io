@@ -1,16 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs';
 import {
+  RAID_GENDERS_PATH,
   RAID_LOGS_DATA_DIR,
   RaidBoss,
   RaidBossFile,
   RaidDifficulty,
+  RaidGendersFile,
   RaidKill,
   RaidKillDetails,
   RaidLogsIndex,
   RaidLogsIndexFile,
   bossFilePath,
   decodeBossFile,
+  decodeGenders,
   decodeIndex,
   realmSlug
 } from '../raid-logs';
@@ -47,6 +50,20 @@ export class RaidLogsDataService {
     const path = bossFilePath(boss, difficulty);
     return this.memoize(path, () =>
       this.dataFiles.fetchJson<RaidBossFile>(path).pipe(map(file => decodeBossFile(file, boss, difficulty, index.specs))));
+  }
+
+  /**
+   * The ladder's gender for the raid characters the raid logs have wrong, by characterKey. Only
+   * race icons depend on it, so a file that won't load is an empty map, not an error.
+   */
+  genders(): Observable<ReadonlyMap<string, number>> {
+    return this.memoize('genders', () => this.dataFiles.fetchJson<RaidGendersFile>(RAID_GENDERS_PATH).pipe(
+      map(decodeGenders),
+      catchError((error: unknown) => {
+        console.warn('Could not load the raid genders; race icons keep the gender from the raid logs.', error);
+        return of(new Map<string, number>());
+      })
+    ));
   }
 
   /**
