@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MythicPlusGuildAndCharScan"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidLogExporter", "RaidLogExporter\RaidLogExporter.csproj", "{4C45B274-A1D9-40F7-AB44-1F1949BF24AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidLogGuildAndCharScan", "RaidLogGuildAndCharScan\RaidLogGuildAndCharScan.csproj", "{9A621146-EEB9-4520-8E59-3194D7A57322}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +197,18 @@ Global
 		{4C45B274-A1D9-40F7-AB44-1F1949BF24AE}.Release|x64.Build.0 = Release|Any CPU
 		{4C45B274-A1D9-40F7-AB44-1F1949BF24AE}.Release|x86.ActiveCfg = Release|Any CPU
 		{4C45B274-A1D9-40F7-AB44-1F1949BF24AE}.Release|x86.Build.0 = Release|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Debug|x64.Build.0 = Debug|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Debug|x86.Build.0 = Debug|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Release|x64.ActiveCfg = Release|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Release|x64.Build.0 = Release|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Release|x86.ActiveCfg = Release|Any CPU
+		{9A621146-EEB9-4520-8E59-3194D7A57322}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

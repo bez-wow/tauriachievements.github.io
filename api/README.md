@@ -48,6 +48,7 @@ workflow and its output contract.
 | `MythicPlusExporter` | Merges every realm's Mythic+ leaderboards into scored, ranked per-dungeon files for the `/mythic-plus` page. |
 | `MythicPlusGuildAndCharScan` | Adds the guilds and guildless characters seen on the Mythic+ leaderboards to the scan inputs. |
 | `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing and loot for the `/raid-logs` pages, reading only kills the last export lacks. |
+| `RaidLogGuildAndCharScan` | Looks up the current guild of everyone with an Emerald Nightmare kill and adds new guilds and guildless characters to the scan inputs. |
 | `Guildkukker` | Generates ranked guild reports with reputation, artifact, and item-level data. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |
 
@@ -108,6 +109,7 @@ concurrency, timeouts, and retry behavior; see
 | Collect battlegrounds | `dotnet run --project BattlegroundCollector -- 95874` |
 | Export the Mythic+ leaderboards | `dotnet run --project MythicPlusExporter` |
 | Collect guilds and guildless characters from Mythic+ runs | `dotnet run --project MythicPlusGuildAndCharScan` |
+| Collect guilds and guildless characters from Emerald Nightmare raiders | `dotnet run --project RaidLogGuildAndCharScan` |
 | Export a ranked guild report | `dotnet run --project Guildkukker -- Evermoon Endless` |
 | Export the Endless workbook | `dotnet run --project EndlessGuildExporter` |
 
@@ -117,8 +119,8 @@ at startup.
 ## Daily update
 
 `Run-DailyUpdate.cmd` (or `Run-DailyUpdate.ps1`) runs the whole refresh end to end:
-MythicPlusExporter, MythicPlusGuildAndCharScan, RealmFirstAchievements, BattlegroundCollector,
-GuildCharacterExporter, AchievementLadder and
+MythicPlusExporter, RaidLogExporter, MythicPlusGuildAndCharScan, RaidLogGuildAndCharScan,
+RealmFirstAchievements, BattlegroundCollector, GuildCharacterExporter, AchievementLadder and
 MissingPlayerFinder, then commits every data file as one `sync data` commit and pushes it.
 That commit message triggers the Discord notification, so keep it.
 

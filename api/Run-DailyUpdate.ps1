@@ -7,6 +7,7 @@
       MythicPlus       MythicPlusExporter       -> spa/src/mythic-plus-data (the /mythic-plus leaderboards)
       RaidLogs         RaidLogExporter          -> spa/src/raid-log-data (the /raid-logs pages)
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
+      RaidLogNames     RaidLogGuildAndCharScan  -> new guilds, guildless characters from raid kills
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
       Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
@@ -26,7 +27,7 @@
     .\Run-DailyUpdate.ps1 -NoPush             # commit locally, push yourself
 #>
 param(
-    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
+    [ValidateSet('MythicPlus', 'RaidLogs', 'MythicPlusNames', 'RaidLogNames', 'RealmFirst', 'Battlegrounds', 'GuildCharacters', 'Ladder', 'MissingPlayers', 'Publish')]
     [string]$From = 'MythicPlus',
 
     [switch]$NoPush,
@@ -49,6 +50,7 @@ $steps = @(
     @{ Name = 'MythicPlus'; Project = 'MythicPlusExporter' },
     @{ Name = 'RaidLogs'; Project = 'RaidLogExporter' },
     @{ Name = 'MythicPlusNames'; Project = 'MythicPlusGuildAndCharScan' },
+    @{ Name = 'RaidLogNames'; Project = 'RaidLogGuildAndCharScan' },
     @{ Name = 'RealmFirst'; Project = 'RealmFirstAchievements' },
     @{ Name = 'Battlegrounds'; Project = 'BattlegroundCollector' },
     @{ Name = 'GuildCharacters'; Project = 'GuildCharacterExporter' },

@@ -22,5 +22,6 @@
     <ProjectReference Include="..\..\MythicPlusExporter\MythicPlusExporter.csproj" />
     <ProjectReference Include="..\..\MythicPlusGuildAndCharScan\MythicPlusGuildAndCharScan.csproj" />
     <ProjectReference Include="..\..\RaidLogExporter\RaidLogExporter.csproj" />
+    <ProjectReference Include="..\..\RaidLogGuildAndCharScan\RaidLogGuildAndCharScan.csproj" />
   </ItemGroup>
 </Project>

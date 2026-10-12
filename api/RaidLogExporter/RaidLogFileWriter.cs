@@ -34,6 +34,9 @@ public static class RaidLogFileWriter
     public const int FormatVersion = 1;
     public const string IndexFileName = "index.json";
 
+    /// <summary>The export's folder under spa/src.</summary>
+    public const string DataDirectoryName = "raid-log-data";
+
     private static readonly JsonWriterOptions WriterOptions = new()
     {
         // Character and guild names are often Cyrillic or accented; keep them readable.

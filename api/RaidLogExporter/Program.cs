@@ -33,7 +33,7 @@ internal static class Program
         var solutionRoot = ProjectPaths.FindSolutionRoot(projectRoot);
         var settingsPath = ResolveSettingsPath(projectRoot, solutionRoot);
         var frontendSrc = ProjectPaths.GetFrontendSrcDirectory(solutionRoot);
-        var outputDirectory = Path.Combine(frontendSrc, "raid-log-data");
+        var outputDirectory = Path.Combine(frontendSrc, RaidLogFileWriter.DataDirectoryName);
 
         using var cancellationTokenSource = new CancellationTokenSource();
 
