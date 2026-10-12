@@ -69,6 +69,11 @@ export const routes: Routes = [
       .then(module => module.RaidLogsPageComponent)
   },
   {
+    path: 'raid-logs/leaderboard',
+    loadComponent: () => import('./raid-logs-leaderboard-page.component')
+      .then(module => module.RaidLogsLeaderboardPageComponent)
+  },
+  {
     path: 'raid-logs/boss/:boss',
     loadComponent: () => import('./raid-logs-boss-page.component')
       .then(module => module.RaidLogsBossPageComponent)

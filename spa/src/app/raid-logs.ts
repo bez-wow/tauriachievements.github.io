@@ -467,6 +467,173 @@ function matchesFilter(member: RaidMember, filter: RankingFilter): boolean {
     && (filter.realm === undefined || realmSlug(member.character.realm) === filter.realm);
 }
 
+// --- Character score --------------------------------------------------------------------
+
+/** The score of a character who did the most damage (or healing) on every boss. */
+export const MAX_SCORE = 6969;
+
+const ALLIANCE_RACES: ReadonlySet<number> = new Set([1, 3, 4, 7, 11, 22, 25]);
+const HORDE_RACES: ReadonlySet<number> = new Set([2, 5, 6, 8, 9, 10, 26]);
+
+/** 0 Alliance, 1 Horde; undefined for a race on neither side (a Pandaren still on the island). */
+export function raceFaction(race: number): number | undefined {
+  return ALLIANCE_RACES.has(race) ? 0 : HORDE_RACES.has(race) ? 1 : undefined;
+}
+
+interface Appearance {
+  member: RaidMember;
+  kill: RaidKillDetails;
+}
+
+export interface BossPerformance {
+  boss: RaidBoss;
+  /** The character's best kill of the boss by the metric; undefined while they have none. */
+  best?: Appearance;
+  value: number;
+  /** The value over the best anyone did on the boss: 0 to 1. */
+  relative: number;
+}
+
+export interface CharacterScore {
+  /** As the character's latest kill has it, so the guild is the current one. */
+  character: RaidCharacter;
+  /** The spec played most often, the latest kill breaking a tie. */
+  spec?: RaidSpec;
+  faction: number;
+  /** At the latest kill. */
+  itemLevel: number;
+  /** One per boss, in raid order. */
+  bosses: BossPerformance[];
+  killed: number;
+  /** The average of the bosses' relative values, a boss not killed counting 0: 0 to 1. */
+  performance: number;
+  /** MAX_SCORE times the performance, floored. */
+  score: number;
+}
+
+export interface RankedScore extends CharacterScore {
+  rank: number;
+}
+
+/**
+ * Every character's score on one difficulty, best first. On each boss the character's best kill
+ * is divided by the best anyone did there, so a boss where big numbers come easy weighs no more
+ * than any other; the average over the bosses, times MAX_SCORE, is the score. A boss nobody has
+ * killed is left out of the average. `bossKills` holds each boss's kills by boss index.
+ */
+export function scoreCharacters(
+  bosses: readonly RaidBoss[],
+  bossKills: ReadonlyArray<readonly RaidKillDetails[]>,
+  metric: RaidMetric
+): CharacterScore[] {
+  interface Tally {
+    latest: Appearance;
+    specs: Map<RaidSpec, { count: number; at: number }>;
+    bests: Array<Appearance | undefined>;
+  }
+
+  // Each boss file has its own character objects, so characters are keyed by name and realm.
+  const tallies = new Map<string, Tally>();
+  const tops = bosses.map(() => 0);
+
+  bosses.forEach((boss, bossIndex) => {
+    for (const kill of bossKills[bossIndex] ?? []) {
+      for (const member of kill.members) {
+        if (!member.spec || !countsFor(metric, member.spec)) {
+          continue;
+        }
+
+        const key = characterKey(member.character);
+        let tally = tallies.get(key);
+        if (!tally) {
+          tally = { latest: { member, kill }, specs: new Map(), bests: bosses.map(() => undefined) };
+          tallies.set(key, tally);
+        }
+
+        if (kill.killedAt > tally.latest.kill.killedAt) {
+          tally.latest = { member, kill };
+        }
+
+        const spec = tally.specs.get(member.spec) ?? { count: 0, at: 0 };
+        tally.specs.set(member.spec, { count: spec.count + 1, at: Math.max(spec.at, kill.killedAt) });
+
+        const value = member[metric];
+        const best = tally.bests[bossIndex];
+        if (!best || value > best.member[metric] || (value === best.member[metric] && kill.killedAt < best.kill.killedAt)) {
+          tally.bests[bossIndex] = { member, kill };
+        }
+        tops[bossIndex] = Math.max(tops[bossIndex], value);
+      }
+    }
+  });
+
+  const scoredBosses = tops.filter(top => top > 0).length;
+  if (!scoredBosses) {
+    return [];
+  }
+
+  const scores = [...tallies.values()].map((tally): CharacterScore => {
+    const performances = bosses.map((boss, bossIndex): BossPerformance => {
+      const best = tally.bests[bossIndex];
+      const value = best ? best.member[metric] : 0;
+      return { boss, best, value, relative: tops[bossIndex] > 0 ? value / tops[bossIndex] : 0 };
+    });
+    const performance = performances.reduce((sum, entry) => sum + entry.relative, 0) / scoredBosses;
+    const { member, kill } = tally.latest;
+    const spec = [...tally.specs.entries()].sort((a, b) => b[1].count - a[1].count || b[1].at - a[1].at)[0]?.[0];
+
+    return {
+      character: member.character,
+      spec,
+      faction: raceFaction(member.character.race) ?? kill.faction,
+      itemLevel: member.itemLevel,
+      bosses: performances,
+      killed: performances.filter(entry => entry.best).length,
+      performance,
+      // A float sum can land a hair under a whole number; the nudge keeps that from costing a point.
+      score: Math.floor(MAX_SCORE * performance + 1e-9)
+    };
+  });
+
+  return scores.sort((a, b) =>
+    b.performance - a.performance || b.killed - a.killed || a.character.name.localeCompare(b.character.name));
+}
+
+export interface ScoreFilter {
+  classId?: number;
+  faction?: number;
+  realm?: string;
+}
+
+/** The scores the filter lets through, ranked from 1. Each score is still measured against everyone. */
+export function rankScores(scores: readonly CharacterScore[], filter: ScoreFilter = {}): RankedScore[] {
+  return scores
+    .filter(entry => (filter.classId === undefined || entry.character.classId === filter.classId)
+      && (filter.faction === undefined || entry.faction === filter.faction)
+      && (filter.realm === undefined || realmSlug(entry.character.realm) === filter.realm))
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
+/**
+ * The item quality whose colour shows a share of the best, as Warcraft Logs colours parses:
+ * artifact for the best, then legendary from 95%, epic from 75%, rare from 50%, uncommon from 25%.
+ */
+export function performanceQuality(relative: number): number {
+  if (relative >= 1) {
+    return 6;
+  }
+  if (relative >= .95) {
+    return 5;
+  }
+  if (relative >= .75) {
+    return 4;
+  }
+  if (relative >= .5) {
+    return 3;
+  }
+  return relative >= .25 ? 2 : 0;
+}
+
 /** Shortest fight first; the earlier kill wins a tie. */
 export function fastestKills<T extends Pick<RaidKill, 'fightMs' | 'killedAt'>>(kills: readonly T[]): T[] {
   return [...kills].sort((a, b) => a.fightMs - b.fightMs || a.killedAt - b.killedAt);

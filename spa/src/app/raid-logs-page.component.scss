@@ -40,6 +40,26 @@
 
 .hero-text { min-width: 0; flex: 1 1 360px; }
 
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 7px 13px;
+  border: 1px solid rgba(247, 181, 0, .5);
+  border-radius: 6px;
+  background: #1d1a10;
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  span { color: $gold; font-size: 1.05rem; line-height: 1; }
+
+  &:hover { border-color: $gold; background: #2e2716; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
 // Bosses
 .boss-grid {
   display: grid;

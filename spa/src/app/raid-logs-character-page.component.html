@@ -67,6 +67,7 @@
             <tr>
               <th scope="col">Boss</th>
               <th scope="col" class="num">Best {{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
+              <th scope="col" class="num" title="The best kill against the best anyone did on the boss">Of best</th>
               <th scope="col" class="num">Rank</th>
               <th scope="col" class="col-optional">Spec</th>
               <th scope="col" class="num col-optional">Item level</th>
@@ -83,8 +84,9 @@
                 </a>
               </td>
               <td class="num strong">{{ row.best ? formatPerSecond(row.value) : '' }}</td>
+              <td class="num strong" [style.color]="qualityColor(row.relative)">{{ row.best ? percent(row.relative) : '' }}</td>
               <td class="num">
-                <span *ngIf="row.rank" class="rank-cell">#{{ row.rank }} <span class="muted">/ {{ row.ranked | number }}</span></span>
+                <span *ngIf="row.rank" class="rank-cell">#{{ row.rank }} <span class="muted phone-hidden">/ {{ row.ranked | number }}</span></span>
               </td>
               <td class="col-optional">
                 <span *ngIf="row.best?.member?.spec as spec" class="spec-cell">
@@ -101,7 +103,11 @@
           </tbody>
         </table>
       </div>
-      <p class="list-note">Rank among every character's best kill of the boss on this difficulty. {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}</p>
+      <p class="list-note">
+        Rank among every character's best kill of the boss on this difficulty. {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
+        The score averages "Of best" over the bosses, out of {{ maxScore }}:
+        <a class="leaderboard-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: data.difficulty.slug, metric: metric() === 'hps' ? 'hps' : null }">see the leaderboard <span aria-hidden="true">›</span></a>
+      </p>
     </section>
 
     <section class="section" aria-labelledby="character-recent-title">

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MAX_SCORE,
+  RaidBoss,
   RaidBossFile,
+  RaidCharacter,
+  RaidKillDetails,
   RaidLogsIndexFile,
+  RaidSpec,
   decodeBossFile,
   decodeIndex,
   defaultDifficulty,
@@ -12,8 +17,12 @@ import {
   formatPerSecond,
   guildProgression,
   nameMatches,
+  performanceQuality,
+  raceFaction,
   rankCharacters,
+  rankScores,
   raidLogLink,
+  scoreCharacters,
   speedRank
 } from './raid-logs';
 
@@ -138,6 +147,88 @@ describe('rankCharacters', () => {
   it('filters by realm and class', () => {
     expect(rankCharacters(kills, 'dps', { realm: 'tauri' }).map(entry => entry.member.character.name)).toEqual(['Kael']);
     expect(rankCharacters(kills, 'dps', { classId: 2 }).map(entry => entry.member.character.name)).toEqual(['Light']);
+  });
+});
+
+describe('scoreCharacters', () => {
+  const bosses = ['one', 'two', 'three', 'four'].map((slug, bossIndex): RaidBoss =>
+    ({ id: bossIndex, slug, name: slug, shortName: slug, index: bossIndex, portrait: '' }));
+  const fire = index.specs.get(63)!;
+  const frost = index.specs.get(64)!;
+  const holy = index.specs.get(65)!;
+  const protection = index.specs.get(66)!;
+
+  // A new character object each time, as each boss file has its own.
+  const character = (name: string, race = 10, classId = 8): RaidCharacter =>
+    ({ name, realm: 'Tauri', classId, race, gender: 0, guild: '' });
+
+  // One-second fights, so damage is the DPS and healing the HPS.
+  function kill(boss: number, killedAt: number, members: Array<[RaidCharacter, RaidSpec, number, number?]>): RaidKillDetails {
+    return {
+      realm: 'Tauri', logId: boss * 100 + killedAt, boss: bosses[boss], difficulty: mythic, killedAt, fightMs: 1_000,
+      faction: 1, wipes: 0, deaths: 0, resurrects: 0, items: [],
+      members: members.map(([who, spec, dps, hps = 0]) => ({
+        character: who, spec, itemLevel: 860 + killedAt, damage: dps, healing: hps, absorbs: 0, overhealing: 0,
+        damageTaken: 0, interrupts: 0, dispels: 0, dps, hps
+      }))
+    };
+  }
+
+  // The worked example: 10/100, 160/200, 300/1000 and no kill of the fourth boss make 30%.
+  const bossKills = [
+    [kill(0, 1, [[character('Best'), fire, 100], [character('Example'), fire, 10], [character('Light', 10, 2), holy, 0, 50]])],
+    [kill(1, 2, [[character('Best'), fire, 200], [character('Example'), frost, 160]])],
+    [kill(2, 3, [[character('Best'), fire, 1000], [character('Example'), frost, 300]])],
+    [kill(3, 4, [[character('Best'), fire, 1000], [character('Tank', 1, 2), protection, 500]])]
+  ];
+
+  it('averages each boss against its best, out of 6969', () => {
+    const scores = scoreCharacters(bosses, bossKills, 'dps');
+    expect(scores.map(entry => [entry.character.name, entry.score, entry.killed])).toEqual([
+      ['Best', MAX_SCORE, 4],
+      ['Example', 2090, 3],
+      ['Tank', 871, 1]
+    ]);
+
+    const example = scores[1];
+    expect(example.performance).toBeCloseTo(.3);
+    expect(example.bosses.map(entry => entry.relative)).toEqual([.1, .8, .3, 0]);
+    expect(example.bosses[3].best).toBeUndefined();
+  });
+
+  it('scores healers only by healing', () => {
+    const healing = scoreCharacters(bosses, bossKills, 'hps');
+    expect(healing.map(entry => [entry.character.name, entry.score])).toEqual([['Light', MAX_SCORE]]);
+  });
+
+  it('leaves a boss nobody has killed out of the average', () => {
+    const scores = scoreCharacters(bosses, [...bossKills.slice(0, 3), []], 'dps');
+    expect(scores.find(entry => entry.character.name === 'Example')?.score).toBe(Math.floor(MAX_SCORE * 1.2 / 3));
+    expect(scoreCharacters(bosses, [[], [], [], []], 'dps')).toEqual([]);
+  });
+
+  it('shows the spec played most, the latest item level and the faction of the race', () => {
+    const scores = scoreCharacters(bosses, bossKills, 'dps');
+    const example = scores.find(entry => entry.character.name === 'Example')!;
+    expect(example.spec?.name).toBe('Frost');
+    expect(example.itemLevel).toBe(863);
+    // A Blood Elf is Horde; the human tank is Alliance though the kill was Horde.
+    expect(example.faction).toBe(1);
+    expect(scores.find(entry => entry.character.name === 'Tank')?.faction).toBe(0);
+  });
+
+  it('ranks the filtered rows from 1, keeping the scores', () => {
+    const scores = scoreCharacters(bosses, bossKills, 'dps');
+    expect(rankScores(scores, { faction: 0 }).map(entry => [entry.rank, entry.character.name, entry.score])).toEqual([[1, 'Tank', 871]]);
+    expect(rankScores(scores, { classId: 8 }).map(entry => entry.rank)).toEqual([1, 2]);
+    expect(rankScores(scores, { realm: 'wod' })).toEqual([]);
+  });
+});
+
+describe('raceFaction and performanceQuality', () => {
+  it('knows the sides and the parse colours', () => {
+    expect([raceFaction(1), raceFaction(10), raceFaction(25), raceFaction(26), raceFaction(24)]).toEqual([0, 1, 0, 1, undefined]);
+    expect([1, .97, .8, .6, .3, .1].map(performanceQuality)).toEqual([6, 5, 4, 3, 2, 0]);
   });
 });
 

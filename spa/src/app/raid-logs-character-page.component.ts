@@ -12,6 +12,8 @@ import { GlideDirective } from './glide.directive';
 import { CLASS_NAMES } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
+  ITEM_QUALITY_COLORS,
+  MAX_SCORE,
   RaidBoss,
   RaidDifficulty,
   RaidKillDetails,
@@ -19,16 +21,20 @@ import {
   RaidMember,
   RaidMetric,
   RaidSpec,
+  RankedScore,
   characterKey,
   countsFor,
   formatFightTime,
   formatPerSecond,
   logKey,
+  performanceQuality,
   raidBossLink,
   raidGuildLink,
   raidLogLink,
   rankCharacters,
-  realmSlug
+  rankScores,
+  realmSlug,
+  scoreCharacters
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
@@ -44,6 +50,8 @@ interface BossRow {
   /** The best kill by the metric, among the specs the metric ranks. */
   best?: Appearance;
   value: number;
+  /** The value over the best anyone did on the boss: 0 to 1. */
+  relative: number;
   rank?: number;
   ranked: number;
 }
@@ -122,6 +130,18 @@ export class RaidLogsCharacterPageComponent {
 
   readonly metric = computed<RaidMetric>(() => this.pickedMetric() ?? (this.mainSpec()?.role === 'healer' ? 'hps' : 'dps'));
 
+  /** Everyone's score on the difficulty, as the leaderboard ranks them. */
+  private readonly scores = computed<RankedScore[]>(() => {
+    const loaded = this.loaded();
+    const index = this.index();
+    return loaded && index ? rankScores(scoreCharacters(index.bosses, loaded.bossKills, this.metric())) : [];
+  });
+
+  readonly score = computed(() => {
+    const key = this.loaded()?.key;
+    return this.scores().find(entry => characterKey(entry.character) === key);
+  });
+
   readonly bossRows = computed<BossRow[]>(() => {
     const loaded = this.loaded();
     const index = this.index();
@@ -138,7 +158,15 @@ export class RaidLogsCharacterPageComponent {
         .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
       const ranking = best ? rankCharacters(kills, metric) : [];
       const rank = ranking.findIndex(entry => characterKey(entry.member.character) === loaded.key) + 1;
-      return { boss, kills: own.length, best, value: best?.member[metric] ?? 0, rank: rank || undefined, ranked: ranking.length };
+      return {
+        boss,
+        kills: own.length,
+        best,
+        value: best?.member[metric] ?? 0,
+        relative: this.score()?.bosses[boss.index]?.relative ?? 0,
+        rank: rank || undefined,
+        ranked: ranking.length
+      };
     });
   });
 
@@ -150,8 +178,14 @@ export class RaidLogsCharacterPageComponent {
     const bestRank = rows.filter(row => row.rank).sort((a, b) => a.rank! / a.ranked - b.rank! / b.ranked)[0];
     const latest = this.recent()[0];
     const spec = this.mainSpec();
+    const score = this.score();
     return [
       { label: 'Bosses killed', value: `${killed.length}/${rows.length}`, note: `${this.appearances().length} kills` },
+      {
+        label: `${this.metric().toUpperCase()} score`,
+        value: score ? String(score.score) : '-',
+        note: score ? `#${score.rank} of ${this.scores().length.toLocaleString('en-US')} on the leaderboard` : 'No ranked kill'
+      },
       {
         label: `Best ${this.metric() === 'hps' ? 'healing' : 'damage'} rank`,
         value: bestRank ? `#${bestRank.rank}` : '-',
@@ -167,6 +201,7 @@ export class RaidLogsCharacterPageComponent {
     return character && getArmoryUrl(character.name, character.realm);
   });
 
+  readonly maxScore = MAX_SCORE;
   readonly logLink = raidLogLink;
   readonly bossLink = raidBossLink;
   readonly guildLink = raidGuildLink;
@@ -216,6 +251,14 @@ export class RaidLogsCharacterPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  qualityColor(relative: number): string {
+    return ITEM_QUALITY_COLORS[performanceQuality(relative)];
+  }
+
+  percent(relative: number): string {
+    return `${Math.floor(relative * 100)}%`;
   }
 
   trackBoss(index: number, row: BossRow): string {

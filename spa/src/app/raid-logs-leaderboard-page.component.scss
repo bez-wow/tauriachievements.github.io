@@ -1,0 +1,190 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include back-link;
+@include feedback;
+@include sections;
+@include raid-table;
+@include character-cell;
+@include faction-marks;
+@include difficulty-colors;
+@include ranking-toolbar;
+@include pager;
+
+.raid-page { @include raid-page; }
+
+// The overview's hero: the title over a faint emerald and nightmare-purple haze.
+.raid-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding: 22px 22px 20px;
+  border: 1px solid $raid-line;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(64, 200, 120, .16), transparent 48%),
+    radial-gradient(circle at 92% 110%, rgba(120, 40, 160, .2), transparent 52%),
+    #101210;
+
+  h1 { margin: 2px 0 6px; color: #fff; font-size: 1.8rem; line-height: 1.2; }
+  p { max-width: 640px; margin: 0; color: #bdbdbd; line-height: 1.55; }
+}
+
+.raid-hero .eyebrow { color: $gold; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.hero-text { min-width: 0; flex: 1 1 360px; }
+
+.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
+
+.help-toggle {
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $gold;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:hover { color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// The (i) in the Score heading.
+.score-head { display: inline-flex; align-items: center; gap: 6px; }
+
+.info-button {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+
+  svg { width: 15px; height: 15px; }
+  .info-disc { fill: #bdbdbd; }
+  .info-mark { fill: $raid-card; }
+
+  &:hover .info-disc, &[aria-expanded='true'] .info-disc { fill: $gold; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// The explanation
+.score-help {
+  padding: 16px 18px 18px;
+  border: 1px solid rgba(247, 181, 0, .3);
+  border-radius: 8px;
+  background: $raid-card;
+  color: #cfcfcf;
+  font-size: .88rem;
+  line-height: 1.55;
+
+  h2 { margin: 0; color: #fff; font-size: 1.05rem; }
+  h3 { margin: 14px 0 6px; color: #fff; font-size: .92rem; }
+  p { margin: 0 0 8px; }
+  .muted { color: $raid-muted; font-size: .8rem; }
+}
+
+.help-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+
+.help-close {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.help-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px 28px; }
+
+.help-example {
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: $raid-card-raised;
+  font-variant-numeric: tabular-nums;
+
+  ol { display: grid; gap: 3px; margin: 0 0 10px; padding: 0; list-style: none; }
+  li { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; }
+  li span:first-child { color: $raid-muted; }
+  strong { color: #fff; }
+  p:last-child { margin-bottom: 0; }
+}
+
+.help-label { color: #bdbdbd; font-size: .8rem; }
+.help-math { color: #e0e0e0; }
+
+.help-tops h3 { margin-top: 0; }
+
+.top-list {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+
+  li { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 5px; background: $raid-card-raised; }
+  img { @include boss-portrait(26px); border-radius: 5px; }
+}
+
+.top-boss { min-width: 0; flex: 1; overflow: hidden; color: #e0e0e0; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.top-value { display: inline-flex; align-items: baseline; gap: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.top-value strong { color: #fff; }
+
+// The table
+.race-icon { border-radius: 50%; }
+
+// Name and spec on one line; the spec gives way first when space runs out.
+.character-line { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
+.character-line .character-name { flex: none; }
+.character-spec { min-width: 0; overflow: hidden; color: $raid-muted; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+td.score { font-size: .95rem; }
+
+// One bar per boss, as tall as the character's share of the best on it.
+.boss-bars { display: inline-flex; height: 22px; align-items: flex-end; gap: 3px; vertical-align: middle; }
+
+.boss-bar {
+  display: flex;
+  width: 8px;
+  height: 100%;
+  align-items: flex-end;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .07);
+  overflow: hidden;
+}
+
+.boss-bar-fill { display: block; width: 100%; min-height: 0; border-radius: 2px 2px 0 0; }
+
+.faction-cell { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+.faction-text-0 { color: #6fa2f0; }
+.faction-text-1 { color: #e0605b; }
+
+@media (max-width: 900px) {
+  .help-body { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .raid-hero { padding: 16px; }
+  .raid-hero h1 { font-size: 1.4rem; }
+  .score-help { padding: 14px; }
+  .help-example li { grid-template-columns: 54px 1fr auto; }
+  // The spec icon is enough beside the score on a phone.
+  .race-icon { display: none; }
+  // Only the spec cuts short; even a fraction of a pixel off the name would show an ellipsis.
+  .character-line { max-width: 150px; }
+  .character-line .character-name { max-width: 100%; }
+  .col-optional { display: none; }
+}

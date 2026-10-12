@@ -9,6 +9,9 @@
       <p class="eyebrow">Raid Logs</p>
       <h1>{{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
       <p>Every boss kill on Evermoon, Tauri and Warriors of Darkness: who killed what, how fast, and who did the most damage and healing.</p>
+      <a class="hero-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: difficulty()?.slug }">
+        Character leaderboard <span aria-hidden="true">›</span>
+      </a>
     </div>
     <app-raid-difficulty-switch
       *ngIf="index() as loaded"

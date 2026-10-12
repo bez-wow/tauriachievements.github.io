@@ -206,9 +206,19 @@
       class="nav-drawer-link nav-drawer-link--new"
       routerLink="/raid-logs"
       routerLinkActive="active"
+      [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }"
       (click)="closeNav()">
       <span class="nav-drawer-icon" aria-hidden="true">📖</span>
       <span class="nav-drawer-link-label">Raid Logs</span>
+      <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
+    </a>
+    <a
+      class="nav-drawer-link nav-drawer-link--new"
+      routerLink="/raid-logs/leaderboard"
+      routerLinkActive="active"
+      (click)="closeNav()">
+      <span class="nav-drawer-icon" aria-hidden="true">🐉</span>
+      <span class="nav-drawer-link-label">Raid Leaderboard</span>
       <span class="nav-drawer-new-badge"><span aria-hidden="true">🔥</span> New</span>
     </a>
   </nav>

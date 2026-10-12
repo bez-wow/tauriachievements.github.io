@@ -96,6 +96,9 @@
 .rank-cell { white-space: nowrap; }
 tr.alive td { color: $raid-muted; }
 td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
+.leaderboard-link { color: $gold; font-weight: 600; text-decoration: none; }
+.leaderboard-link:hover { text-decoration: underline; }
+.leaderboard-link:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 .list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
 
 @media (max-width: 640px) {
