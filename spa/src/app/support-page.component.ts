@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { DISCORD_INVITE_URL } from './nav-sections';
 import { RevealDirective } from './reveal.directive';
 import { DONATIONS, TESTIMONIALS, donationIcon, formatDonation } from './support';
 import { UpdateBarComponent } from './update-bar.component';
@@ -19,7 +18,8 @@ import { UpdateBarComponent } from './update-bar.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupportPageComponent {
-  protected readonly discordUrl = DISCORD_INVITE_URL;
+  /** Opens Xyhop's Discord profile, where visitors can send a friend request or a DM. */
+  protected readonly discordUrl = 'https://discord.com/users/415206422503096320';
   protected readonly donations = DONATIONS.map((donation) => ({
     ...donation,
     icon: donationIcon(donation.currency),

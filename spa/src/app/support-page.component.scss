@@ -199,11 +199,11 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   list-style: none;
 }
 
+// Content sits in the middle so the stretched tile has even space above and below.
 .perk {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  align-items: start;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 14px 16px;
   color: #cfd2d9;
   font-size: .88rem;
@@ -211,20 +211,8 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   strong { color: $gold-soft; }
 }
 
-.perk-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba($gold, .28);
-  border-radius: 9px;
-  background: rgba($gold, .08);
-  font-size: 1.15rem;
-  line-height: 1;
-}
-
 .perk-label {
-  margin-bottom: 2px;
+  margin-bottom: 8px;
   color: #fff;
   font-family: $mono;
   font-size: .7rem;
