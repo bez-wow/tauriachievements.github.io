@@ -53,7 +53,9 @@
       <ol class="supporters" [appReveal]="1600">
         <li class="supporter" *ngFor="let donation of donations; let i = index" [style.--i]="i">
           <span class="supporter-icon" aria-hidden="true">{{ donation.icon }}</span>
-          <span class="supporter-name">{{ donation.name }}</span>
+          <span class="supporter-name">
+            <ng-container *ngTemplateOutlet="nameList; context: { $implicit: donation.names }" />
+          </span>
           <span class="supporter-amount">{{ donation.amountLabel }}</span>
         </li>
       </ol>
@@ -78,9 +80,14 @@
           [class.is-wide]="testimonial.isWide"
           [style.--i]="i">
           <figcaption>
-            <cite>{{ testimonial.author }}</cite>
-            <span class="quote-from" [class.is-discord]="testimonial.from === 'discord'">
-              {{ testimonial.from === 'discord' ? 'Discord' : 'Character' }}
+            <cite>
+              <ng-container *ngTemplateOutlet="nameList; context: { $implicit: testimonial.names }" />
+            </cite>
+            <span
+              class="quote-from"
+              [class.is-discord]="testimonial.from === 'discord'"
+              [class.is-stoat]="testimonial.from === 'stoat'">
+              {{ testimonial.fromLabel }}
             </span>
           </figcaption>
           <blockquote>
@@ -91,5 +98,25 @@
     </section>
   </div>
 </main>
+
+<!-- One person's names, split by slashes: class-coloured, linking their profile or armory page. -->
+<ng-template #nameList let-names>
+  <ng-container *ngFor="let shown of names; let last = last">
+    <a
+      *ngIf="shown.profileLink"
+      class="name-link"
+      [routerLink]="shown.profileLink"
+      [style.color]="shown.color">{{ shown.name }}</a>
+    <a
+      *ngIf="!shown.profileLink && shown.armoryUrl"
+      class="name-link"
+      [href]="shown.armoryUrl"
+      [style.color]="shown.color"
+      target="_blank"
+      rel="noopener noreferrer">{{ shown.name }}</a>
+    <span *ngIf="!shown.profileLink && !shown.armoryUrl" [style.color]="shown.color">{{ shown.name }}</span>
+    <span *ngIf="!last" class="name-sep" aria-hidden="true">/</span>
+  </ng-container>
+</ng-template>
 
 <app-back-to-top-button />

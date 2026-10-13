@@ -307,13 +307,27 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   font-size: .95rem;
 }
 
+// Several characters of one supporter wrap onto a second line rather than being cut off.
 .supporter-name {
-  overflow: hidden;
   color: $gold;
   font-size: .92rem;
   font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+}
+
+// A supporter's or quote author's character name, opening its armory or Mythic+ profile page.
+.name-link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible { text-decoration: underline; }
+}
+
+.name-sep {
+  margin: 0 .35em;
+  color: $muted;
+  font-weight: 400;
 }
 
 .supporter-amount {
@@ -423,6 +437,11 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   &.is-discord {
     background: rgba($blurple, .18);
     color: #b4baff;
+  }
+
+  &.is-stoat {
+    background: rgba(255, 255, 255, .08);
+    color: #d6d9e0;
   }
 }
 
