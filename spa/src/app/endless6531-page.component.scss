@@ -1031,6 +1031,11 @@ table tbody tr.main-character-row {
       }
     }
 
+    // Nine stat cells leave the last one (Achievements) alone on its row; let it fill the row.
+    td:last-child {
+      grid-column: 1 / -1;
+    }
+
     .empty-roster {
       display: block;
 

@@ -15,6 +15,8 @@ export interface GuildAnalysisPlayer {
   achievementPoints: number;
   artifactRelics: number;
   artifactTraits: number;
+  /** Artifact Knowledge (research) level; missing in files exported before it was added. */
+  artifactKnowledge?: number | null;
   itemLevel: number;
   legendaries?: GuildAnalysisLegendary[];
 }

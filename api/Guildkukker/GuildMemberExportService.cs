@@ -267,9 +267,16 @@ public sealed class GuildMemberExportService(
             return ArtifactResult.Missing;
         }
 
+        // Character-wide Artifact Knowledge (research) level, not tied to any one artifact.
+        int? knowledge =
+            response.TryGetProperty("artifact_knowledge", out var knowledgeElement)
+            && knowledgeElement.TryGetInt32(out var knowledgeLevel)
+                ? knowledgeLevel
+                : null;
+
         if (artifacts.GetArrayLength() == 0)
         {
-            return new ArtifactResult(true, 0, 0, string.Empty, string.Empty);
+            return new ArtifactResult(true, 0, 0, knowledge, string.Empty, string.Empty);
         }
 
         ArtifactCandidate? bestArtifact = null;
@@ -305,6 +312,7 @@ public sealed class GuildMemberExportService(
             true,
             bestArtifact.RelicCount,
             bestArtifact.TraitCount,
+            knowledge,
             string.IsNullOrWhiteSpace(bestArtifact.Specialization)
                 ? ReadSpecialization(response)
                 : bestArtifact.Specialization,
@@ -601,6 +609,7 @@ public sealed class GuildMemberExportService(
                         : null,
                     row.Result.Artifact.Found ? row.Result.Artifact.RelicCount : null,
                     row.Result.Artifact.Found ? row.Result.Artifact.TraitCount : null,
+                    row.Result.Artifact.Knowledge,
                     row.Result.Details.ItemLevel,
                     row.Result.Details.Legendaries
                 ))
@@ -645,13 +654,14 @@ public sealed class GuildMemberExportService(
         bool Found,
         int RelicCount,
         int TraitCount,
+        int? Knowledge,
         string Specialization,
         string Name
     )
     {
-        public static ArtifactResult Excluded => new(false, 0, 0, string.Empty, string.Empty);
+        public static ArtifactResult Excluded => new(false, 0, 0, null, string.Empty, string.Empty);
 
-        public static ArtifactResult Missing => new(false, 0, 0, string.Empty, string.Empty);
+        public static ArtifactResult Missing => new(false, 0, 0, null, string.Empty, string.Empty);
     }
 
     private sealed record ArtifactCandidate(
@@ -722,6 +732,7 @@ public sealed class GuildMemberExportService(
         string? ArtifactWeapon,
         int? ArtifactRelics,
         int? ArtifactTraits,
+        int? ArtifactKnowledge,
         decimal? ItemLevel,
         IReadOnlyList<LegendaryItem> Legendaries
     );
