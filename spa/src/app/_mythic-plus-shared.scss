@@ -177,8 +177,10 @@ $phone-breakpoint: 640px;
 }
 
 // Mouse only: the card's edge lights up gold where the pointer is (SpotlightDirective sets
-// --spot-x / --spot-y), with a faint glow inside, and the card lifts towards it.
-@mixin spotlight-card {
+// --spot-x / --spot-y), with a faint glow inside, and the card lifts towards it unless $lift is
+// false (for a large panel, which would look odd moving as a whole). Takes the card's ::before
+// and ::after.
+@mixin spotlight-card($lift: true) {
   position: relative;
   isolation: isolate;
 
@@ -211,10 +213,12 @@ $phone-breakpoint: 640px;
     &:hover::before,
     &:hover::after { opacity: 1; }
 
-    @include motion-safe {
-      transition: transform 420ms var(--ease-spring), box-shadow var(--dur) ease, border-color var(--dur-fast) ease;
+    @if $lift {
+      @include motion-safe {
+        transition: transform 420ms var(--ease-spring), box-shadow var(--dur) ease, border-color var(--dur-fast) ease;
 
-      &:hover { box-shadow: 0 16px 40px rgba(0, 0, 0, .6); transform: translateY(-2px); }
+        &:hover { box-shadow: 0 16px 40px rgba(0, 0, 0, .6); transform: translateY(-2px); }
+      }
     }
   }
 }

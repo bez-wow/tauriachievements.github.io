@@ -11,16 +11,16 @@ import {
   signal
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { NAV_SECTIONS, NavSection, findNavLocation } from './nav-sections';
+import { DISCORD_INVITE_URL, NAV_SECTIONS, NavSection, findNavLocation } from './nav-sections';
 
 @Component({
   selector: 'app-update-bar',
   templateUrl: './update-bar.component.html',
   styleUrls: ['./update-bar.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UpdateBarComponent {
@@ -32,6 +32,7 @@ export class UpdateBarComponent {
   @Input() showLastUpdated = true;
 
   protected readonly sections = NAV_SECTIONS;
+  protected readonly discordUrl = DISCORD_INVITE_URL;
   /** Content-sized dropdown widths: longest label plus roughly 20% breathing room. */
   protected readonly dropdownWidths = new Map(
     NAV_SECTIONS.map((section) => {

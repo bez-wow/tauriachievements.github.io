@@ -23,6 +23,9 @@ export interface NavSection {
   readonly pages: readonly NavPage[];
 }
 
+/** The community Discord server, linked from the header. */
+export const DISCORD_INVITE_URL = 'https://discord.gg/JMHnDmh2bP';
+
 export interface NavLocation {
   readonly section: NavSection;
   readonly page: NavPage;
