@@ -183,6 +183,35 @@ describe('MythicPlusRecordsPageComponent', () => {
     ]);
   });
 
+  it('ranks the characters with the most runs, each opening their profile', async () => {
+    const { page, element } = await open('/mythic-plus/records');
+
+    expect(page.mostRuns().map(runner => [runner.rank, runner.member.name, runner.runs, runner.timedPercent, runner.highestTimed]))
+      .toEqual([
+        [1, 'Progtrix', 7, 100, 19],
+        // The +18 Maw of Souls ran out of time.
+        [2, 'Tank', 4, 75, 19],
+        [3, 'Healer', 2, 50, 19],
+        [4, 'Arrchangel', 1, 100, 12]
+      ]);
+    expect(page.mostRuns().map(runner => runner.share)).toEqual([1, 4 / 7, 2 / 7, 1 / 7]);
+    // Coloured like leaderboard ranks, on runs against the leader's.
+    expect([...element.querySelectorAll('.runner-rank')].map(rank => rank.className.match(/q-\w+/)?.[0]))
+      .toEqual(['q-artifact', 'q-uncommon', 'q-uncommon', 'q-uncommon']);
+    // The guild under the name, where there is one.
+    expect([...element.querySelectorAll('.runner-name')].map(name => name.querySelector('.runner-guild')?.textContent))
+      .toEqual(['The Echoes', undefined, undefined, undefined]);
+    expect(texts(element, '.runner-count')).toEqual(['7 runs', '4 runs', '2 runs', '1 run']);
+    expect(texts(element, '.runner-timed')).toEqual(['100% in time', '75% in time', '50% in time', '100% in time']);
+    expect(element.querySelector('.runner-timed')?.getAttribute('title')).toBe('7 of 7 in time');
+    expect([...element.querySelectorAll('a.runner')].map(link => link.getAttribute('href'))).toEqual([
+      '/mythic-plus/character/evermoon/Progtrix',
+      '/mythic-plus/character/evermoon/Tank',
+      '/mythic-plus/character/tauri/Healer',
+      '/mythic-plus/character/wod/Arrchangel'
+    ]);
+  });
+
   it('ignores a legacy realm filter and writes only the firsts dungeon to the URL', async () => {
     const { page } = await open('/mythic-plus/records?realm=wod&dungeon=hov');
 

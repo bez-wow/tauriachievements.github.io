@@ -10,7 +10,7 @@
 
   <header class="page-header">
     <h1>Mythic+ records<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></h1>
-    <p>Dungeon records, server firsts, and untimed keys.</p>
+    <p>Dungeon records, server firsts, untimed keys, and the players with the most runs.</p>
   </header>
 
   <section class="feedback" *ngIf="isLoading()">
@@ -188,6 +188,46 @@
           <ng-container *ngTemplateOutlet="attempt; context: { $implicit: bounty }"></ng-container>
         </article>
       </div>
+    </section>
+
+    <!-- Most runs -->
+    <section class="section" aria-labelledby="most-runs-title">
+      <header class="section-header">
+        <h2 id="most-runs-title">Most runs</h2>
+        <p>The characters who finished the most keys this season, in time or not, on every realm.</p>
+      </header>
+
+      <!-- Rows slide in down the list the first time it's on screen, each bar growing to its length. -->
+      <ol class="runners" *ngIf="mostRuns().length; else noRunners" [appReveal]="1600">
+        <li *ngFor="let runner of mostRuns(); let index = index; trackBy: trackRunner" [style.--i]="index">
+          <a class="runner" [routerLink]="runner.member.profileLink">
+            <span class="runner-rank" [ngClass]="'q-' + runner.quality"><span class="visually-hidden">Rank </span>{{ runner.rank }}</span>
+            <span class="runner-player">
+              <span class="player-icons">
+                <img class="class-icon" [src]="runner.member.classIcon" [alt]="runner.member.className" />
+                <span class="spec-icon" *ngIf="runner.member.specIcon"><img [src]="runner.member.specIcon" alt="" /></span>
+              </span>
+              <span class="runner-name">
+                <span [style.color]="runner.member.color" [title]="runner.member.spec + ' ' + runner.member.className">{{ runner.member.name }}</span>
+                <span class="runner-guild" *ngIf="runner.member.guild">{{ runner.member.guild }}</span>
+              </span>
+            </span>
+            <span class="runner-runs">
+              <span class="runner-count"><strong>{{ runner.runs | number }}</strong> {{ runner.runs === 1 ? 'run' : 'runs' }}</span>
+              <span class="runner-bar" aria-hidden="true"><span [style.--share]="runner.share"></span></span>
+            </span>
+            <span class="runner-stat runner-timed" [title]="(runner.timed | number) + ' of ' + (runner.runs | number) + ' in time'">
+              <strong>{{ runner.timedPercent }}%</strong> in time
+            </span>
+            <span class="runner-stat runner-best">
+              <strong>{{ runner.highestTimed ? '+' + runner.highestTimed : '-' }}</strong> highest timed
+            </span>
+          </a>
+        </li>
+      </ol>
+      <ng-template #noRunners>
+        <p class="section-empty">Nobody has finished a key yet.</p>
+      </ng-template>
     </section>
   </ng-container>
 </main>

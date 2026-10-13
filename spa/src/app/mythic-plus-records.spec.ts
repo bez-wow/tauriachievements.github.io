@@ -8,6 +8,7 @@ import {
   dungeonBounties,
   dungeonRecords,
   formatHeldFor,
+  mostRuns,
   openBounty,
   serverFirsts
 } from './mythic-plus-records';
@@ -165,6 +166,59 @@ describe('dungeonBounties', () => {
 
     expect(dungeonBounties(runs, dungeons, NOW).map(bounty => [bounty.dungeon.id, bounty.level, bounty.attempts]))
       .toEqual([['hov', 17, 0], ['mos', 20, 1], ['nl', 20, 1]]);
+  });
+});
+
+describe('mostRuns', () => {
+  const progtrix = member('Progtrix');
+  const napim = member('Napim');
+  const napimTauri = member('Napim', 'Tauri');
+
+  it('counts every run, timed or not, most first', () => {
+    const runs = [
+      run('nl', 18, 1500, 0, [progtrix, napim]),
+      run('nl', 19, 2400, 1, [progtrix, napim, napimTauri]),
+      run('mos', 17, 1174, 2, [progtrix]),
+      run('hov', 12, 2000, 3, [napimTauri])
+    ];
+
+    expect(mostRuns(runs, timers).map(count => [count.key, count.runs, count.timed, count.highestTimed])).toEqual([
+      ['Progtrix|Evermoon', 3, 2, 18],
+      // The same name on another realm is another character.
+      ['Napim|Evermoon', 2, 1, 18],
+      ['Napim|Tauri', 2, 1, 12]
+    ]);
+  });
+
+  it('puts more timed runs first at the same count, then goes by name', () => {
+    const runs = [
+      run('nl', 18, 2400, 0, [progtrix]),
+      run('nl', 18, 2400, 1, [progtrix, napim]),
+      run('nl', 17, 1500, 2, [napim, member('Arokh')]),
+      run('nl', 17, 2400, 3, [member('Arokh')])
+    ];
+
+    expect(mostRuns(runs, timers).map(count => count.key)).toEqual(['Arokh|Evermoon', 'Napim|Evermoon', 'Progtrix|Evermoon']);
+    expect(mostRuns(runs, timers)[2].highestTimed).toBeUndefined();
+  });
+
+  it('shows the character in their most-played spec', () => {
+    const brewmaster = { ...progtrix, spec: 'Brewmaster', role: 'tank' as const };
+    const runs = [
+      run('nl', 18, 1500, 0, [progtrix]),
+      run('nl', 18, 1500, 1, [brewmaster]),
+      run('nl', 18, 1500, 2, [brewmaster])
+    ];
+
+    expect(mostRuns(runs, timers)[0].member.spec).toBe('Brewmaster');
+    expect(mostRuns(runs.slice(0, 2), timers)[0].member.spec).toBe('Windwalker');
+  });
+
+  it('keeps the top ten', () => {
+    const runs = Array.from({ length: 12 }, (_, index) => run('nl', 18, 1500, 0, [member(`Player${String(index).padStart(2, '0')}`)]));
+
+    expect(mostRuns(runs, timers)).toHaveLength(10);
+    expect(mostRuns(runs, timers, 3).map(count => count.key)).toEqual(['Player00|Evermoon', 'Player01|Evermoon', 'Player02|Evermoon']);
   });
 });
 

@@ -8,6 +8,7 @@ $depleted: #e06666;
 :host { display: block; width: 100%; }
 
 @include caret;
+@include quality-colors;
 @include visually-hidden;
 @include details-reveal;
 
@@ -480,6 +481,120 @@ $depleted: #e06666;
   p { color: $timed; font-size: .8rem; font-weight: 600; }
 }
 
+// Most runs: one row per character, the bar their run count against the leader's.
+.runners {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #1b1b1b;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  list-style: none;
+
+  li { border-bottom: 1px solid #141414; }
+  li:last-child { border-bottom: 0; }
+}
+
+.runner {
+  display: grid;
+  grid-template-areas: 'rank player runs timed best';
+  grid-template-columns: 40px minmax(180px, 1fr) minmax(200px, 2fr) 104px 128px;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 10px 16px 10px 12px;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover { background: rgba(255, 255, 255, .03); }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: -2px; }
+}
+
+// As on the leaderboard's players table: a bare number in its quality colour.
+.runner-rank {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  text-align: center;
+  grid-area: rank;
+  justify-self: center;
+}
+
+.runner-player { display: flex; min-width: 0; align-items: center; gap: 10px; grid-area: player; }
+.player-icons { display: inline-flex; flex: none; align-items: center; gap: 3px; }
+.class-icon { width: 20px; height: 20px; border-radius: 3px; }
+.spec-icon { @include affix-icon(20px); border-radius: 3px; }
+
+.runner-name {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.runner-guild { color: #8a8a8a; font-size: .75rem; font-weight: 400; }
+
+.runner-runs { display: flex; min-width: 0; align-items: center; gap: 12px; grid-area: runs; }
+
+.runner-count {
+  min-width: 5.5em;
+  flex: none;
+  color: #9a9a9a;
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+
+  strong { color: #fff; font-size: 1rem; }
+}
+
+.runner-bar {
+  height: 6px;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #262626;
+
+  span {
+    display: block;
+    width: calc(var(--share, 0) * 100%);
+    height: 100%;
+    border-radius: 3px;
+    background: $gold;
+    transform-origin: left;
+  }
+}
+
+.runner-stat {
+  color: #9a9a9a;
+  font-size: .78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  strong { color: #fff; font-size: .95rem; }
+}
+
+.runner-timed { grid-area: timed; }
+.runner-best { grid-area: best; }
+.runner-best strong { color: $gold; }
+
+// First time on screen (RevealDirective): the rows slide in one after another and each bar grows.
+@include motion-safe {
+  .runners[data-reveal='pending'] li { opacity: 0; }
+
+  .runners[data-reveal='in'] {
+    li {
+      animation: mp-first-in 520ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 55ms);
+    }
+
+    .runner-bar span {
+      animation: mp-grow-x 800ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * 55ms + 160ms);
+    }
+  }
+}
+
 @media (pointer: coarse) {
   .back-link, .details-toggle { min-height: 40px; }
   .row-toggle { width: 40px; height: 40px; }
@@ -505,6 +620,19 @@ $depleted: #e06666;
   }
 
   .first-level { min-width: 48px; padding: 2px 6px; align-self: start; }
+
+  // Each runner stacks the bar under the name and the two stats under the bar.
+  .runner {
+    grid-template-areas:
+      'rank player player'
+      'rank runs runs'
+      'rank timed best';
+    grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 6px 12px;
+    padding: 10px 12px 10px 8px;
+  }
+
+  .runner-rank { align-self: start; }
 }
 
 @media (max-width: $phone-breakpoint) {
