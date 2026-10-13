@@ -13,12 +13,6 @@
         Character leaderboard <span aria-hidden="true">›</span>
       </a>
     </div>
-    <app-raid-difficulty-switch
-      *ngIf="index() as loaded"
-      [difficulties]="loaded.difficulties"
-      [selected]="difficulty()?.slug"
-      label="Show kills on difficulty"
-      (selectedChange)="setDifficulty($event)" />
   </header>
 
   <section class="feedback" *ngIf="isLoading()">
@@ -38,6 +32,16 @@
         <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
       </div>
     </dl>
+
+    <app-raid-spec-popularity-chart
+      [kills]="popularityKills()"
+      [difficulties]="index()!.difficulties"
+      [selectedDifficulty]="current.slug"
+      [raidName]="index()!.raid.name"
+      [loading]="popularityLoading()"
+      [error]="popularityError()"
+      (difficultyChange)="setDifficulty($event)"
+      (retry)="retryPopularity()" />
 
     <!-- Bosses -->
     <section class="section" aria-labelledby="bosses-title">
