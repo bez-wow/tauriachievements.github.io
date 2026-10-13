@@ -25,5 +25,9 @@ export class SupportPageComponent {
     icon: donationIcon(donation.currency),
     amountLabel: formatDonation(donation)
   }));
-  protected readonly testimonials = TESTIMONIALS;
+  /** Long quotes take both columns, so short ones can pair up beside each other. */
+  protected readonly testimonials = TESTIMONIALS.map((testimonial) => ({
+    ...testimonial,
+    isWide: testimonial.quote.length > 180
+  }));
 }

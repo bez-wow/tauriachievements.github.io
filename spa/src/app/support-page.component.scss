@@ -1,225 +1,417 @@
-// Same palette as the other content pages: dark cards, gold accent. The call to action is
-// Discord's own blurple.
+// A compact, futuristic take on the site's palette: near-black glass panels with a gold-to-blurple
+// edge, a faint tech grid behind the top of the page, monospace labels and figures.
 $gold: #f7b500;
+$gold-soft: #ffd36b;
 $blurple: #5865f2;
-$card: #1b1b1b;
-$card-border: #262626;
+$text: #e6e6e6;
+$muted: #9aa0ab;
+$line: rgba(255, 255, 255, .07);
+$mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
 :host { display: block; width: 100%; }
 
 // The top padding includes the 36 px (30 px on phones) the header is assumed to take.
 .support-page {
-  width: min(1180px, 100%);
+  position: relative;
+  isolation: isolate;
+  width: min(1200px, 100%);
   margin: 0 auto;
-  padding: 64px 16px 48px;
-  color: #e0e0e0;
-  line-height: 1.55;
+  padding: 50px 16px 32px;
+  color: $text;
+  line-height: 1.5;
 }
 
-// --- How to support ------------------------------------------------------------------------------
-
-.appeal {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 32px 32px 28px;
-  border: 1px solid #2c2717;
-  border-radius: 8px;
+// A faint grid and two glows behind the top of the page, fading out to the sides and downwards.
+.support-page::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 560px;
   background:
-    radial-gradient(120% 70% at 50% 0%, rgba($gold, .1), rgba($gold, 0) 62%),
-    #151515;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
-  text-align: center;
-
-  h1 { margin-bottom: 10px; color: #fff; font-size: 1.8rem; line-height: 1.25; }
-  strong { color: #ffd36b; }
+    radial-gradient(520px 240px at 22% 8%, rgba($gold, .12), rgba($gold, 0) 70%),
+    radial-gradient(480px 240px at 82% 18%, rgba($blurple, .14), rgba($blurple, 0) 70%),
+    linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px) 0 0 / 28px 28px;
+  mask-image: radial-gradient(ellipse 75% 100% at 50% 0%, #000 35%, transparent 80%);
+  pointer-events: none;
 }
 
-// Two even lines on a desktop screen.
-.appeal-lead {
-  color: #c9c9c9;
-  font-size: 1.02rem;
+// --- Layout --------------------------------------------------------------------------------------
+
+// The message and its two tiles side by side, then the supporters beside the quotes. The quotes
+// span two rows, so a short supporters list doesn't stretch its panel into an empty box.
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    'hero perks'
+    'words supporters'
+    'words .';
+  gap: 12px;
+}
+
+.hero { grid-area: hero; }
+.perks { grid-area: perks; }
+.words-panel { grid-area: words; }
+.supporters-panel { grid-area: supporters; align-self: start; }
+
+.panel {
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(24, 24, 30, .92), rgba(14, 14, 18, .94)) padding-box,
+    linear-gradient(140deg, rgba($gold, .38), $line 32%, $line 68%, rgba($blurple, .34)) border-box;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
+}
+
+// --- Message -------------------------------------------------------------------------------------
+
+.hero {
+  isolation: isolate;
+  padding: 20px 22px 22px;
+
+  // A lit edge along the top and a glow from the top-left corner.
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba($gold, 0), $gold, rgba($gold, 0));
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(420px 220px at 0% 0%, rgba($gold, .12), rgba($gold, 0) 70%);
+    pointer-events: none;
+  }
+
+  h1 {
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #fff 35%, $gold-soft);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 1.85rem;
+    letter-spacing: -.01em;
+    line-height: 1.15;
+  }
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid rgba($gold, .3);
+  border-radius: 999px;
+  background: rgba($gold, .08);
+  color: $gold-soft;
+  font-family: $mono;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $gold;
+  animation: support-ping 2s ease-out infinite;
+}
+
+@keyframes support-ping {
+  0% { box-shadow: 0 0 0 0 rgba($gold, .6); }
+  70%, 100% { box-shadow: 0 0 0 6px rgba($gold, 0); }
+}
+
+.lead {
+  margin-bottom: 6px;
+  color: #c9ccd4;
+  font-size: .95rem;
   text-wrap: balance;
 }
 
+.closing {
+  margin-bottom: 16px;
+  color: $muted;
+  font-size: .85rem;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #6b75ff, #4e59e8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 6px 22px rgba($blurple, .38);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
+
+  &:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 8px 30px rgba($blurple, .55);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.cta-logo {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.cta-arrow {
+  font-size: .85rem;
+  opacity: .8;
+  transition: transform var(--dur-fast) var(--ease-out);
+
+  .cta:hover & { transform: translate(2px, -2px); }
+}
+
+// --- Tiles ---------------------------------------------------------------------------------------
+
+// The second tile takes up any height the message has over the two of them.
 .perks {
   display: grid;
-  gap: 10px;
-  margin: 24px 0;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
   list-style: none;
-  text-align: left;
 }
 
 .perk {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   gap: 12px;
-  padding: 12px 16px;
-  border: 1px solid $card-border;
-  border-radius: 6px;
-  background: $card;
+  padding: 14px 16px;
+  color: #cfd2d9;
+  font-size: .88rem;
+
+  strong { color: $gold-soft; }
+}
+
+.perk-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba($gold, .28);
+  border-radius: 9px;
+  background: rgba($gold, .08);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.perk-label {
+  margin-bottom: 2px;
+  color: #fff;
+  font-family: $mono;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
 // The in-game recipient for gold, set apart so it's easy to copy.
 .character-name {
-  padding: 1px 8px;
+  padding: 0 6px;
+  border: 1px solid rgba($gold, .25);
   border-radius: 4px;
-  background: #2e2716;
+  background: rgba($gold, .1);
   white-space: nowrap;
 }
 
-.perk-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-  text-align: center;
-}
-
-// One line on a desktop screen; balanced where it has to wrap.
-.appeal-closing {
-  margin: 0 auto 18px;
-  color: #bdbdbd;
-  font-size: .95rem;
-  text-wrap: balance;
-}
-
-.appeal-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 22px;
-  border-radius: 8px;
-  background: $blurple;
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
-
-  &:hover { background: #4752c4; }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px #151515, 0 0 0 4px rgba($gold, .7);
-  }
-}
-
-.appeal-cta-logo {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-}
-
-
 // --- Supporters and kind words -------------------------------------------------------------------
 
-.block { margin-top: 44px; }
+.supporters-panel,
+.words-panel { padding: 14px 16px 16px; }
 
-.block-header {
-  margin-bottom: 16px;
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
   h2 {
     display: flex;
     align-items: center;
     gap: 10px;
     color: #fff;
-    font-size: 1.3rem;
-  }
+    font-size: 1rem;
+    letter-spacing: .02em;
 
-  p { color: #9a9a9a; font-size: .9rem; }
+    // A small lit bar in front of the title.
+    &::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: $gold;
+      box-shadow: 0 0 8px rgba($gold, .7);
+    }
+  }
 }
 
-.block-count {
-  padding: 1px 9px;
-  border-radius: 999px;
-  background: #2e2716;
-  color: $gold;
+.panel-meta {
+  margin-left: auto;
+  color: $muted;
+  font-family: $mono;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.panel-sub {
+  margin: 2px 0 12px;
+  color: $muted;
   font-size: .8rem;
-  font-variant-numeric: tabular-nums;
 }
 
 // One supporter below the other, in the order of DONATIONS.
 .supporters {
-  display: grid;
-  gap: 8px;
-  max-width: 560px;
+  margin-top: 12px;
+  border-top: 1px solid $line;
   list-style: none;
 }
 
 .supporter {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  grid-template-areas:
-    'icon name'
-    'icon amount';
-  column-gap: 12px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
-  padding: 12px 14px;
-  border: 1px solid $card-border;
-  border-left: 3px solid $gold;
-  border-radius: 6px;
-  background: $card;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid $line;
 }
 
-.supporter-icon {
-  grid-area: icon;
+.supporter-icon,
+.supporter-slot-plus {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #2e2716;
-  font-size: 1.25rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   line-height: 1;
 }
 
+.supporter-icon {
+  border: 1px solid $line;
+  background: rgba(255, 255, 255, .04);
+  font-size: .95rem;
+}
+
 .supporter-name {
-  grid-area: name;
   overflow: hidden;
   color: $gold;
+  font-size: .92rem;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .supporter-amount {
-  grid-area: amount;
-  color: #9a9a9a;
-  font-size: .85rem;
-
-  strong { color: #fff; font-variant-numeric: tabular-nums; }
+  color: #fff;
+  font-family: $mono;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-// Quotes of any length, packed into columns.
+// An open place at the end of the list, for the next supporter.
+.supporter-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 6px 4px;
+  border: 1px dashed rgba($gold, .28);
+  border-radius: 8px;
+  color: $muted;
+  font-size: .82rem;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background var(--dur-fast) ease;
+
+  &:hover {
+    border-color: rgba($gold, .6);
+    background: rgba($gold, .05);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.supporter-slot-plus {
+  border: 1px dashed rgba($gold, .4);
+  color: $gold;
+  font-family: $mono;
+}
+
+// Two columns; a long quote takes both, and the next short one fills any gap it leaves.
 .quotes {
-  columns: 3 280px;
-  column-gap: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: 10px;
 }
 
-// Who said it along the top (name left, where they said it right), then the quote.
 .quote {
-  margin: 0 0 14px;
-  padding: 14px 18px 16px;
-  border: 1px solid $card-border;
-  border-radius: 6px;
-  background: $card;
-  break-inside: avoid;
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .025);
 
-  p { color: #e0e0e0; font-size: .95rem; }
+  &.is-wide { grid-column: 1 / -1; }
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
 
+  &:hover {
+    border-color: rgba($gold, .28);
+    background: rgba($gold, .035);
+  }
+
+  p {
+    color: #dfe1e6;
+    font-size: .88rem;
+    line-height: 1.55;
+  }
+
+  // Who said it along the top (name left, where they said it right), then the quote.
   figcaption {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid $card-border;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid $line;
   }
 
   cite {
     min-width: 0;
     overflow: hidden;
     color: $gold;
-    font-size: .88rem;
+    font-size: .85rem;
     font-style: normal;
     font-weight: 700;
     text-overflow: ellipsis;
@@ -230,13 +422,14 @@ $card-border: #262626;
 .quote-from {
   flex-shrink: 0;
   margin-left: auto;
-  padding: 1px 7px;
-  border-radius: 3px;
-  background: #2e2716;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba($gold, .12);
   color: $gold;
-  font-size: .66rem;
-  font-weight: 800;
-  letter-spacing: .06em;
+  font-family: $mono;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .1em;
   text-transform: uppercase;
 
   &.is-discord {
@@ -245,8 +438,10 @@ $card-border: #262626;
   }
 }
 
-// First time on screen (RevealDirective): the cards rise in one after another. mp-card-rise is
-// global (_motion.scss), so the reference inside this @media still finds it.
+// --- Motion --------------------------------------------------------------------------------------
+
+// First time on screen (RevealDirective): the rows and cards rise in one after another.
+// mp-card-rise is global (_motion.scss), so the reference inside this @media still finds it.
 @media (prefers-reduced-motion: no-preference) {
   .supporters[data-reveal='pending'] .supporter,
   .quotes[data-reveal='pending'] .quote { opacity: 0; }
@@ -259,10 +454,32 @@ $card-border: #262626;
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .kicker-dot { animation: none; }
+
+  .cta,
+  .cta-arrow { transition: none; }
+}
+
+// --- Smaller screens -----------------------------------------------------------------------------
+
+@media (max-width: 960px) {
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas: 'hero' 'perks' 'supporters' 'words';
+  }
+
+  .perks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+  }
+}
+
 @media (max-width: 640px) {
-  .support-page { padding-top: 46px; }
-  .appeal { padding: 24px 16px 22px; }
-  .appeal h1 { font-size: 1.45rem; }
-  .perk { padding: 10px 12px; gap: 10px; }
-  .block { margin-top: 36px; }
+  .support-page { padding: 42px 10px 24px; }
+  .hero { padding: 16px 14px 18px; }
+  .hero h1 { font-size: 1.45rem; }
+  .perks { grid-template-columns: minmax(0, 1fr); }
+  .quotes { grid-template-columns: minmax(0, 1fr); }
 }
