@@ -58,6 +58,17 @@ public sealed record RaidLog(
     IReadOnlyList<int> Items
 );
 
+/// <summary>
+/// The kills an export added since the one before it. The leaderboard scores everyone again
+/// without them to show how ranks and scores moved since that export.
+/// </summary>
+/// <param name="PreviousGeneratedAt">When the export they are new to read the rankings.</param>
+/// <param name="NewLogs">Oldest first.</param>
+public sealed record RaidScanChanges(
+    DateTimeOffset PreviousGeneratedAt,
+    IReadOnlyList<RaidLogKey> NewLogs
+);
+
 /// <param name="Quality">0 (poor) to 5 (legendary), as WoW colours item names.</param>
 /// <param name="Icon">Icon name without host or extension.</param>
 public sealed record RaidItem(int Id, string Name, int Quality, string Icon);

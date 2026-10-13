@@ -121,6 +121,15 @@
             With average DPS, doing really well on Flame Leviathan would be enough and the other bosses would hardly
             matter. Other raids have the same problem, to a lesser degree.
           </p>
+
+          <ng-container *ngIf="changesSince() as since">
+            <h3>What are the numbers beside a score?</h3>
+            <p>
+              On the left, the ranks the character climbed or fell since the scan of {{ since | date:'MMM d, HH:mm' }};
+              on the right, the score they gained or lost. A score can drop without a new kill: when someone beats
+              the best on a boss, everyone else's share of that boss shrinks.
+            </p>
+          </ng-container>
         </div>
 
         <div class="help-tops" *ngIf="difficulty() as current">
@@ -205,7 +214,30 @@
               </td>
               <td class="center phone-hidden guild" [ngClass]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
               <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
-              <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">{{ entry.score }}</td>
+              <td class="num center strong score" [ngClass]="'q-' + scoreTier(entry)">
+                <!-- Since the last scan: ranks climbed or lost on the left, score gained or lost on the right. -->
+                <span class="score-cell" *ngIf="change(entry) as moved; else bareScore">
+                  <span class="score-side score-side-start">
+                    <span
+                      *ngIf="moved.rank"
+                      class="rank-change"
+                      [class.positive]="moved.rank > 0"
+                      [class.negative]="moved.rank < 0"
+                      [title]="rankChangeLabel(moved.rank)"><span aria-hidden="true">{{ signed(moved.rank) }}</span><span class="visually-hidden">{{ rankChangeLabel(moved.rank) }}: </span></span>
+                    <span *ngIf="moved.isNew" class="score-new" title="New since the last scan">new</span>
+                  </span>
+                  <span class="score-value">{{ entry.score }}</span>
+                  <span class="score-side score-side-end">
+                    <span
+                      *ngIf="moved.score"
+                      class="score-change"
+                      [class.positive]="moved.score > 0"
+                      [class.negative]="moved.score < 0"
+                      [title]="scoreChangeLabel(moved.score)"><span aria-hidden="true">{{ signed(moved.score) }}</span><span class="visually-hidden">, {{ scoreChangeLabel(moved.score) }}</span></span>
+                  </span>
+                </span>
+                <ng-template #bareScore>{{ entry.score }}</ng-template>
+              </td>
               <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
               <td class="num center col-optional col-ilvl">{{ entry.itemLevel }}</td>
             </tr>

@@ -12,6 +12,8 @@ namespace RaidLogExporter;
 /// its difficulties (with kill counts) and bosses, the spec table, every kill as
 /// <c>[realm, logId, boss, difficultyId, killedAtUnix, fightMs, guild, faction, wipes, deaths, members]</c>
 /// (boss and guild are positions in <c>bosses</c> and <c>guilds</c>, guild -1 for a pickup group),
+/// once there is an earlier export to compare with, <c>previousGeneratedAt</c> and the kills added
+/// since it as <c>newLogs</c> (<c>[realm, logId]</c>; see <see cref="RaidScanChanges"/>),
 /// <c>guilds</c> as <c>[name, realm, faction, guildId]</c> (an empty name for a guild that could
 /// not be named), each boss and difficulty's best DPS and HPS as
 /// <c>[name, realm, class, spec, perSecond, logRealm, logId]</c>, and the loot's
@@ -43,10 +45,12 @@ public static class RaidLogFileWriter
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
+    /// <param name="changes">Null on a first export.</param>
     public static async Task WriteAsync(
         string outputDirectory,
         RaidDataset dataset,
         DateTimeOffset generatedAt,
+        RaidScanChanges? changes,
         CancellationToken cancellationToken
     )
     {
@@ -67,7 +71,7 @@ public static class RaidLogFileWriter
 
         await AtomicFile.WriteAsync(
             Path.Combine(outputDirectory, IndexFileName),
-            (stream, token) => WriteIndexAsync(stream, dataset, generatedAt, token),
+            (stream, token) => WriteIndexAsync(stream, dataset, generatedAt, changes, token),
             cancellationToken
         );
 
@@ -78,6 +82,7 @@ public static class RaidLogFileWriter
         Stream stream,
         RaidDataset dataset,
         DateTimeOffset generatedAt,
+        RaidScanChanges? changes,
         CancellationToken cancellationToken
     )
     {
@@ -90,13 +95,11 @@ public static class RaidLogFileWriter
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
-        writer.WriteString(
-            "generatedAt",
-            generatedAt.UtcDateTime.ToString(
-                "yyyy-MM-dd'T'HH:mm:ss'Z'",
-                CultureInfo.InvariantCulture
-            )
-        );
+        writer.WriteString("generatedAt", FormatTimestamp(generatedAt));
+        if (changes is not null)
+        {
+            writer.WriteString("previousGeneratedAt", FormatTimestamp(changes.PreviousGeneratedAt));
+        }
 
         writer.WriteStartObject("raid");
         writer.WriteNumber("id", RaidCatalog.MapId);
@@ -186,6 +189,25 @@ public static class RaidLogFileWriter
             await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
         }
         writer.WriteEndArray();
+
+        if (changes is not null)
+        {
+            writer.WriteStartArray("newLogs");
+            foreach (var key in changes.NewLogs)
+            {
+                line.WriteTo(
+                    writer,
+                    item =>
+                    {
+                        item.WriteStartArray();
+                        item.WriteStringValue(key.Realm);
+                        item.WriteNumberValue(key.LogId);
+                        item.WriteEndArray();
+                    }
+                );
+            }
+            writer.WriteEndArray();
+        }
 
         writer.WriteStartArray("top");
         foreach (var encounter in dataset.Encounters.Where(encounter => encounter.Logs.Count > 0))
@@ -369,6 +391,10 @@ public static class RaidLogFileWriter
         writer.WriteNumberValue(performer.Log.LogId);
         writer.WriteEndArray();
     }
+
+    /// <summary>UTC ISO 8601, to the second.</summary>
+    private static string FormatTimestamp(DateTimeOffset at) =>
+        at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 
     private static Dictionary<(string Realm, int Id), int> Positions(
         IReadOnlyList<RaidGuild> guilds

@@ -104,7 +104,13 @@ public sealed class RaidLogExportService(
         var items = await LoadItemsAsync(logs, previous.Items, cancellationToken);
         var dataset = RaidLogDatasetBuilder.Build(logs, items, guildDirectory);
 
-        await RaidLogFileWriter.WriteAsync(outputDirectory, dataset, scannedAt, cancellationToken);
+        await RaidLogFileWriter.WriteAsync(
+            outputDirectory,
+            dataset,
+            scannedAt,
+            ScanChanges(previous, dataset),
+            cancellationToken
+        );
         return new RaidLogExportResult(
             dataset,
             previous.LogCount,
@@ -112,6 +118,26 @@ public sealed class RaidLogExportService(
             details.Mismatched,
             outputDirectory
         );
+    }
+
+    /// <summary>
+    /// The kills the last export did not have, which the leaderboard's rank and score changes
+    /// come from; measured against its boss files, so --full changes nothing here. A run that
+    /// finds no new kill moved no score, so it keeps the last export's changes, and running
+    /// twice in a row doesn't wipe them.
+    /// </summary>
+    private static RaidScanChanges? ScanChanges(PreviousRaidExport previous, RaidDataset dataset)
+    {
+        if (previous.GeneratedAt is not { } previousGeneratedAt || previous.Logs.Count == 0)
+        {
+            return null;
+        }
+
+        var added = dataset
+            .Logs.Where(log => !previous.Logs.ContainsKey(log.Key))
+            .Select(log => log.Key)
+            .ToList();
+        return added.Count > 0 ? new RaidScanChanges(previousGeneratedAt, added) : previous.Changes;
     }
 
     /// <summary>

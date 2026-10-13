@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 namespace RaidLogExporter;
@@ -5,10 +6,14 @@ namespace RaidLogExporter;
 /// <param name="Logs">Every kill the boss files hold, keyed by log.</param>
 /// <param name="LogCount">How many kills the index listed.</param>
 /// <param name="Items">The item names already looked up.</param>
+/// <param name="GeneratedAt">When that export read the rankings.</param>
+/// <param name="Changes">What that export added since the one before it.</param>
 public sealed record PreviousRaidExport(
     IReadOnlyDictionary<RaidLogKey, RaidLog> Logs,
     int LogCount,
-    IReadOnlyDictionary<int, RaidItem> Items
+    IReadOnlyDictionary<int, RaidItem> Items,
+    DateTimeOffset? GeneratedAt = null,
+    RaidScanChanges? Changes = null
 )
 {
     public static readonly PreviousRaidExport Empty = new(
@@ -72,7 +77,13 @@ public static class RaidLogFileReader
             var logCount = root.TryGetProperty("logs", out var indexLogs)
                 ? indexLogs.GetArrayLength()
                 : 0;
-            return new PreviousRaidExport(logs, logCount, ReadItems(root));
+            return new PreviousRaidExport(
+                logs,
+                logCount,
+                ReadItems(root),
+                ReadTimestamp(root, "generatedAt"),
+                ReadChanges(root)
+            );
         }
         catch (Exception error)
             when (error
@@ -162,6 +173,39 @@ public static class RaidLogFileReader
             member[7].GetInt64(),
             member[8].GetInt32(),
             member[9].GetInt32()
+        );
+    }
+
+    private static DateTimeOffset? ReadTimestamp(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value)
+        && value.ValueKind == JsonValueKind.String
+        && DateTimeOffset.TryParse(
+            value.GetString(),
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var at
+        )
+            ? at
+            : null;
+
+    private static RaidScanChanges? ReadChanges(JsonElement root)
+    {
+        if (
+            ReadTimestamp(root, "previousGeneratedAt") is not { } previousGeneratedAt
+            || !root.TryGetProperty("newLogs", out var newLogs)
+            || newLogs.ValueKind != JsonValueKind.Array
+        )
+        {
+            return null;
+        }
+
+        return new RaidScanChanges(
+            previousGeneratedAt,
+            [
+                .. newLogs
+                    .EnumerateArray()
+                    .Select(key => new RaidLogKey(key[0].GetString()!, key[1].GetInt32())),
+            ]
         );
     }
 
