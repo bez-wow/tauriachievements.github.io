@@ -80,12 +80,16 @@ export type RaidItemEntry = [id: number, name: string, quality: number, icon: st
 export interface RaidLogsIndexFile {
   version: number;
   generatedAt: string;
+  /** The export the `newLogs` are new to; missing on a first export. */
+  previousGeneratedAt?: string;
   raid: { id: number; slug: string; name: string };
   difficulties: RaidDifficultyEntry[];
   bosses: RaidBossEntry[];
   specs: RaidSpecEntry[];
   guilds: RaidGuildEntry[];
   logs: RaidIndexLogEntry[];
+  /** `[realm, logId]`: the kills added since `previousGeneratedAt`. */
+  newLogs?: Array<[realm: string, logId: number]>;
   top: RaidTopEntry[];
   items: RaidItemEntry[];
 }
@@ -241,6 +245,10 @@ export interface RaidKillDetails extends Omit<RaidKill, 'memberCount'> {
 
 export interface RaidLogsIndex {
   generatedAt?: Date;
+  /** The export before this one; undefined when there is nothing to compare with. */
+  previousGeneratedAt?: Date;
+  /** The kills added since `previousGeneratedAt`, by logKey. */
+  newLogs: ReadonlySet<string>;
   raid: { id: number; slug: string; name: string };
   difficulties: RaidDifficulty[];
   bosses: RaidBoss[];
@@ -301,6 +309,7 @@ export function itemUrl(itemId: number): string {
 
 export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
   const generatedAt = new Date(file.generatedAt);
+  const previousGeneratedAt = new Date(file.previousGeneratedAt ?? NaN);
   const difficulties = file.difficulties.map(difficulty => ({ ...difficulty }));
   const difficultiesById = new Map(difficulties.map(difficulty => [difficulty.id, difficulty]));
   const bosses = file.bosses.map((boss, index): RaidBoss => ({
@@ -344,8 +353,11 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
     });
   }
 
+  const hasPrevious = !Number.isNaN(previousGeneratedAt.getTime());
   return {
     generatedAt: Number.isNaN(generatedAt.getTime()) ? undefined : generatedAt,
+    previousGeneratedAt: hasPrevious ? previousGeneratedAt : undefined,
+    newLogs: new Set(hasPrevious ? (file.newLogs ?? []).map(([realm, logId]) => logKey({ realm, logId })) : []),
     raid: file.raid,
     difficulties,
     bosses,
@@ -526,6 +538,21 @@ interface Appearance {
   kill: RaidKillDetails;
 }
 
+/**
+ * characterKey, worked out once per character object: scoring needs it for every member of every
+ * kill, twice when the changes since the previous scan show, and the strings were most of its time.
+ */
+const characterKeys = new WeakMap<RaidCharacter, string>();
+
+function cachedCharacterKey(character: RaidCharacter): string {
+  let key = characterKeys.get(character);
+  if (key === undefined) {
+    key = characterKey(character);
+    characterKeys.set(character, key);
+  }
+  return key;
+}
+
 export interface BossPerformance {
   boss: RaidBoss;
   /** The character's best kill of the boss by the metric; undefined while they have none. */
@@ -594,7 +621,7 @@ export function scoreCharacters(
           continue;
         }
 
-        const key = characterKey(member.character);
+        const key = cachedCharacterKey(member.character);
         let tally = tallies.get(key);
         if (!tally) {
           tally = { latest: { member, kill }, specs: new Map(), bests: bosses.map(() => undefined) };
@@ -659,6 +686,51 @@ export function rankScores(scores: readonly CharacterScore[], filter: ScoreFilte
     .filter(entry => (filter.classId === undefined || entry.character.classId === filter.classId)
       && (filter.realm === undefined || realmSlug(entry.character.realm) === filter.realm))
     .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
+// --- Since the previous scan ------------------------------------------------------------
+
+/**
+ * Each boss's kills as the previous export had them: without the ones it didn't have yet
+ * (`newLogs`, by logKey). Scored and ranked like the current ones, they give the standings
+ * that the rank and score changes measure from.
+ */
+export function killsBefore(
+  bossKills: ReadonlyArray<readonly RaidKillDetails[]>,
+  newLogs: ReadonlySet<string>
+): RaidKillDetails[][] {
+  return bossKills.map(kills => kills.filter(kill => !newLogs.has(logKey(kill))));
+}
+
+export interface ScoreChange {
+  /** Ranks climbed since the previous ranking, negative for ranks lost. */
+  rank: number;
+  /** Score gained, negative for score lost: a new best on a boss lowers everyone else's share of it. */
+  score: number;
+  /** Not in the previous ranking: a first kill, or a first as the spec filtered on. Rank and score are 0. */
+  isNew: boolean;
+}
+
+/**
+ * How each character moved from one ranking to the other, by characterKey. Both have to be
+ * ranked the same way (difficulty, metric, spec and filters). A character whose rank and score
+ * held is left out.
+ */
+export function scoreChanges(current: readonly RankedScore[], previous: readonly RankedScore[]): Map<string, ScoreChange> {
+  const before = new Map(previous.map(entry => [cachedCharacterKey(entry.character), entry]));
+  const changes = new Map<string, ScoreChange>();
+
+  for (const entry of current) {
+    const key = cachedCharacterKey(entry.character);
+    const earlier = before.get(key);
+    if (!earlier) {
+      changes.set(key, { rank: 0, score: 0, isNew: true });
+    } else if (earlier.rank !== entry.rank || earlier.score !== entry.score) {
+      changes.set(key, { rank: earlier.rank - entry.rank, score: entry.score - earlier.score, isNew: false });
+    }
+  }
+
+  return changes;
 }
 
 /**
