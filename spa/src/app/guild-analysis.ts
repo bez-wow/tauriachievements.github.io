@@ -46,7 +46,7 @@ export interface GuildAnalysisMetadata {
 
 /** Each key is also the file name under guild-analysis/ (written by api/Guildkukker). */
 export type GuildAnalysisKey =
-  'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'miracle' | 'outlaws' | 'six-seven' | 'temerite';
+  'endless' | 'competence-optional' | 'entropy' | 'impaired' | 'impact' | 'miracle' | 'outlaws' | 'highly-regarded' | 'temerite';
 
 export const DEFAULT_GUILD_ANALYSIS_KEY: GuildAnalysisKey = 'endless';
 

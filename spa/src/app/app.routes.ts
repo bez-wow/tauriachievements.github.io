@@ -182,10 +182,10 @@ export const routes: Routes = [
     resolve: { analysis: guildAnalysisResolver }
   },
   {
-    path: 'six-seven-d74a9e3c',
+    path: 'highly-regarded-d74a9e3c',
     loadComponent: () => import('./endless6531-page.component')
       .then(module => module.Endless6531PageComponent),
-    data: { guild: 'six-seven' },
+    data: { guild: 'highly-regarded' },
     resolve: { analysis: guildAnalysisResolver }
   },
   {
