@@ -51,9 +51,9 @@ describe('landingTimes', () => {
 
 describe('decodeDurationFor', () => {
   it('takes longer for more text, within bounds', () => {
-    expect(decodeDurationFor(10)).toBe(1800);
-    expect(decodeDurationFor(200)).toBe(2600);
-    expect(decodeDurationFor(1000)).toBe(3200);
+    expect(decodeDurationFor(10)).toBe(1300);
+    expect(decodeDurationFor(200)).toBe(1900);
+    expect(decodeDurationFor(1000)).toBe(2400);
   });
 });
 

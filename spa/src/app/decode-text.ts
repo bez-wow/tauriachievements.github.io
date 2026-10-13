@@ -49,9 +49,9 @@ export function landingTimes(count: number, duration: number, random: () => numb
     (count > 1 ? index / (count - 1) : 0) * duration * .75 + random() * duration * .25);
 }
 
-/** How long a text with `count` characters to decode takes, in ms: longer for more, 1.8 to 3.2 s. */
+/** How long a text with `count` characters to decode takes, in ms: longer for more, 1.3 to 2.4 s. */
 export function decodeDurationFor(count: number): number {
-  return Math.min(3200, Math.max(1800, 1200 + count * 7));
+  return Math.min(2400, Math.max(1300, 900 + count * 5));
 }
 
 /** `char` as a `text-transform` shows it. */

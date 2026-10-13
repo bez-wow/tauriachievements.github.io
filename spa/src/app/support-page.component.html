@@ -57,7 +57,7 @@
           *ngFor="let donation of donations; let i = index"
           [style.--i]="i"
           appDecode
-          [decodeDelay]="500 + i * 100">
+          [decodeDelay]="500 + i * 80">
           <span class="supporter-icon" aria-hidden="true">{{ donation.icon }}</span>
           <span class="supporter-name">
             <ng-container *ngTemplateOutlet="nameList; context: { $implicit: donation.names }" />
@@ -87,7 +87,7 @@
           [style.--span]="testimonial.span"
           [style.--i]="i"
           appDecode
-          [decodeDelay]="450 + i * 90">
+          [decodeDelay]="450 + i * 70">
           <figcaption>
             <cite>
               <ng-container *ngTemplateOutlet="nameList; context: { $implicit: testimonial.names }" />

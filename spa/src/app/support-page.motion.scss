@@ -51,11 +51,11 @@ $scroll-range: entry 0% entry 100%;
   // on the wide one: there the page hardly scrolls, and the layer the drift needs would take the
   // boxes over it onto layers too, which on some screens draws their text a little softer.
   .support-page::before {
-    animation: mp-grid-scan 2200ms var(--ease-in-out) backwards;
+    animation: mp-grid-scan 1600ms var(--ease-in-out) backwards;
 
     @media (max-width: 960px) {
       @supports (animation-timeline: scroll()) {
-        animation: mp-grid-scan 2200ms var(--ease-in-out) backwards, mp-grid-drift linear both;
+        animation: mp-grid-scan 1600ms var(--ease-in-out) backwards, mp-grid-drift linear both;
         animation-timeline: auto, scroll();
         animation-range: normal, 0 640px;
       }
@@ -79,7 +79,7 @@ $scroll-range: entry 0% entry 100%;
     mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
     opacity: 0;
     pointer-events: none;
-    animation: mp-scan-sweep 2200ms var(--ease-in-out) backwards;
+    animation: mp-scan-sweep 1600ms var(--ease-in-out) backwards;
   }
 
   // The boxes come into focus, the message first, then its two tiles, then the lists.
