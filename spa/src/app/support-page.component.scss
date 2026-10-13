@@ -1,0 +1,268 @@
+// Same palette as the other content pages: dark cards, gold accent. The call to action is
+// Discord's own blurple.
+$gold: #f7b500;
+$blurple: #5865f2;
+$card: #1b1b1b;
+$card-border: #262626;
+
+:host { display: block; width: 100%; }
+
+// The top padding includes the 36 px (30 px on phones) the header is assumed to take.
+.support-page {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 64px 16px 48px;
+  color: #e0e0e0;
+  line-height: 1.55;
+}
+
+// --- How to support ------------------------------------------------------------------------------
+
+.appeal {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 32px 28px;
+  border: 1px solid #2c2717;
+  border-radius: 8px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba($gold, .1), rgba($gold, 0) 62%),
+    #151515;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  text-align: center;
+
+  h1 { margin-bottom: 10px; color: #fff; font-size: 1.8rem; line-height: 1.25; }
+  strong { color: #ffd36b; }
+}
+
+// Two even lines on a desktop screen.
+.appeal-lead {
+  color: #c9c9c9;
+  font-size: 1.02rem;
+  text-wrap: balance;
+}
+
+.perks {
+  display: grid;
+  gap: 10px;
+  margin: 24px 0;
+  list-style: none;
+  text-align: left;
+}
+
+.perk {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid $card-border;
+  border-radius: 6px;
+  background: $card;
+}
+
+// The in-game recipient for gold, set apart so it's easy to copy.
+.character-name {
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: #2e2716;
+  white-space: nowrap;
+}
+
+.perk-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  text-align: center;
+}
+
+// One line on a desktop screen; balanced where it has to wrap.
+.appeal-closing {
+  margin: 0 auto 18px;
+  color: #bdbdbd;
+  font-size: .95rem;
+  text-wrap: balance;
+}
+
+.appeal-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 8px;
+  background: $blurple;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+
+  &:hover { background: #4752c4; }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #151515, 0 0 0 4px rgba($gold, .7);
+  }
+}
+
+.appeal-cta-logo {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+
+// --- Supporters and kind words -------------------------------------------------------------------
+
+.block { margin-top: 44px; }
+
+.block-header {
+  margin-bottom: 16px;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-size: 1.3rem;
+  }
+
+  p { color: #9a9a9a; font-size: .9rem; }
+}
+
+.block-count {
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: #2e2716;
+  color: $gold;
+  font-size: .8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// One supporter below the other, in the order of DONATIONS.
+.supporters {
+  display: grid;
+  gap: 8px;
+  max-width: 560px;
+  list-style: none;
+}
+
+.supporter {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-areas:
+    'icon name'
+    'icon amount';
+  column-gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid $card-border;
+  border-left: 3px solid $gold;
+  border-radius: 6px;
+  background: $card;
+}
+
+.supporter-icon {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2e2716;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.supporter-name {
+  grid-area: name;
+  overflow: hidden;
+  color: $gold;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.supporter-amount {
+  grid-area: amount;
+  color: #9a9a9a;
+  font-size: .85rem;
+
+  strong { color: #fff; font-variant-numeric: tabular-nums; }
+}
+
+// Quotes of any length, packed into columns.
+.quotes {
+  columns: 3 280px;
+  column-gap: 14px;
+}
+
+// Who said it along the top (name left, where they said it right), then the quote.
+.quote {
+  margin: 0 0 14px;
+  padding: 14px 18px 16px;
+  border: 1px solid $card-border;
+  border-radius: 6px;
+  background: $card;
+  break-inside: avoid;
+
+  p { color: #e0e0e0; font-size: .95rem; }
+
+  figcaption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid $card-border;
+  }
+
+  cite {
+    min-width: 0;
+    overflow: hidden;
+    color: $gold;
+    font-size: .88rem;
+    font-style: normal;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.quote-from {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 3px;
+  background: #2e2716;
+  color: $gold;
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+
+  &.is-discord {
+    background: rgba($blurple, .18);
+    color: #b4baff;
+  }
+}
+
+// First time on screen (RevealDirective): the cards rise in one after another. mp-card-rise is
+// global (_motion.scss), so the reference inside this @media still finds it.
+@media (prefers-reduced-motion: no-preference) {
+  .supporters[data-reveal='pending'] .supporter,
+  .quotes[data-reveal='pending'] .quote { opacity: 0; }
+
+  .supporters[data-reveal='in'] .supporter,
+  .quotes[data-reveal='in'] .quote {
+    animation: mp-card-rise 640ms var(--ease-out) both;
+    // Capped, so a long list doesn't keep the last cards waiting.
+    animation-delay: calc(min(var(--i, 0), 14) * 60ms);
+  }
+}
+
+@media (max-width: 640px) {
+  .support-page { padding-top: 46px; }
+  .appeal { padding: 24px 16px 22px; }
+  .appeal h1 { font-size: 1.45rem; }
+  .perk { padding: 10px 12px; gap: 10px; }
+  .block { margin-top: 36px; }
+}

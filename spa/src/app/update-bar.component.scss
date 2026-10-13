@@ -1,6 +1,6 @@
 // The site header: sections with their page dropdowns.
 //
-// Up to 860 px wide the sections scroll sideways and a dropdown opens as a sheet across the
+// Up to 960 px wide the sections scroll sideways and a dropdown opens as a sheet across the
 // screen. The sheet is position: fixed inside a scroller, so no ancestor of it may have a
 // transform, filter, backdrop-filter, mask or contain: those would clip it or pin it to the strip.
 
@@ -233,7 +233,7 @@
   display: none;
 }
 
-// --- Discord -------------------------------------------------------------------------------------
+// --- Support and Discord -------------------------------------------------------------------------
 
 .update-bar-actions {
   display: inline-flex;
@@ -279,7 +279,7 @@
   font-weight: 800;
 }
 
-.discord-link {
+.action-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -307,7 +307,7 @@
   }
 }
 
-.discord-link-text {
+.action-link-text {
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.55px;
@@ -324,6 +324,12 @@
   fill: currentColor;
 }
 
+.support-link.is-current {
+  border-color: #c9a33b;
+  background: #29251a;
+}
+
+// Discord shrinks to its logo; Support has no icon, so it keeps its word.
 @media (max-width: 1499px) {
   .update-bar-actions {
     gap: 3px;
@@ -334,7 +340,7 @@
     padding: 0;
   }
 
-  .discord-link-text {
+  .discord-link .action-link-text {
     display: none;
   }
 }
@@ -358,9 +364,10 @@
 
 // --- Narrow screens: the sections scroll and a dropdown is a sheet --------------------------------
 
-@media (max-width: 860px) {
+// Above this the sections, both side columns and the header buttons need about 950 px in one row.
+@media (max-width: 960px) {
   .site-bar {
-    grid-template-columns: 96px minmax(0, 1fr) 71px;
+    grid-template-columns: 96px minmax(0, 1fr) max-content;
   }
 
   .site-nav {
@@ -448,7 +455,7 @@
   }
 
   .site-bar {
-    grid-template-columns: 96px minmax(0, 1fr) 83px;
+    grid-template-columns: 96px minmax(0, 1fr) max-content;
     padding-left: calc(4px + env(safe-area-inset-left, 0px));
     padding-right: calc(4px + env(safe-area-inset-right, 0px));
     gap: 4px;
@@ -459,9 +466,12 @@
     gap: 6px;
   }
 
+  .action-link {
+    min-height: 40px;
+  }
+
   .discord-link {
     width: 40px;
-    min-height: 40px;
   }
 }
 
