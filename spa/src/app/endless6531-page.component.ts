@@ -76,6 +76,10 @@ const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = 
   'temerite': {
     name: 'Témérité',
     realm: 'Evermoon'
+  },
+  'rycerze-ortalionu': {
+    name: 'Rycerze Ortalionu',
+    realm: 'Evermoon'
   }
 };
 

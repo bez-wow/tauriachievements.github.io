@@ -201,6 +201,13 @@ export const routes: Routes = [
     resolve: { analysis: guildAnalysisResolver }
   },
   {
+    path: 'rycerze-ortalionu-c1ee200b',
+    loadComponent: () => import('./endless6531-page.component')
+      .then(module => module.Endless6531PageComponent),
+    data: { guild: 'rycerze-ortalionu' },
+    resolve: { analysis: guildAnalysisResolver }
+  },
+  {
     path: '**',
     redirectTo: ''
   }
