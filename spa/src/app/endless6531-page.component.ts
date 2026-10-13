@@ -69,8 +69,8 @@ const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = 
     name: 'Outlaws',
     realm: 'Tauri'
   },
-  'six-seven': {
-    name: 'Six Seven',
+  'highly-regarded': {
+    name: 'Highly Regarded',
     realm: 'Evermoon'
   },
   'temerite': {
