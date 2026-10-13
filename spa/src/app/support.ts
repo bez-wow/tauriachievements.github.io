@@ -102,6 +102,34 @@ export function testimonialSourceLabel(from: TestimonialSource): string {
   return SOURCE_LABELS[from];
 }
 
+/** The quote grid has six columns, so quotes can sit two (three columns each) or three (two) to a row. */
+export const QUOTE_COLUMNS = 6;
+
+/**
+ * How many columns each quote takes: a long one the whole row, a one-liner a third, the rest half.
+ * Places them the way the grid's dense packing does, then widens the last quote of each row to its
+ * end, so no row is left with a gap.
+ */
+export function quoteSpans(quotes: readonly string[]): number[] {
+  const spans = quotes.map(({ length }) => (length > 180 ? QUOTE_COLUMNS : length <= 30 ? 2 : 3));
+  // Columns filled in each row, and the quote placed last in it. Rows fill from the left.
+  const filled: number[] = [];
+  const lastInRow: number[] = [];
+
+  spans.forEach((span, index) => {
+    let row = filled.findIndex((columns) => columns + span <= QUOTE_COLUMNS);
+    if (row < 0) {
+      row = filled.push(0) - 1;
+    }
+    filled[row] += span;
+    lastInRow[row] = index;
+  });
+  filled.forEach((columns, row) => {
+    spans[lastInRow[row]] += QUOTE_COLUMNS - columns;
+  });
+  return spans;
+}
+
 const CURRENCY_ICONS: Record<DonationCurrency, string> = {
   eur: '💶',
   usd: '💵',

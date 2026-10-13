@@ -31,7 +31,7 @@
         <h2 class="perk-label">Supporter rank</h2>
         <p>
           As a thank-you, everyone who contributes receives a special
-          <strong>supporter rank</strong> on our Discord server.
+          <strong class="supporter-rank">supporter rank</strong> on our Discord server.
         </p>
       </li>
       <li class="panel perk">
@@ -77,7 +77,7 @@
         <figure
           class="quote"
           *ngFor="let testimonial of testimonials; let i = index"
-          [class.is-wide]="testimonial.isWide"
+          [style.--span]="testimonial.span"
           [style.--i]="i">
           <figcaption>
             <cite>

@@ -6,8 +6,18 @@ import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { characterProfileLink } from './mythic-plus-profile';
 import { RevealDirective } from './reveal.directive';
-import { DONATIONS, PlayerName, TESTIMONIALS, donationIcon, formatDonation, testimonialSourceLabel } from './support';
+import {
+  DONATIONS,
+  PlayerName,
+  TESTIMONIALS,
+  donationIcon,
+  formatDonation,
+  quoteSpans,
+  testimonialSourceLabel
+} from './support';
 import { UpdateBarComponent } from './update-bar.component';
+
+const QUOTE_SPANS = quoteSpans(TESTIMONIALS.map(({ quote }) => quote));
 
 /**
  * A name with its class colour and where it links: the Mythic+ profile when one is given, else the
@@ -43,11 +53,11 @@ export class SupportPageComponent {
     icon: donationIcon(donation.currency),
     amountLabel: formatDonation(donation)
   }));
-  /** Long quotes take both columns, so short ones can pair up beside each other. */
-  protected readonly testimonials = TESTIMONIALS.map((testimonial) => ({
+  /** Each quote's width in the six-column grid comes from quoteSpans. */
+  protected readonly testimonials = TESTIMONIALS.map((testimonial, index) => ({
     ...testimonial,
     names: testimonial.names.map(shownName),
     fromLabel: testimonialSourceLabel(testimonial.from),
-    isWide: testimonial.quote.length > 180
+    span: QUOTE_SPANS[index]
   }));
 }
