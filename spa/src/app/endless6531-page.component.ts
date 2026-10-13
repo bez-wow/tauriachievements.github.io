@@ -127,6 +127,7 @@ type SortColumn =
   | 'guildRankName'
   | 'artifactRelics'
   | 'artifactTraits'
+  | 'artifactKnowledge'
   | 'itemLevel'
   | 'playedTime'
   | 'achievementPoints';
@@ -138,6 +139,7 @@ const SORT_COLUMNS = new Set<SortColumn>([
   'guildRankName',
   'artifactRelics',
   'artifactTraits',
+  'artifactKnowledge',
   'itemLevel',
   'playedTime',
   'achievementPoints'
@@ -635,7 +637,7 @@ export class Endless6531PageComponent {
           player.guildRankName.trim().toLocaleLowerCase()
         ) ?? guildRankOrderIndex(player.guildRankName);
       default:
-        return player[column];
+        return player[column] ?? null;
     }
   }
 
