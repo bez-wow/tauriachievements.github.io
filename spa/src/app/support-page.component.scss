@@ -71,12 +71,11 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
 // --- Message -------------------------------------------------------------------------------------
 
-// The panel's background with a lit edge along the top and a glow from the top-left corner on top.
-// Background layers rather than pseudo-elements, which the spotlight takes.
+// The panel's background with a glow from the top-left corner on top: a background layer rather
+// than a pseudo-element, which the spotlight takes.
 .hero {
   padding: 20px 22px 22px;
   background:
-    linear-gradient(90deg, rgba($gold, 0) 12%, $gold 50%, rgba($gold, 0) 88%) top / 100% 1px no-repeat border-box,
     radial-gradient(420px 220px at 0% 0%, rgba($gold, .12), rgba($gold, 0) 70%) padding-box,
     linear-gradient(180deg, rgba(24, 24, 30, .92), rgba(14, 14, 18, .94)) padding-box,
     linear-gradient(140deg, rgba($gold, .38), $line 32%, $line 68%, rgba($blurple, .34)) border-box;
@@ -91,6 +90,18 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     letter-spacing: -.01em;
     line-height: 1.15;
   }
+}
+
+// A lit edge along the top of the message, over its border. An element of its own so it can light
+// up from the middle when the page opens (support-page.motion.scss).
+.hero-edge {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  left: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba($gold, 0) 12%, $gold 50%, rgba($gold, 0) 88%);
+  pointer-events: none;
 }
 
 .kicker {
@@ -115,12 +126,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   height: 6px;
   border-radius: 50%;
   background: $gold;
-  animation: support-ping 2s ease-out infinite;
-}
-
-@keyframes support-ping {
-  0% { box-shadow: 0 0 0 0 rgba($gold, .6); }
-  70%, 100% { box-shadow: 0 0 0 6px rgba($gold, 0); }
 }
 
 .lead {
@@ -443,25 +448,7 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 .perk,
 .quote { @include shared.spotlight-card; }
 
-// --- Motion --------------------------------------------------------------------------------------
-
-// First time on screen (RevealDirective): the rows and cards rise in one after another.
-// mp-card-rise is global (_motion.scss), so the reference inside this @media still finds it.
-@media (prefers-reduced-motion: no-preference) {
-  .supporters[data-reveal='pending'] .supporter,
-  .quotes[data-reveal='pending'] .quote { opacity: 0; }
-
-  .supporters[data-reveal='in'] .supporter,
-  .quotes[data-reveal='in'] .quote {
-    animation: mp-card-rise 640ms var(--ease-out) both;
-    // Capped, so a long list doesn't keep the last cards waiting.
-    animation-delay: calc(min(var(--i, 0), 14) * 60ms);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .kicker-dot { animation: none; }
-
   .cta,
   .cta-arrow { transition: none; }
 }

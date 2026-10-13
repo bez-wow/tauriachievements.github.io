@@ -4,8 +4,10 @@ import { RouterLink } from '@angular/router';
 import { getArmoryUrl } from '../utils/armory';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
+import { DecodeDirective } from './decode.directive';
 import { characterProfileLink } from './mythic-plus-profile';
 import { RevealDirective } from './reveal.directive';
+import { ScrollRiseDirective } from './scroll-rise.directive';
 import { SpotlightDirective } from './spotlight.directive';
 import {
   DONATIONS,
@@ -45,11 +47,13 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
     RouterLink,
     UpdateBarComponent,
     BackToTopButtonComponent,
+    DecodeDirective,
     RevealDirective,
+    ScrollRiseDirective,
     SpotlightDirective
   ],
   templateUrl: './support-page.component.html',
-  styleUrl: './support-page.component.scss',
+  styleUrls: ['./support-page.component.scss', './support-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupportPageComponent {
