@@ -136,6 +136,7 @@
             <option value="guildRankName">Rank</option>
             <option value="artifactRelics">Relics</option>
             <option value="artifactTraits">Traits</option>
+            <option value="artifactKnowledge">AK</option>
             <option value="itemLevel">ilvl</option>
             <option value="playedTime">/played</option>
             <option value="achievementPoints">Achievements</option>
@@ -177,6 +178,11 @@
           <th [attr.aria-sort]="ariaSort('artifactTraits')">
             <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'">
               <span class="header-label">Traits</span>
+            </button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('artifactKnowledge')">
+            <button type="button" (click)="sortBy('artifactKnowledge')" [class.active-sort]="sortColumn() === 'artifactKnowledge'" title="Artifact Knowledge">
+              <span class="header-label">AK</span>
             </button>
           </th>
           <th [attr.aria-sort]="ariaSort('itemLevel')">
@@ -230,6 +236,7 @@
           <td data-label="Spec">{{ player.specialization || '—' }}</td>
           <td data-label="Relics">{{ player.artifactRelics | number }}</td>
           <td data-label="Traits">{{ player.artifactTraits | number }}</td>
+          <td data-label="AK" title="Artifact Knowledge">{{ player.artifactKnowledge ?? '—' }}</td>
           <td data-label="ilvl">{{ player.itemLevel | number:'1.2-2' }}</td>
           <td class="legendary-cell" data-label="Legendaries">
             <ng-container *ngIf="player.legendaries?.length; else noLegendaries">
