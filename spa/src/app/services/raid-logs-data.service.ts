@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, of, shareReplay, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, shareReplay, switchMap, throwError } from 'rxjs';
 import {
   RAID_GENDERS_PATH,
   RAID_LOGS_DATA_DIR,
@@ -50,6 +50,17 @@ export class RaidLogsDataService {
     const path = bossFilePath(boss, difficulty);
     return this.memoize(path, () =>
       this.dataFiles.fetchJson<RaidBossFile>(path).pipe(map(file => decodeBossFile(file, boss, difficulty, index.specs))));
+  }
+
+  /** Every detailed kill on one difficulty, in boss order. Used for raid-wide roster analytics. */
+  difficultyKills(index: RaidLogsIndex, difficulty: RaidDifficulty): Observable<RaidKillDetails[]> {
+    if (!index.bosses.length) {
+      return of([]);
+    }
+
+    return forkJoin(index.bosses.map(boss => this.bossKills(index, boss, difficulty))).pipe(
+      map(killsByBoss => killsByBoss.flat())
+    );
   }
 
   /**

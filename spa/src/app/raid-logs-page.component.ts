@@ -6,11 +6,12 @@ import { getClassIconPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
-import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   GuildProgress,
   RaidBoss,
+  RaidDifficulty,
   RaidKill,
+  RaidKillDetails,
   RaidLogsIndex,
   RaidPerformer,
   bossesInKillOrder,
@@ -29,6 +30,7 @@ import {
   raidGuildLink,
   raidLogLink
 } from './raid-logs';
+import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
@@ -53,13 +55,13 @@ const RECENT_KILLS = 12;
 
 /**
  * /raid-logs: the raid at a glance on one difficulty (`?difficulty=`): each boss's kills, fastest
- * kill and best damage and healing, the guilds' progress, and the latest kills. Reads only the
- * index; the boss pages load the members.
+ * kill and best damage and healing, roster popularity, the guilds' progress, and the latest kills.
+ * The summary reads the index; the popularity chart also loads the selected difficulty's rosters.
  */
 @Component({
   selector: 'app-raid-logs-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidDifficultySwitchComponent, RevealDirective],
+  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RevealDirective],
   templateUrl: './raid-logs-page.component.html',
   styleUrl: './raid-logs-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -74,6 +76,9 @@ export class RaidLogsPageComponent implements OnInit {
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
+  readonly popularityKills = signal<readonly RaidKillDetails[]>([]);
+  readonly popularityLoading = signal(false);
+  readonly popularityError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
@@ -152,6 +157,7 @@ export class RaidLogsPageComponent implements OnInit {
   readonly formatPerSecond = formatPerSecond;
   readonly classIcon = getClassIconPath;
   readonly previewSize = PROGRESSION_PREVIEW;
+  private popularityRequest = 0;
 
   ngOnInit(): void {
     this.loadData();
@@ -167,6 +173,10 @@ export class RaidLogsPageComponent implements OnInit {
           this.index.set(index);
           this.now.set(Date.now());
           this.isLoading.set(false);
+          const difficulty = this.difficulty();
+          if (difficulty) {
+            this.loadPopularity(difficulty);
+          }
         },
         error: error => {
           console.error('Failed to load the raid logs:', error);
@@ -177,9 +187,24 @@ export class RaidLogsPageComponent implements OnInit {
   }
 
   setDifficulty(slug: string): void {
+    if (slug === this.difficulty()?.slug) {
+      return;
+    }
+
     this.requestedDifficulty.set(slug);
     this.showAllGuilds.set(false);
     this.writeUrl();
+    const difficulty = this.difficulty();
+    if (difficulty) {
+      this.loadPopularity(difficulty);
+    }
+  }
+
+  retryPopularity(): void {
+    const difficulty = this.difficulty();
+    if (difficulty) {
+      this.loadPopularity(difficulty);
+    }
   }
 
   classColor(classId: number): string {
@@ -209,6 +234,38 @@ export class RaidLogsPageComponent implements OnInit {
 
   trackLabel(index: number, tile: SummaryTile): string {
     return tile.label;
+  }
+
+  private loadPopularity(difficulty: RaidDifficulty): void {
+    const index = this.index();
+    if (!index) {
+      return;
+    }
+
+    const request = ++this.popularityRequest;
+    this.popularityKills.set([]);
+    this.popularityLoading.set(true);
+    this.popularityError.set(undefined);
+
+    this.data.difficultyKills(index, difficulty)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: kills => {
+          if (request !== this.popularityRequest) {
+            return;
+          }
+          this.popularityKills.set(kills);
+          this.popularityLoading.set(false);
+        },
+        error: error => {
+          if (request !== this.popularityRequest) {
+            return;
+          }
+          console.error('Failed to load the raid rosters:', error);
+          this.popularityError.set('The raid rosters could not be loaded.');
+          this.popularityLoading.set(false);
+        }
+      });
   }
 
   /** In-page filters keep the scroll position: no navigation, only the address bar changes. */
