@@ -1,10 +1,10 @@
-import { MythicPlusDungeon, MythicPlusRun } from './mythic-plus';
+import { MythicPlusDungeon, MythicPlusMember, MythicPlusRun, characterKey } from './mythic-plus';
 import { DungeonTimers, dungeonTimers, isTimed } from './mythic-plus-activity';
 
 /*
  * The pure parts of /mythic-plus/records: the highest key timed in each dungeon, the first group
- * to time each key level, and the levels nobody has timed yet. "Timed" is `isTimed`, as on the
- * leaderboard and the stats page, so all three agree.
+ * to time each key level, the levels nobody has timed yet, and the characters with the most runs.
+ * "Timed" is `isTimed`, as on the leaderboard and the stats page, so all of them agree.
  */
 
 type RecordRun = Pick<MythicPlusRun, 'id' | 'dungeon' | 'keyLevel' | 'clearTimeSeconds' | 'completedAt'>;
@@ -17,6 +17,9 @@ export const FIRSTS_FROM_LEVEL = 10;
 
 /** A claimed bounty stays on the page for a week after the run that claimed it. */
 export const CLAIM_SHOWN_FOR_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** How many characters the most-runs list shows. */
+export const MOST_RUNS_SHOWN = 10;
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -159,6 +162,71 @@ export function dungeonBounties<T extends RecordRun>(
       || Number(!a.closest) - Number(!b.closest)
       || a.order - b.order)
     .map(({ order, ...bounty }) => bounty);
+}
+
+export interface RunCount {
+  /** `characterKey`: a character, whichever spec they played. */
+  key: string;
+  /** The character as they appear in their most-played spec; of two, the one that got there first. */
+  member: MythicPlusMember;
+  /** Every run they finished, in time or not. */
+  runs: number;
+  timed: number;
+  /** Undefined while none of their runs was timed. */
+  highestTimed?: number;
+}
+
+/**
+ * The characters with the most runs, timed or not, most first. At the same count the one with
+ * more timed runs leads, then by name.
+ */
+export function mostRuns(
+  runs: readonly Pick<MythicPlusRun, 'dungeon' | 'keyLevel' | 'clearTimeSeconds' | 'roster'>[],
+  timers: DungeonTimers,
+  limit = MOST_RUNS_SHOWN
+): RunCount[] {
+  type SpecCount = { member: MythicPlusMember; runs: number };
+  const characters = new Map<string, {
+    runs: number;
+    timed: number;
+    highestTimed?: number;
+    specs: Map<string, SpecCount>;
+    mostPlayed: SpecCount;
+  }>();
+
+  for (const run of runs) {
+    const timed = isTimed(run, timers);
+    for (const member of run.roster) {
+      const key = characterKey(member);
+      let character = characters.get(key);
+      if (!character) {
+        const first = { member, runs: 0 };
+        character = { runs: 0, timed: 0, specs: new Map([[member.spec, first]]), mostPlayed: first };
+        characters.set(key, character);
+      }
+
+      character.runs++;
+      if (timed) {
+        character.timed++;
+        character.highestTimed = Math.max(character.highestTimed ?? 0, run.keyLevel);
+      }
+
+      let spec = character.specs.get(member.spec);
+      if (!spec) {
+        spec = { member, runs: 0 };
+        character.specs.set(member.spec, spec);
+      }
+      spec.runs++;
+      if (spec.runs > character.mostPlayed.runs) {
+        character.mostPlayed = spec;
+      }
+    }
+  }
+
+  return [...characters]
+    .map(([key, { runs, timed, highestTimed, mostPlayed }]) => ({ key, member: mostPlayed.member, runs, timed, highestTimed }))
+    .sort((a, b) => b.runs - a.runs || b.timed - a.timed || compareText(a.key, b.key))
+    .slice(0, limit);
 }
 
 /** How long a record has stood, from when it was set to `now` (both epoch ms): `held for 11 days`. */

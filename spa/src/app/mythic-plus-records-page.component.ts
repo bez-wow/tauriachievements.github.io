@@ -15,10 +15,12 @@ import {
   MythicPlusIndex,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
+  RunQuality,
   createRunDecoder,
   currentAffixWeek,
   exportedAt,
   formatClock,
+  scoreQuality,
   sharesTables
 } from './mythic-plus';
 import { dungeonTimers } from './mythic-plus-activity';
@@ -29,11 +31,12 @@ import {
   dungeonBounties,
   dungeonRecords,
   formatHeldFor,
+  mostRuns,
   openBounty,
   serverFirsts
 } from './mythic-plus-records';
 import { MythicPlusRunDetailsComponent } from './mythic-plus-run-details.component';
-import { MemberView, RunView, toRunView } from './mythic-plus-views';
+import { MemberView, RunView, toMemberView, toRunView } from './mythic-plus-views';
 import { CountUpDirective } from './count-up.directive';
 import { RevealDirective } from './reveal.directive';
 import { DataFileService } from './services/data-file.service';
@@ -70,6 +73,20 @@ interface BountyView {
   claimed?: RunView;
 }
 
+interface RunnerRow {
+  key: string;
+  rank: number;
+  /** The rank's colour: the leaderboard's quality tiers, on runs against the leader's. */
+  quality: RunQuality;
+  member: MemberView;
+  runs: number;
+  timed: number;
+  timedPercent: number;
+  highestTimed?: number;
+  /** Runs as a share of the leader's, for the bar: 0 to 1. */
+  share: number;
+}
+
 interface SummaryTile {
   label: string;
   value: string;
@@ -78,8 +95,9 @@ interface SummaryTile {
 
 /**
  * /mythic-plus/records: the highest key timed in each dungeon, the first group to time each key
- * level, and the next level nobody has timed yet, with the attempt that came closest. Records
- * are season-wide. Reads the same data files as the leaderboard, all of them.
+ * level, the next level nobody has timed yet, with the attempt that came closest, and the
+ * characters with the most runs. Records are season-wide. Reads the same data files as the
+ * leaderboard, all of them.
  */
 @Component({
   selector: 'app-mythic-plus-records-page',
@@ -169,6 +187,23 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   readonly bounties = computed(() => dungeonBounties(this.runs(), this.dungeons(), this.now())
     .map(bounty => this.bountyView(bounty.dungeon.id, bounty, bounty.dungeon)));
 
+  readonly mostRuns = computed<RunnerRow[]>(() => {
+    const counts = mostRuns(this.runs(), this.timers());
+    const top = counts[0]?.runs ?? 0;
+    return counts.map((count, index) => ({
+      key: count.key,
+      rank: index + 1,
+      quality: scoreQuality(count.runs, top),
+      member: toMemberView(count.member),
+      runs: count.runs,
+      timed: count.timed,
+      // Rounded like the profile's "In time", so both say the same.
+      timedPercent: Math.round((count.timed / count.runs) * 100),
+      highestTimed: count.highestTimed,
+      share: top > 0 ? count.runs / top : 0
+    }));
+  });
+
   readonly summary = computed<SummaryTile[]>(() => {
     const records = this.records();
     const top = records[0]?.run;
@@ -228,6 +263,10 @@ export class MythicPlusRecordsPageComponent implements OnInit {
 
   trackBounty(index: number, bounty: BountyView): string {
     return bounty.key;
+  }
+
+  trackRunner(index: number, runner: RunnerRow): string {
+    return runner.key;
   }
 
   trackMember(index: number, member: MemberView): string {
