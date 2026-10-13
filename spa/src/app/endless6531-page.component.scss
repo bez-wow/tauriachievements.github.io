@@ -144,29 +144,6 @@
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
 }
 
-.summary-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-
-  h2 {
-    margin: 2px 0 0;
-    color: #fff;
-    font-size: 1.05rem;
-  }
-}
-
-.card-eyebrow {
-  margin: 0;
-  color: #b48a45;
-  font-size: 0.69rem;
-  font-weight: 800;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-}
-
 .character-groups {
   display: grid;
   grid-template-columns:
@@ -635,10 +612,90 @@ table tbody tr.main-character-row {
   }
 }
 
-.gold-text {
-  color: #ffd700;
-  font-weight: 700 !important;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+table .traits-cell {
+  padding-block: 6px;
+}
+
+// One spec per artifact, side by side: the spec icon over its trait count.
+.spec-traits {
+  display: inline-flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  vertical-align: middle;
+}
+
+.spec-trait {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-width: 26px;
+}
+
+// Zoomed in a little to crop off the frame baked into the game's icons, as the Mythic+
+// pages do.
+.spec-trait-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  overflow: hidden;
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: scale(1.2);
+  }
+}
+
+// Same text as the AK and ilvl cells; only the line height is tightened under the icon.
+.spec-trait-count {
+  line-height: 1;
+}
+
+.spec-trait--locked {
+  position: relative;
+
+  img {
+    filter: grayscale(1);
+    opacity: 0.35;
+  }
+}
+
+// Opens below: above, it would slide under the sticky table header.
+.spec-trait-tooltip {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 50%;
+  display: none;
+  padding: 4px 8px;
+  border: 1px solid #8c919d;
+  border-radius: 3px;
+  background: #070d20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.3;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+// :hover only counts for a mouse: touch browsers keep it on the last tapped icon. A tap
+// toggles .tooltip-open instead (appTapTooltip).
+.spec-trait--locked.tooltip-open .spec-trait-tooltip {
+  display: block;
+}
+
+@media (hover: hover) {
+  .spec-trait--locked:hover .spec-trait-tooltip {
+    display: block;
+  }
 }
 
 .legendary-cell {
@@ -720,14 +777,6 @@ table tbody tr.main-character-row {
 
 .no-legendary {
   color: #777;
-}
-
-.neon-purple-text {
-  color: #e056fd;
-  font-weight: 700 !important;
-  text-shadow:
-    0 0 5px rgba(224, 86, 253, 0.9),
-    0 0 12px rgba(190, 46, 255, 0.65);
 }
 
 .empty-roster td {
@@ -982,10 +1031,13 @@ table tbody tr.main-character-row {
         text-align: left;
         text-transform: uppercase;
       }
+    }
 
-      &:nth-child(odd):not(.row-number, .player-cell) {
-        border-right: 1px solid rgba(255, 255, 255, 0.045);
-      }
+    // Rank | Spec, then Traits on its own row, then AK | ilvl: divide the left-hand cells
+    // from their neighbours.
+    td:nth-child(4),
+    td:nth-child(7) {
+      border-right: 1px solid rgba(255, 255, 255, 0.045);
     }
 
     .row-number {
@@ -1031,7 +1083,26 @@ table tbody tr.main-character-row {
       }
     }
 
-    // Nine stat cells leave the last one (Achievements) alone on its row; let it fill the row.
+    // Up to four spec icons need the whole width of the card.
+    .traits-cell {
+      grid-column: 1 / -1;
+      padding-block: 9px;
+    }
+
+    // The icons sit at the card's right edge, which clips anything past it.
+    .spec-trait-tooltip {
+      right: 0;
+      left: auto;
+      transform: none;
+    }
+
+    // Keep every legendary on the label's row instead of wrapping the second one under it.
+    .legendary-cell {
+      grid-auto-flow: column;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    // That leaves the last stat cell (Legendaries) alone on its row; let it fill the row.
     td:last-child {
       grid-column: 1 / -1;
     }
@@ -1048,12 +1119,6 @@ table tbody tr.main-character-row {
       }
     }
   }
-
-  .neon-purple-text {
-    text-shadow:
-      0 0 4px rgba(224, 86, 253, 0.75),
-      0 0 9px rgba(190, 46, 255, 0.45);
-  }
 }
 
 @media (max-width: 390px) {
@@ -1066,7 +1131,8 @@ table tbody tr.main-character-row {
       grid-template-columns: 1fr;
     }
 
-    td:nth-child(odd):not(.row-number, .player-cell) {
+    td:nth-child(4),
+    td:nth-child(7) {
       border-right: 0;
     }
 

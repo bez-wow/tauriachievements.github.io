@@ -134,12 +134,9 @@
             (change)="selectMobileSort($any($event.target).value)">
             <option value="name">Name</option>
             <option value="guildRankName">Rank</option>
-            <option value="artifactRelics">Relics</option>
             <option value="artifactTraits">Traits</option>
             <option value="artifactKnowledge">AK</option>
             <option value="itemLevel">ilvl</option>
-            <option value="playedTime">/played</option>
-            <option value="achievementPoints">Achievements</option>
           </select>
         </span>
         <button
@@ -170,13 +167,8 @@
             </button>
           </th>
           <th class="plain-heading" scope="col">Spec</th>
-          <th [attr.aria-sort]="ariaSort('artifactRelics')">
-            <button type="button" (click)="sortBy('artifactRelics')" [class.active-sort]="sortColumn() === 'artifactRelics'">
-              <span class="header-label">Relics</span>
-            </button>
-          </th>
           <th [attr.aria-sort]="ariaSort('artifactTraits')">
-            <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'">
+            <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'" title="Artifact traits per spec, sorted by the best artifact">
               <span class="header-label">Traits</span>
             </button>
           </th>
@@ -191,16 +183,6 @@
             </button>
           </th>
           <th class="plain-heading" scope="col">Legendaries</th>
-          <th [attr.aria-sort]="ariaSort('playedTime')">
-            <button type="button" (click)="sortBy('playedTime')" [class.active-sort]="sortColumn() === 'playedTime'">
-              <span class="header-label">/played</span>
-            </button>
-          </th>
-          <th [attr.aria-sort]="ariaSort('achievementPoints')">
-            <button type="button" (click)="sortBy('achievementPoints')" [class.active-sort]="sortColumn() === 'achievementPoints'">
-              <span class="header-label">Achievements</span>
-            </button>
-          </th>
         </tr>
       </thead>
       <tbody>
@@ -234,8 +216,28 @@
           </td>
           <td data-label="Rank">{{ player.guildRankName || '—' }}</td>
           <td data-label="Spec">{{ player.specialization || '—' }}</td>
-          <td data-label="Relics">{{ player.artifactRelics | number }}</td>
-          <td data-label="Traits">{{ player.artifactTraits | number }}</td>
+          <td class="traits-cell" data-label="Traits">
+            <ul class="spec-traits" *ngIf="specTraits(player).length; else noTraits">
+              <ng-container *ngFor="let entry of specTraits(player)">
+                <li class="spec-trait" *ngIf="entry.traits !== null; else lockedSpec">
+                  <span class="spec-trait-icon" *ngIf="entry.icon">
+                    <img [src]="entry.icon" [alt]="entry.spec" loading="lazy" />
+                  </span>
+                  <span class="spec-trait-count">{{ entry.traits }}</span>
+                </li>
+                <!-- Only a locked spec gets a tooltip, and it opens at once (a title waits). -->
+                <ng-template #lockedSpec>
+                  <li class="spec-trait spec-trait--locked" appTapTooltip>
+                    <span class="spec-trait-icon" *ngIf="entry.icon">
+                      <img [src]="entry.icon" [alt]="entry.spec + ' (not unlocked)'" loading="lazy" />
+                    </span>
+                    <span class="spec-trait-tooltip" aria-hidden="true">{{ entry.spec }} artifact not unlocked</span>
+                  </li>
+                </ng-template>
+              </ng-container>
+            </ul>
+            <ng-template #noTraits>—</ng-template>
+          </td>
           <td data-label="AK" title="Artifact Knowledge">{{ player.artifactKnowledge ?? '—' }}</td>
           <td data-label="ilvl">{{ player.itemLevel | number:'1.2-2' }}</td>
           <td class="legendary-cell" data-label="Legendaries">
@@ -261,13 +263,11 @@
             </ng-container>
             <ng-template #noLegendaries><span class="no-legendary">&mdash;</span></ng-template>
           </td>
-          <td data-label="/played">{{ formatPlayedTime(player.playedTime) }}</td>
-          <td class="gold-text" data-label="Achievements">{{ player.achievementPoints | number }}</td>
         </tr>
         <tr
           class="empty-roster"
           *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all' || selectedGuildRank() || selectedCombatRole())">
-          <td colspan="11">
+          <td colspan="9">
             No matching alt characters were found in the current guild roster.
           </td>
         </tr>

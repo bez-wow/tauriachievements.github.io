@@ -15,10 +15,21 @@ export interface GuildAnalysisPlayer {
   achievementPoints: number;
   artifactRelics: number;
   artifactTraits: number;
+  /**
+   * Every artifact the character owns, one per spec, most traits first. Null when the
+   * artifacts couldn't be loaded; missing in files exported before it was added.
+   */
+  artifacts?: GuildAnalysisArtifact[] | null;
   /** Artifact Knowledge (research) level; missing in files exported before it was added. */
   artifactKnowledge?: number | null;
   itemLevel: number;
   legendaries?: GuildAnalysisLegendary[];
+}
+
+export interface GuildAnalysisArtifact {
+  specialization: string;
+  name: string;
+  traits: number;
 }
 
 export interface GuildAnalysisLegendary {

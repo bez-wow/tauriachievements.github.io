@@ -23,7 +23,7 @@ import {
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
-import { formatPlayedTime } from './played-time';
+import { ArtifactSpecTraits, artifactSpecTraits } from './guild-artifact-specs';
 import { UpdateBarComponent } from './update-bar.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -31,6 +31,7 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { getClassColor } from './class-colors';
 import { injectCompactViewport } from './compact-viewport';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
+import { TapTooltipDirective } from './tap-tooltip.directive';
 
 /** On phones each member is a ~470 px tall card, so the roster is rendered this many at a time. */
 const MOBILE_ROSTER_PAGE_SIZE = 25;
@@ -125,30 +126,30 @@ function guildRankOrderIndex(rankName: string): number {
 type SortColumn =
   | 'name'
   | 'guildRankName'
-  | 'artifactRelics'
   | 'artifactTraits'
   | 'artifactKnowledge'
-  | 'itemLevel'
-  | 'playedTime'
-  | 'achievementPoints';
+  | 'itemLevel';
 
 type SortDirection = 'asc' | 'desc';
 
 const SORT_COLUMNS = new Set<SortColumn>([
   'name',
   'guildRankName',
-  'artifactRelics',
   'artifactTraits',
   'artifactKnowledge',
-  'itemLevel',
-  'playedTime',
-  'achievementPoints'
+  'itemLevel'
 ]);
 
 @Component({
   selector: 'app-endless6531-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, FilterDropdownComponent, MobileFilterToggleComponent],
+  imports: [
+    CommonModule,
+    UpdateBarComponent,
+    FilterDropdownComponent,
+    MobileFilterToggleComponent,
+    TapTooltipDirective
+  ],
   providers: [FilterDropdownCoordinatorService],
   templateUrl: './endless6531-page.component.html',
   styleUrls: ['./endless6531-page.component.scss'],
@@ -165,6 +166,9 @@ export class Endless6531PageComponent {
   private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
   private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
   private readonly sourcePlayers = this.analysis.players;
+  private readonly specTraitsByPlayer = new Map(
+    this.sourcePlayers.map((player) => [player.name, artifactSpecTraits(player)])
+  );
   private readonly guildRankOrderByName = new Map(
     (this.analysis.ranks ?? []).map((rank) => [
       rank.name.trim().toLocaleLowerCase(),
@@ -237,7 +241,7 @@ export class Endless6531PageComponent {
 
   /**
    * Whether the roster table is wider than its column (its cells don't wrap, so it needs about
-   * 1,100 px). Only then does it scroll sideways: a scrolling container would also stop the
+   * 900 px). Only then does it scroll sideways: a scrolling container would also stop the
    * header from sticking to the page, which it can keep wherever the table fits.
    */
   readonly isTableOverflowing = signal(false);
@@ -345,8 +349,8 @@ export class Endless6531PageComponent {
     return getArmoryUrl(player.name, this.realmName);
   }
 
-  formatPlayedTime(seconds: number): string {
-    return formatPlayedTime(seconds);
+  specTraits(player: GuildAnalysisPlayer): ArtifactSpecTraits[] {
+    return this.specTraitsByPlayer.get(player.name) ?? [];
   }
 
   selectMainCharacter(name: string): void {
