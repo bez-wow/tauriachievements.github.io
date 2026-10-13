@@ -12,7 +12,6 @@ import {
   viewChild
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import endlessMainAlts from '../guild-analysis/endless-main-alts.json';
 import {
   DEFAULT_GUILD_ANALYSIS_KEY,
   GuildAnalysis,
@@ -23,7 +22,7 @@ import {
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
-import { formatPlayedTime } from './played-time';
+import { ArtifactSpecTraits, artifactSpecTraits } from './guild-artifact-specs';
 import { UpdateBarComponent } from './update-bar.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -31,6 +30,7 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { getClassColor } from './class-colors';
 import { injectCompactViewport } from './compact-viewport';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
+import { TapTooltipDirective } from './tap-tooltip.directive';
 
 /** On phones each member is a ~470 px tall card, so the roster is rendered this many at a time. */
 const MOBILE_ROSTER_PAGE_SIZE = 25;
@@ -90,14 +90,6 @@ interface ClassCountEntry {
   percentage: number;
 }
 
-interface AltCharacterDefinition {
-  name: string;
-  wantsToRaid?: boolean;
-}
-
-type AltCharacterEntry = string | AltCharacterDefinition;
-type MainAltCharacters = Readonly<Record<string, readonly AltCharacterEntry[]>>;
-type CharacterRole = 'main' | 'alt' | 'unknown';
 type CombatRole = 'Tank' | 'Heal' | 'Ranged' | 'Melee';
 
 const CLASS_NAMES: Readonly<Record<number, string>> = {
@@ -129,30 +121,30 @@ function guildRankOrderIndex(rankName: string): number {
 type SortColumn =
   | 'name'
   | 'guildRankName'
-  | 'artifactRelics'
   | 'artifactTraits'
   | 'artifactKnowledge'
-  | 'itemLevel'
-  | 'playedTime'
-  | 'achievementPoints';
+  | 'itemLevel';
 
 type SortDirection = 'asc' | 'desc';
 
 const SORT_COLUMNS = new Set<SortColumn>([
   'name',
   'guildRankName',
-  'artifactRelics',
   'artifactTraits',
   'artifactKnowledge',
-  'itemLevel',
-  'playedTime',
-  'achievementPoints'
+  'itemLevel'
 ]);
 
 @Component({
   selector: 'app-endless6531-page',
   standalone: true,
-  imports: [CommonModule, UpdateBarComponent, FilterDropdownComponent, MobileFilterToggleComponent],
+  imports: [
+    CommonModule,
+    UpdateBarComponent,
+    FilterDropdownComponent,
+    MobileFilterToggleComponent,
+    TapTooltipDirective
+  ],
   providers: [FilterDropdownCoordinatorService],
   templateUrl: './endless6531-page.component.html',
   styleUrls: ['./endless6531-page.component.scss'],
@@ -169,6 +161,9 @@ export class Endless6531PageComponent {
   private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
   private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
   private readonly sourcePlayers = this.analysis.players;
+  private readonly specTraitsByPlayer = new Map(
+    this.sourcePlayers.map((player) => [player.name, artifactSpecTraits(player)])
+  );
   private readonly guildRankOrderByName = new Map(
     (this.analysis.ranks ?? []).map((rank) => [
       rank.name.trim().toLocaleLowerCase(),
@@ -194,17 +189,7 @@ export class Endless6531PageComponent {
   readonly sortColumn = signal<SortColumn>('artifactTraits');
   readonly sortDirection = signal<SortDirection>('desc');
   readonly getClassIconPath = getClassIconPath;
-  readonly showMainAltCharacters = this.guildKey === 'endless';
-  readonly mainCharacters = Object.entries(endlessMainAlts as MainAltCharacters)
-    .filter(([, entries]) =>
-      entries.some((entry) => this.altCharacterName(entry).trim().length > 0)
-    )
-    .map(([mainCharacter]) => mainCharacter)
-    .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }));
-  readonly selectedMainCharacter = signal('');
-  readonly selectedAltCharacters = signal<readonly string[]>([]);
   readonly selectedClassId = signal<number | null>(null);
-  readonly selectedCharacterRole = signal<CharacterRole | 'all'>('all');
   readonly selectedGuildRank = signal('');
   readonly selectedCombatRole = signal<CombatRole | ''>('');
   /** Phones collapse the filters and the class breakdown so the roster starts on the first screen. */
@@ -222,9 +207,6 @@ export class Endless6531PageComponent {
     { value: 'Ranged', label: 'Ranged' },
     { value: 'Melee', label: 'Melee' }
   ];
-  readonly raidCharacters = signal<ReadonlySet<string>>(new Set());
-  private readonly characterRoles = this.buildCharacterRoles();
-  private readonly mainCharactersByAlt = this.buildMainCharactersByAlt();
 
   readonly classCounts = this.buildClassCounts();
   readonly classFilterOptions: ReadonlyArray<FilterDropdownOption<number | undefined>> = [
@@ -241,7 +223,7 @@ export class Endless6531PageComponent {
 
   /**
    * Whether the roster table is wider than its column (its cells don't wrap, so it needs about
-   * 1,100 px). Only then does it scroll sideways: a scrolling container would also stop the
+   * 900 px). Only then does it scroll sideways: a scrolling container would also stop the
    * header from sticking to the page, which it can keep wherever the table fits.
    */
   readonly isTableOverflowing = signal(false);
@@ -272,13 +254,6 @@ export class Endless6531PageComponent {
   activeFilterLabels(): string[] {
     const labels: string[] = [];
 
-    if (this.selectedMainCharacter()) {
-      labels.push(`Main: ${this.selectedMainCharacter()}`);
-    }
-    const role = this.selectedCharacterRole();
-    if (role !== 'all') {
-      labels.push(role === 'main' ? 'Mains' : role === 'alt' ? 'Alts' : 'Unknown role');
-    }
     if (this.selectedGuildRank()) {
       labels.push(this.selectedGuildRank());
     }
@@ -349,23 +324,8 @@ export class Endless6531PageComponent {
     return getArmoryUrl(player.name, this.realmName);
   }
 
-  formatPlayedTime(seconds: number): string {
-    return formatPlayedTime(seconds);
-  }
-
-  selectMainCharacter(name: string): void {
-    const entries = (endlessMainAlts as MainAltCharacters)[name] ?? [];
-
-    this.selectedMainCharacter.set(name);
-    this.selectedAltCharacters.set(entries.map((entry) => this.altCharacterName(entry)));
-    this.raidCharacters.set(new Set(
-      entries
-        .filter((entry): entry is AltCharacterDefinition =>
-          typeof entry !== 'string' && entry.wantsToRaid === true
-        )
-        .map((entry) => entry.name.toLocaleLowerCase())
-    ));
-    this.applySort();
+  specTraits(player: GuildAnalysisPlayer): ArtifactSpecTraits[] {
+    return this.specTraitsByPlayer.get(player.name) ?? [];
   }
 
   legendaryUrl(item: Pick<GuildAnalysisLegendary, 'id'>): string {
@@ -444,13 +404,6 @@ export class Endless6531PageComponent {
     this.applySort();
   }
 
-  selectCharacterRole(role: string): void {
-    this.selectedCharacterRole.set(
-      role === 'main' || role === 'alt' || role === 'unknown' ? role : 'all'
-    );
-    this.applySort();
-  }
-
   selectGuildRank(rank: FilterDropdownValue): void {
     this.selectedGuildRank.set(typeof rank === 'string' ? rank : '');
     this.applySort();
@@ -466,33 +419,12 @@ export class Endless6531PageComponent {
   }
 
   resetFilters(): void {
-    this.selectedMainCharacter.set('');
-    this.selectedAltCharacters.set([]);
     this.selectedClassId.set(null);
-    this.selectedCharacterRole.set('all');
     this.selectedGuildRank.set('');
     this.selectedCombatRole.set('');
-    this.raidCharacters.set(new Set());
     this.sortColumn.set('artifactTraits');
     this.sortDirection.set('desc');
     this.applySort();
-  }
-
-  wantsToRaid(player: GuildAnalysisPlayer): boolean {
-    return this.raidCharacters().has(player.name.toLocaleLowerCase());
-  }
-
-  isSelectedMainCharacter(player: GuildAnalysisPlayer): boolean {
-    return player.name.toLocaleLowerCase()
-      === this.selectedMainCharacter().toLocaleLowerCase();
-  }
-
-  characterRole(player: GuildAnalysisPlayer): CharacterRole {
-    return this.characterRoles.get(player.name.toLocaleLowerCase()) ?? 'unknown';
-  }
-
-  mainCharacterFor(player: GuildAnalysisPlayer): string | undefined {
-    return this.mainCharactersByAlt.get(player.name.toLocaleLowerCase());
   }
 
   trackPlayer(_index: number, player: GuildAnalysisPlayer): string {
@@ -563,30 +495,18 @@ export class Endless6531PageComponent {
     this.mobileRosterLimit.set(MOBILE_ROSTER_PAGE_SIZE);
     const column = this.sortColumn();
     const multiplier = this.sortDirection() === 'asc' ? 1 : -1;
-    const selectedAltNames = new Set(
-      this.selectedAltCharacters().map((name) => name.toLocaleLowerCase())
-    );
-    const characterFilteredPlayers = this.selectedMainCharacter()
-      ? this.sourcePlayers.filter((player) =>
-          this.isSelectedMainCharacter(player)
-          || selectedAltNames.has(player.name.toLocaleLowerCase())
-        )
-      : this.sourcePlayers;
     const classFilteredPlayers = this.selectedClassId() === null
-      ? characterFilteredPlayers
-      : characterFilteredPlayers.filter((player) => player.class === this.selectedClassId());
-    const roleFilteredPlayers = this.selectedCharacterRole() === 'all'
-      ? classFilteredPlayers
-      : classFilteredPlayers.filter((player) => this.characterRole(player) === this.selectedCharacterRole());
+      ? this.sourcePlayers
+      : this.sourcePlayers.filter((player) => player.class === this.selectedClassId());
     const rankFilteredPlayers = this.selectedGuildRank()
-      ? roleFilteredPlayers.filter((player) =>
+      ? classFilteredPlayers.filter((player) =>
           player.guildRankName?.localeCompare(
             this.selectedGuildRank(),
             undefined,
             { sensitivity: 'base' }
           ) === 0
         )
-      : roleFilteredPlayers;
+      : classFilteredPlayers;
     const visiblePlayers = this.selectedCombatRole()
       ? rankFilteredPlayers.filter((player) =>
           this.combatRole(player) === this.selectedCombatRole()
@@ -594,15 +514,6 @@ export class Endless6531PageComponent {
       : rankFilteredPlayers;
 
     this.players.set([...visiblePlayers].sort((left, right) => {
-      if (this.selectedMainCharacter()) {
-        const leftIsMain = this.isSelectedMainCharacter(left);
-        const rightIsMain = this.isSelectedMainCharacter(right);
-
-        if (leftIsMain !== rightIsMain) {
-          return leftIsMain ? -1 : 1;
-        }
-      }
-
       const leftValue = this.sortValue(left, column);
       const rightValue = this.sortValue(right, column);
 
@@ -687,48 +598,6 @@ export class Endless6531PageComponent {
       default:
         return undefined;
     }
-  }
-
-  private altCharacterName(entry: AltCharacterEntry): string {
-    return typeof entry === 'string' ? entry : entry.name;
-  }
-
-  private buildCharacterRoles(): ReadonlyMap<string, CharacterRole> {
-    const roles = new Map<string, CharacterRole>();
-    const mainAlts = endlessMainAlts as MainAltCharacters;
-
-    for (const entries of Object.values(mainAlts)) {
-      for (const entry of entries) {
-        const altName = this.altCharacterName(entry).trim();
-        if (altName) {
-          roles.set(altName.toLocaleLowerCase(), 'alt');
-        }
-      }
-    }
-
-    // A character defined as a main always takes precedence if it also appears
-    // in another character's alt list.
-    for (const mainCharacter of Object.keys(mainAlts)) {
-      roles.set(mainCharacter.toLocaleLowerCase(), 'main');
-    }
-
-    return roles;
-  }
-
-  private buildMainCharactersByAlt(): ReadonlyMap<string, string> {
-    const mainCharactersByAlt = new Map<string, string>();
-    const mainAlts = endlessMainAlts as MainAltCharacters;
-
-    for (const [mainCharacter, entries] of Object.entries(mainAlts)) {
-      for (const entry of entries) {
-        const altName = this.altCharacterName(entry).trim();
-        if (altName && !mainCharactersByAlt.has(altName.toLocaleLowerCase())) {
-          mainCharactersByAlt.set(altName.toLocaleLowerCase(), mainCharacter);
-        }
-      }
-    }
-
-    return mainCharactersByAlt;
   }
 
   private parseTimestamp(timestamp: string): Date | undefined {

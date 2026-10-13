@@ -69,6 +69,9 @@ public sealed class GuildMemberExportService(
             [134553] = "Fury",
         };
 
+    // The fishing artifact: it comes back with the weapons but belongs to no spec.
+    private const int UnderlightAnglerId = 133755;
+
     private readonly string _outputDirectory = Path.GetFullPath(outputDirectory);
     private readonly ITauriApiClient _apiClient = apiClient;
     private readonly TauriShootItemClient _itemClient = itemClient;
@@ -276,10 +279,14 @@ public sealed class GuildMemberExportService(
 
         if (artifacts.GetArrayLength() == 0)
         {
-            return new ArtifactResult(true, 0, 0, knowledge, string.Empty, string.Empty);
+            return new ArtifactResult(true, 0, 0, knowledge, string.Empty, string.Empty, []);
         }
 
         ArtifactCandidate? bestArtifact = null;
+        // Every artifact the character owns, one per spec, not just the one with the most traits.
+        var weaponsBySpecialization = new Dictionary<string, ArtifactWeaponExport>(
+            StringComparer.OrdinalIgnoreCase
+        );
         foreach (var artifact in artifacts.EnumerateArray())
         {
             if (artifact.ValueKind != JsonValueKind.Object)
@@ -301,6 +308,31 @@ public sealed class GuildMemberExportService(
             {
                 bestArtifact = candidate;
             }
+
+            if (string.IsNullOrWhiteSpace(candidate.Specialization))
+            {
+                var itemId = ReadInt(artifact, "ID");
+                if (itemId != UnderlightAnglerId)
+                {
+                    Console.WriteLine(
+                        $"Unknown artifact {itemId} ({candidate.Name}) on {playerName}; add it to ArtifactSpecializations."
+                    );
+                }
+
+                continue;
+            }
+
+            if (
+                !weaponsBySpecialization.TryGetValue(candidate.Specialization, out var known)
+                || candidate.TraitCount > known.Traits
+            )
+            {
+                weaponsBySpecialization[candidate.Specialization] = new ArtifactWeaponExport(
+                    candidate.Specialization,
+                    candidate.Name,
+                    candidate.TraitCount
+                );
+            }
         }
 
         if (bestArtifact is null)
@@ -316,7 +348,11 @@ public sealed class GuildMemberExportService(
             string.IsNullOrWhiteSpace(bestArtifact.Specialization)
                 ? ReadSpecialization(response)
                 : bestArtifact.Specialization,
-            bestArtifact.Name
+            bestArtifact.Name,
+            weaponsBySpecialization
+                .Values.OrderByDescending(weapon => weapon.Traits)
+                .ThenBy(weapon => weapon.Specialization, StringComparer.Ordinal)
+                .ToList()
         );
     }
 
@@ -609,6 +645,7 @@ public sealed class GuildMemberExportService(
                         : null,
                     row.Result.Artifact.Found ? row.Result.Artifact.RelicCount : null,
                     row.Result.Artifact.Found ? row.Result.Artifact.TraitCount : null,
+                    row.Result.Artifact.Found ? row.Result.Artifact.Weapons : null,
                     row.Result.Artifact.Knowledge,
                     row.Result.Details.ItemLevel,
                     row.Result.Details.Legendaries
@@ -656,12 +693,15 @@ public sealed class GuildMemberExportService(
         int TraitCount,
         int? Knowledge,
         string Specialization,
-        string Name
+        string Name,
+        IReadOnlyList<ArtifactWeaponExport> Weapons
     )
     {
-        public static ArtifactResult Excluded => new(false, 0, 0, null, string.Empty, string.Empty);
+        public static ArtifactResult Excluded =>
+            new(false, 0, 0, null, string.Empty, string.Empty, []);
 
-        public static ArtifactResult Missing => new(false, 0, 0, null, string.Empty, string.Empty);
+        public static ArtifactResult Missing =>
+            new(false, 0, 0, null, string.Empty, string.Empty, []);
     }
 
     private sealed record ArtifactCandidate(
@@ -732,8 +772,11 @@ public sealed class GuildMemberExportService(
         string? ArtifactWeapon,
         int? ArtifactRelics,
         int? ArtifactTraits,
+        IReadOnlyList<ArtifactWeaponExport>? Artifacts,
         int? ArtifactKnowledge,
         decimal? ItemLevel,
         IReadOnlyList<LegendaryItem> Legendaries
     );
+
+    private sealed record ArtifactWeaponExport(string Specialization, string Name, int Traits);
 }
