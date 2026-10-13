@@ -1,5 +1,7 @@
 // A compact, futuristic take on the site's palette: near-black glass panels with a gold-to-blurple
 // edge, a faint tech grid behind the top of the page, monospace labels and figures.
+@use './mythic-plus-shared' as shared;
+
 $gold: #f7b500;
 $gold-soft: #ffd36b;
 $blurple: #5865f2;
@@ -69,30 +71,15 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
 
 // --- Message -------------------------------------------------------------------------------------
 
+// The panel's background with a lit edge along the top and a glow from the top-left corner on top.
+// Background layers rather than pseudo-elements, which the spotlight takes.
 .hero {
-  isolation: isolate;
   padding: 20px 22px 22px;
-
-  // A lit edge along the top and a glow from the top-left corner.
-  &::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: 12%;
-    right: 12%;
-    height: 1px;
-    background: linear-gradient(90deg, rgba($gold, 0), $gold, rgba($gold, 0));
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(420px 220px at 0% 0%, rgba($gold, .12), rgba($gold, 0) 70%);
-    pointer-events: none;
-  }
+  background:
+    linear-gradient(90deg, rgba($gold, 0) 12%, $gold 50%, rgba($gold, 0) 88%) top / 100% 1px no-repeat border-box,
+    radial-gradient(420px 220px at 0% 0%, rgba($gold, .12), rgba($gold, 0) 70%) padding-box,
+    linear-gradient(180deg, rgba(24, 24, 30, .92), rgba(14, 14, 18, .94)) padding-box,
+    linear-gradient(140deg, rgba($gold, .38), $line 32%, $line 68%, rgba($blurple, .34)) border-box;
 
   h1 {
     margin-bottom: 8px;
@@ -389,12 +376,6 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
   border: 1px solid $line;
   border-radius: 9px;
   background: rgba(255, 255, 255, .025);
-  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
-
-  &:hover {
-    border-color: rgba($gold, .28);
-    background: rgba($gold, .035);
-  }
 
   p {
     color: #dfe1e6;
@@ -450,6 +431,17 @@ $mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, Menlo, monospace;
     color: #d6d9e0;
   }
 }
+
+// --- Spotlight -----------------------------------------------------------------------------------
+
+// As on the Mythic+ records page: under the mouse a box's edge lights up gold where the pointer is
+// (SpotlightDirective). The small cards lift towards it too; the large panels stay put.
+.hero,
+.supporters-panel,
+.words-panel { @include shared.spotlight-card($lift: false); }
+
+.perk,
+.quote { @include shared.spotlight-card; }
 
 // --- Motion --------------------------------------------------------------------------------------
 

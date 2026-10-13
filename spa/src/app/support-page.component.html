@@ -4,7 +4,7 @@
 <main class="support-page">
   <div class="bento">
     <!-- How to support -->
-    <section class="panel hero" aria-labelledby="support-title">
+    <section class="panel hero" appSpotlight aria-labelledby="support-title">
       <p class="kicker"><span class="kicker-dot" aria-hidden="true"></span>Community project</p>
       <h1 id="support-title">Support Tauri Achievements</h1>
       <p class="lead">
@@ -27,14 +27,14 @@
 
     <!-- What you get and how to give -->
     <ul class="perks">
-      <li class="panel perk">
+      <li class="panel perk" appSpotlight>
         <h2 class="perk-label">Supporter rank</h2>
         <p>
           As a thank-you, everyone who contributes receives a special
           <strong class="supporter-rank">supporter rank</strong> on our Discord server.
         </p>
       </li>
-      <li class="panel perk">
+      <li class="panel perk" appSpotlight>
         <h2 class="perk-label">How to support</h2>
         <p>
           You can support the project through <strong>PayPal</strong> or <strong>Tauri Credits</strong>.
@@ -44,7 +44,7 @@
     </ul>
 
     <!-- Supporters -->
-    <section class="panel supporters-panel" aria-labelledby="supporters-title">
+    <section class="panel supporters-panel" appSpotlight aria-labelledby="supporters-title">
       <header class="panel-head">
         <h2 id="supporters-title">Supporters</h2>
         <span class="panel-meta">{{ donations.length }} total</span>
@@ -66,7 +66,7 @@
     </section>
 
     <!-- Kind words -->
-    <section class="panel words-panel" aria-labelledby="kind-words-title">
+    <section class="panel words-panel" appSpotlight aria-labelledby="kind-words-title">
       <header class="panel-head">
         <h2 id="kind-words-title">Kind words</h2>
         <span class="panel-meta">{{ testimonials.length }} quotes</span>
@@ -76,6 +76,7 @@
       <div class="quotes" [appReveal]="1800">
         <figure
           class="quote"
+          appSpotlight
           *ngFor="let testimonial of testimonials; let i = index"
           [style.--span]="testimonial.span"
           [style.--i]="i">

@@ -6,6 +6,7 @@ import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { getClassColor } from './class-colors';
 import { characterProfileLink } from './mythic-plus-profile';
 import { RevealDirective } from './reveal.directive';
+import { SpotlightDirective } from './spotlight.directive';
 import {
   DONATIONS,
   PlayerName,
@@ -39,7 +40,14 @@ function shownName({ name, classId, realm, mythicPlusProfile }: PlayerName) {
 @Component({
   selector: 'app-support-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RevealDirective],
+  imports: [
+    CommonModule,
+    RouterLink,
+    UpdateBarComponent,
+    BackToTopButtonComponent,
+    RevealDirective,
+    SpotlightDirective
+  ],
   templateUrl: './support-page.component.html',
   styleUrl: './support-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
