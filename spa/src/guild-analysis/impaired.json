@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-13 21:57:50 CET",
+  "timestamp": "2026-10-13 22:58:14 CET",
   "guild": {
     "name": "Impaired",
     "realm": "Evermoon",
@@ -59,6 +59,23 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 32,
+      "artifacts": [
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 32
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 1
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 869.81,
       "legendaries": [
@@ -91,6 +108,23 @@
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
       "artifactTraits": 23,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 23
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 13
+        },
+        {
+          "specialization": "Demonology",
+          "name": "Skull of the Man\u0027ari",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 855.93,
       "legendaries": [
@@ -123,6 +157,28 @@
       "artifactWeapon": "Claws of Ursoc",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 26
+        },
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 19
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 16
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 867.81,
       "legendaries": [
@@ -155,6 +211,23 @@
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 31
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 28
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 18
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 869.44,
       "legendaries": [
@@ -187,6 +260,23 @@
       "artifactWeapon": "Truthguard",
       "artifactRelics": 3,
       "artifactTraits": 25,
+      "artifacts": [
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 25
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 18
+        },
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 860.13,
       "legendaries": [
@@ -219,6 +309,13 @@
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Assassination",
+          "name": "The Kingslayers",
+          "traits": 26
+        }
+      ],
       "artifactKnowledge": 17,
       "itemLevel": 856.13,
       "legendaries": [
@@ -251,6 +348,23 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 21,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 21
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 18
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 851.19,
       "legendaries": [
@@ -277,6 +391,23 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 28,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 28
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 11
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 16,
       "itemLevel": 869.56,
       "legendaries": [
@@ -309,6 +440,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 29,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 29
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 24
+        }
+      ],
       "artifactKnowledge": 16,
       "itemLevel": 877.75,
       "legendaries": [
@@ -334,13 +477,30 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Arms",
-      "playedTime": 1102317,
+      "playedTime": 1102349,
       "achievementPoints": 1630,
       "nightfallenReputation": 10425,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 29,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 29
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 0
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 866.19,
       "legendaries": [
@@ -367,6 +527,23 @@
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 27
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 24
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 20
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 864.5,
       "legendaries": [
@@ -399,6 +576,23 @@
       "artifactWeapon": "Fu Zan, the Wanderer\u0027s Companion",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 24
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 18
+        },
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 862.88,
       "legendaries": [
@@ -431,6 +625,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 22
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 18
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 855.31,
       "legendaries": [
@@ -463,6 +669,23 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 23,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 23
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 16
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 853.06,
       "legendaries": [
@@ -489,6 +712,13 @@
       "artifactWeapon": "Sheilun, Staff of the Mists",
       "artifactRelics": 3,
       "artifactTraits": 28,
+      "artifacts": [
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 28
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 872.75,
       "legendaries": [
@@ -515,6 +745,23 @@
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 21,
+      "artifacts": [
+        {
+          "specialization": "Assassination",
+          "name": "The Kingslayers",
+          "traits": 21
+        },
+        {
+          "specialization": "Subtlety",
+          "name": "Fangs of the Devourer",
+          "traits": 16
+        },
+        {
+          "specialization": "Outlaw",
+          "name": "The Dreadblades",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 859.75,
       "legendaries": [
@@ -540,13 +787,30 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Holy",
-      "playedTime": 698176,
+      "playedTime": 699396,
       "achievementPoints": 1595,
       "nightfallenReputation": 8100,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 27
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 15
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 868.25,
       "legendaries": [
@@ -579,6 +843,23 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 27
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 1
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 864.63,
       "legendaries": [
@@ -611,6 +892,18 @@
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 3,
       "artifactTraits": 20,
+      "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 20
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 17
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 852.5,
       "legendaries": [
@@ -637,6 +930,23 @@
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 3,
       "artifactTraits": 21,
+      "artifacts": [
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 21
+        },
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 0
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 855.69,
       "legendaries": [
@@ -656,15 +966,32 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Windwalker",
-      "playedTime": 524572,
+      "playedTime": 528661,
       "achievementPoints": 1630,
       "nightfallenReputation": 2975,
       "nightfallenReputationMaximum": 21000,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 26
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 16
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 14,
-      "itemLevel": 869,
+      "itemLevel": 867.81,
       "legendaries": [
         {
           "id": 137097,
@@ -689,6 +1016,23 @@
       "artifactWeapon": "Light\u0027s Wrath",
       "artifactRelics": 3,
       "artifactTraits": 21,
+      "artifacts": [
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 21
+        },
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 15
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 860.6,
       "legendaries": [
@@ -715,6 +1059,23 @@
       "artifactWeapon": "T\u0027uure, Beacon of the Naaru",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 24
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 0
+        },
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 861.2,
       "legendaries": [
@@ -747,6 +1108,23 @@
       "artifactWeapon": "T\u0027uure, Beacon of the Naaru",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 22
+        },
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 14
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 855.8,
       "legendaries": [
@@ -773,6 +1151,23 @@
       "artifactWeapon": "Sheilun, Staff of the Mists",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 27
+        },
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 19
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 17,
       "itemLevel": 868.47,
       "legendaries": [
@@ -805,6 +1200,23 @@
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 3,
       "artifactTraits": 20,
+      "artifacts": [
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 20
+        },
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 1
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 5,
       "itemLevel": 851.69,
       "legendaries": [
@@ -831,6 +1243,23 @@
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 25,
+      "artifacts": [
+        {
+          "specialization": "Assassination",
+          "name": "The Kingslayers",
+          "traits": 25
+        },
+        {
+          "specialization": "Outlaw",
+          "name": "The Dreadblades",
+          "traits": 0
+        },
+        {
+          "specialization": "Subtlety",
+          "name": "Fangs of the Devourer",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 855.31,
       "legendaries": [
@@ -863,6 +1292,18 @@
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 24
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 17
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 859.93,
       "legendaries": [
@@ -889,6 +1330,18 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 19,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 19
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 7,
       "itemLevel": 853.25,
       "legendaries": [
@@ -915,6 +1368,23 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 26
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 15
+        },
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 17,
       "itemLevel": 852.75,
       "legendaries": [
@@ -941,6 +1411,23 @@
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 3,
       "artifactTraits": 19,
+      "artifacts": [
+        {
+          "specialization": "Beast Mastery",
+          "name": "Titanstrike",
+          "traits": 19
+        },
+        {
+          "specialization": "Marksmanship",
+          "name": "Thas\u0027dorah, Legacy of the Windrunners",
+          "traits": 0
+        },
+        {
+          "specialization": "Survival",
+          "name": "Talonclaw",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 7,
       "itemLevel": 848.44,
       "legendaries": [
@@ -967,6 +1454,18 @@
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Marksmanship",
+          "name": "Thas\u0027dorah, Legacy of the Windrunners",
+          "traits": 24
+        },
+        {
+          "specialization": "Beast Mastery",
+          "name": "Titanstrike",
+          "traits": 17
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 852.33,
       "legendaries": [
@@ -986,15 +1485,32 @@
       "guildRank": 5,
       "guildRankName": "Alt",
       "specialization": "Arms",
-      "playedTime": 1714666,
+      "playedTime": 1715815,
       "achievementPoints": 5325,
       "nightfallenReputation": 10900,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 31
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 22
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 17,
-      "itemLevel": 870.69,
+      "itemLevel": 871.63,
       "legendaries": [
         {
           "id": 137060,
@@ -1025,6 +1541,23 @@
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 22
+        },
+        {
+          "specialization": "Arcane",
+          "name": "Aluneth",
+          "traits": 0
+        },
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 849.75,
       "legendaries": [
@@ -1051,6 +1584,13 @@
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
       "artifactTraits": 19,
+      "artifacts": [
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 19
+        }
+      ],
       "artifactKnowledge": 5,
       "itemLevel": 848.6,
       "legendaries": [
@@ -1077,6 +1617,23 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 22
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 2
+        },
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 9,
       "itemLevel": 851.25,
       "legendaries": [
@@ -1103,6 +1660,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 17,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 17
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 17
+        }
+      ],
       "artifactKnowledge": 9,
       "itemLevel": 847.13,
       "legendaries": [
@@ -1129,6 +1698,23 @@
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 26
+        },
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 25
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 22
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 862.69,
       "legendaries": [
@@ -1155,6 +1741,23 @@
       "artifactWeapon": "Fu Zan, the Wanderer\u0027s Companion",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 26
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 11
+        },
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 864.5,
       "legendaries": [
@@ -1181,6 +1784,18 @@
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 3,
       "artifactTraits": 25,
+      "artifacts": [
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 25
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 7
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 871.69,
       "legendaries": [
@@ -1213,6 +1828,13 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 16,
+      "artifacts": [
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 847.93,
       "legendaries": [
@@ -1239,6 +1861,18 @@
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 26
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 863,
       "legendaries": [
@@ -1258,13 +1892,30 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Restoration",
-      "playedTime": 665400,
-      "achievementPoints": 1735,
+      "playedTime": 667198,
+      "achievementPoints": 1740,
       "nightfallenReputation": 5400,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Sharas\u0027dal, Scepter of Tides",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 24
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 13
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 6
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 854.13,
       "legendaries": [
@@ -1291,6 +1942,18 @@
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 22
+        },
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 14
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 856.19,
       "legendaries": [
@@ -1323,6 +1986,23 @@
       "artifactWeapon": "The Dreadblades",
       "artifactRelics": 3,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Outlaw",
+          "name": "The Dreadblades",
+          "traits": 14
+        },
+        {
+          "specialization": "Assassination",
+          "name": "The Kingslayers",
+          "traits": 9
+        },
+        {
+          "specialization": "Subtlety",
+          "name": "Fangs of the Devourer",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 836.44,
       "legendaries": [
@@ -1349,6 +2029,23 @@
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 22
+        },
+        {
+          "specialization": "Arcane",
+          "name": "Aluneth",
+          "traits": 0
+        },
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 854.53,
       "legendaries": [
@@ -1375,6 +2072,28 @@
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 3,
       "artifactTraits": 18,
+      "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 18
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 14
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 13
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 5
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 849.63,
       "legendaries": [
@@ -1401,6 +2120,23 @@
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Marksmanship",
+          "name": "Thas\u0027dorah, Legacy of the Windrunners",
+          "traits": 26
+        },
+        {
+          "specialization": "Beast Mastery",
+          "name": "Titanstrike",
+          "traits": 2
+        },
+        {
+          "specialization": "Survival",
+          "name": "Talonclaw",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 861.27,
       "legendaries": [
@@ -1427,6 +2163,18 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 18,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 18
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 4
+        }
+      ],
       "artifactKnowledge": 9,
       "itemLevel": 844.31,
       "legendaries": [
@@ -1453,6 +2201,18 @@
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 22
+        },
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 18
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 852.8,
       "legendaries": [
@@ -1472,13 +2232,20 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Fire",
-      "playedTime": 1298115,
-      "achievementPoints": 4515,
+      "playedTime": 1302240,
+      "achievementPoints": 4535,
       "nightfallenReputation": 1200,
       "nightfallenReputationMaximum": 12000,
       "artifactWeapon": "Felo\u0027melorn",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 22
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 845.27,
       "legendaries": [
@@ -1505,6 +2272,23 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 20,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 20
+        },
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 18
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 854.31,
       "legendaries": [
@@ -1537,6 +2321,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 18,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 18
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 3
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 848.31,
       "legendaries": [
@@ -1563,6 +2359,23 @@
       "artifactWeapon": "Fu Zan, the Wanderer\u0027s Companion",
       "artifactRelics": 3,
       "artifactTraits": 16,
+      "artifacts": [
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 16
+        },
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 3
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 4,
       "itemLevel": 849.56,
       "legendaries": [
@@ -1589,6 +2402,23 @@
       "artifactWeapon": "Warswords of the Valarjar",
       "artifactRelics": 2,
       "artifactTraits": 15,
+      "artifacts": [
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 15
+        },
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 13
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 3,
       "itemLevel": 814.69,
       "legendaries": []
@@ -1608,6 +2438,18 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 21,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 21
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 851.19,
       "legendaries": [
@@ -1634,6 +2476,13 @@
       "artifactWeapon": "Thas\u0027dorah, Legacy of the Windrunners",
       "artifactRelics": 3,
       "artifactTraits": 16,
+      "artifacts": [
+        {
+          "specialization": "Marksmanship",
+          "name": "Thas\u0027dorah, Legacy of the Windrunners",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 3,
       "itemLevel": 846.14,
       "legendaries": [
@@ -1660,6 +2509,18 @@
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
       "artifactTraits": 25,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 25
+        },
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 17
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 853.63,
       "legendaries": [
@@ -1686,6 +2547,28 @@
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 2,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 14
+        },
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 2
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 1
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 4,
       "itemLevel": 826.25,
       "legendaries": []
@@ -1705,6 +2588,13 @@
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 16,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 2,
       "itemLevel": 849.5,
       "legendaries": [
@@ -1731,6 +2621,13 @@
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 2,
       "artifactTraits": 16,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 4,
       "itemLevel": 840.19,
       "legendaries": [
@@ -1757,6 +2654,28 @@
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 3,
       "artifactTraits": 15,
+      "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 15
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 13
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 1
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 848.69,
       "legendaries": [
@@ -1783,6 +2702,23 @@
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 24
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 14
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 854.25,
       "legendaries": [
@@ -1809,6 +2745,13 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 2,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 14
+        }
+      ],
       "artifactKnowledge": 5,
       "itemLevel": 821.63,
       "legendaries": []
@@ -1828,6 +2771,18 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 2,
       "artifactTraits": 19,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 19
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 833.5,
       "legendaries": [
@@ -1854,6 +2809,18 @@
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 2,
       "artifactTraits": 17,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 17
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 9
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 837.75,
       "legendaries": []
@@ -1873,6 +2840,23 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 16,
+      "artifacts": [
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 16
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 1
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 9,
       "itemLevel": 845.87,
       "legendaries": [
@@ -1899,6 +2883,13 @@
       "artifactWeapon": "Scale of the Earth-Warder",
       "artifactRelics": 2,
       "artifactTraits": 13,
+      "artifacts": [
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 2,
       "itemLevel": 792.81,
       "legendaries": []
@@ -1918,6 +2909,23 @@
       "artifactWeapon": "Apocalypse",
       "artifactRelics": 2,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 14
+        },
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 0
+        },
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 4,
       "itemLevel": 824.5,
       "legendaries": []
@@ -1937,6 +2945,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 2,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 14
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 4
+        }
+      ],
       "artifactKnowledge": 1,
       "itemLevel": 808.38,
       "legendaries": []
@@ -1956,6 +2976,23 @@
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 2,
       "artifactTraits": 13,
+      "artifacts": [
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 13
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 13
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 842.06,
       "legendaries": [
@@ -1982,6 +3019,23 @@
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 2,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 14
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 1
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 8,
       "itemLevel": 824.44,
       "legendaries": [
@@ -2008,6 +3062,23 @@
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 24
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 21
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 864.75,
       "legendaries": [
@@ -2034,6 +3105,28 @@
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 2,
       "artifactTraits": 13,
+      "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 13
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 12
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 4
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 3
+        }
+      ],
       "artifactKnowledge": 1,
       "itemLevel": 825.94,
       "legendaries": []
@@ -2053,6 +3146,18 @@
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 22
+        },
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 860.13,
       "legendaries": [
@@ -2079,6 +3184,13 @@
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 2,
       "artifactTraits": 15,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 15
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 843,
       "legendaries": [
@@ -2105,6 +3217,23 @@
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 2,
       "artifactTraits": 13,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 13
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 0
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 8,
       "itemLevel": 840.88,
       "legendaries": [
@@ -2131,6 +3260,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 24,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 24
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 17
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 867.75,
       "legendaries": [
@@ -2157,6 +3298,18 @@
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 2,
       "artifactTraits": 15,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 15
+        },
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 9,
       "itemLevel": 812.88,
       "legendaries": []
@@ -2176,6 +3329,23 @@
       "artifactWeapon": "Skull of the Man\u0027ari",
       "artifactRelics": 2,
       "artifactTraits": 12,
+      "artifacts": [
+        {
+          "specialization": "Demonology",
+          "name": "Skull of the Man\u0027ari",
+          "traits": 12
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 0
+        },
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 4,
       "itemLevel": 797.67,
       "legendaries": []
@@ -2195,6 +3365,18 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 2,
       "artifactTraits": 4,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 4
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 2
+        }
+      ],
       "artifactKnowledge": 1,
       "itemLevel": 752.19,
       "legendaries": []
@@ -2214,6 +3396,18 @@
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 2,
       "artifactTraits": 10,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 10
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 1,
       "itemLevel": 825.73,
       "legendaries": []
@@ -2233,6 +3427,13 @@
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 2,
       "artifactTraits": 13,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 1,
       "itemLevel": 796.81,
       "legendaries": []
@@ -2252,6 +3453,23 @@
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 27
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 15
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 857.88,
       "legendaries": [
@@ -2284,6 +3502,23 @@
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 29,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 29
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 19
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 17,
       "itemLevel": 873.19,
       "legendaries": [
@@ -2316,6 +3551,23 @@
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 3,
       "artifactTraits": 30,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 30
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 26
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 24
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 876.31,
       "legendaries": [
@@ -2342,6 +3594,18 @@
       "artifactWeapon": "Twinblades of the Deceiver",
       "artifactRelics": 3,
       "artifactTraits": 30,
+      "artifacts": [
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 30
+        },
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 17,
       "itemLevel": 868.87,
       "legendaries": [
@@ -2374,6 +3638,23 @@
       "artifactWeapon": "Sharas\u0027dal, Scepter of Tides",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 31
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 27
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 879.31,
       "legendaries": [
@@ -2406,6 +3687,23 @@
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
       "artifactTraits": 28,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 28
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 2
+        },
+        {
+          "specialization": "Demonology",
+          "name": "Skull of the Man\u0027ari",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 17,
       "itemLevel": 869.53,
       "legendaries": [
@@ -2438,6 +3736,28 @@
       "artifactWeapon": "Scythe of Elune",
       "artifactRelics": 3,
       "artifactTraits": 30,
+      "artifacts": [
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 30
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 23
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 16
+        },
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 874.5,
       "legendaries": [
@@ -2470,6 +3790,13 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 32,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 32
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 865.44,
       "legendaries": [
@@ -2502,6 +3829,23 @@
       "artifactWeapon": "The Kingslayers",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Assassination",
+          "name": "The Kingslayers",
+          "traits": 31
+        },
+        {
+          "specialization": "Subtlety",
+          "name": "Fangs of the Devourer",
+          "traits": 11
+        },
+        {
+          "specialization": "Outlaw",
+          "name": "The Dreadblades",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 869.81,
       "legendaries": [
@@ -2534,6 +3878,23 @@
       "artifactWeapon": "Ulthalesh, the Deadwind Harvester",
       "artifactRelics": 3,
       "artifactTraits": 33,
+      "artifacts": [
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 33
+        },
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 26
+        },
+        {
+          "specialization": "Demonology",
+          "name": "Skull of the Man\u0027ari",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 868.73,
       "legendaries": [
@@ -2559,14 +3920,31 @@
       "guildRank": 4,
       "guildRankName": "Raider",
       "specialization": "Enhancement",
-      "playedTime": 2410090,
+      "playedTime": 2412762,
       "achievementPoints": 3815,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
       "artifactTraits": 35,
-      "artifactKnowledge": 18,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 35
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 14
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 13
+        }
+      ],
+      "artifactKnowledge": 19,
       "itemLevel": 876.31,
       "legendaries": [
         {
@@ -2591,13 +3969,30 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Frost",
-      "playedTime": 7810171,
+      "playedTime": 7812434,
       "achievementPoints": 14220,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
       "artifactTraits": 30,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 30
+        },
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 7
+        },
+        {
+          "specialization": "Arcane",
+          "name": "Aluneth",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 862.63,
       "legendaries": [
@@ -2623,27 +4018,44 @@
       "guildRank": 5,
       "guildRankName": "Alt",
       "specialization": "Windwalker",
-      "playedTime": 1857937,
+      "playedTime": 1860898,
       "achievementPoints": 5475,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 31,
-      "artifactKnowledge": 15,
-      "itemLevel": 875.75,
-      "legendaries": [
+      "artifacts": [
         {
-          "id": 132444,
-          "name": "Prydaz, Xavaric\u0027s Magnum Opus",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_misc_necklace15.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EPrydaz, Xavaric\u0027s Magnum Opus\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003ENeck\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B1784 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1784)\u0022\u003E2.97%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1784 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,1784)\u0022\u003E2.97%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1784 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1784)\u0022\u003E4.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=207428\u0022 class=\u0022q2\u0022\u003EEvery 0 sec1 sec, gain an absorb shield for 0% of your maximum health for 30 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Bearers of this amulet whistle a haunting tune, and those nearby attest to a distant cry of anguish between the notes.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E40\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E59\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E90\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 31
         },
         {
-          "id": 137079,
-          "name": "Gai Plin\u0027s Soothing Sash",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_belt_49.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EGai Plin\u0027s Soothing Sash\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E226 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1529 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1529)\u0022\u003E2.55%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B849 Versatility\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,40,849)\u0022\u003E0%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208837\u0022 class=\u0022q2\u0022\u003EPurifying Brew instantly heals you for 25% of the purified Stagger damage.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c10\u0022\u003EMonk\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Gai Plin extracted the healing powers of the Ru\u0027shan River to infuse this belt with its soothing sensations.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E58\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E50\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 27
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 20
+        }
+      ],
+      "artifactKnowledge": 15,
+      "itemLevel": 876.63,
+      "legendaries": [
+        {
+          "id": 137097,
+          "name": "Drinking Horn Cover",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_bracer_26.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EDrinking Horn Cover\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWrist\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E176 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1340 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B637 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,637)\u0022\u003E1.06%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1147 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1147)\u0022\u003E2.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=209256\u0022 class=\u0022q2\u0022\u003EThe duration of Storm, Earth, and Fire is extended by 0.4.1 sec for every Chi you spend.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c10\u0022\u003EMonk\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022The hearty vrykul of Northrend were able to weather all elements if they had enough drink.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E44\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E23\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E98\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+        },
+        {
+          "id": 137029,
+          "name": "Katsuo\u0027s Eclipse",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_boots_cloth_33v4.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EKatsuo\u0027s Eclipse\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFeet\u003C/td\u003E\u003Cth\u003ELeather\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E276 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 [Agility or Intellect]\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208045\u0022 class=\u0022q2\u0022\u003EReduce the cost of Fists of Fury by -1 Chi.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 95 / 95\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c10\u0022\u003EMonk\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Said Kaulder to his brother Katsuo: \u0027With training, your reactions can become faster and your fists can become more furious than any foe can handle.\u0027\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E68\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E91\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E25\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -2655,13 +4067,35 @@
       "guildRank": 9,
       "guildRankName": "Initiate",
       "specialization": "Restoration",
-      "playedTime": 1317377,
+      "playedTime": 1318949,
       "achievementPoints": 1955,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "G\u0027Hanir, the Mother Tree",
       "artifactRelics": 3,
       "artifactTraits": 30,
+      "artifacts": [
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 30
+        },
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 24
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 22
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 8
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 876.25,
       "legendaries": [
@@ -2694,6 +4128,23 @@
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 31
+        },
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 19
+        },
+        {
+          "specialization": "Arcane",
+          "name": "Aluneth",
+          "traits": 11
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 870.73,
       "legendaries": [
@@ -2726,6 +4177,23 @@
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
       "artifactTraits": 33,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 33
+        },
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 15
+        },
+        {
+          "specialization": "Arcane",
+          "name": "Aluneth",
+          "traits": 7
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 878.19,
       "legendaries": [
@@ -2758,6 +4226,28 @@
       "artifactWeapon": "Claws of Ursoc",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 31
+        },
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 24
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 1
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 869.75,
       "legendaries": [
@@ -2790,6 +4280,23 @@
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 26
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 20
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 858.88,
       "legendaries": [
@@ -2822,6 +4329,23 @@
       "artifactWeapon": "Light\u0027s Wrath",
       "artifactRelics": 3,
       "artifactTraits": 34,
+      "artifacts": [
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 34
+        },
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 25
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 19
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 874.53,
       "legendaries": [
@@ -2854,6 +4378,23 @@
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 31
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 1
+        },
+        {
+          "specialization": "Demonology",
+          "name": "Skull of the Man\u0027ari",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 875,
       "legendaries": [
@@ -2886,6 +4427,23 @@
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 3,
       "artifactTraits": 28,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 28
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 22
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 866.63,
       "legendaries": [
@@ -2912,6 +4470,23 @@
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 3,
       "artifactTraits": 29,
+      "artifacts": [
+        {
+          "specialization": "Beast Mastery",
+          "name": "Titanstrike",
+          "traits": 29
+        },
+        {
+          "specialization": "Marksmanship",
+          "name": "Thas\u0027dorah, Legacy of the Windrunners",
+          "traits": 2
+        },
+        {
+          "specialization": "Survival",
+          "name": "Talonclaw",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 855.94,
       "legendaries": [
@@ -2944,6 +4519,23 @@
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
       "artifactTraits": 31,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 31
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 18
+        },
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 872.94,
       "legendaries": [
@@ -2969,15 +4561,22 @@
       "guildRank": 4,
       "guildRankName": "Raider",
       "specialization": "Destruction",
-      "playedTime": 6861755,
+      "playedTime": 6865335,
       "achievementPoints": 6680,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
       "artifactTraits": 35,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 35
+        }
+      ],
       "artifactKnowledge": 18,
-      "itemLevel": 877.75,
+      "itemLevel": 878.69,
       "legendaries": [
         {
           "id": 132456,
@@ -2986,10 +4585,10 @@
           "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EFeretory of Souls\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EWaist\u003C/td\u003E\u003Cth\u003ECloth\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022ia\u0022\u003E181 Armor\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2680 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022s2\u0022\u003E\u002B1786 Intellect\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1359 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1359)\u0022\u003E3.2%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s4\u0022\u003E\u002B1019 Mastery\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,49,1019)\u0022\u003E1.7%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=205702\u0022 class=\u0022q2\u0022\u003ECasting a damaging Fire spell has a 6% chance to generate a Soul Shard.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003C!--sockets--\u003EDurability 70 / 70\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c9\u0022\u003EWarlock\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Viewed from different angles, there seems to be faint reflection of three different faces.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E46\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E27\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E86\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         },
         {
-          "id": 132452,
-          "name": "Sephuz\u0027s Secret",
-          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_149.png",
-          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003ESephuz\u0027s Secret\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B1274 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1274)\u0022\u003E3%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B3185 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,3185)\u0022\u003E5.31%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=208051\u0022 class=\u0022q2\u0022\u003EGain 10% increased movement speed and 2% Haste. Successfully applying a loss of control effect to an enemy, interrupting an enemy, or dispelling any target increases this effect to 10% increased movement speed and 12% Haste for 10 sec. This increase may occur once every 30 sec.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Intangibility is a curious concept. The word suggests some magical ability, but in the physical world, it simply means the power to be here or there, now or later.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E55\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E47\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E82\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
+          "id": 132460,
+          "name": "Alythess\u0027s Pyrogenics",
+          "icon": "https://legion-static.tauri.hu/images/icons/large/inv_jewelry_ring_65.png",
+          "tooltipHtml": "\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb class=\u0022q5\u0022\u003EAlythess\u0027s Pyrogenics\u003C/b\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q i\u0022\u003EItem Level 910\u003C/span\u003E\u003Cbr /\u003EBinds when picked up\u003Cbr /\u003EUnique-Equipped\u003Cbr /\u003EUnique-Equipped: Legion Legendary (1)\u003Ctable width=\u0022100%\u0022\u003E\u003Ctr\u003E\u003Ctd\u003EFinger\u003C/td\u003E\u003Cth\u003E\u003C/th\u003E\u003C/tr\u003E\u003C/table\u003E\u003Cspan class=\u0022s1\u0022\u003E\u002B2010 Stamina\u003C/span\u003E\u003Cbr /\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E\u003Ctable class=\u0022tooltip-table\u0022\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cspan class=\u0022q2 s2\u0022\u003E\u002B2548 Critical Strike\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,32,2548)\u0022\u003E4.25%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2 s3\u0022\u003E\u002B1911 Haste\u0026nbsp;\u003Csmall\u003E(\u003Ca href=\u0022javascript:;\u0022 onmousedown=\u0022return false\u0022 onclick=\u0022g_setRatingLevel(this,110,36,1911)\u0022\u003E4.5%\u0026nbsp;@\u0026nbsp;L110\u003C/a\u003E)\u003C/small\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cspan class=\u0022q2\u0022\u003EEquip: \u003Ca href=\u0022?spell=205678\u0022 class=\u0022q2\u0022\u003EEnemies affected by your Rain of Fire take 0% increased damage from your Fire spells.\u003C/a\u003E\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003E\u003C!--sockets--\u003E\u003Cspan class=\u0022sc socket-prismatic q0\u0022\u003EPrismatic Socket\u003C/span\u003E\u003Cbr /\u003E\u003Cbr /\u003EClasses: \u003Cspan class=\u0022c9\u0022\u003EWarlock\u003C/span\u003E\u003Cbr /\u003ERequires Level 101\u003Cbr /\u003E\u003Cspan class=\u0022q\u0022\u003E\u0022Depravity... hatred... chaos. These are the pillars.\u0022\u003C/span\u003E\u003Cbr /\u003ESell Price: \u003Cspan class=\u0022moneygold\u0022\u003E58\u003C/span\u003E \u003Cspan class=\u0022moneysilver\u0022\u003E68\u003C/span\u003E \u003Cspan class=\u0022moneycopper\u0022\u003E81\u003C/span\u003E\u003C/td\u003E\u003C/tr\u003E\u003C/table\u003E"
         }
       ]
     },
@@ -3008,6 +4607,28 @@
       "artifactWeapon": "Scythe of Elune",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 27
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 14
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 13
+        },
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 860,
       "legendaries": [
@@ -3033,13 +4654,30 @@
       "guildRank": 7,
       "guildRankName": "Member",
       "specialization": "Frost",
-      "playedTime": 4186128,
+      "playedTime": 4188590,
       "achievementPoints": 8625,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "Ebonchill",
       "artifactRelics": 3,
       "artifactTraits": 34,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Ebonchill",
+          "traits": 34
+        },
+        {
+          "specialization": "Fire",
+          "name": "Felo\u0027melorn",
+          "traits": 29
+        },
+        {
+          "specialization": "Arcane",
+          "name": "Aluneth",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 876.8,
       "legendaries": [
@@ -3072,6 +4710,23 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 25,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 25
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 13
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 854,
       "legendaries": [
@@ -3104,6 +4759,23 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 33,
+      "artifacts": [
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 33
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 21
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 876.67,
       "legendaries": [
@@ -3129,15 +4801,32 @@
       "guildRank": 4,
       "guildRankName": "Raider",
       "specialization": "Elemental",
-      "playedTime": 8382418,
+      "playedTime": 8387051,
       "achievementPoints": 18310,
       "nightfallenReputation": 0,
       "nightfallenReputationMaximum": 1000,
       "artifactWeapon": "The Fist of Ra-den",
       "artifactRelics": 3,
       "artifactTraits": 35,
+      "artifacts": [
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 35
+        },
+        {
+          "specialization": "Restoration",
+          "name": "Sharas\u0027dal, Scepter of Tides",
+          "traits": 2
+        },
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
-      "itemLevel": 662.88,
+      "itemLevel": 882,
       "legendaries": [
         {
           "id": 137083,
@@ -3168,6 +4857,23 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 27
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 0
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 16,
       "itemLevel": 858.13,
       "legendaries": [
@@ -3200,6 +4906,23 @@
       "artifactWeapon": "Strom\u0027kar, the Warbreaker",
       "artifactRelics": 3,
       "artifactTraits": 30,
+      "artifacts": [
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 30
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 0
+        },
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 18,
       "itemLevel": 869.44,
       "legendaries": [
@@ -3232,6 +4955,13 @@
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 2,
       "artifactTraits": 6,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 6
+        }
+      ],
       "artifactKnowledge": 2,
       "itemLevel": 779,
       "legendaries": []
@@ -3251,6 +4981,23 @@
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 2,
       "artifactTraits": 12,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 12
+        },
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 0
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 8,
       "itemLevel": 795.25,
       "legendaries": []
@@ -3270,6 +5017,23 @@
       "artifactWeapon": "Scale of the Earth-Warder",
       "artifactRelics": 2,
       "artifactTraits": 12,
+      "artifacts": [
+        {
+          "specialization": "Protection",
+          "name": "Scale of the Earth-Warder",
+          "traits": 12
+        },
+        {
+          "specialization": "Arms",
+          "name": "Strom\u0027kar, the Warbreaker",
+          "traits": 9
+        },
+        {
+          "specialization": "Fury",
+          "name": "Warswords of the Valarjar",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 797.44,
       "legendaries": []
@@ -3289,6 +5053,18 @@
       "artifactWeapon": "Titanstrike",
       "artifactRelics": 2,
       "artifactTraits": 14,
+      "artifacts": [
+        {
+          "specialization": "Beast Mastery",
+          "name": "Titanstrike",
+          "traits": 14
+        },
+        {
+          "specialization": "Marksmanship",
+          "name": "Thas\u0027dorah, Legacy of the Windrunners",
+          "traits": 14
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 834.06,
       "legendaries": []
@@ -3308,6 +5084,18 @@
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 0,
       "artifactTraits": 3,
+      "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 3
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 0,
       "itemLevel": 720.56,
       "legendaries": []
