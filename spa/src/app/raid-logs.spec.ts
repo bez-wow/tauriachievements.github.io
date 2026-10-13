@@ -18,12 +18,15 @@ import {
   formatFightTime,
   formatPerSecond,
   guildProgression,
+  killsBefore,
+  logKey,
   nameMatches,
   performanceQuality,
   raceFaction,
   rankCharacters,
   rankScores,
   raidLogLink,
+  scoreChanges,
   scoreCharacters,
   speedRank
 } from './raid-logs';
@@ -61,6 +64,8 @@ const indexFile: RaidLogsIndexFile = {
     ['Tauri', 13, 0, 15, 4_000, 200_000, 2, 1, 0, 0, 20],
     ['WoD', 10, 0, 15, 5_000, 250_000, -1, 1, 0, 0, 14]
   ],
+  previousGeneratedAt: '2026-10-11T16:00:00Z',
+  newLogs: [['WoD', 10]],
   top: [{ boss: 'nythendra', difficulty: 'mythic', dps: ['Sósa', 'Evermoon', 8, 64, 700_303, 'Tauri', 10], hps: null }],
   items: [[139236, 'Grubby Silver Ring', 4, 'inv_70_raid_ring1b']]
 };
@@ -107,6 +112,15 @@ describe('decodeIndex', () => {
     expect(index.top.get('nythendra|mythic')?.dps).toMatchObject({ name: 'Sósa', perSecond: 700_303, logId: 10 });
     expect(index.top.get('nythendra|mythic')?.dps?.spec?.name).toBe('Frost');
     expect(index.items.get(139236)?.name).toBe('Grubby Silver Ring');
+  });
+
+  it('reads the kills added since the previous export, by logKey', () => {
+    expect(index.previousGeneratedAt?.toISOString()).toBe('2026-10-11T16:00:00.000Z');
+    expect([...index.newLogs]).toEqual(['wod/10']);
+
+    const first = decodeIndex({ ...indexFile, previousGeneratedAt: undefined, newLogs: undefined });
+    expect(first.previousGeneratedAt).toBeUndefined();
+    expect(first.newLogs.size).toBe(0);
   });
 
   it('gives specs the Legion spec icons', () => {
@@ -241,6 +255,40 @@ describe('scoreCharacters', () => {
       ['Example', Math.floor(MAX_SCORE * .1 / 4), 1]
     ]);
     expect(fireOnly[1].spec?.name).toBe('Fire');
+  });
+
+  describe('since the previous scan', () => {
+    const changesWithout = (kills: RaidKillDetails[][], newKill: RaidKillDetails, bossCount = 4) => {
+      const scored = bosses.slice(0, bossCount);
+      const before = killsBefore(kills, new Set([logKey(newKill)]));
+      return scoreChanges(rankScores(scoreCharacters(scored, kills, 'dps')), rankScores(scoreCharacters(scored, before, 'dps')));
+    };
+
+    it('leaves out only the kills the previous scan did not have', () => {
+      expect(killsBefore(bossKills, new Set([logKey(bossKills[3][0])])).map(kills => kills.length)).toEqual([1, 1, 1, 0]);
+    });
+
+    it('measures the ranks climbed and the score gained', () => {
+      // B's new kill beats A's best on the second boss: B climbs to first, and A's share of that boss halves.
+      const newKill = kill(1, 5, [[character('B'), fire, 200]]);
+      const kills = [
+        [kill(0, 1, [[character('A'), fire, 100], [character('B'), fire, 90]])],
+        [kill(1, 2, [[character('A'), fire, 100], [character('B'), fire, 50]]), newKill]
+      ];
+      // Before: A 6969, B (90% + 50%) / 2 = 4878. Now: A (100% + 50%) / 2 = 5226, B (90% + 100%) / 2 = 6620.
+      expect([...changesWithout(kills, newKill, 2)]).toEqual([
+        ['tauri/B', { rank: 1, score: 6620 - 4878, isNew: false }],
+        ['tauri/A', { rank: -1, score: 5226 - MAX_SCORE, isNew: false }]
+      ]);
+    });
+
+    it("marks a character new to the ranking and leaves out one who didn't move", () => {
+      // Before the fourth boss's first kill: Best 3/3, Example (10% + 80% + 30%) / 3 = 2787, no Tank.
+      const changes = changesWithout(bossKills, bossKills[3][0]);
+      expect(changes.has('tauri/Best')).toBe(false);
+      expect(changes.get('tauri/Example')).toEqual({ rank: 0, score: 2090 - 2787, isNew: false });
+      expect(changes.get('tauri/Tank')).toEqual({ rank: 0, score: 0, isNew: true });
+    });
   });
 });
 

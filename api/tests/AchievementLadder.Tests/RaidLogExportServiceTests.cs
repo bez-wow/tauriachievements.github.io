@@ -387,6 +387,114 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_ListsTheKillsAddedSinceTheLastExport()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                null,
+                [],
+                Member("Mage", "", 8, 63)
+            );
+            var directory = PlayerGuildDirectory.Empty;
+            async Task<JsonElement> ExportAt(int hour, bool full = false)
+            {
+                await new RaidLogExportService(
+                    outputDirectory,
+                    api,
+                    new FakeItemSource(),
+                    directory,
+                    new FixedTimeProvider(
+                        new DateTimeOffset(2026, 10, 12, hour, 0, 0, TimeSpan.Zero)
+                    )
+                ).ExportAsync(Options() with { Full = full }, CancellationToken.None);
+                return Parse(File.ReadAllText(Path.Combine(outputDirectory, "index.json")));
+            }
+            static string[] NewLogs(JsonElement index) =>
+                [
+                    .. index
+                        .GetProperty("newLogs")
+                        .EnumerateArray()
+                        .Select(key => $"{key[0].GetString()} {key[1].GetInt32()}"),
+                ];
+
+            // A first export has nothing to compare with.
+            var first = await ExportAt(10);
+            Assert.False(first.TryGetProperty("previousGeneratedAt", out _));
+            Assert.False(first.TryGetProperty("newLogs", out _));
+
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 103];
+            api.Rankings[(WoD, Nythendra, Normal)] = [103];
+            api.Logs[(Tauri, 103)] = LogJson(
+                103,
+                Nythendra,
+                Heroic,
+                30,
+                100_000,
+                null,
+                [],
+                Member("Mage", "", 8, 63)
+            );
+            api.Logs[(WoD, 103)] = LogJson(
+                103,
+                Nythendra,
+                Normal,
+                20,
+                100_000,
+                null,
+                [],
+                Member("Hunter", "", 3, 254)
+            );
+            var second = await ExportAt(12);
+            Assert.Equal(
+                "2026-10-12T10:00:00Z",
+                second.GetProperty("previousGeneratedAt").GetString()
+            );
+            Assert.Equal(["WoD 103", "Tauri 103"], NewLogs(second)); // oldest first, as `logs`
+
+            // Nothing new: the last export's changes stay, so a second run the same day keeps them.
+            var rerun = await ExportAt(13);
+            Assert.Equal("2026-10-12T13:00:00Z", rerun.GetProperty("generatedAt").GetString());
+            Assert.Equal(
+                "2026-10-12T10:00:00Z",
+                rerun.GetProperty("previousGeneratedAt").GetString()
+            );
+            Assert.Equal(["WoD 103", "Tauri 103"], NewLogs(rerun));
+
+            // --full reads every log again, but only the kill the files didn't have is new.
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 103, 104];
+            api.Logs[(Tauri, 104)] = LogJson(
+                104,
+                Nythendra,
+                Heroic,
+                40,
+                100_000,
+                null,
+                [],
+                Member("Mage", "", 8, 63)
+            );
+            var full = await ExportAt(14, full: true);
+            Assert.Equal(
+                "2026-10-12T13:00:00Z",
+                full.GetProperty("previousGeneratedAt").GetString()
+            );
+            Assert.Equal(["Tauri 104"], NewLogs(full));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ExportAsync_LeavesAGuildUnnamedWhenNoCandidateHasItsId()
     {
         var outputDirectory = CreateTempDirectory();

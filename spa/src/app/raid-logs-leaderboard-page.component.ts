@@ -25,16 +25,19 @@ import {
   RaidLogsIndex,
   RaidMetric,
   RankedScore,
+  ScoreChange,
   bossesInKillOrder,
   characterKey,
   countsFor,
   defaultDifficulty,
   formatPerSecond,
+  killsBefore,
   nameMatches,
   pageCount,
   raidCharacterLink,
   rankScores,
   realmSlug,
+  scoreChanges,
   scoreCharacters
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
@@ -142,6 +145,34 @@ export class RaidLogsLeaderboardPageComponent {
     classId: this.classFilter(),
     realm: this.realmFilter()
   }));
+
+  /** The difficulty's kills as the previous scan had them; undefined while none of them is new. */
+  private readonly previousBossKills = computed(() => {
+    const loaded = this.loaded();
+    const newLogs = this.index()?.newLogs;
+    if (!loaded || !newLogs?.size) {
+      return undefined;
+    }
+    const previous = killsBefore(loaded.bossKills, newLogs);
+    return previous.some((kills, boss) => kills.length < loaded.bossKills[boss].length) ? previous : undefined;
+  });
+
+  /**
+   * How each character's rank and score moved since the previous scan, by characterKey: the same
+   * ranking (metric, spec, class, realm) worked out without the kills that scan didn't have.
+   */
+  private readonly changes = computed(() => {
+    const previousKills = this.previousBossKills();
+    const index = this.index();
+    if (!previousKills || !index) {
+      return new Map<string, ScoreChange>();
+    }
+    const previous = scoreCharacters(index.bosses, previousKills, this.metric(), this.specFilter());
+    return scoreChanges(this.ranked(), rankScores(previous, { classId: this.classFilter(), realm: this.realmFilter() }));
+  });
+
+  /** The scan the changes measure from, for the explanation; undefined when no change shows. */
+  readonly changesSince = computed(() => this.previousBossKills() ? this.index()?.previousGeneratedAt : undefined);
 
   readonly rankings = computed<RankedScore[]>(() => {
     const query = this.search();
@@ -344,6 +375,24 @@ export class RaidLogsLeaderboardPageComponent {
 
   trackScore(index: number, entry: RankedScore): string {
     return characterKey(entry.character);
+  }
+
+  change(entry: RankedScore): ScoreChange | undefined {
+    return this.changes().get(characterKey(entry.character));
+  }
+
+  /** "+3", "−12": the minus sign is as wide as the plus, so the digits line up. */
+  signed(value: number): string {
+    return `${value > 0 ? '+' : '−'}${Math.abs(value)}`;
+  }
+
+  rankChangeLabel(change: number): string {
+    const ranks = Math.abs(change) === 1 ? 'rank' : 'ranks';
+    return `${change > 0 ? 'Climbed' : 'Fell'} ${Math.abs(change)} ${ranks} since the last scan`;
+  }
+
+  scoreChangeLabel(change: number): string {
+    return `${this.signed(change)} score since the last scan`;
   }
 
   private loadDifficulty(index: RaidLogsIndex): void {

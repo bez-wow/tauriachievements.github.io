@@ -154,7 +154,8 @@ table { table-layout: fixed; }
 td { overflow: hidden; text-overflow: ellipsis; }
 th.rank { width: 56px; }
 th.col-character { width: 240px; }
-th.col-score { width: 120px; }
+// Room for the score and its changes since the last scan on either side.
+th.col-score { width: 180px; }
 th.col-bosses { width: 110px; }
 th.col-ilvl { width: 120px; }
 
@@ -166,6 +167,49 @@ td.rank { font-weight: 700; }
 // Every column after the character: heading and values centred.
 th.center, td.center { text-align: center; }
 td.score { font-size: .95rem; }
+
+// The score's changes since the last scan: ranks climbed or fell on the left, score gained or
+// lost on the right. The sides split what's left equally, so the score stays at the column's
+// centre, where the scores without a change sit too.
+.score-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 8px;
+}
+
+.score-side { display: flex; min-width: 0; align-items: center; }
+.score-side-start { justify-content: flex-end; }
+.score-side-end { justify-content: flex-start; }
+
+// The ladder's rank pill and points gained (leaderboard-table.component.scss), so the two read alike.
+.rank-change {
+  display: inline-flex;
+  min-width: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border: 1px solid rgba(212, 216, 226, .2);
+  border-radius: 999px;
+  background: rgba(212, 216, 226, .08);
+  color: #d4d8e2;
+  font-size: .72rem;
+  font-weight: 800;
+  line-height: 1.2;
+
+  &.positive { border-color: rgba(140, 232, 155, .34); background: rgba(140, 232, 155, .12); color: #8ce89b; }
+  &.negative { border-color: rgba(255, 154, 154, .34); background: rgba(255, 154, 154, .12); color: #ff9a9a; }
+}
+
+.score-change {
+  font-size: .76rem;
+  font-weight: 800;
+
+  &.positive { color: #8ce89b; }
+  &.negative { color: #ff9a9a; }
+}
+
+.score-new { color: $gold; font-size: .66rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 
 // The guild in its side's colour: Alliance blue, Horde red.
 td.guild { font-weight: 600; }
@@ -185,9 +229,14 @@ td.guild { font-weight: 600; }
 
 @media (max-width: 800px) {
   th.col-guild { width: auto; }
-  th.col-score { width: 90px; }
+  th.col-score { width: 100px; }
   th.col-bosses { width: 80px; }
   .col-realm { display: none; }
+  // The changes go under the score, side by side, so Guild keeps its room.
+  .score-cell { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 5px; }
+  .score-value { flex-basis: 100%; order: -1; }
+  .score-side:empty { display: none; }
+  .rank-change { min-width: 28px; padding: 1px 6px; }
 }
 
 @media (max-width: 900px) {
@@ -207,8 +256,9 @@ td.guild { font-weight: 600; }
   // Only rank, character, score and bosses are left on a phone.
   th.rank { width: 40px; }
   th.col-character { width: auto; }
-  th.col-score { width: 74px; }
-  th.col-bosses { width: 70px; }
+  th.col-score { width: 84px; }
+  th.col-bosses { width: 64px; }
+  .score-change { font-size: .69rem; }
   // The three dropdowns keep a row to themselves; Reset goes beside the search, and only once
   // there's something to reset.
   .filter-slot { flex: 1 1 28%; }
