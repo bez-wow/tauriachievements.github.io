@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-13 21:57:11 CET",
+  "timestamp": "2026-10-13 22:57:01 CET",
   "guild": {
     "name": "Entropy",
     "realm": "Evermoon",
@@ -47,6 +47,23 @@
       "artifactWeapon": "Xal\u0027atath, Blade of the Black Empire",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Shadow",
+          "name": "Xal\u0027atath, Blade of the Black Empire",
+          "traits": 26
+        },
+        {
+          "specialization": "Discipline",
+          "name": "Light\u0027s Wrath",
+          "traits": 1
+        },
+        {
+          "specialization": "Holy",
+          "name": "T\u0027uure, Beacon of the Naaru",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 855.07,
       "legendaries": [
@@ -79,6 +96,18 @@
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 3,
       "artifactTraits": 23,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 23
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 16
+        }
+      ],
       "artifactKnowledge": 16,
       "itemLevel": 853.13,
       "legendaries": [
@@ -111,6 +140,23 @@
       "artifactWeapon": "Scepter of Sargeras",
       "artifactRelics": 3,
       "artifactTraits": 21,
+      "artifacts": [
+        {
+          "specialization": "Destruction",
+          "name": "Scepter of Sargeras",
+          "traits": 21
+        },
+        {
+          "specialization": "Affliction",
+          "name": "Ulthalesh, the Deadwind Harvester",
+          "traits": 4
+        },
+        {
+          "specialization": "Demonology",
+          "name": "Skull of the Man\u0027ari",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 7,
       "itemLevel": 852.8,
       "legendaries": [
@@ -137,6 +183,18 @@
       "artifactWeapon": "Fu Zan, the Wanderer\u0027s Companion",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 22
+        },
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 855.63,
       "legendaries": [
@@ -169,6 +227,18 @@
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
       "artifactTraits": 26,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 26
+        },
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 13
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 858.63,
       "legendaries": [
@@ -201,6 +271,18 @@
       "artifactWeapon": "The Silver Hand",
       "artifactRelics": 3,
       "artifactTraits": 20,
+      "artifacts": [
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 20
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 10
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 848.69,
       "legendaries": [
@@ -233,6 +315,18 @@
       "artifactWeapon": "Doomhammer",
       "artifactRelics": 3,
       "artifactTraits": 19,
+      "artifacts": [
+        {
+          "specialization": "Enhancement",
+          "name": "Doomhammer",
+          "traits": 19
+        },
+        {
+          "specialization": "Elemental",
+          "name": "The Fist of Ra-den",
+          "traits": 12
+        }
+      ],
       "artifactKnowledge": 6,
       "itemLevel": 850.5,
       "legendaries": [
@@ -259,6 +353,23 @@
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 3,
       "artifactTraits": 22,
+      "artifacts": [
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 22
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 18
+        },
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 12,
       "itemLevel": 866.56,
       "legendaries": [
@@ -291,6 +402,23 @@
       "artifactWeapon": "Blades of the Fallen Prince",
       "artifactRelics": 3,
       "artifactTraits": 20,
+      "artifacts": [
+        {
+          "specialization": "Frost",
+          "name": "Blades of the Fallen Prince",
+          "traits": 20
+        },
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 6
+        },
+        {
+          "specialization": "Unholy",
+          "name": "Apocalypse",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 858.63,
       "legendaries": [
@@ -317,6 +445,13 @@
       "artifactWeapon": "Maw of the Damned",
       "artifactRelics": 3,
       "artifactTraits": 19,
+      "artifacts": [
+        {
+          "specialization": "Blood",
+          "name": "Maw of the Damned",
+          "traits": 19
+        }
+      ],
       "artifactKnowledge": 14,
       "itemLevel": 850.19,
       "legendaries": [
@@ -343,6 +478,28 @@
       "artifactWeapon": "Fangs of Ashamane",
       "artifactRelics": 3,
       "artifactTraits": 15,
+      "artifacts": [
+        {
+          "specialization": "Feral",
+          "name": "Fangs of Ashamane",
+          "traits": 15
+        },
+        {
+          "specialization": "Guardian",
+          "name": "Claws of Ursoc",
+          "traits": 13
+        },
+        {
+          "specialization": "Balance",
+          "name": "Scythe of Elune",
+          "traits": 0
+        },
+        {
+          "specialization": "Restoration",
+          "name": "G\u0027Hanir, the Mother Tree",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 840.19,
       "legendaries": []
@@ -362,6 +519,18 @@
       "artifactWeapon": "Truthguard",
       "artifactRelics": 1,
       "artifactTraits": 13,
+      "artifacts": [
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 13
+        },
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 10,
       "itemLevel": 701,
       "legendaries": []
@@ -381,6 +550,23 @@
       "artifactWeapon": "Fists of the Heavens",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Windwalker",
+          "name": "Fists of the Heavens",
+          "traits": 27
+        },
+        {
+          "specialization": "Brewmaster",
+          "name": "Fu Zan, the Wanderer\u0027s Companion",
+          "traits": 15
+        },
+        {
+          "specialization": "Mistweaver",
+          "name": "Sheilun, Staff of the Mists",
+          "traits": 0
+        }
+      ],
       "artifactKnowledge": 11,
       "itemLevel": 860.4,
       "legendaries": [
@@ -413,6 +599,23 @@
       "artifactWeapon": "Ashbringer",
       "artifactRelics": 3,
       "artifactTraits": 29,
+      "artifacts": [
+        {
+          "specialization": "Retribution",
+          "name": "Ashbringer",
+          "traits": 29
+        },
+        {
+          "specialization": "Protection",
+          "name": "Truthguard",
+          "traits": 3
+        },
+        {
+          "specialization": "Holy",
+          "name": "The Silver Hand",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 15,
       "itemLevel": 854.06,
       "legendaries": [
@@ -445,6 +648,18 @@
       "artifactWeapon": "Aldrachi Warblades",
       "artifactRelics": 3,
       "artifactTraits": 27,
+      "artifacts": [
+        {
+          "specialization": "Vengeance",
+          "name": "Aldrachi Warblades",
+          "traits": 27
+        },
+        {
+          "specialization": "Havoc",
+          "name": "Twinblades of the Deceiver",
+          "traits": 1
+        }
+      ],
       "artifactKnowledge": 13,
       "itemLevel": 859.5,
       "legendaries": [

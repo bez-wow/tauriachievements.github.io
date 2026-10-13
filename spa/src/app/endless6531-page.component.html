@@ -25,43 +25,12 @@
     <section
       id="guild-filters"
       class="summary-card character-groups roster-filters"
-      [class.roster-filters--standard]="!showMainAltCharacters"
       [class.filters-collapsed]="!filtersOpen()">
       <app-mobile-filter-toggle
         controlsId="guild-filters"
         [expanded]="filtersOpen()"
         [activeFilters]="activeFilterLabels()"
         (expandedChange)="filtersOpen.set($event)" />
-
-      <div class="main-filter collapsible-filter" *ngIf="showMainAltCharacters">
-        <label for="main-character">Main character</label>
-        <span class="main-character-select">
-          <select
-            id="main-character"
-            [value]="selectedMainCharacter()"
-            (change)="selectMainCharacter($any($event.target).value)">
-            <option value="">All characters</option>
-            <option *ngFor="let mainCharacter of mainCharacters" [value]="mainCharacter">
-              {{ mainCharacter }}
-            </option>
-          </select>
-        </span>
-      </div>
-
-      <div class="role-filter collapsible-filter" *ngIf="showMainAltCharacters">
-        <label for="character-role-filter">Filter by role</label>
-        <span class="main-character-select">
-          <select
-            id="character-role-filter"
-            [value]="selectedCharacterRole()"
-            (change)="selectCharacterRole($any($event.target).value)">
-            <option value="all">All roles</option>
-            <option value="main">Main</option>
-            <option value="alt">Alt</option>
-            <option value="unknown">?</option>
-          </select>
-        </span>
-      </div>
 
       <div class="guild-rank-filter collapsible-filter">
         <app-filter-dropdown
@@ -134,12 +103,9 @@
             (change)="selectMobileSort($any($event.target).value)">
             <option value="name">Name</option>
             <option value="guildRankName">Rank</option>
-            <option value="artifactRelics">Relics</option>
             <option value="artifactTraits">Traits</option>
             <option value="artifactKnowledge">AK</option>
             <option value="itemLevel">ilvl</option>
-            <option value="playedTime">/played</option>
-            <option value="achievementPoints">Achievements</option>
           </select>
         </span>
         <button
@@ -170,13 +136,8 @@
             </button>
           </th>
           <th class="plain-heading" scope="col">Spec</th>
-          <th [attr.aria-sort]="ariaSort('artifactRelics')">
-            <button type="button" (click)="sortBy('artifactRelics')" [class.active-sort]="sortColumn() === 'artifactRelics'">
-              <span class="header-label">Relics</span>
-            </button>
-          </th>
           <th [attr.aria-sort]="ariaSort('artifactTraits')">
-            <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'">
+            <button type="button" (click)="sortBy('artifactTraits')" [class.active-sort]="sortColumn() === 'artifactTraits'" title="Artifact traits per spec, sorted by the best artifact">
               <span class="header-label">Traits</span>
             </button>
           </th>
@@ -191,24 +152,11 @@
             </button>
           </th>
           <th class="plain-heading" scope="col">Legendaries</th>
-          <th [attr.aria-sort]="ariaSort('playedTime')">
-            <button type="button" (click)="sortBy('playedTime')" [class.active-sort]="sortColumn() === 'playedTime'">
-              <span class="header-label">/played</span>
-            </button>
-          </th>
-          <th [attr.aria-sort]="ariaSort('achievementPoints')">
-            <button type="button" (click)="sortBy('achievementPoints')" [class.active-sort]="sortColumn() === 'achievementPoints'">
-              <span class="header-label">Achievements</span>
-            </button>
-          </th>
         </tr>
       </thead>
       <tbody>
         <tr
-          *ngFor="let player of renderedPlayers(); let rowIndex = index; trackBy: trackPlayer"
-          [class.main-character-row]="selectedMainCharacter() && isSelectedMainCharacter(player)"
-          [class.raid-character]="selectedMainCharacter() && !isSelectedMainCharacter(player) && wantsToRaid(player)"
-          [class.non-raid-character]="selectedMainCharacter() && !isSelectedMainCharacter(player) && !wantsToRaid(player)">
+          *ngFor="let player of renderedPlayers(); let rowIndex = index; trackBy: trackPlayer">
           <td class="row-number" data-label="Rank">{{ rowIndex + 1 }}</td>
           <td class="player-cell" data-label="Name">
             <a
@@ -220,13 +168,6 @@
               [title]="'Open ' + player.name + ' on Tauri Armory'">
               {{ player.name }}
             </a>
-            <span
-              *ngIf="showMainAltCharacters"
-              class="character-role"
-              [class]="'character-role character-role--' + characterRole(player)"
-              [attr.title]="characterRole(player) === 'alt' ? mainCharacterFor(player) : null">
-              {{ characterRole(player) === 'unknown' ? '?' : characterRole(player) }}
-            </span>
           </td>
           <td class="icons" data-label="Race / Class">
             <img [src]="raceIcon(player)" [alt]="'Race ' + player.race" />
@@ -234,8 +175,28 @@
           </td>
           <td data-label="Rank">{{ player.guildRankName || '—' }}</td>
           <td data-label="Spec">{{ player.specialization || '—' }}</td>
-          <td data-label="Relics">{{ player.artifactRelics | number }}</td>
-          <td data-label="Traits">{{ player.artifactTraits | number }}</td>
+          <td class="traits-cell" data-label="Traits">
+            <ul class="spec-traits" *ngIf="specTraits(player).length; else noTraits">
+              <ng-container *ngFor="let entry of specTraits(player)">
+                <li class="spec-trait" *ngIf="entry.traits !== null; else lockedSpec">
+                  <span class="spec-trait-icon" *ngIf="entry.icon">
+                    <img [src]="entry.icon" [alt]="entry.spec" loading="lazy" />
+                  </span>
+                  <span class="spec-trait-count">{{ entry.traits }}</span>
+                </li>
+                <!-- Only a locked spec gets a tooltip, and it opens at once (a title waits). -->
+                <ng-template #lockedSpec>
+                  <li class="spec-trait spec-trait--locked" appTapTooltip>
+                    <span class="spec-trait-icon" *ngIf="entry.icon">
+                      <img [src]="entry.icon" [alt]="entry.spec + ' (not unlocked)'" loading="lazy" />
+                    </span>
+                    <span class="spec-trait-tooltip" aria-hidden="true">{{ entry.spec }} artifact not unlocked</span>
+                  </li>
+                </ng-template>
+              </ng-container>
+            </ul>
+            <ng-template #noTraits>—</ng-template>
+          </td>
           <td data-label="AK" title="Artifact Knowledge">{{ player.artifactKnowledge ?? '—' }}</td>
           <td data-label="ilvl">{{ player.itemLevel | number:'1.2-2' }}</td>
           <td class="legendary-cell" data-label="Legendaries">
@@ -261,14 +222,12 @@
             </ng-container>
             <ng-template #noLegendaries><span class="no-legendary">&mdash;</span></ng-template>
           </td>
-          <td data-label="/played">{{ formatPlayedTime(player.playedTime) }}</td>
-          <td class="gold-text" data-label="Achievements">{{ player.achievementPoints | number }}</td>
         </tr>
         <tr
           class="empty-roster"
-          *ngIf="players().length === 0 && (selectedMainCharacter() || selectedClassId() !== null || selectedCharacterRole() !== 'all' || selectedGuildRank() || selectedCombatRole())">
-          <td colspan="11">
-            No matching alt characters were found in the current guild roster.
+          *ngIf="players().length === 0 && (selectedClassId() !== null || selectedGuildRank() || selectedCombatRole())">
+          <td colspan="9">
+            No members match these filters.
           </td>
         </tr>
       </tbody>
