@@ -349,6 +349,8 @@ export interface PlayerScore {
   /** Their most-played spec in these runs; the highest-scoring run's spec wins a count tie. */
   primarySpec: string;
   score: number;
+  /** The clear times of those best runs added up, in seconds; breaks a score tie. */
+  totalTime: number;
   /** The character's best run in each dungeon they have played, by dungeon id. */
   bestRuns: ReadonlyMap<string, MythicPlusRun>;
 }
@@ -356,7 +358,8 @@ export interface PlayerScore {
 /**
  * Player score, raider.io's classic model: the sum of a character's best run score in each
  * dungeon. Playing every dungeon counts; farming one doesn't. Given one dungeon's runs, the
- * score is simply the character's best run there. Highest first; ties go by name.
+ * score is simply the character's best run there. Highest first; on the same score the
+ * lower total time of those best runs goes first, then the name (see playerRanks).
  *
  * `include` limits which roster slots count, e.g. one spec: a character is then scored only on
  * the runs they played as that spec.
@@ -398,8 +401,10 @@ export function rankPlayers(
 
   return [...players].map(([key, player]) => {
     let total = 0;
+    let time = 0;
     for (const run of player.bestRuns.values()) {
       total += run.score;
+      time += run.clearTimeSeconds;
     }
 
     let primarySpec = player.member.spec;
@@ -412,8 +417,29 @@ export function rankPlayers(
     }
 
     // Scores carry one decimal; rounding keeps float noise out of ties.
-    return { key, member: player.member, primarySpec, score: Math.round(total * 10) / 10, bestRuns: player.bestRuns };
-  }).sort((a, b) => b.score - a.score || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    // Times to the millisecond, the export's precision, so float noise never splits a tie.
+    return {
+      key, member: player.member, primarySpec, score: Math.round(total * 10) / 10,
+      totalTime: Math.round(time * 1000) / 1000, bestRuns: player.bestRuns
+    };
+  }).sort((a, b) => b.score - a.score || a.totalTime - b.totalTime || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
+/** Two players share a place only with the same score and the same total time. */
+export function samePlace(a: Pick<PlayerScore, 'score' | 'totalTime'>, b: Pick<PlayerScore, 'score' | 'totalTime'>): boolean {
+  return a.score === b.score && a.totalTime === b.totalTime;
+}
+
+/**
+ * The rank of each player in `ranking` (rankPlayers order). Players in the same place
+ * share a rank and the places they take are skipped: 1, 1, 1, 4 (competition ranking).
+ */
+export function playerRanks(ranking: readonly Pick<PlayerScore, 'score' | 'totalTime'>[]): number[] {
+  const ranks: number[] = [];
+  ranking.forEach((player, index) => {
+    ranks.push(index > 0 && samePlace(player, ranking[index - 1]) ? ranks[index - 1] : index + 1);
+  });
+  return ranks;
 }
 
 /** Whether `candidate` beats `current`: a higher score, or the same score cleared faster. */

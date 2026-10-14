@@ -1,5 +1,5 @@
 import { localDay } from './mythic-plus-activity';
-import { MythicPlusMember, MythicPlusRun, PlayerScore, characterKey, isBetterRun } from './mythic-plus';
+import { MythicPlusMember, MythicPlusRun, PlayerScore, characterKey, isBetterRun, samePlace } from './mythic-plus';
 
 /*
  * The pure parts of /mythic-plus/character/:realm/:name, a character's season on one page:
@@ -53,12 +53,14 @@ export function findCharacters<T extends Character>(candidates: readonly T[], re
 export interface ScopeRank {
   rank: number;
   total: number;
+  /** The row the character is on (1-based); ranks are shared, so it can be below `rank`. */
+  position?: number;
 }
 
 /**
  * A character's place among the players `inScope` keeps, in the order of `ranking`
- * (rankPlayers). Ranks count from 1, as on the players view, so ties get distinct ranks there
- * and here alike. Undefined when the character isn't in scope.
+ * (rankPlayers). Ranks count from 1 and are shared like on the players view (playerRanks):
+ * the same score and total time share a rank. Undefined when the character isn't in scope.
  */
 export function scopeRank(
   ranking: readonly PlayerScore[],
@@ -66,19 +68,26 @@ export function scopeRank(
   inScope: (player: PlayerScore) => boolean = () => true
 ): ScopeRank | undefined {
   let total = 0;
-  let rank: number | undefined;
+  let place = 0;
+  let previous: PlayerScore | undefined;
+  let found: { rank: number; position: number } | undefined;
   for (const player of ranking) {
     if (!inScope(player)) {
       continue;
     }
 
     total++;
+    // The same score and total time share a rank (see playerRanks).
+    if (!previous || !samePlace(player, previous)) {
+      place = total;
+    }
+    previous = player;
     if (player.key === key) {
-      rank = total;
+      found = { rank: place, position: total };
     }
   }
 
-  return rank === undefined ? undefined : { rank, total };
+  return found === undefined ? undefined : { ...found, total };
 }
 
 /**
