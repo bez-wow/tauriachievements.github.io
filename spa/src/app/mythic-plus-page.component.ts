@@ -36,6 +36,7 @@ import {
   memberNameMatches,
   pageCount,
   PlayerScore,
+  playerRanks,
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
@@ -343,7 +344,9 @@ export class MythicPlusPageComponent implements OnInit {
       : (member: MythicPlusMember) => (realm === undefined || realmSlug(member.realm) === realm)
         && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)));
 
-    return rankPlayers(this.dungeonRuns(), include).map((player, index) => ({ player, rank: index + 1 }));
+    const ranking = rankPlayers(this.dungeonRuns(), include);
+    const ranks = playerRanks(ranking);
+    return ranking.map((player, index) => ({ player, rank: ranks[index] }));
   });
 
   readonly filteredPlayers = computed<RankedPlayer[]>(() => {

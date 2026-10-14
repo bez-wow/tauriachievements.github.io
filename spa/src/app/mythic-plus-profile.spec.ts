@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MythicPlusMember, MythicPlusRun, characterKey, rankPlayers } from './mythic-plus';
+import { MythicPlusMember, MythicPlusRun, characterKey, playerRanks, rankPlayers } from './mythic-plus';
 import {
   characterParam,
   characterProfileLink,
@@ -99,15 +99,32 @@ describe('ranks', () => {
 
   it('ranks a character overall, on their realm and in their class', () => {
     expect(ranking.map(player => player.key)).toEqual(['Frost|Tauri', 'Blood|Evermoon', 'Monk|Evermoon']);
-    expect(scopeRank(ranking, characterKey(monk))).toEqual({ rank: 3, total: 3 });
-    expect(scopeRank(ranking, characterKey(monk), player => player.member.realm === 'Evermoon')).toEqual({ rank: 2, total: 2 });
-    expect(scopeRank(ranking, characterKey(blood), player => player.member.class === 6)).toEqual({ rank: 2, total: 2 });
+    expect(scopeRank(ranking, characterKey(monk))).toEqual({ rank: 3, position: 3, total: 3 });
+    expect(scopeRank(ranking, characterKey(monk), player => player.member.realm === 'Evermoon')).toEqual({ rank: 2, position: 2, total: 2 });
+    expect(scopeRank(ranking, characterKey(blood), player => player.member.class === 6)).toEqual({ rank: 2, position: 2, total: 2 });
   });
 
   it('ranks a spec on the runs played as that spec only, as the ?class=&spec= players view does', () => {
     const bloodRanking = rankPlayers(runs, entry => entry.class === 6 && entry.spec === 'Blood');
-    expect(scopeRank(bloodRanking, key)).toEqual({ rank: 2, total: 2 });
+    expect(scopeRank(bloodRanking, key)).toEqual({ rank: 2, position: 2, total: 2 });
     expect(bloodRanking.find(player => player.key === key)?.score).toBe(150);
+  });
+
+  it('shares a rank only on the same score and the same total time', () => {
+    // A, B and C ran the same keys together; D has the same score but slower runs; E scores less.
+    const [a, b, c, d, e] = ['A', 'B', 'C', 'D', 'E'].map(name => member(name));
+    const tied = rankPlayers([
+      run('nl', 200, [a, b, c], at(9, 20), 1500),
+      run('nl', 200, [d], at(9, 20), 1600),
+      run('nl', 150, [e])
+    ]);
+    expect(tied.map(player => player.member.name)).toEqual(['A', 'B', 'C', 'D', 'E']);
+    expect(playerRanks(tied)).toEqual([1, 1, 1, 4, 5]);
+    expect(scopeRank(tied, characterKey(c))).toEqual({ rank: 1, position: 3, total: 5 });
+    expect(scopeRank(tied, characterKey(d))).toEqual({ rank: 4, position: 4, total: 5 });
+    expect(scopeRank(tied, characterKey(e))).toEqual({ rank: 5, position: 5, total: 5 });
+    // Only the players in scope count: D alone in a scope after the three is 4th of 4 too.
+    expect(scopeRank(tied, characterKey(d), player => player.member.name !== 'E')).toEqual({ rank: 4, position: 4, total: 4 });
   });
 
   it('has no rank for a character outside the scope', () => {

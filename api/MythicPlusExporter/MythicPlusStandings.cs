@@ -25,47 +25,79 @@ public static class MythicPlusStandings
         var playerIndexes = dataset
             .Players.Select((player, index) => (player, index))
             .ToDictionary(entry => (entry.player.Realm, entry.player.Name), entry => entry.index);
-        var scores = new double[dataset.Players.Count];
+        var best = new BestRuns(dataset.Players.Count);
 
         foreach (var dungeon in dataset.Dungeons)
         {
-            var dungeonBest = new double[dataset.Players.Count];
+            best.StartDungeon();
             foreach (var scored in dungeon.Runs)
             {
                 foreach (var member in scored.Run.Members)
                 {
-                    var playerIndex = playerIndexes[(member.Realm, member.Name)];
-                    if (scored.Score > dungeonBest[playerIndex])
-                    {
-                        dungeonBest[playerIndex] = scored.Score;
-                    }
+                    best.Add(
+                        playerIndexes[(member.Realm, member.Name)],
+                        scored.Score,
+                        scored.Run.ClearTimeMilliseconds
+                    );
                 }
             }
-
-            for (var playerIndex = 0; playerIndex < scores.Length; playerIndex++)
-            {
-                scores[playerIndex] += dungeonBest[playerIndex];
-            }
+            best.EndDungeon();
         }
 
-        var ranked = dataset
-            .Players.Select(
-                (player, index) =>
-                    new MythicPlusStanding(
-                        player.Name,
-                        player.Realm,
-                        RoundScore(scores[index]),
-                        Rank: 0
-                    )
-            )
-            .OrderByDescending(standing => standing.Score)
-            // Matches the browser's `name|realm` tie-break in rankPlayers().
-            .ThenBy(standing => $"{standing.Name}|{standing.Realm}", StringComparer.Ordinal)
-            .Select((standing, index) => standing with { Rank = index + 1 })
-            .ToDictionary(standing => (standing.Realm, standing.Name), standing => standing);
+        return Rank(
+            dataset.Players.Select(player => (player.Realm, player.Name)).ToList(),
+            best.Scores,
+            best.Times
+        );
+    }
 
-        // Keep the index aligned with the player lookup table for a compact JSON representation.
-        return dataset.Players.Select(player => ranked[(player.Realm, player.Name)]).ToList();
+    /// <summary>
+    /// Ranks players by score, highest first, then by the total clear time of their best runs,
+    /// fastest first (matching rankPlayers() in the browser), then by <c>name|realm</c>. Only the
+    /// same score and the same total time share a rank, and the places they take are skipped:
+    /// 1, 1, 1, 4 (playerRanks() in the browser). The result is aligned with
+    /// <paramref name="players"/>.
+    /// </summary>
+    internal static IReadOnlyList<MythicPlusStanding> Rank(
+        IReadOnlyList<(string Realm, string Name)> players,
+        IReadOnlyList<double> scores,
+        IReadOnlyList<long> times
+    )
+    {
+        var order = Enumerable
+            .Range(0, players.Count)
+            .Select(index =>
+                (
+                    Index: index,
+                    Score: RoundScore(scores[index]),
+                    Time: times[index],
+                    Key: $"{players[index].Name}|{players[index].Realm}"
+                )
+            )
+            .OrderByDescending(entry => entry.Score)
+            .ThenBy(entry => entry.Time)
+            .ThenBy(entry => entry.Key, StringComparer.Ordinal)
+            .ToList();
+
+        var standings = new MythicPlusStanding[players.Count];
+        var rank = 0;
+        for (var position = 0; position < order.Count; position++)
+        {
+            var entry = order[position];
+            if (
+                position == 0
+                || entry.Score != order[position - 1].Score
+                || entry.Time != order[position - 1].Time
+            )
+            {
+                rank = position + 1;
+            }
+
+            var (realm, name) = players[entry.Index];
+            standings[entry.Index] = new MythicPlusStanding(name, realm, entry.Score, rank);
+        }
+
+        return standings;
     }
 
     public static IReadOnlyList<MythicPlusStanding> Compare(
@@ -92,5 +124,50 @@ public static class MythicPlusStandings
     {
         var rounded = Math.Round(score, 1, MidpointRounding.AwayFromZero);
         return rounded == 0 ? 0 : rounded; // Do not serialize negative zero.
+    }
+
+    /// <summary>
+    /// Each player's best run per dungeon, added up: the highest score, and on the same score
+    /// the fastest clear (isBetterRun() in the browser), so its time counts towards the total.
+    /// </summary>
+    internal sealed class BestRuns(int playerCount)
+    {
+        private readonly double[] _dungeonScores = new double[playerCount];
+        private readonly long[] _dungeonTimes = new long[playerCount];
+        private readonly bool[] _played = new bool[playerCount];
+
+        public double[] Scores { get; } = new double[playerCount];
+        public long[] Times { get; } = new long[playerCount];
+
+        public void StartDungeon() => Array.Clear(_played);
+
+        public void Add(int playerIndex, double score, long clearTimeMilliseconds)
+        {
+            if (
+                !_played[playerIndex]
+                || score > _dungeonScores[playerIndex]
+                || (
+                    score == _dungeonScores[playerIndex]
+                    && clearTimeMilliseconds < _dungeonTimes[playerIndex]
+                )
+            )
+            {
+                _played[playerIndex] = true;
+                _dungeonScores[playerIndex] = score;
+                _dungeonTimes[playerIndex] = clearTimeMilliseconds;
+            }
+        }
+
+        public void EndDungeon()
+        {
+            for (var playerIndex = 0; playerIndex < _played.Length; playerIndex++)
+            {
+                if (_played[playerIndex])
+                {
+                    Scores[playerIndex] += _dungeonScores[playerIndex];
+                    Times[playerIndex] += _dungeonTimes[playerIndex];
+                }
+            }
+        }
     }
 }

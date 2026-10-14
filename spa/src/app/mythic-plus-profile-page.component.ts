@@ -366,7 +366,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
         return [];
       }
 
-      const page = pageOfRank(found.rank, this.pageSize());
+      const page = pageOfRank(found.position ?? found.rank, this.pageSize());
       return [{
         scope,
         label,

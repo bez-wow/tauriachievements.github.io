@@ -360,6 +360,79 @@ public sealed class MythicPlusExportServiceTests
     }
 
     [Fact]
+    public async Task ExportAsync_SharesARankOnlyOnTheSameScoreAndTotalTime()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            // Alpha, Beta and Gamma timed the same key together. Delta's key was a second slower:
+            // the same score (it rounds to a tenth) but a longer total time. Epsilon scores less.
+            var service = new MythicPlusExportService(
+                outputDirectory,
+                new FakeChallengeApiClient(
+                    IndexJson(),
+                    new()
+                    {
+                        [(Evermoon, 197)] = LeaderboardJson(),
+                        [(Evermoon, 200)] = LeaderboardJson(
+                            Run(
+                                10,
+                                2_000_000,
+                                100,
+                                [],
+                                Member("Alpha", Evermoon, 6, "Blood", 0, ""),
+                                Member("Beta", Evermoon, 10, "Brewmaster", 0, ""),
+                                Member("Gamma", Evermoon, 2, "Holy", 1, "")
+                            ),
+                            Run(
+                                10,
+                                2_001_000,
+                                101,
+                                [],
+                                Member("Delta", Evermoon, 6, "Blood", 0, "")
+                            ),
+                            Run(
+                                9,
+                                2_000_000,
+                                102,
+                                [],
+                                Member("Epsilon", Evermoon, 6, "Blood", 0, "")
+                            )
+                        ),
+                    }
+                ),
+                new FixedTimeProvider(new DateTimeOffset(2026, 10, 7, 9, 30, 0, TimeSpan.Zero))
+            );
+            await service.ExportAsync(
+                new MythicPlusExporterOptions([Evermoon], AllowShrink: false),
+                CancellationToken.None
+            );
+
+            using var index = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
+            );
+            var root = index.RootElement;
+            var names = root.GetProperty("players")
+                .EnumerateArray()
+                .Select(player => player[0].GetString())
+                .ToList();
+            var standings = root.GetProperty("standings").EnumerateArray().ToList();
+            double Score(string name) => standings[names.IndexOf(name)][0].GetDouble();
+            int Rank(string name) => standings[names.IndexOf(name)][1].GetInt32();
+
+            Assert.Equal(Score("Alpha"), Score("Delta"));
+            Assert.Equal(
+                [1, 1, 1, 4, 5],
+                new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" }.Select(Rank)
+            );
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void TablesFingerprint_ChangesWhenPositionsShiftOnly()
     {
         static MythicPlusDataset Dataset(params MythicPlusPlayer[] players) =>

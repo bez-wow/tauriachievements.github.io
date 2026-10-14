@@ -221,7 +221,7 @@ public sealed class MythicPlusExportService(
         var expectedTables = root.TryGetProperty("tables", out var tables)
             ? tables.GetString()
             : null;
-        var scores = new double[players.Count];
+        var best = new MythicPlusStandings.BestRuns(players.Count);
 
         foreach (var dungeon in dungeons.EnumerateArray())
         {
@@ -254,7 +254,7 @@ public sealed class MythicPlusExportService(
                 return [];
             }
 
-            var dungeonBest = new double[players.Count];
+            best.StartDungeon();
             foreach (var run in runs.EnumerateArray())
             {
                 if (run.ValueKind != JsonValueKind.Array || run.GetArrayLength() < 6)
@@ -263,6 +263,7 @@ public sealed class MythicPlusExportService(
                 }
 
                 var score = run[3].GetDouble();
+                var clearTime = run[1].GetInt64();
                 foreach (var member in run[5].EnumerateArray())
                 {
                     if (
@@ -271,38 +272,18 @@ public sealed class MythicPlusExportService(
                         && member[0].TryGetInt32(out var playerIndex)
                         && playerIndex >= 0
                         && playerIndex < players.Count
-                        && score > dungeonBest[playerIndex]
                     )
                     {
-                        dungeonBest[playerIndex] = score;
+                        best.Add(playerIndex, score, clearTime);
                     }
                 }
             }
-
-            for (var playerIndex = 0; playerIndex < scores.Length; playerIndex++)
-            {
-                scores[playerIndex] += dungeonBest[playerIndex];
-            }
+            best.EndDungeon();
         }
 
-        var ranked = players
-            .Select(
-                (player, index) =>
-                    new MythicPlusStanding(
-                        player.Name,
-                        player.Realm,
-                        MythicPlusStandings.RoundScore(scores[index]),
-                        Rank: 0
-                    )
-            )
-            .OrderByDescending(standing => standing.Score)
-            .ThenBy(standing => $"{standing.Name}|{standing.Realm}", StringComparer.Ordinal)
-            .Select((standing, index) => standing with { Rank = index + 1 });
-
-        return ranked.ToDictionary(
-            standing => (standing.Realm, standing.Name),
-            standing => standing
-        );
+        return MythicPlusStandings
+            .Rank(players, best.Scores, best.Times)
+            .ToDictionary(standing => (standing.Realm, standing.Name), standing => standing);
     }
 
     private static PreviousMythicPlusSnapshot EmptyPreviousSnapshot() =>
