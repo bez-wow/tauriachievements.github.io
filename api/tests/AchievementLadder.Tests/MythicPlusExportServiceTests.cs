@@ -15,7 +15,10 @@ public sealed class MythicPlusExportServiceTests
     [InlineData(16, 982_000, 1440, 174.0)] // timed, 68%
     [InlineData(16, 1_440_000, 1440, 170.0)] // exactly on the timer still counts as timed
     [InlineData(16, 2_950_000, 2700, 160.6)] // 9% over: scored as a +15, minus the overrun
-    [InlineData(2, 9_000_000, 1440, 0.0)] // far over time never goes negative
+    [InlineData(16, 2_016_000, 1440, 154.5)] // exactly 40% over still scores
+    [InlineData(16, 2_016_001, 1440, 0.0)] // more than 40% over scores nothing
+    [InlineData(20, 3_510_000, 2340, 0.0)] // 50% over: 0 however high the key
+    [InlineData(2, 9_000_000, 1440, 0.0)] // far over time
     public void Score_RewardsLevelFirstAndTimeSecond(
         int keyLevel,
         long clearTimeMilliseconds,
