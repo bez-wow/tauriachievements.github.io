@@ -12,9 +12,7 @@
       [realm]="realmName"
       [name]="guildName"
       [faction]="factionName"
-      subtitle="Guild Statistics"
-      [link]="scoresLink"
-      linkLabel="PvE Scores" />
+      subtitle="Guild Statistics" />
 
     <p class="load-error" *ngIf="loadFailed" role="alert">
       The guild statistics could not be loaded. Please refresh the page to try again.
@@ -65,9 +63,13 @@
           (selectionChange)="selectCombatRole($event)" />
       </div>
 
-      <button class="reset-filters collapsible-filter" type="button" (click)="resetFilters()">
-        Reset
-      </button>
+      <!-- On phones the filters fold away; the way to the PvE scores stays. -->
+      <div class="filter-actions">
+        <button class="reset-filters collapsible-filter" type="button" (click)="resetFilters()">
+          Reset
+        </button>
+        <a class="scores-link" [routerLink]="scoresLink">PvE Scores</a>
+      </div>
     </section>
 
     <aside class="summary-panel" aria-label="Guild roster summary" [class.filters-collapsed]="!classBreakdownOpen()">

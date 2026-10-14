@@ -68,10 +68,16 @@ app-guild-page-hero {
 
 .character-groups {
   display: grid;
-  grid-template-columns: repeat(3, minmax(125px, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(150px, 1fr)) auto;
   align-items: end;
   gap: 12px;
   padding: 10px 12px;
+}
+
+// Reset, then the way to the guild's PvE scores.
+.filter-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .roster-filters {
@@ -106,6 +112,33 @@ app-guild-page-hero {
     border-color: #f7b500;
     background: rgba(247, 181, 0, 0.16);
     color: #ffd700;
+    outline: none;
+  }
+}
+
+// Reset's shape, a brighter gold: it leaves the page.
+.scores-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(247, 181, 0, 0.5);
+  border-radius: 7px;
+  background: rgba(247, 181, 0, 0.15);
+  color: #ffd76a;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.65px;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #f7b500;
+    background: rgba(247, 181, 0, 0.24);
+    color: #ffe08a;
     outline: none;
   }
 }
@@ -600,12 +633,17 @@ table .traits-cell {
   }
 }
 
-// Below 900 px, wrap the filters onto more rows.
-// 200 px columns match the dropdown menus' min-width, so an open menu never reaches past
-// its own trigger (and off the right edge).
+// Below 900 px the dropdowns share the row and the buttons go under them, on the right.
+// An open menu (200 px at least) can reach a little past the last dropdown's trigger, but
+// not past the card's padding.
 @media (min-width: 641px) and (max-width: 900px) {
   .character-groups {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filter-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
   }
 }
 
@@ -621,8 +659,9 @@ table .traits-cell {
     width: 100%;
   }
 
-  .reset-filters {
-    width: 100%;
+  .reset-filters,
+  .scores-link {
+    flex: 1;
   }
 
   .summary-panel {

@@ -11,7 +11,7 @@ import {
   signal,
   viewChild
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   GuildAnalysis,
   GuildAnalysisKey,
@@ -93,6 +93,7 @@ const SORT_COLUMNS = new Set<SortColumn>([
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     UpdateBarComponent,
     GuildPageHeroComponent,
     FilterDropdownComponent,
