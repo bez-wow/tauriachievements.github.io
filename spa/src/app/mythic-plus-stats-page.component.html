@@ -11,7 +11,7 @@
   <header class="page-header">
     <div class="page-heading">
       <h1>Mythic+ stats<ng-container *ngIf="index()?.season?.name as season"> · {{ season }}</ng-container></h1>
-      <p>How much Mythic+ is being played: runs per day, per dungeon and per key level, and each affix week side by side.</p>
+      <p>How much Mythic+ is being played: runs per day, per dungeon and per key level, each affix week side by side, and which race each spec plays.</p>
     </div>
     <a class="records-link" routerLink="/mythic-plus/records">
       <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -329,6 +329,12 @@
         [style.top.px]="tooltip.top"
         [style.bottom.px]="tooltip.bottom">{{ tooltip.text }}</span>
     </section>
+
+    <app-race-by-spec
+      *ngFor="let role of raceRoles"
+      [role]="role"
+      [samples]="rosterSlots()"
+      [context]="period() === 'week' ? 'This week' : 'Season'" />
 
     <ng-template #noRuns>
       <p class="chart-empty">No runs in this period yet.</p>
