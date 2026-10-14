@@ -10,6 +10,7 @@ import {
   MythicPlusAffix,
   MythicPlusDungeonFile,
   MythicPlusIndex,
+  MythicPlusRole,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
   createRunDecoder,
@@ -39,6 +40,7 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { MYTHIC_PLUS_CARDS_QUERY } from './mythic-plus-views';
 import { MythicPlusWeekAffixesComponent } from './mythic-plus-week-affixes.component';
+import { RaceBySpecComponent } from './race-by-spec.component';
 import { RevealDirective } from './reveal.directive';
 import { ScrollToEndDirective } from './scroll-to-end.directive';
 import { DataFileService } from './services/data-file.service';
@@ -100,7 +102,8 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
 
 /**
  * /mythic-plus/stats: how much Mythic+ is being played. Runs per day, per dungeon and per key
- * level for the season or the current affix week, and every affix week side by side.
+ * level for the season or the current affix week, every affix week side by side, and the most
+ * popular race of every spec.
  * Reads the same data files as the leaderboard.
  */
 @Component({
@@ -114,6 +117,7 @@ const isMiddle = (position: number, count: number) => position >= count / 3 && p
     TapTooltipDirective,
     FilterDropdownComponent,
     MythicPlusWeekAffixesComponent,
+    RaceBySpecComponent,
     ScrollToEndDirective,
     GlideDirective,
     RevealDirective,
@@ -178,6 +182,11 @@ export class MythicPlusStatsPageComponent implements OnInit {
     const runs = this.allRuns();
     return since === undefined ? runs : runs.filter(run => Date.parse(run.completedAt) >= since);
   });
+
+  /** One race-by-spec box each, in this order. */
+  readonly raceRoles: readonly MythicPlusRole[] = ['dps', 'tank', 'healer'];
+  /** Every roster slot of the period, for the race-by-spec boxes. */
+  readonly rosterSlots = computed(() => this.runs().flatMap(run => run.roster));
 
   readonly summary = computed(() => {
     const runs = this.runs();

@@ -14,6 +14,7 @@ import {
   RaidKillDetails,
   RaidLogsIndex,
   RaidPerformer,
+  RaidRole,
   bossesInKillOrder,
   defaultDifficulty,
   encounterKey,
@@ -30,6 +31,8 @@ import {
   raidGuildLink,
   raidLogLink
 } from './raid-logs';
+import { RaceBySpecComponent } from './race-by-spec.component';
+import { RaceSample } from './race-popularity';
 import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
@@ -55,13 +58,22 @@ const RECENT_KILLS = 12;
 
 /**
  * /raid-logs: the raid at a glance on one difficulty (`?difficulty=`): each boss's kills, fastest
- * kill and best damage and healing, roster popularity, the guilds' progress, and the latest kills.
- * The summary reads the index; the popularity chart also loads the selected difficulty's rosters.
+ * kill and best damage and healing, spec popularity and each DPS spec's races, the guilds' progress,
+ * and the latest kills.
+ * The summary reads the index; the popularity sections also load the selected difficulty's rosters.
  */
 @Component({
   selector: 'app-raid-logs-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, UpdateBarComponent, BackToTopButtonComponent, RaidSpecPopularityChartComponent, RevealDirective],
+  imports: [
+    CommonModule,
+    RouterLink,
+    UpdateBarComponent,
+    BackToTopButtonComponent,
+    RaidSpecPopularityChartComponent,
+    RaceBySpecComponent,
+    RevealDirective
+  ],
   templateUrl: './raid-logs-page.component.html',
   styleUrl: './raid-logs-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -79,6 +91,18 @@ export class RaidLogsPageComponent implements OnInit {
   readonly popularityKills = signal<readonly RaidKillDetails[]>([]);
   readonly popularityLoading = signal(false);
   readonly popularityError = signal<string | undefined>(undefined);
+  /** One race-by-spec box each, in this order. */
+  readonly raceRoles: readonly RaidRole[] = ['dps', 'tank', 'healer'];
+  /** Every roster slot of the loaded difficulty, for the race-by-spec boxes. */
+  readonly rosterSlots = computed(() => this.popularityKills().flatMap(kill => kill.members.flatMap((member): RaceSample[] =>
+    member.spec ? [{
+      name: member.character.name,
+      realm: member.character.realm,
+      class: member.character.classId,
+      spec: member.spec.name,
+      role: member.spec.role,
+      race: member.character.race
+    }] : [])));
   readonly now = signal(Date.now());
   readonly lastEdited = computed(() => this.index()?.generatedAt);
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
