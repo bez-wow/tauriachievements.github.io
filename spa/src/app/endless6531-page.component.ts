@@ -13,17 +13,18 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
-  DEFAULT_GUILD_ANALYSIS_KEY,
   GuildAnalysis,
   GuildAnalysisKey,
   GuildAnalysisLegendary,
-  GuildAnalysisPlayer
+  GuildAnalysisPlayer,
+  guildPage
 } from './guild-analysis';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { ArtifactSpecTraits, artifactSpecTraits } from './guild-artifact-specs';
 import { UpdateBarComponent } from './update-bar.component';
+import { GuildPageHeroComponent } from './guild-page-hero.component';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
@@ -34,54 +35,6 @@ import { TapTooltipDirective } from './tap-tooltip.directive';
 
 /** On phones each member is a ~470 px tall card, so the roster is rendered this many at a time. */
 const MOBILE_ROSTER_PAGE_SIZE = 25;
-
-interface GuildAnalysisConfig {
-  name: string;
-  realm: string;
-}
-
-const GUILD_ANALYSES: Readonly<Record<GuildAnalysisKey, GuildAnalysisConfig>> = {
-  'endless': {
-    name: 'Endless',
-    realm: 'Evermoon'
-  },
-  'competence-optional': {
-    name: 'Competence Optional',
-    realm: 'Evermoon'
-  },
-  'entropy': {
-    name: 'Entropy',
-    realm: 'Evermoon'
-  },
-  'impaired': {
-    name: 'Impaired',
-    realm: 'Evermoon'
-  },
-  'impact': {
-    name: 'Impact',
-    realm: 'Evermoon'
-  },
-  'miracle': {
-    name: 'Miracle',
-    realm: 'Evermoon'
-  },
-  'outlaws': {
-    name: 'Outlaws',
-    realm: 'Tauri'
-  },
-  'highly-regarded': {
-    name: 'Highly Regarded',
-    realm: 'Evermoon'
-  },
-  'temerite': {
-    name: 'Témérité',
-    realm: 'Evermoon'
-  },
-  'rycerze-ortalionu': {
-    name: 'Rycerze Ortalionu',
-    realm: 'Evermoon'
-  }
-};
 
 interface ClassCountEntry {
   id: number;
@@ -141,6 +94,7 @@ const SORT_COLUMNS = new Set<SortColumn>([
   imports: [
     CommonModule,
     UpdateBarComponent,
+    GuildPageHeroComponent,
     FilterDropdownComponent,
     MobileFilterToggleComponent,
     TapTooltipDirective
@@ -154,9 +108,7 @@ export class Endless6531PageComponent {
   private activeLegendaryTooltip: HTMLElement | null = null;
 
   private readonly routeData = inject(ActivatedRoute).snapshot.data;
-  private readonly guildKey =
-    this.routeData['guild'] as GuildAnalysisKey ?? DEFAULT_GUILD_ANALYSIS_KEY;
-  private readonly guild = GUILD_ANALYSES[this.guildKey] ?? GUILD_ANALYSES[DEFAULT_GUILD_ANALYSIS_KEY];
+  private readonly guild = guildPage(this.routeData['guild'] as GuildAnalysisKey | undefined);
   // Loaded by guildAnalysisResolver before the page is created; null when the load failed.
   private readonly loadedAnalysis = this.routeData['analysis'] as GuildAnalysis | null | undefined;
   private readonly analysis: GuildAnalysis = this.loadedAnalysis ?? { timestamp: '', players: [] };
@@ -174,6 +126,8 @@ export class Endless6531PageComponent {
   readonly guildName = this.analysis.guild?.name ?? this.guild.name;
   readonly realmName = this.analysis.guild?.realm ?? this.guild.realm;
   readonly factionName = this.analysis.guild?.faction;
+  /** The guild's PvE scores page: its members' raid and Mythic+ scores. */
+  readonly scoresLink = ['/', this.guild.path, 'scores'];
   readonly loadFailed = !this.loadedAnalysis;
   readonly players = signal<GuildAnalysisPlayer[]>([]);
   private readonly isCompactViewport = injectCompactViewport();

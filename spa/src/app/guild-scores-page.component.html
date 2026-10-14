@@ -1,0 +1,217 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="scores-page">
+  <app-guild-page-hero
+    [realm]="realmName"
+    [name]="guildName"
+    [faction]="factionName"
+    subtitle="PvE Scores"
+    [link]="statisticsLink"
+    linkLabel="Guild Statistics"
+    [back]="true" />
+
+  <p class="load-error" *ngIf="loadFailed" role="alert">
+    The guild roster could not be loaded. Please refresh the page to try again.
+  </p>
+
+  <ng-container *ngIf="!loadFailed">
+    <p class="intro">
+      {{ guildName }}'s {{ memberCount }} level 110 members, by their score on the
+      <a routerLink="/raid-logs/leaderboard">raid leaderboard</a> and on the
+      <a routerLink="/mythic-plus" [queryParams]="{ view: 'players' }">Mythic+ leaderboard</a>.
+    </p>
+
+    <div class="score-columns">
+      <!-- Raid: the raid leaderboard's score on one difficulty. -->
+      <section class="section" aria-labelledby="raid-scores-title">
+        <header class="section-header">
+          <div>
+            <h2 id="raid-scores-title">Raid score</h2>
+            <p>{{ raidIndex()?.raid?.name ?? 'The Emerald Nightmare' }} · DPS or HPS, whichever is higher</p>
+          </div>
+          <app-raid-difficulty-switch
+            *ngIf="raidIndex() as index"
+            [difficulties]="index.difficulties"
+            [selected]="raidDifficulty()"
+            label="Raid difficulty"
+            (selectedChange)="setRaidDifficulty($event)" />
+        </header>
+
+        <div class="section-body">
+          <div class="feedback" *ngIf="raidLoading()">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Reading the logs...</p>
+          </div>
+
+          <div class="feedback error" *ngIf="!raidLoading() && raidError()">
+            <p>{{ raidError() }}</p>
+            <button type="button" (click)="loadRaid()">Try again</button>
+          </div>
+
+          <ng-container *ngIf="!raidLoading() && !raidError() && raid() as result">
+            <div class="table-scroll" *ngIf="result.scores.rows.length || showUnscoredRaid()">
+              <table>
+                <caption class="visually-hidden">{{ guildName }} members by {{ result.difficulty.name }} raid score</caption>
+                <thead>
+                  <tr>
+                    <th class="rank" scope="col">#</th>
+                    <th scope="col">Character</th>
+                    <th scope="col" class="center col-score">Score</th>
+                    <th scope="col" class="center col-bosses">Bosses</th>
+                    <th scope="col" class="center col-overall">Overall</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of result.scores.rows; trackBy: trackRow">
+                    <td class="rank" [ngClass]="'q-' + row.quality">{{ row.place }}</td>
+                    <td>
+                      <span class="character">
+                        <img [src]="row.spec?.icon || classIcon(row.member.class)" [title]="row.spec?.name ?? ''" alt="" loading="lazy" />
+                        <a
+                          class="character-name"
+                          [style.color]="classColor(row.member)"
+                          [routerLink]="raidCharacterLink({ name: row.member.name, realm: realmName })"
+                          [queryParams]="{ difficulty: result.difficulty.slug, metric: row.metric }">{{ row.member.name }}</a>
+                      </span>
+                    </td>
+                    <td class="num center strong score" [ngClass]="'q-' + row.quality">
+                      {{ row.score }} <span class="metric">{{ row.metric }}</span>
+                    </td>
+                    <td class="num center">{{ row.killed }}/{{ row.bossCount }}</td>
+                    <td class="num center">
+                      <a
+                        class="overall"
+                        routerLink="/raid-logs/leaderboard"
+                        [queryParams]="raidLeaderboardParams(row, result.difficulty)"
+                        [title]="raidRankLabel(row, result.difficulty)">#{{ row.leaderboardRank | number }}</a>
+                    </td>
+                  </tr>
+                  <ng-container *ngIf="showUnscoredRaid()">
+                    <tr class="unscored" *ngFor="let member of result.scores.unscored; trackBy: trackMember">
+                      <td class="rank"></td>
+                      <td>
+                        <span class="character">
+                          <img [src]="classIcon(member.class)" alt="" loading="lazy" />
+                          <span class="character-name" [style.color]="classColor(member)">{{ member.name }}</span>
+                        </span>
+                      </td>
+                      <td class="center muted">—</td>
+                      <td class="center muted">—</td>
+                      <td class="center muted">—</td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="empty-note" *ngIf="!result.scores.rows.length && !showUnscoredRaid()">
+              No member of {{ guildName }} has a {{ result.difficulty.name }} score yet.
+            </p>
+
+            <button
+              type="button"
+              class="unscored-toggle"
+              *ngIf="result.scores.unscored.length"
+              [attr.aria-expanded]="showUnscoredRaid()"
+              (click)="showUnscoredRaid.set(!showUnscoredRaid())">
+              {{ showUnscoredRaid() ? 'Hide' : 'Show' }} the {{ result.scores.unscored.length }}
+              {{ result.scores.unscored.length === 1 ? 'member' : 'members' }} without a {{ result.difficulty.name }} score
+            </button>
+          </ng-container>
+        </div>
+      </section>
+
+      <!-- Mythic+: the players view's season score. -->
+      <section class="section" aria-labelledby="mythic-plus-scores-title">
+        <header class="section-header">
+          <div>
+            <h2 id="mythic-plus-scores-title">Mythic+ score</h2>
+            <p>{{ mythicPlus()?.season?.name ?? 'This season' }} · best run in each dungeon, added up</p>
+          </div>
+        </header>
+
+        <div class="section-body">
+          <div class="feedback" *ngIf="mythicPlusLoading()">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading the Mythic+ leaderboard...</p>
+          </div>
+
+          <div class="feedback error" *ngIf="!mythicPlusLoading() && mythicPlusError()">
+            <p>{{ mythicPlusError() }}</p>
+            <button type="button" (click)="loadMythicPlus()">Try again</button>
+          </div>
+
+          <ng-container *ngIf="!mythicPlusLoading() && !mythicPlusError() && mythicPlus() as result">
+            <div class="table-scroll" *ngIf="result.scores.rows.length || showUnscoredMythicPlus()">
+              <table>
+                <caption class="visually-hidden">{{ guildName }} members by Mythic+ score</caption>
+                <thead>
+                  <tr>
+                    <th class="rank" scope="col">#</th>
+                    <th scope="col">Character</th>
+                    <th scope="col" class="center col-score">Score</th>
+                    <th scope="col" class="center col-overall">Overall</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of result.scores.rows; trackBy: trackRow">
+                    <td class="rank" [ngClass]="'q-' + row.quality">{{ row.place }}</td>
+                    <td>
+                      <span class="character">
+                        <img [src]="classIcon(row.member.class)" alt="" loading="lazy" />
+                        <a
+                          class="character-name"
+                          [style.color]="classColor(row.member)"
+                          [routerLink]="mythicPlusProfileLink(row.member)">{{ row.member.name }}</a>
+                      </span>
+                    </td>
+                    <td class="num center strong score" [ngClass]="'q-' + row.quality">{{ row.score | number:'1.1-1' }}</td>
+                    <td class="num center">
+                      <a
+                        class="overall"
+                        routerLink="/mythic-plus"
+                        [queryParams]="mythicPlusLeaderboardParams(row)"
+                        [title]="'#' + row.leaderboardRank + ' on the Mythic+ players leaderboard'">#{{ row.leaderboardRank | number }}</a>
+                    </td>
+                  </tr>
+                  <ng-container *ngIf="showUnscoredMythicPlus()">
+                    <tr class="unscored" *ngFor="let member of result.scores.unscored; trackBy: trackMember">
+                      <td class="rank"></td>
+                      <td>
+                        <span class="character">
+                          <img [src]="classIcon(member.class)" alt="" loading="lazy" />
+                          <span class="character-name" [style.color]="classColor(member)">{{ member.name }}</span>
+                        </span>
+                      </td>
+                      <td class="center muted">—</td>
+                      <td class="center muted">—</td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="empty-note" *ngIf="!result.scores.rows.length && !showUnscoredMythicPlus()">
+              No member of {{ guildName }} has a Mythic+ score yet.
+            </p>
+
+            <button
+              type="button"
+              class="unscored-toggle"
+              *ngIf="result.scores.unscored.length"
+              [attr.aria-expanded]="showUnscoredMythicPlus()"
+              (click)="showUnscoredMythicPlus.set(!showUnscoredMythicPlus())">
+              {{ showUnscoredMythicPlus() ? 'Hide' : 'Show' }} the {{ result.scores.unscored.length }}
+              {{ result.scores.unscored.length === 1 ? 'member' : 'members' }} without a Mythic+ score
+            </button>
+          </ng-container>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

@@ -9,7 +9,7 @@ import { RareAchievementsPageComponent } from './rare-achievements-page.componen
 import { TopGainersPageComponent } from './rank-movement-page.component';
 import { StatsPageComponent } from './stats-page.component';
 import { ApChestLootersPageComponent } from './ap-chest-looters-page.component';
-import { guildAnalysisResolver } from './guild-analysis';
+import { GUILD_PAGES, guildAnalysisResolver } from './guild-analysis';
 
 export const routes: Routes = [
   {
@@ -137,76 +137,23 @@ export const routes: Routes = [
     loadComponent: () => import('./rare-items-page.component')
       .then(module => module.RareItemsPageComponent)
   },
-  {
-    path: 'endless-f8c2a91d',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'endless' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'competence-optional-a47d9c2e',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'competence-optional' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'miracle-6e2d8f14',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'miracle' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'entropy-3e8f1a62',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'entropy' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'outlaws-34c1426b',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'outlaws' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'impaired-c18e7b42',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'impaired' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'impact-94fd2a61',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'impact' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'highly-regarded-d74a9e3c',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'highly-regarded' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'temerite-b93e7a41',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'temerite' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
-  {
-    path: 'rycerze-ortalionu-c1ee200b',
-    loadComponent: () => import('./endless6531-page.component')
-      .then(module => module.Endless6531PageComponent),
-    data: { guild: 'rycerze-ortalionu' },
-    resolve: { analysis: guildAnalysisResolver }
-  },
+  // Each guild page: its statistics, and its members' raid and Mythic+ scores.
+  ...GUILD_PAGES.flatMap(({ key, path }): Routes => [
+    {
+      path,
+      loadComponent: () => import('./endless6531-page.component')
+        .then(module => module.Endless6531PageComponent),
+      data: { guild: key },
+      resolve: { analysis: guildAnalysisResolver }
+    },
+    {
+      path: `${path}/scores`,
+      loadComponent: () => import('./guild-scores-page.component')
+        .then(module => module.GuildScoresPageComponent),
+      data: { guild: key },
+      resolve: { analysis: guildAnalysisResolver }
+    }
+  ]),
   {
     path: '**',
     redirectTo: ''

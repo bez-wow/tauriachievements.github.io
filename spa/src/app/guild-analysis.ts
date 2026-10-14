@@ -64,6 +64,34 @@ export type GuildAnalysisKey =
 
 export const DEFAULT_GUILD_ANALYSIS_KEY: GuildAnalysisKey = 'endless';
 
+export interface GuildPage {
+  key: GuildAnalysisKey;
+  /** `<key>-<8 random hex>`: the pages aren't in the nav, only shared by link. */
+  path: string;
+  /** Shown while the guild's file doesn't say (it has its own `guild` metadata). */
+  name: string;
+  realm: string;
+}
+
+/** Every guild page. Each gets two routes: `/<path>` (statistics) and `/<path>/scores` (PvE scores). */
+export const GUILD_PAGES: ReadonlyArray<GuildPage> = [
+  { key: 'endless', path: 'endless-f8c2a91d', name: 'Endless', realm: 'Evermoon' },
+  { key: 'competence-optional', path: 'competence-optional-a47d9c2e', name: 'Competence Optional', realm: 'Evermoon' },
+  { key: 'miracle', path: 'miracle-6e2d8f14', name: 'Miracle', realm: 'Evermoon' },
+  { key: 'entropy', path: 'entropy-3e8f1a62', name: 'Entropy', realm: 'Evermoon' },
+  { key: 'outlaws', path: 'outlaws-34c1426b', name: 'Outlaws', realm: 'Tauri' },
+  { key: 'impaired', path: 'impaired-c18e7b42', name: 'Impaired', realm: 'Evermoon' },
+  { key: 'impact', path: 'impact-94fd2a61', name: 'Impact', realm: 'Evermoon' },
+  { key: 'highly-regarded', path: 'highly-regarded-d74a9e3c', name: 'Highly Regarded', realm: 'Evermoon' },
+  { key: 'temerite', path: 'temerite-b93e7a41', name: 'Témérité', realm: 'Evermoon' },
+  { key: 'rycerze-ortalionu', path: 'rycerze-ortalionu-c1ee200b', name: 'Rycerze Ortalionu', realm: 'Evermoon' }
+];
+
+/** The guild a route's `data.guild` names; Endless, the first, when it names none. */
+export function guildPage(key: GuildAnalysisKey | undefined): GuildPage {
+  return GUILD_PAGES.find(page => page.key === (key ?? DEFAULT_GUILD_ANALYSIS_KEY)) ?? GUILD_PAGES[0];
+}
+
 /**
  * Loads only the guild the route asks for (route `data.guild`), so the page chunk stays the
  * same size however many guilds are added. A failed load resolves to null and the page

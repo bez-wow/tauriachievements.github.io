@@ -8,15 +8,13 @@
   [class.guild-faction--alliance]="factionName === 'Alliance'"
   [class.guild-faction--horde]="factionName === 'Horde'">
   <div class="page-content">
-    <header class="guild-page-hero">
-      <p>{{ realmName }} Realm</p>
-      <div class="guild-title-row">
-        <span aria-hidden="true"></span>
-        <h1>{{ guildName }}</h1>
-        <span aria-hidden="true"></span>
-      </div>
-      <strong>Guild Statistics</strong>
-    </header>
+    <app-guild-page-hero
+      [realm]="realmName"
+      [name]="guildName"
+      [faction]="factionName"
+      subtitle="Guild Statistics"
+      [link]="scoresLink"
+      linkLabel="PvE Scores" />
 
     <p class="load-error" *ngIf="loadFailed" role="alert">
       The guild statistics could not be loaded. Please refresh the page to try again.

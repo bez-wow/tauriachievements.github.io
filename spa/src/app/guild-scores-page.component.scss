@@ -1,0 +1,114 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; min-width: 0; }
+
+@include visually-hidden;
+@include feedback;
+@include sections;
+@include raid-table;
+@include character-cell;
+// After raid-table, so the place's and the score's quality colour win over their grey and white.
+@include quality-colors;
+
+// The guild page's width and padding, so the hero sits where it does there.
+.scores-page {
+  display: flex;
+  width: min(1240px, 100%);
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 auto;
+  padding: 46px 20px 24px;
+  color: $raid-text;
+}
+
+.load-error {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid #8a2a2a;
+  border-radius: 6px;
+  background: rgba(138, 42, 42, .18);
+  color: #f2c6c6;
+  text-align: center;
+}
+
+.intro {
+  margin: 0;
+  color: $raid-muted;
+  font-size: .88rem;
+  line-height: 1.5;
+  text-align: center;
+
+  a { color: #e6c46a; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+// Raid on the left, Mythic+ on the right; one above the other once they'd squeeze their names.
+// Each side's header and body share the rows (subgrid), so when the raid side's difficulty
+// switch wraps under its title, the Mythic+ table still starts on the same line.
+.score-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+
+.score-columns > .section {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 12px;
+}
+
+// Titles at the top of the shared row; the switch beside the title, or under it.
+.section-header { align-content: flex-start; align-items: center; }
+.section-body { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
+.feedback { min-height: 200px; }
+
+// Fixed columns: switching difficulty or showing the members without a score doesn't move them.
+table { table-layout: fixed; }
+th.rank { width: 44px; }
+th.col-score { width: 104px; }
+th.col-bosses { width: 72px; }
+th.col-overall { width: 84px; }
+th.center, td.center { text-align: center; }
+td.rank { font-weight: 700; }
+td.score { font-size: .95rem; }
+
+.character { max-width: 100%; }
+.character-name { overflow: hidden; text-overflow: ellipsis; }
+
+// DPS or HPS beside a raid score: which leaderboard it's from.
+.metric { color: $raid-muted; font-size: .62rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+
+td a.overall { color: #bdbdbd; }
+
+.unscored .character { opacity: .6; }
+
+.unscored-toggle {
+  align-self: center;
+  padding: 7px 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+@media (max-width: 1000px) {
+  .score-columns { grid-template-columns: minmax(0, 1fr); }
+  .score-columns > .section + .section { margin-top: 32px; }
+}
+
+@media (max-width: 640px) {
+  .scores-page { padding: 28px 10px 18px; }
+  th.rank { width: 34px; }
+  th.col-score { width: 80px; }
+  th.col-bosses { width: 56px; }
+  th.col-overall { width: 64px; }
+  .unscored-toggle { width: 100%; }
+}
