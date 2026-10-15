@@ -221,7 +221,7 @@ td.over-time { color: #8a8a8a; }
   display: grid;
   width: 100%;
   min-height: 56px;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(32px, max-content) minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 8px 12px 8px 8px;
@@ -233,6 +233,22 @@ td.over-time { color: #8a8a8a; }
 }
 
 .card-rank { font-size: 1.05rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
+
+.card-rank .rank-metric > .rank-change,
+.card-rank .rank-metric > .player-new {
+  top: auto;
+  bottom: 100%;
+  left: 50%;
+  margin: 0 0 2px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.card-rank .rank-metric > .rank-change.down {
+  top: 100%;
+  bottom: auto;
+  margin: 2px 0 0;
+}
 
 .card-body { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
 
@@ -338,4 +354,4 @@ a.card-guild {
 .player-row.picked,
 .player-cards li.picked { background: #3a3220; }
 
-.player-card.picking { grid-template-columns: 16px 32px minmax(0, 1fr) auto; }
+.player-card.picking { grid-template-columns: 16px minmax(32px, max-content) minmax(0, 1fr) auto; }
