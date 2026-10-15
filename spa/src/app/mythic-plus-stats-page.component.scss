@@ -99,6 +99,7 @@ $plot-height: 200px;
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .period-bar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -627,7 +628,7 @@ $plot-height: 200px;
 }
 
 @media (max-width: shared.$phone-breakpoint) {
-  .stats-page { padding-top: 32px; }
+  .stats-page { padding-top: 42px; }
   .page-header h1 { font-size: 1.35rem; }
 
   .chart-card { padding: 12px 12px 14px; }

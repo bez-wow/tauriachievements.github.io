@@ -5,11 +5,11 @@
     [attr.tabindex]="affix.description ? 0 : null"
     [attr.aria-describedby]="affix.description ? idPrefix + affix.id : null">
     <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>
-    <span>{{ affix.name }}</span>
+    <span class="affix-name">{{ affix.name }}</span>
     <span
       class="week-affix-tooltip"
       role="tooltip"
       *ngIf="affix.description"
-      [id]="idPrefix + affix.id">{{ affix.description }}</span>
+      [id]="idPrefix + affix.id"><b class="affix-tooltip-name">{{ affix.name }}</b>{{ affix.description }}</span>
   </li>
 </ul>
