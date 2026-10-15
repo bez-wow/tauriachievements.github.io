@@ -122,17 +122,19 @@
         Each character's best kill. {{ tab() === 'hps' ? 'Healing counts absorbs; only healers are ranked.' : 'Damage done over the length of the fight; healers are ranked under Healing.' }}
       </p>
 
-      <!-- Damage / Healing -->
-      <div class="table-scroll" *ngIf="isRanking() && rankings().length">
+      <!-- Damage / Healing. The talent and trinket icons name themselves in app-icon-tips. -->
+      <app-icon-tips class="table-scroll" *ngIf="isRanking() && rankings().length">
         <table>
           <thead>
             <tr>
               <th class="rank" scope="col">#</th>
               <th scope="col">Character</th>
               <th scope="col" class="num">{{ tab() === 'hps' ? 'HPS' : 'DPS' }}</th>
-              <th scope="col" class="num col-optional">Item level</th>
+              <th scope="col" class="num col-optional narrow-hidden">Item level</th>
               <th scope="col">Kill</th>
-              <th scope="col" class="col-optional">Date</th>
+              <th scope="col" class="col-optional tablet-hidden">Date</th>
+              <th scope="col">Talents</th>
+              <th scope="col">Trinkets</th>
             </tr>
           </thead>
           <tbody>
@@ -152,18 +154,54 @@
                 </span>
               </td>
               <td class="num strong">{{ formatPerSecond(entry.value) }}</td>
-              <td class="num col-optional">{{ entry.member.itemLevel }}</td>
+              <td class="num col-optional narrow-hidden">{{ entry.member.itemLevel }}</td>
               <td>
                 <a class="kill-link" [routerLink]="logLink(entry.kill)">
                   <span class="strong">{{ formatFightTime(entry.kill.fightMs) }}</span>
                   <span class="muted">{{ entry.kill.guild?.name || 'Pickup group' }}</span>
                 </a>
               </td>
-              <td class="col-optional muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+              <td class="col-optional tablet-hidden muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+              <td>
+                <span class="icons" *ngIf="entry.talents.length; else noLoadout">
+                  <ng-container *ngFor="let talent of entry.talents">
+                    <a
+                      *ngIf="talent; else emptyTier"
+                      class="icon"
+                      [href]="spellUrl(talent.id)"
+                      target="_blank"
+                      rel="noopener"
+                      [attr.aria-label]="talent.name"
+                      [attr.data-tip]="talent.name">
+                      <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+                    </a>
+                  </ng-container>
+                </span>
+              </td>
+              <td>
+                <span class="icons" *ngIf="entry.member.trinkets.length; else noLoadout">
+                  <a
+                    *ngFor="let trinket of entry.member.trinkets"
+                    class="icon"
+                    [style.border-color]="qualityColor(trinket.quality)"
+                    [href]="itemUrl(trinket.id)"
+                    target="_blank"
+                    rel="noopener"
+                    [attr.aria-label]="trinket.name + ', item level ' + trinket.itemLevel"
+                    [attr.data-tip]="trinket.name"
+                    [attr.data-tip-color]="qualityColor(trinket.quality)"
+                    [attr.data-tip-note]="'Item level ' + trinket.itemLevel">
+                    <img [src]="icon(trinket.icon, 'medium')" [srcset]="iconSrcset(trinket.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+                  </a>
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
-      </div>
+      </app-icon-tips>
+
+      <ng-template #emptyTier><span class="icon empty" data-tip="No talent picked"></span></ng-template>
+      <ng-template #noLoadout><span class="muted">-</span></ng-template>
 
       <!-- Fastest / latest kills -->
       <div class="table-scroll" *ngIf="!isRanking() && killRows().length">

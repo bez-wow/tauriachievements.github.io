@@ -8,12 +8,17 @@ namespace RaidLogExporter;
 /// <param name="Items">The item names already looked up.</param>
 /// <param name="GeneratedAt">When that export read the rankings.</param>
 /// <param name="Changes">What that export added since the one before it.</param>
+/// <param name="OutOfDate">
+/// Written in an older format, so its logs lack what this one adds: they still tell which kills
+/// are new, but every log is read again.
+/// </param>
 public sealed record PreviousRaidExport(
     IReadOnlyDictionary<RaidLogKey, RaidLog> Logs,
     int LogCount,
     IReadOnlyDictionary<int, RaidItem> Items,
     DateTimeOffset? GeneratedAt = null,
-    RaidScanChanges? Changes = null
+    RaidScanChanges? Changes = null,
+    bool OutOfDate = false
 )
 {
     public static readonly PreviousRaidExport Empty = new(
@@ -25,8 +30,9 @@ public sealed record PreviousRaidExport(
 
 /// <summary>
 /// Reads an earlier export back. Logs never change once written, so a later run only asks the
-/// API for kills that are not in the boss files yet. Any file it cannot read, or one in another
-/// format version, makes it return nothing, and the run then reads every log again.
+/// API for kills that are not in the boss files yet. Files of an older format are read as far as
+/// they go (<see cref="PreviousRaidExport.OutOfDate"/>). Any file it cannot read, or one of a newer
+/// format, makes it return nothing, and the run then reads every log again.
 /// </summary>
 public static class RaidLogFileReader
 {
@@ -42,7 +48,8 @@ public static class RaidLogFileReader
         {
             using var index = JsonDocument.Parse(File.ReadAllBytes(indexPath));
             var root = index.RootElement;
-            if (!HasCurrentVersion(root))
+            var oldestVersion = ReadVersion(root);
+            if (oldestVersion is null)
             {
                 return PreviousRaidExport.Empty;
             }
@@ -62,11 +69,12 @@ public static class RaidLogFileReader
                     }
 
                     using var file = JsonDocument.Parse(File.ReadAllBytes(path));
-                    if (!HasCurrentVersion(file.RootElement))
+                    if (ReadVersion(file.RootElement) is not { } version)
                     {
                         return PreviousRaidExport.Empty;
                     }
 
+                    oldestVersion = Math.Min(oldestVersion.Value, version);
                     foreach (var log in ReadEncounter(file.RootElement, boss, difficulty))
                     {
                         logs[log.Key] = log;
@@ -82,7 +90,8 @@ public static class RaidLogFileReader
                 logCount,
                 ReadItems(root),
                 ReadTimestamp(root, "generatedAt"),
-                ReadChanges(root)
+                ReadChanges(root),
+                oldestVersion < RaidLogFileWriter.FormatVersion
             );
         }
         catch (Exception error)
@@ -101,11 +110,14 @@ public static class RaidLogFileReader
         }
     }
 
-    private static bool HasCurrentVersion(JsonElement root) =>
+    /// <summary>The file's format version, or null for one this reader doesn't know.</summary>
+    private static int? ReadVersion(JsonElement root) =>
         root.ValueKind == JsonValueKind.Object
         && root.TryGetProperty("version", out var version)
         && version.TryGetInt32(out var value)
-        && value == RaidLogFileWriter.FormatVersion;
+        && value is >= 1 and <= RaidLogFileWriter.FormatVersion
+            ? value
+            : null;
 
     private static IEnumerable<RaidLog> ReadEncounter(
         JsonElement root,
@@ -123,6 +135,10 @@ public static class RaidLogFileReader
             ))
             .ToList();
         var players = root.GetProperty("players").EnumerateArray().Select(ReadPlayer).ToList();
+        // Version 1 files have no trinkets.
+        var trinkets = root.TryGetProperty("trinkets", out var trinketTable)
+            ? trinketTable.EnumerateArray().Select(ReadTrinket).ToList()
+            : [];
 
         foreach (var log in root.GetProperty("logs").EnumerateArray())
         {
@@ -138,7 +154,11 @@ public static class RaidLogFileReader
                 log[6].GetInt32(),
                 log[7].GetInt32(),
                 log[8].GetInt32(),
-                [.. log[9].EnumerateArray().Select(member => ReadMember(member, players))],
+                [
+                    .. log[9]
+                        .EnumerateArray()
+                        .Select(member => ReadMember(member, players, trinkets)),
+                ],
                 [.. log[10].EnumerateArray().Select(item => item.GetInt32())]
             );
         }
@@ -154,9 +174,24 @@ public static class RaidLogFileReader
             player[5].GetString()!
         );
 
-    private static RaidLogMember ReadMember(JsonElement member, IReadOnlyList<RaidPlayer> players)
+    private static RaidTrinket ReadTrinket(JsonElement trinket) =>
+        new(
+            trinket[0].GetInt32(),
+            trinket[1].GetInt32(),
+            trinket[2].GetString()!,
+            trinket[3].GetInt32(),
+            trinket[4].GetString()!
+        );
+
+    /// <summary>A version 1 member stops after its dispels: no talents, no trinkets.</summary>
+    private static RaidLogMember ReadMember(
+        JsonElement member,
+        IReadOnlyList<RaidPlayer> players,
+        IReadOnlyList<RaidTrinket> trinkets
+    )
     {
         var player = players[member[0].GetInt32()];
+        var hasLoadout = member.GetArrayLength() > 10;
         return new RaidLogMember(
             player.Name,
             player.Realm,
@@ -172,7 +207,11 @@ public static class RaidLogFileReader
             member[6].GetInt64(),
             member[7].GetInt64(),
             member[8].GetInt32(),
-            member[9].GetInt32()
+            member[9].GetInt32(),
+            hasLoadout ? member[10].GetString()! : "",
+            hasLoadout
+                ? [.. member[11].EnumerateArray().Select(trinket => trinkets[trinket.GetInt32()])]
+                : []
         );
     }
 

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using RaidLogExporter;
 using Tauri.Core.Infrastructure;
 
@@ -125,6 +126,100 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public void ParseLog_ReadsTalentColumnsAndTrinkets()
+    {
+        var listed = new ListedRaidLog(new RaidLogKey("Tauri", 7), Tauri, Xavius, Mythic);
+        var response = Parse(
+            LogJson(
+                7,
+                Xavius,
+                Mythic,
+                1,
+                300_000,
+                null,
+                [],
+                Member(
+                    "Geared",
+                    "",
+                    1,
+                    71,
+                    talents: "Za!1212.12",
+                    trinkets: [(127842, 835, "Infernal Alchemist Stone"), (133644, 860, "Memento")]
+                ),
+                Member("Bare", "", 1, 71)
+            )
+        );
+
+        var log = RaidLogResponseParser.ParseLog(response, listed);
+
+        var (geared, bare) = (log!.Members[0], log.Members[1]);
+        Assert.Equal("1212.12", geared.Talents);
+        Assert.Equal(
+            [
+                new RaidTrinket(127842, 835, "Infernal Alchemist Stone", 4, "inv_127842"),
+                new RaidTrinket(133644, 860, "Memento", 4, "inv_133644"),
+            ],
+            geared.Trinkets
+        );
+        Assert.Equal(("", 0), (bare.Talents, bare.Trinkets.Count));
+    }
+
+    [Theory]
+    [InlineData("Za!1212212", "1212212")]
+    [InlineData("ba!0201120", "0201120")]
+    [InlineData("XZ!00.....", "00.....")]
+    [InlineData("", "")]
+    [InlineData("Za!1213212", "")] // there is no fourth column
+    [InlineData("Za!12122121", "")] // nor an eighth tier
+    public void ParseTalents_KeepsTheColumnOfEachTier(string code, string expected)
+    {
+        Assert.Equal(expected, RaidLogResponseParser.ParseTalents(code));
+    }
+
+    [Fact]
+    public void ParseFragment_PicksTheSpecsOwnTalentElseTheClassWideOne()
+    {
+        // TauriShoot's shape: tier 0's first choice differs per spec (an object keyed by spec),
+        // its second is class-wide (spec "0"), its third is missing; the other tiers are class-wide.
+        const string ownTier = """
+            [
+              {"71": {"tier": "0", "column": "0", "id": "202297", "name": "Dauntless", "icon": "dauntless", "spec": "71"},
+               "72": {"tier": "0", "column": "0", "id": "215556", "name": "War Machine", "icon": "war_machine", "spec": "72"}},
+              [{"tier": "0", "column": "1", "id": "7384", "name": "Overpower", "icon": "overpower", "spec": "0"}],
+              []
+            ]
+            """;
+        const string sharedTier = """
+            [[{"tier": "1", "column": "0", "id": "46968", "name": "Shockwave", "icon": "shockwave", "spec": "0"}]]
+            """;
+        string Fragment(string firstTier, int tiers) =>
+            $$"""{"talents": [{{string.Join(",", [firstTier, .. Enumerable.Repeat(sharedTier, tiers - 1)])}}]}""";
+
+        var talents = TauriShootTalentSource.ParseFragment(Parse(Fragment(ownTier, 7)), [71, 72]);
+
+        Assert.NotNull(talents);
+        var (arms, fury) = (talents[0], talents[1]);
+        Assert.Equal((71, 7), (arms.SpecId, arms.Tiers.Count));
+        Assert.Equal(
+            [
+                new RaidTalent(202297, "Dauntless", "dauntless"),
+                new RaidTalent(7384, "Overpower", "overpower"),
+                null,
+            ],
+            arms.Tiers[0]
+        );
+        Assert.Equal("War Machine", fury.Tiers[0][0]!.Name);
+        Assert.Equal(new RaidTalent(46968, "Shockwave", "shockwave"), fury.Tiers[6][0]);
+
+        // A missing tier, or a tier with nothing for the spec, reads as no talents at all.
+        Assert.Null(TauriShootTalentSource.ParseFragment(Parse(Fragment(ownTier, 6)), [71]));
+        const string armsOnlyTier = """
+            [{"71": {"id": "202297", "name": "Dauntless", "icon": "dauntless", "spec": "71"}}]
+            """;
+        Assert.Null(TauriShootTalentSource.ParseFragment(Parse(Fragment(armsOnlyTier, 7)), [72]));
+    }
+
+    [Fact]
     public void ParseTooltipXml_ReadsNameQualityAndIcon()
     {
         var item = TauriShootItemSource.ParseTooltipXml(
@@ -160,7 +255,16 @@ public sealed class RaidLogExportServiceTests
                 100_000,
                 (7440, EvermoonRealmId, "Knights Of Paradise", 0),
                 [139236],
-                Member("Mage", "", 8, 63, race: 10, damage: 60_000_000),
+                Member(
+                    "Mage",
+                    "",
+                    8,
+                    63,
+                    race: 10,
+                    damage: 60_000_000,
+                    talents: "ea!2102121",
+                    trinkets: [(1, 850, "Stone"), (2, 835, "Memento")]
+                ),
                 Member("Priest", "", 5, 256, race: 10, heal: 30_000_000, absorb: 10_000_000)
             );
             api.Logs[(Tauri, 101)] = LogJson(
@@ -171,7 +275,16 @@ public sealed class RaidLogExportServiceTests
                 200_000,
                 null,
                 [],
-                Member("Mage", "", 8, 63, race: 10, damage: 140_000_000),
+                // A Titanforged copy of the same trinket is another entry in the table.
+                Member(
+                    "Mage",
+                    "",
+                    8,
+                    63,
+                    race: 10,
+                    damage: 140_000_000,
+                    trinkets: [(1, 860, "Stone")]
+                ),
                 Member(
                     "Warrior",
                     "r=[HU] Tauri WoW Server&amp;n=Warrior",
@@ -214,6 +327,7 @@ public sealed class RaidLogExportServiceTests
                 outputDirectory,
                 api,
                 new FakeItemSource(),
+                new FakeTalentSource(),
                 directory,
                 new FixedTimeProvider(
                     new DateTimeOffset(2026, 10, 12, 18, 0, 0, TimeSpan.FromHours(2))
@@ -228,6 +342,7 @@ public sealed class RaidLogExportServiceTests
                     "index.json",
                     "nythendra-heroic.json",
                     "nythendra-normal.json",
+                    "talents.json",
                     "xavius-mythic.json",
                 ],
                 Directory
@@ -296,6 +411,35 @@ public sealed class RaidLogExportServiceTests
             var logs = boss.RootElement.GetProperty("logs").EnumerateArray().ToList();
             Assert.Equal([100, 101], logs.Select(log => log[1].GetInt32()));
             Assert.Equal(0, logs[1][9][0][0].GetInt32()); // the mage, first seen in the older kill
+
+            // [id, itemLevel, name, quality, icon], in order of first appearance.
+            Assert.Equal(
+                ["1 850 Stone", "2 835 Memento", "1 860 Stone"],
+                boss.RootElement.GetProperty("trinkets")
+                    .EnumerateArray()
+                    .Select(trinket =>
+                        $"{trinket[0].GetInt32()} {trinket[1].GetInt32()} {trinket[2].GetString()}"
+                    )
+            );
+            // A member ends [..., dispels, talents, [trinket, ...]].
+            static string Loadout(JsonElement member) =>
+                $"{member[10].GetString()} [{string.Join(",", member[11].EnumerateArray().Select(trinket => trinket.GetInt32()))}]";
+            Assert.Equal("2102121 [0,1]", Loadout(logs[0][9][0]));
+            Assert.Equal(" []", Loadout(logs[0][9][1])); // the priest's log has neither
+            Assert.Equal(" [2]", Loadout(logs[1][9][0]));
+
+            using var talents = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "talents.json"))
+            );
+            // [specId, tiers of [spellId, name, icon] choices, null where there is none].
+            var arms = Assert.Single(talents.RootElement.GetProperty("specs").EnumerateArray());
+            Assert.Equal(71, arms[0].GetInt32());
+            Assert.Equal(7, arms[1].GetArrayLength());
+            Assert.Equal(
+                "1006 Talent 6",
+                $"{arms[1][6][0][0].GetInt32()} {arms[1][6][0][1].GetString()}"
+            );
+            Assert.Equal(JsonValueKind.Null, arms[1][6][1].ValueKind);
         }
         finally
         {
@@ -319,7 +463,7 @@ public sealed class RaidLogExportServiceTests
                 100_000,
                 (7440, EvermoonRealmId, "", 0),
                 [5],
-                Member("Mage", "", 8, 63)
+                Member("Mage", "", 8, 63, talents: "ea!2102121", trinkets: [(1, 850, "Stone")])
             );
             api.Guilds[(Evermoon, "Competence Optional")] = GuildInfoJson(
                 7440,
@@ -411,6 +555,7 @@ public sealed class RaidLogExportServiceTests
                     outputDirectory,
                     api,
                     new FakeItemSource(),
+                    new FakeTalentSource(),
                     directory,
                     new FixedTimeProvider(
                         new DateTimeOffset(2026, 10, 12, hour, 0, 0, TimeSpan.Zero)
@@ -487,6 +632,130 @@ public sealed class RaidLogExportServiceTests
                 full.GetProperty("previousGeneratedAt").GetString()
             );
             Assert.Equal(["Tauri 104"], NewLogs(full));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_ReadsEveryLogAgainOverFilesOfAnOlderFormat()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                null,
+                [5],
+                Member("Mage", "", 8, 63, talents: "ea!2102121", trinkets: [(1, 850, "Stone")])
+            );
+            await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+
+            // Turn the files into version 1's: no trinket table, members end at their dispels.
+            foreach (
+                var path in new[] { "index.json", "nythendra-heroic.json" }.Select(name =>
+                    Path.Combine(outputDirectory, name)
+                )
+            )
+            {
+                var file = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+                file["version"] = 1;
+                if (file.Remove("trinkets"))
+                {
+                    foreach (var log in file["logs"]!.AsArray())
+                    {
+                        foreach (var member in log![9]!.AsArray())
+                        {
+                            member!.AsArray().RemoveAt(11);
+                            member.AsArray().RemoveAt(10);
+                        }
+                    }
+                }
+                File.WriteAllText(path, file.ToJsonString());
+            }
+
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100, 103];
+            api.Logs[(Tauri, 103)] = LogJson(
+                103,
+                Nythendra,
+                Heroic,
+                20,
+                100_000,
+                null,
+                [],
+                Member("Mage", "", 8, 63)
+            );
+            api.Requests.Clear();
+
+            var result = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+
+            // Both logs are read again to get the talents and trinkets the old files lack...
+            Assert.Equal(2, result.ReadLogCount);
+            var mage = result.Dataset.Logs[0].Members[0];
+            Assert.Equal(("2102121", 1), (mage.Talents, mage.Trinkets.Count));
+            // ...but only the kill they didn't have is new, and the item isn't looked up again.
+            using var index = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "index.json"))
+            );
+            Assert.Equal(2, index.RootElement.GetProperty("version").GetInt32());
+            Assert.Equal(
+                [103],
+                index
+                    .RootElement.GetProperty("newLogs")
+                    .EnumerateArray()
+                    .Select(key => key[1].GetInt32())
+            );
+            Assert.Equal("Item 5", Assert.Single(result.Dataset.Items).Name);
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_KeepsTheLastTalentsWhenTauriShootCannotBeRead()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                null,
+                [],
+                Member("Warrior", "", 1, 71)
+            );
+            var talentsPath = Path.Combine(outputDirectory, "talents.json");
+
+            var first = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
+                .ExportAsync(Options(), CancellationToken.None);
+            var written = File.ReadAllText(talentsPath);
+            var second = await Service(
+                    outputDirectory,
+                    api,
+                    PlayerGuildDirectory.Empty,
+                    new FakeTalentSource(fails: true)
+                )
+                .ExportAsync(Options(), CancellationToken.None);
+
+            Assert.Equal((1, 0), (first.TalentSpecCount, second.TalentSpecCount));
+            Assert.Equal(written, File.ReadAllText(talentsPath));
         }
         finally
         {
@@ -631,8 +900,16 @@ public sealed class RaidLogExportServiceTests
     private static RaidLogExportService Service(
         string outputDirectory,
         FakeRaidApiClient api,
-        PlayerGuildDirectory directory
-    ) => new(outputDirectory, api, new FakeItemSource(), directory);
+        PlayerGuildDirectory directory,
+        IRaidTalentSource? talents = null
+    ) =>
+        new(
+            outputDirectory,
+            api,
+            new FakeItemSource(),
+            talents ?? new FakeTalentSource(),
+            directory
+        );
 
     private static string LogJson(
         int logId,
@@ -676,7 +953,9 @@ public sealed class RaidLogExportServiceTests
         long damage = 1_000,
         long heal = 4_000_000,
         long absorb = 500_000,
-        string guild = ""
+        string guild = "",
+        string talents = "",
+        (int Id, int ItemLevel, string Name)[]? trinkets = null
     ) =>
         $$"""
             {
@@ -684,9 +963,24 @@ public sealed class RaidLogExportServiceTests
               "link": "{{link}}", "guildName": "{{guild}}", "class": {{classId}}, "spec": {{specId}},
               "race": {{race}}, "gender": 0, "ilvl": 870, "dmg_done": {{damage}},
               "heal_done": {{heal}}, "absorb_done": {{absorb}}, "overheal": 7, "dmg_taken": 8,
+              "talents": "{{talents}}", {{TrinketsJson(trinkets ?? [])}}
               "interrupts": 1, "dispells": 2
             }
             """;
+
+    /// <summary>The API's <c>trinket_0</c> and <c>trinket_1</c>, each followed by a comma.</summary>
+    private static string TrinketsJson((int Id, int ItemLevel, string Name)[] trinkets) =>
+        string.Concat(
+            trinkets.Select(
+                (trinket, slot) =>
+                    $$"""
+                        "trinket_{{slot}}": {
+                          "entry": {{trinket.Id}}, "ilevel": {{trinket.ItemLevel}}, "name": "{{trinket.Name}}",
+                          "rarity": 4, "icon": "inv_{{trinket.Id}}", "gems": [], "ench": {}
+                        },
+                        """
+            )
+        );
 
     private static string GuildInfoJson(int id, string name, int faction) =>
         $$"""{"guildid": {{id}}, "guildName": "{{name}}", "gFaction": {{faction}}, "guildList": {} }""";
@@ -771,6 +1065,40 @@ public sealed class RaidLogExportServiceTests
     {
         public Task<RaidItem?> LoadAsync(int itemId, CancellationToken cancellationToken) =>
             Task.FromResult<RaidItem?>(new RaidItem(itemId, $"Item {itemId}", 4, "icon"));
+    }
+
+    /// <summary>Arms with one talent per tier, or nothing, like TauriShoot when it is down.</summary>
+    private sealed class FakeTalentSource(bool fails = false) : IRaidTalentSource
+    {
+        public Task<IReadOnlyList<RaidSpecTalents>?> LoadAsync(
+            CancellationToken cancellationToken
+        ) =>
+            Task.FromResult<IReadOnlyList<RaidSpecTalents>?>(
+                fails
+                    ? null
+                    :
+                    [
+                        new RaidSpecTalents(
+                            71,
+                            [
+                                .. Enumerable
+                                    .Range(0, RaidCatalog.TalentTiers)
+                                    .Select(tier =>
+                                        (IReadOnlyList<RaidTalent?>)
+                                            [
+                                                new RaidTalent(
+                                                    1000 + tier,
+                                                    $"Talent {tier}",
+                                                    "icon"
+                                                ),
+                                                null,
+                                                null,
+                                            ]
+                                    ),
+                            ]
+                        ),
+                    ]
+            );
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

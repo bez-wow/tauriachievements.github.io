@@ -10,6 +10,8 @@ import {
   decodeBossFile,
   decodeGenders,
   decodeIndex,
+  decodeTalents,
+  memberTalents,
   bossesInKillOrder,
   defaultDifficulty,
   fastestKills,
@@ -147,6 +149,55 @@ describe('decodeBossFile', () => {
   it('shares one character object between the kills', () => {
     expect(kills[0].members[0].character).toBe(kills[1].members[0].character);
   });
+
+  it('reads no talents or trinkets from a version 1 file', () => {
+    expect(kills[0].members[0]).toMatchObject({ talents: '', trinkets: [] });
+  });
+
+  it('reads talents and the trinkets worn, from the trinket table', () => {
+    const [kill] = decodeBossFile({
+      ...bossFile,
+      version: 2,
+      trinkets: [
+        [127842, 835, 'Infernal Alchemist Stone', 4, 'inv_alchemy_70_trinket'],
+        [133644, 820, 'Memento of Angerboda', 3, 'inv_jewelry_trinket_05']
+      ],
+      logs: [['Tauri', 10, 1_000, 300_000, 0, 1, 2, 3, 1, [
+        [0, 64, 870, 150_000_000, 0, 0, 0, 1, 0, 0, '1022.20', [0, 1]],
+        [1, 63, 871, 120_000_000, 0, 0, 0, 1, 0, 0, '', [1]]
+      ], []]]
+    }, nythendra, mythic, index.specs);
+
+    const [frost, fire] = kill.members;
+    expect(frost.talents).toBe('1022.20');
+    expect(frost.trinkets.map(trinket => `${trinket.name} ${trinket.itemLevel}`)).toEqual(['Infernal Alchemist Stone 835', 'Memento of Angerboda 820']);
+    // One object per trinket in the file, like the characters.
+    expect(fire.trinkets[0]).toBe(frost.trinkets[1]);
+  });
+});
+
+describe('memberTalents', () => {
+  // Frost: tier 0 has all three choices, tier 1 only its first two.
+  const table = decodeTalents({
+    version: 2,
+    specs: [[64, [
+      [[205022, 'Ray of Frost', 'ray'], [205024, 'Lonely Winter', 'winter'], [205020, 'Bone Chilling', 'bone']],
+      [[212653, 'Shimmer', 'shimmer'], [108839, 'Ice Floes', 'floes'], null]
+    ]]]
+  });
+  const frost = index.specs.get(64);
+
+  it('names the talent picked on each tier, nothing for an empty tier or a missing choice', () => {
+    expect(memberTalents({ spec: frost, talents: '1.' }, table).map(talent => talent?.name)).toEqual(['Lonely Winter', undefined]);
+    expect(memberTalents({ spec: frost, talents: '22' }, table).map(talent => talent?.name)).toEqual(['Bone Chilling', undefined]);
+    expect(memberTalents({ spec: frost, talents: '01' }, table)[1]).toEqual({ id: 108839, name: 'Ice Floes', icon: 'floes' });
+  });
+
+  it('has nothing without talents or a table for the spec', () => {
+    expect(memberTalents({ spec: frost, talents: '' }, table)).toEqual([]);
+    expect(memberTalents({ spec: index.specs.get(63), talents: '01' }, table)).toEqual([]);
+    expect(memberTalents({ spec: undefined, talents: '01' }, table)).toEqual([]);
+  });
 });
 
 describe('decodeGenders', () => {
@@ -198,7 +249,7 @@ describe('scoreCharacters', () => {
       faction: 1, wipes: 0, deaths: 0, resurrects: 0, items: [],
       members: members.map(([who, spec, dps, hps = 0]) => ({
         character: who, spec, itemLevel: 860 + killedAt, damage: dps, healing: hps, absorbs: 0, overhealing: 0,
-        damageTaken: 0, interrupts: 0, dispels: 0, dps, hps
+        damageTaken: 0, interrupts: 0, dispels: 0, dps, hps, talents: '', trinkets: []
       }))
     };
   }

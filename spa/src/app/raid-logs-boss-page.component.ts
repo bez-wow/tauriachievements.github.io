@@ -11,15 +11,19 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
+import { IconTipsComponent } from './icon-tips.component';
 import { CLASS_NAMES } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
+  ITEM_QUALITY_COLORS,
   RAID_PAGE_SIZE,
   RaidBoss,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
   RaidMetric,
+  RaidTalent,
+  RaidTalentTable,
   RankedPerformance,
   characterKey,
   defaultDifficulty,
@@ -27,8 +31,12 @@ import {
   formatAgo,
   formatFightTime,
   formatPerSecond,
+  iconSrcset,
+  itemIconUrl,
+  itemUrl,
   latestKills,
   logKey,
+  memberTalents,
   nameMatches,
   pageCount,
   raidBossLink,
@@ -36,7 +44,8 @@ import {
   raidGuildLink,
   raidLogLink,
   realmSlug,
-  rankCharacters
+  rankCharacters,
+  spellUrl
 } from './raid-logs';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
@@ -55,6 +64,11 @@ const REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
 interface KillRow {
   rank: number;
   kill: RaidKillDetails;
+}
+
+/** A ranking row with the talents its kill was played with, one per tier. */
+interface RankingRow extends RankedPerformance {
+  talents: Array<RaidTalent | undefined>;
 }
 
 interface SummaryTile {
@@ -78,7 +92,8 @@ interface SummaryTile {
     BackToTopButtonComponent,
     FilterDropdownComponent,
     RaidDifficultySwitchComponent,
-    GlideDirective
+    GlideDirective,
+    IconTipsComponent
   ],
   templateUrl: './raid-logs-boss-page.component.html',
   styleUrl: './raid-logs-boss-page.component.scss',
@@ -99,6 +114,8 @@ export class RaidLogsBossPageComponent {
   readonly tabs = TABS;
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly kills = signal<RaidKillDetails[]>([]);
+  /** Empty until talents.json loads, or if it doesn't: the rows then show no talents. */
+  private readonly talentTable = signal<RaidTalentTable>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
@@ -169,7 +186,12 @@ export class RaidLogsBossPageComponent {
   readonly total = computed(() => this.isRanking() ? this.rankings().length : this.killRows().length);
   readonly pages = computed(() => pageCount(this.total()));
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
-  readonly shownRankings = computed(() => pageSlice(this.rankings(), this.currentPage()));
+  /** Talents are looked up for the page's rows only, not for every ranked character. */
+  readonly shownRankings = computed<RankingRow[]>(() => {
+    const talents = this.talentTable();
+    return pageSlice(this.rankings(), this.currentPage())
+      .map(entry => ({ ...entry, talents: memberTalents(entry.member, talents) }));
+  });
   readonly shownKillRows = computed(() => pageSlice(this.killRows(), this.currentPage()));
 
   readonly summary = computed<SummaryTile[]>(() => {
@@ -222,6 +244,10 @@ export class RaidLogsBossPageComponent {
   readonly formatFightTime = formatFightTime;
   readonly formatPerSecond = formatPerSecond;
   readonly classIcon = getClassIconPath;
+  readonly icon = itemIconUrl;
+  readonly iconSrcset = iconSrcset;
+  readonly itemUrl = itemUrl;
+  readonly spellUrl = spellUrl;
   readonly pageSize = RAID_PAGE_SIZE;
 
   /** The query string a boss picker link keeps: the same view of another boss. */
@@ -238,6 +264,9 @@ export class RaidLogsBossPageComponent {
 
   constructor() {
     this.loadData();
+    this.data.talents()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(table => this.talentTable.set(table));
 
     // A different boss, or a different difficulty: load that boss file.
     effect(() => {
@@ -330,6 +359,10 @@ export class RaidLogsBossPageComponent {
 
   classColor(classId: number): string {
     return getClassColor(classId) ?? '#e0e0e0';
+  }
+
+  qualityColor(quality: number): string {
+    return ITEM_QUALITY_COLORS[quality] ?? '#fff';
   }
 
   ago(kill: RaidKillDetails): string {

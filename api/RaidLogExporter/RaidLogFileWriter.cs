@@ -22,19 +22,28 @@ namespace RaidLogExporter;
 /// <para>
 /// <c>&lt;boss&gt;-&lt;difficulty&gt;.json</c> holds that boss's kills on that difficulty, oldest
 /// first, as <c>[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects,
-/// [[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels], ...],
-/// [itemId, ...]]</c>, with its own <c>guilds</c> (as in the index) and
-/// <c>players</c> (<c>[name, realm, class, race, gender, guild]</c>) tables. A boss file needs
-/// nothing from the index, so a page that loaded the index before a deploy can still read a newer
-/// boss file. A difficulty without kills has no file.
+/// [[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels,
+/// talents, [trinket, ...]], ...], [itemId, ...]]</c>, with its own <c>guilds</c> (as in the
+/// index), <c>players</c> (<c>[name, realm, class, race, gender, guild]</c>) and <c>trinkets</c>
+/// (<c>[id, itemLevel, name, quality, icon]</c>) tables. <c>talents</c> is a column per tier (see
+/// <see cref="RaidLogMember.Talents"/>). A boss file needs nothing from the index, so a page that
+/// loaded the index before a deploy can still read a newer boss file. A difficulty without kills
+/// has no file.
+/// </para>
+/// <para>
+/// <c>talents.json</c> holds each spec's talent choices as <c>[specId, [[[spellId, name, icon],
+/// ...], ...]]</c>, tiers top to bottom and choices left to right (null where TauriShoot has
+/// none), so the pages can name the columns a member's <c>talents</c> picked.
 /// </para>
 /// Every entry goes on its own line, and the tables grow in order of first appearance, so a
 /// new kill is a few added lines in git.
 /// </summary>
 public static class RaidLogFileWriter
 {
-    public const int FormatVersion = 1;
+    /// <summary>2 added talents and trinkets. A run over older files reads every log again.</summary>
+    public const int FormatVersion = 2;
     public const string IndexFileName = "index.json";
+    public const string TalentsFileName = "talents.json";
 
     /// <summary>The export's folder under spa/src.</summary>
     public const string DataDirectoryName = "raid-log-data";
@@ -46,15 +55,26 @@ public static class RaidLogFileWriter
     };
 
     /// <param name="changes">Null on a first export.</param>
+    /// <param name="talents">Null when they could not be read; the last export's file stays.</param>
     public static async Task WriteAsync(
         string outputDirectory,
         RaidDataset dataset,
         DateTimeOffset generatedAt,
         RaidScanChanges? changes,
+        IReadOnlyList<RaidSpecTalents>? talents,
         CancellationToken cancellationToken
     )
     {
         Directory.CreateDirectory(outputDirectory);
+
+        if (talents is not null)
+        {
+            await AtomicFile.WriteAsync(
+                Path.Combine(outputDirectory, TalentsFileName),
+                (stream, token) => WriteTalentsAsync(stream, talents, token),
+                cancellationToken
+            );
+        }
 
         // Boss files first and the index last: the index is what makes new kills visible.
         foreach (var encounter in dataset.Encounters.Where(encounter => encounter.Logs.Count > 0))
@@ -261,6 +281,12 @@ public static class RaidLogFileWriter
         var playerPositions = encounter
             .Players.Select((player, index) => (player, index))
             .ToDictionary(entry => (entry.player.Realm, entry.player.Name), entry => entry.index);
+        var trinketPositions = encounter
+            .Trinkets.Select((trinket, index) => (trinket, index))
+            .ToDictionary(
+                entry => (entry.trinket.Id, entry.trinket.ItemLevel),
+                entry => entry.index
+            );
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);
@@ -287,6 +313,25 @@ public static class RaidLogFileWriter
                 }
             );
             await JsonLineWriter.FlushIfLargeAsync(writer, cancellationToken);
+        }
+        writer.WriteEndArray();
+
+        writer.WriteStartArray("trinkets");
+        foreach (var trinket in encounter.Trinkets)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteNumberValue(trinket.Id);
+                    item.WriteNumberValue(trinket.ItemLevel);
+                    item.WriteStringValue(trinket.Name);
+                    item.WriteNumberValue(trinket.Quality);
+                    item.WriteStringValue(trinket.Icon);
+                    item.WriteEndArray();
+                }
+            );
         }
         writer.WriteEndArray();
 
@@ -322,6 +367,15 @@ public static class RaidLogFileWriter
                         item.WriteNumberValue(member.DamageTaken);
                         item.WriteNumberValue(member.Interrupts);
                         item.WriteNumberValue(member.Dispels);
+                        item.WriteStringValue(member.Talents);
+                        item.WriteStartArray();
+                        foreach (var trinket in member.Trinkets)
+                        {
+                            item.WriteNumberValue(
+                                trinketPositions[(trinket.Id, trinket.ItemLevel)]
+                            );
+                        }
+                        item.WriteEndArray();
                         item.WriteEndArray();
                     }
                     item.WriteEndArray();
@@ -340,6 +394,56 @@ public static class RaidLogFileWriter
         }
         writer.WriteEndArray();
 
+        writer.WriteEndObject();
+        await writer.FlushAsync(cancellationToken);
+    }
+
+    private static async Task WriteTalentsAsync(
+        Stream stream,
+        IReadOnlyList<RaidSpecTalents> talents,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var writer = new Utf8JsonWriter(stream, WriterOptions);
+        var line = new JsonLineWriter(WriterOptions);
+
+        writer.WriteStartObject();
+        writer.WriteNumber("version", FormatVersion);
+        writer.WriteStartArray("specs");
+        foreach (var spec in talents)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteNumberValue(spec.SpecId);
+                    item.WriteStartArray();
+                    foreach (var tier in spec.Tiers)
+                    {
+                        item.WriteStartArray();
+                        foreach (var talent in tier)
+                        {
+                            if (talent is null)
+                            {
+                                item.WriteNullValue();
+                                continue;
+                            }
+
+                            item.WriteStartArray();
+                            item.WriteNumberValue(talent.SpellId);
+                            item.WriteStringValue(talent.Name);
+                            item.WriteStringValue(talent.Icon);
+                            item.WriteEndArray();
+                        }
+                        item.WriteEndArray();
+                    }
+                    item.WriteEndArray();
+                    item.WriteEndArray();
+                }
+            );
+        }
+        writer.WriteEndArray();
         writer.WriteEndObject();
         await writer.FlushAsync(cancellationToken);
     }
@@ -408,13 +512,17 @@ public static class RaidLogFileWriter
         RaidGuild? guild
     ) => guild is null ? -1 : positions[(guild.Realm, guild.Id)];
 
-    /// <summary>Removes files from an earlier run that this run did not write.</summary>
+    /// <summary>
+    /// Removes files from an earlier run that this run did not write. The talents stay even when
+    /// this run could not read them.
+    /// </summary>
     private static void RemoveStaleFiles(string outputDirectory, RaidDataset dataset)
     {
         var expected = dataset
             .Encounters.Where(encounter => encounter.Logs.Count > 0)
             .Select(encounter => RaidCatalog.BossFileName(encounter.Boss, encounter.Difficulty))
             .Append(IndexFileName)
+            .Append(TalentsFileName)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (var path in Directory.EnumerateFiles(outputDirectory, "*.json"))
