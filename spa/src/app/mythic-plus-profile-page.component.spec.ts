@@ -128,7 +128,7 @@ describe('MythicPlusProfilePageComponent', () => {
 
     // Tank also has 290; the tie goes by name, as on the players view.
     expect(page.ranks().map(tile => [tile.scope, tile.rank, tile.total])).toEqual([
-      ['Overall', 1, 6], ['Realm', 1, 4], ['Class', 1, 2], ['Spec', 1, 2]
+      ['Overall', 1, 6], ['Realm', 1, 4], ['Class', 1, 2], ['Spec', 1, 2], ['Role', 1, 4]
     ]);
     expect(page.ranks()[1].queryParams).toEqual({ view: 'players', realm: 'evermoon', character: 'Progtrix-Evermoon', page: undefined });
 
@@ -184,7 +184,7 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.summary().map(item => item.value)).toEqual(['1', '0%', '-']);
     // Overall, Realm and Class stay the character's; the Spec tile ranks them among Mistweavers.
     expect(page.ranks().map(tile => [tile.scope, tile.label, tile.rank, tile.total])).toEqual([
-      ['Overall', 'All realms', 1, 6], ['Realm', 'Evermoon', 1, 4], ['Class', 'Monk', 1, 2], ['Spec', 'Mistweaver Monk', 1, 1]
+      ['Overall', 'All realms', 1, 6], ['Realm', 'Evermoon', 1, 4], ['Class', 'Monk', 1, 2], ['Spec', 'Mistweaver Monk', 1, 1], ['Role', 'Healer', 2, 2]
     ]);
     expect(page.ranks()[3].queryParams).toEqual({
       view: 'players', class: 10, spec: 'Mistweaver', character: 'Progtrix-Evermoon', page: undefined

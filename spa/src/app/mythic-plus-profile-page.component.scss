@@ -152,6 +152,23 @@ button.spec-pill {
 .spec-icon,
 .rank-icon { @include affix-icon(20px); border-radius: 3px; }
 
+// The Role tile's tank / healer / DPS icon, as in the run table's column headings.
+.rank-role {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #555;
+  border-radius: 50%;
+  background: #0c0c0c;
+
+  svg { width: 11px; height: 11px; fill: currentColor; }
+  &.tank { color: #6ea8ff; }
+  &.healer { color: #3ecf5e; }
+  &.dps { color: #e5484d; }
+}
+
 .spec-runs { color: #8a8a8a; font-weight: 400; }
 
 .profile-score {
@@ -258,7 +275,7 @@ button.spec-pill {
 // Ranks: each tile opens the players view on the page that holds the character.
 .ranks {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 

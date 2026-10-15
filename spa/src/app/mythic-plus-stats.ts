@@ -59,6 +59,13 @@ export function specIconFor(classId: number, spec: string): string | undefined {
   return SPEC_ICONS.get(specKey(classId, spec));
 }
 
+const SPEC_ROLES = new Map(LEGION_SPECS.map(definition => [specKey(definition.classId, definition.spec), definition.role]));
+
+/** Tank, healer or DPS for a class's spec, when it's one of the Legion specs. */
+export function specRoleFor(classId: number, spec: string): MythicPlusRole | undefined {
+  return SPEC_ROLES.get(specKey(classId, spec));
+}
+
 type PopularityMember = Pick<MythicPlusMember, 'name' | 'realm' | 'class' | 'spec' | 'role'>;
 
 export interface SpecPopularityOptions {

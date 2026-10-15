@@ -150,3 +150,49 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
     expect(page.specFilter()).toBe('Restoration');
   });
 });
+
+describe('MythicPlusPageComponent roles', () => {
+  // Exkeito healed and Napim tanked the +19; Napim also healed a +15. Specs: 0 Restoration, 1 Guardian.
+  const roles = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
+  roles.index.specs = [{ class: 11, name: 'Restoration', role: 'healer' }, { class: 11, name: 'Guardian', role: 'tank' }];
+  roles.cos.runs = [
+    [19, 1297289, 1791293804, 196, [], [[0, 0], [1, 1]]],
+    [15, 1297289, 1791293904, 160, [], [[1, 0]]]
+  ];
+
+  async function open(url: string): Promise<MythicPlusPageComponent> {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(roles.index, roles) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    return harness.navigateByUrl(url, MythicPlusPageComponent);
+  }
+
+  const ladder = (page: MythicPlusPageComponent) =>
+    page.filteredPlayers().map(entry => [entry.player.member.name, entry.player.score]);
+
+  it('ranks each role on the runs played in it', async () => {
+    const page = await open('/mythic-plus?view=players&role=healer');
+
+    expect(page.roleFilter()).toBe('healer');
+    expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 160]]);
+
+    page.setRole('tank');
+    expect(ladder(page)).toEqual([['Napim', 196]]);
+  });
+
+  it('opens on tanks, and Players goes back to the plain ladder', async () => {
+    const page = await open('/mythic-plus');
+
+    page.showRoles();
+    expect(page.view()).toBe('players');
+    expect(page.roleFilter()).toBe('tank');
+
+    page.setView('players');
+    expect(page.roleFilter()).toBeUndefined();
+    expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 196]]);
+  });
+});
