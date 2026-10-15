@@ -21,6 +21,7 @@ import {
   exportedAt,
   formatClock,
   scoreQuality,
+  seasonScoreColors,
   sharesTables
 } from './mythic-plus';
 import { dungeonTimers } from './mythic-plus-activity';
@@ -154,8 +155,8 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly timers = computed(() => dungeonTimers(this.dungeons()));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  /** Run colours are relative to the season's best run, as on the leaderboard. */
-  private readonly seasonBestScore = computed(() => Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
+  /** Raider.IO-style score colours from this season's standings. */
+  private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
   readonly records = computed<RecordCard[]>(() => {
     const now = this.now();
@@ -315,7 +316,7 @@ export class MythicPlusRecordsPageComponent implements OnInit {
   /** Undefined for a run of a dungeon the index doesn't list. */
   private view(run: MythicPlusRun): RunView | undefined {
     const dungeon = this.dungeonsById().get(run.dungeon);
-    return dungeon && toRunView(run, dungeon, this.affixesById(), this.seasonBestScore());
+    return dungeon && toRunView(run, dungeon, this.affixesById(), this.scoreColors());
   }
 
   private bountyView(key: string, bounty: Bounty<MythicPlusRun>, dungeon?: MythicPlusDungeon): BountyView {

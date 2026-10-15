@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
+  runScoreColor,
+  scoreColor,
+  scoreTiers,
   characterKey,
   createRunDecoder,
   currentAffixWeek,
@@ -332,5 +335,29 @@ describe('pageCount', () => {
     expect(pageCount(0, 20)).toBe(1);
     expect(pageCount(40, 20)).toBe(2);
     expect(pageCount(41, 20)).toBe(3);
+  });
+});
+
+describe('score colours', () => {
+  // 2000 players scoring 2000 down to 1: the top 0.1% is 2 players, the top 1% 20.
+  const scores = Array.from({ length: 2000 }, (_, i) => 2000 - i);
+  const tiers = scoreTiers(scores);
+
+  it('places the stops at the top 60%, 25%, 10%, 1% and 0.1% of players', () => {
+    expect(tiers).toEqual([1, 801, 1501, 1801, 1981, 1999]);
+    expect(scoreTiers([100, 90])).toBeUndefined();
+  });
+
+  it('is gold for the top 0.1%, orange at the top 1% and blends in between', () => {
+    expect(scoreColor(2000, tiers)).toBe('rgb(255, 209, 0)');
+    expect(scoreColor(1999, tiers)).toBe('rgb(255, 209, 0)');
+    expect(scoreColor(1981, tiers)).toBe('rgb(255, 128, 0)');
+    expect(scoreColor(1990, tiers)).toBe('rgb(255, 169, 0)');
+    expect(scoreColor(0, tiers)).toBe('#9e9e9e');
+    expect(scoreColor(500, undefined)).toBe('#9e9e9e');
+  });
+
+  it('colours one run as if every dungeon had it', () => {
+    expect(runScoreColor(220, { tiers, dungeons: 9 })).toBe(scoreColor(1980, tiers));
   });
 });

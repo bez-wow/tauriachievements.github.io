@@ -11,7 +11,7 @@
         [attr.aria-expanded]="isExpanded(row.id)"
         [attr.aria-controls]="'run-details-' + row.id"
         (click)="toggleRun.emit(row.id)">
-        <span class="card-rank" [ngClass]="'q-' + row.quality"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+        <span class="card-rank" [style.color]="row.color"><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
         <span class="card-body">
           <span class="card-line">
             <img class="card-dungeon-icon" [src]="row.dungeon.icon" alt="" loading="lazy" />
@@ -116,7 +116,7 @@
                 <span class="caret" aria-hidden="true"></span>
               </button>
             </td>
-            <td class="col-rank" [ngClass]="'q-' + row.quality">{{ row.rank }}</td>
+            <td class="col-rank" [style.color]="row.color">{{ row.rank }}</td>
             <td class="col-dungeon" [title]="row.dungeon.name">{{ row.dungeon.shortName }}</td>
             <td class="col-level">
               <span class="level">

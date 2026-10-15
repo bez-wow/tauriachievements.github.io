@@ -224,9 +224,9 @@
             <tfoot *ngIf="totalLead() as lead">
               <tr [style.--row]="dungeonRows().length">
                 <th scope="row" class="col-label">Score</th>
-                <td><span class="total-score" [ngClass]="'q-' + players()[0].quality">{{ players()[0].player.score | number:'1.1-1' }}</span></td>
+                <td><span class="total-score" [style.color]="players()[0].scoreColor">{{ players()[0].player.score | number:'1.1-1' }}</span></td>
                 <td class="col-lead"><ng-container *ngTemplateOutlet="leadBar; context: { $implicit: lead }"></ng-container></td>
-                <td><span class="total-score" [ngClass]="'q-' + players()[1].quality">{{ players()[1].player.score | number:'1.1-1' }}</span></td>
+                <td><span class="total-score" [style.color]="players()[1].scoreColor">{{ players()[1].player.score | number:'1.1-1' }}</span></td>
               </tr>
             </tfoot>
           </table>

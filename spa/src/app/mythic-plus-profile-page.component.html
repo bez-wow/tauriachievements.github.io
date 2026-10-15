@@ -69,7 +69,7 @@
             [attr.tabindex]="headerScanChange()?.score ? 0 : null">
             <span
               class="profile-score-value"
-              [ngClass]="'q-' + quality()"
+              [style.color]="color()"
               [class.score-gained]="(headerScanChange()?.score ?? 0) > 0"
               [appCountUp]="(shownScore()?.score | number:'1.1-1') ?? ''"
               [countUpDelay]="150"></span>
@@ -198,7 +198,7 @@
                     {{ run.clearClock }}
                     <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
                   </td>
-                  <td class="num points" [ngClass]="'q-' + run.quality">{{ run.score | number:'1.1-1' }}</td>
+                  <td class="num points" [style.color]="run.color">{{ run.score | number:'1.1-1' }}</td>
                   <td class="num date"><time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time></td>
                 </ng-container>
                 <ng-template #notPlayedCells>
@@ -226,7 +226,7 @@
                     <span class="level-value">+{{ run.keyLevel }}</span>
                     <span class="level-star">{{ upgradeStars(run.upgrades) }}<span class="visually-hidden" *ngIf="run.upgrades > 0"> timed +{{ run.upgrades }}</span></span>
                   </span>
-                  <span class="points" [ngClass]="'q-' + run.quality"><span class="visually-hidden">Points </span>{{ run.score | number:'1.1-1' }}</span>
+                  <span class="points" [style.color]="run.color"><span class="visually-hidden">Points </span>{{ run.score | number:'1.1-1' }}</span>
                 </ng-container>
               </li>
             </ol>

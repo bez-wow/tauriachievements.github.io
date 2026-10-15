@@ -313,6 +313,74 @@ export function scoreQuality(score: number, bestScore: number): RunQuality {
   return ratio >= 0.76 ? 'rare' : 'uncommon';
 }
 
+/**
+ * Raider.IO-style colour stops, from the season's player scores (best first): the lowest score,
+ * then the score the top 60%, 25%, 10%, 1% and 0.1% of players reach. Undefined with too few
+ * players to tell.
+ */
+export function scoreTiers(scores: readonly number[]): number[] | undefined {
+  const sorted = scores.filter(score => score > 0).sort((a, b) => b - a);
+  const n = sorted.length;
+  if (n < 20) {
+    return undefined;
+  }
+
+  const top = (share: number) => sorted[Math.max(1, Math.ceil(n * share)) - 1];
+  return [sorted[n - 1], top(0.6), top(0.25), top(0.1), top(0.01), top(0.001)];
+}
+
+// White, green, blue, purple, orange and gold, one per stop in scoreTiers.
+const TIER_COLORS: ReadonlyArray<readonly [number, number, number]> = [
+  [255, 255, 255], [31, 255, 0], [0, 112, 222], [163, 54, 237], [255, 128, 0], [255, 209, 0]
+];
+
+/**
+ * A player score's colour by where it stands this season, like Raider.IO: green for the top 60%,
+ * blue 25%, purple 10%, orange 1% and gold for the top 0.1%, blended in between; grey below.
+ */
+export function scoreColor(score: number, tiers: readonly number[] | undefined): string {
+  if (!tiers || !(score > 0)) {
+    return '#9e9e9e';
+  }
+
+  const last = tiers.length - 1;
+  if (score >= tiers[last]) {
+    return `rgb(${TIER_COLORS[last].join(', ')})`;
+  }
+
+  if (score < tiers[0]) {
+    return '#9e9e9e';
+  }
+
+  for (let i = 0; i < last; i++) {
+    if (score < tiers[i + 1]) {
+      const t = (score - tiers[i]) / Math.max(tiers[i + 1] - tiers[i], 0.001);
+      const [a, b] = [TIER_COLORS[i], TIER_COLORS[i + 1]];
+      return `rgb(${a.map((value, k) => Math.round(value + (b[k] - value) * t)).join(', ')})`;
+    }
+  }
+
+  return `rgb(${TIER_COLORS[last].join(', ')})`;
+}
+
+/** The season's colour stops (from the index's standings) and how many dungeons count. */
+export interface ScoreColors {
+  tiers: number[] | undefined;
+  dungeons: number;
+}
+
+export function seasonScoreColors(index: MythicPlusIndex | undefined): ScoreColors {
+  return {
+    tiers: scoreTiers((index?.standings ?? []).map(([score]) => score)),
+    dungeons: index?.dungeons.length ?? 0
+  };
+}
+
+/** One run's colour on the same stops: as if every dungeon had that run (score x dungeons). */
+export function runScoreColor(score: number, colors: ScoreColors): string {
+  return scoreColor(score * Math.max(1, colors.dungeons), colors.tiers);
+}
+
 /** Case- and accent-insensitive partial match, so `bjorn` finds `Björñ`. An empty query matches every run. */
 export function runIncludesPlayer(run: { roster: ReadonlyArray<Pick<MythicPlusMember, 'name'>> }, query: string): boolean {
   const needle = foldName(query.trim());

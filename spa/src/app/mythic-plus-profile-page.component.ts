@@ -35,7 +35,8 @@ import {
   rankPlayers,
   rankRuns,
   runIncludesCharacter,
-  scoreQuality,
+  scoreColor,
+  seasonScoreColors,
   sharesTables,
   upgradeStars,
   ROLE_LABELS,
@@ -206,8 +207,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  /** Run colours are relative to the season's best run, as on the leaderboard. */
-  private readonly seasonBestScore = computed(() => Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
+  /** Raider.IO-style score colours from this season's standings. */
+  private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
   /** Every character by player score, as the leaderboard's players view ranks them. */
   readonly ranking = computed(() => rankPlayers(this.allRuns()));
@@ -340,11 +341,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
     return this.selectedSpec() ? this.specRanking().find(entry => entry.key === key) : this.player();
   });
 
-  /** Coloured against the top score of the same ranking, as on the players view. */
-  readonly quality = computed(() => {
-    const top = (this.selectedSpec() ? this.specRanking() : this.ranking())[0]?.score ?? 0;
-    return scoreQuality(this.shownScore()?.score ?? 0, top);
-  });
+  /** The header score's colour by season rank, as on the players view. */
+  readonly color = computed(() => scoreColor(this.shownScore()?.score ?? 0, this.scoreColors().tiers));
 
   /** The header's change since the last scan is the overall one, so it hides behind a spec score. */
   readonly headerScanChange = computed(() => this.selectedSpec() ? undefined : this.scanChange());
@@ -410,10 +408,10 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly dungeonBests = computed<DungeonBest[]>(() => {
     const bestRuns = this.shownScore()?.bestRuns;
     const affixes = this.affixesById();
-    const bestScore = this.seasonBestScore();
+    const colors = this.scoreColors();
     return this.dungeons().map(dungeon => {
       const run = bestRuns?.get(dungeon.id);
-      return { dungeon, run: run && toRunView(run, dungeon, affixes, bestScore) };
+      return { dungeon, run: run && toRunView(run, dungeon, affixes, colors) };
     });
   });
 
@@ -535,11 +533,11 @@ export class MythicPlusProfilePageComponent implements OnInit {
   readonly historyRows = computed<RunRow[]>(() => {
     const dungeons = this.dungeonsById();
     const affixes = this.affixesById();
-    const bestScore = this.seasonBestScore();
+    const colors = this.scoreColors();
     const ranks = this.runRanks();
     return this.historyRuns().slice(0, this.historyLimit()).flatMap(run => {
       const dungeon = dungeons.get(run.dungeon);
-      return dungeon ? [{ ...toRunView(run, dungeon, affixes, bestScore), rank: ranks.get(run.id) ?? 0 }] : [];
+      return dungeon ? [{ ...toRunView(run, dungeon, affixes, colors), rank: ranks.get(run.id) ?? 0 }] : [];
     });
   });
   /** How many runs "Show more" adds; 0 once every run is shown. */

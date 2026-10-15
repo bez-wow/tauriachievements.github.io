@@ -33,7 +33,7 @@ function runRow(id: string, rank: number): RunRow {
     affixes: [6, 3],
     roster: [member('Dps', 'dps'), member('Tank', 'tank'), member('Healer', 'healer')]
   };
-  return { ...toRunView(run, dungeon, new Map(affixes.map(affix => [affix.id, affix])), 200), rank };
+  return { ...toRunView(run, dungeon, new Map(affixes.map(affix => [affix.id, affix])), { tiers: undefined, dungeons: 9 }), rank };
 }
 
 function playerRow(name: string): PlayerRow {
@@ -42,7 +42,7 @@ function playerRow(name: string): PlayerRow {
     rank: 1,
     member: toMemberView(member(name, 'dps')),
     score: 300,
-    quality: 'epic',
+    color: 'rgb(163, 54, 237)',
     bests: [
       { dungeon, keyLevel: 15, timed: true, upgrades: 2, clearTime: '00:30:00', score: 150 },
       undefined
