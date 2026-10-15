@@ -48,6 +48,7 @@ internal static class Program
             var settings = AppSettings.Load(settingsPath);
             using var apiClient = new TauriApiClient(settings.TauriApi);
             using var itemSource = new TauriShootItemSource();
+            using var talentSource = new TauriShootTalentSource();
             var guildDirectory = PlayerGuildDirectory.Load(
                 Path.Combine(frontendSrc, "Players.csv")
             );
@@ -55,6 +56,7 @@ internal static class Program
                 outputDirectory,
                 apiClient,
                 itemSource,
+                talentSource,
                 guildDirectory
             );
 
@@ -88,6 +90,11 @@ internal static class Program
             );
             Console.WriteLine($"Logs read from the API: {result.ReadLogCount}");
             Console.WriteLine($"Guilds: {dataset.Guilds.Count}, items: {dataset.Items.Count}");
+            Console.WriteLine(
+                result.TalentSpecCount > 0
+                    ? $"Talents: {result.TalentSpecCount} specs"
+                    : "Talents: TauriShoot could not be read; the last talents.json stays"
+            );
             Console.WriteLine($"Output: {result.OutputDirectory}");
 
             return 0;

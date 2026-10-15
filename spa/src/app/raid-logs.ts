@@ -10,6 +10,9 @@ import { LEGION_SPECS, SpecDefinition, compareSpecLists } from './mythic-plus-st
 
 export const RAID_LOGS_DATA_DIR = 'raid-log-data';
 
+/** Every spec's talent tiers, which members' `talents` columns pick from. */
+export const RAID_TALENTS_PATH = `${RAID_LOGS_DATA_DIR}/talents.json`;
+
 /** Written at build time by scripts/generate-raid-genders.js. */
 export const RAID_GENDERS_PATH = 'assets/data/raid-genders.json';
 
@@ -98,7 +101,12 @@ export interface RaidLogsIndexFile {
 /** `[name, realm, class, race, gender, guild]` */
 export type RaidPlayerEntry = [name: string, realm: string, classId: number, race: number, gender: number, guild: string];
 
-/** `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels]` */
+/**
+ * `[player, spec, ilvl, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels,
+ * talents, [trinket, ...]]`. `talents` is the column picked on each tier, top to bottom: `0` to
+ * `2` from the left, `.` for none; trinkets are positions in the file's `trinkets`. Files of
+ * format version 1 stop after `dispels`.
+ */
 export type RaidMemberEntry = [
   player: number,
   spec: number,
@@ -109,8 +117,22 @@ export type RaidMemberEntry = [
   overhealing: number,
   damageTaken: number,
   interrupts: number,
-  dispels: number
+  dispels: number,
+  talents?: string,
+  trinkets?: number[]
 ];
+
+/** `[id, itemLevel, name, quality, icon]`: one item worn at one item level. */
+export type RaidTrinketEntry = [id: number, itemLevel: number, name: string, quality: number, icon: string];
+
+/** `[spellId, name, icon]` */
+export type RaidTalentEntry = [spellId: number, name: string, icon: string];
+
+/** Each spec's tiers, top to bottom, each with its choices left to right (null for none). */
+export interface RaidTalentsFile {
+  version: number;
+  specs: Array<[specId: number, tiers: Array<Array<RaidTalentEntry | null>>]>;
+}
 
 /** `[realm, logId, killedAtUnix, fightMs, guild, faction, wipes, deaths, resurrects, members, items]` */
 export type RaidBossLogEntry = [
@@ -143,6 +165,8 @@ export interface RaidBossFile {
   difficulty: string;
   guilds: RaidGuildEntry[];
   players: RaidPlayerEntry[];
+  /** Missing in format version 1. */
+  trinkets?: RaidTrinketEntry[];
   logs: RaidBossLogEntry[];
 }
 
@@ -193,6 +217,20 @@ export interface RaidItem {
   icon: string;
 }
 
+export interface RaidTrinket extends RaidItem {
+  itemLevel: number;
+}
+
+export interface RaidTalent {
+  /** The spell, as TauriShoot's `?spell=` names it. */
+  id: number;
+  name: string;
+  icon: string;
+}
+
+/** By spec id: the tiers top to bottom, each with its choices left to right. */
+export type RaidTalentTable = ReadonlyMap<number, ReadonlyArray<ReadonlyArray<RaidTalent | undefined>>>;
+
 /** A kill as the index lists it. */
 export interface RaidKill {
   realm: string;
@@ -235,6 +273,10 @@ export interface RaidMember {
   dps: number;
   /** Healing plus absorbs, per second. */
   hps: number;
+  /** The column picked on each talent tier (see RaidMemberEntry); empty when unknown. */
+  talents: string;
+  /** None to two, shared by every member wearing the same item at the same level. */
+  trinkets: RaidTrinket[];
 }
 
 /** A kill with everything the boss file knows about it. */
@@ -296,14 +338,24 @@ export const ITEM_QUALITY_COLORS: ReadonlyArray<string> = [
   '#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000', '#e6cc80', '#00ccff'
 ];
 
-const ITEM_ICON_BASE = 'https://legion-static.tauri.hu/images/icons/large/';
+const ICON_BASE = 'https://legion-static.tauri.hu/images/icons/';
 
-export function itemIconUrl(icon: string): string {
-  return `${ITEM_ICON_BASE}${icon || 'inv_misc_questionmark'}.png`;
+/** TauriShoot's icons: medium is 36 px square, large 56. */
+export function itemIconUrl(icon: string, size: 'medium' | 'large' = 'large'): string {
+  return `${ICON_BASE}${size}/${icon || 'inv_misc_questionmark'}.png`;
+}
+
+/** For an icon shown about 22 px wide: the medium one, the large one on a sharper screen. */
+export function iconSrcset(icon: string): string {
+  return `${itemIconUrl(icon, 'medium')} 36w, ${itemIconUrl(icon)} 56w`;
 }
 
 export function itemUrl(itemId: number): string {
   return `https://legion-shoot.tauri.hu/?item=${itemId}`;
+}
+
+export function spellUrl(spellId: number): string {
+  return `https://legion-shoot.tauri.hu/?spell=${spellId}`;
 }
 
 // --- Decoding ---------------------------------------------------------------------------
@@ -379,6 +431,8 @@ export function decodeBossFile(
   const guilds = file.guilds.map(decodeGuild);
   const characters = file.players.map(([name, realm, classId, race, gender, guild]): RaidCharacter =>
     ({ name, realm, classId, race, gender, guild }));
+  const trinkets = (file.trinkets ?? []).map(([id, itemLevel, name, quality, icon]): RaidTrinket =>
+    ({ id, itemLevel, name, quality, icon }));
 
   return file.logs.map(([realm, logId, killedAt, fightMs, guild, faction, wipes, deaths, resurrects, members, items]) => {
     const seconds = fightMs > 0 ? fightMs / 1000 : 0;
@@ -395,7 +449,7 @@ export function decodeBossFile(
       deaths,
       resurrects,
       items,
-      members: members.flatMap(([player, spec, itemLevel, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels]) => {
+      members: members.flatMap(([player, spec, itemLevel, damage, healing, absorbs, overhealing, damageTaken, interrupts, dispels, talents, worn]) => {
         const character = characters[player];
         return character ? [{
           character,
@@ -409,7 +463,9 @@ export function decodeBossFile(
           interrupts,
           dispels,
           dps: seconds ? damage / seconds : 0,
-          hps: seconds ? (healing + absorbs) / seconds : 0
+          hps: seconds ? (healing + absorbs) / seconds : 0,
+          talents: talents ?? '',
+          trinkets: (worn ?? []).flatMap(position => trinkets[position] ?? [])
         }] : [];
       })
     };
@@ -422,6 +478,26 @@ export function bossFilePath(boss: Pick<RaidBoss, 'slug'>, difficulty: Pick<Raid
 
 export function encounterKey(bossSlug: string, difficultySlug: string): string {
   return `${bossSlug}|${difficultySlug}`;
+}
+
+export function decodeTalents(file: RaidTalentsFile): RaidTalentTable {
+  return new Map(file.specs.map(([specId, tiers]) => [
+    specId,
+    tiers.map(choices => choices.map(choice => choice ? { id: choice[0], name: choice[1], icon: choice[2] } : undefined))
+  ]));
+}
+
+/**
+ * The talent a member picked on each tier, top to bottom; undefined for a tier left empty or a
+ * column the table doesn't have. Nothing when the log has no talents or the spec no table.
+ */
+export function memberTalents(member: Pick<RaidMember, 'spec' | 'talents'>, table: RaidTalentTable): Array<RaidTalent | undefined> {
+  const tiers = member.spec ? table.get(member.spec.id) : undefined;
+  if (!tiers || !member.talents) {
+    return [];
+  }
+
+  return [...member.talents].map((column, tier) => tiers[tier]?.[Number(column)]);
 }
 
 /** The corrected gender, 0 male and 1 female, by characterKey. */

@@ -27,7 +27,9 @@ function member(name: string, spec: RaidSpec, dps = 0): RaidMember {
     interrupts: 0,
     dispels: 0,
     dps,
-    hps: 0
+    hps: 0,
+    talents: '',
+    trinkets: []
   };
 }
 

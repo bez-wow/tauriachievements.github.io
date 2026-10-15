@@ -47,7 +47,7 @@ workflow and its output contract.
 | `BattlegroundCollector` | Collects sequential PvP matches with resumable state and appends complete ranked responses to the frontend archive. |
 | `MythicPlusExporter` | Merges every realm's Mythic+ leaderboards into scored, ranked per-dungeon files for the `/mythic-plus` page. |
 | `MythicPlusGuildAndCharScan` | Adds the guilds and guildless characters seen on the Mythic+ leaderboards to the scan inputs. |
-| `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing and loot for the `/raid-logs` pages, reading only kills the last export lacks. |
+| `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing, talents, trinkets and loot for the `/raid-logs` pages, reading only kills the last export lacks, plus every spec's talent tiers from TauriShoot. |
 | `RaidLogGuildAndCharScan` | Looks up the current guild of everyone with an Emerald Nightmare kill and adds new guilds and guildless characters to the scan inputs. |
 | `Guildkukker` | Generates ranked guild reports with reputation, artifact, and item-level data. |
 | `EndlessGuildExporter` | Produces a formatted Excel guild roster. |

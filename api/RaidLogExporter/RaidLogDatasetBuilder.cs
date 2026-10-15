@@ -20,14 +20,16 @@ public sealed record RaidTopPerformer(
     RaidLogKey Log
 );
 
-/// <summary>One boss on one difficulty: one data file, with its own guild and player tables.</summary>
+/// <summary>One boss on one difficulty: one data file, with its own guild, player and trinket tables.</summary>
 /// <param name="Logs">Oldest first, so a new kill is a line added at the end of the file.</param>
+/// <param name="Trinkets">Each item at each item level worn, in order of first appearance.</param>
 public sealed record RaidEncounter(
     RaidBoss Boss,
     RaidDifficulty Difficulty,
     IReadOnlyList<RaidLog> Logs,
     IReadOnlyList<RaidGuild> Guilds,
     IReadOnlyList<RaidPlayer> Players,
+    IReadOnlyList<RaidTrinket> Trinkets,
     RaidTopPerformer? TopDps,
     RaidTopPerformer? TopHps
 );
@@ -93,6 +95,7 @@ public static class RaidLogDatasetBuilder
             logs,
             GuildTable(logs),
             PlayerTable(logs, guildDirectory),
+            TrinketTable(logs),
             TopPerformer(
                 logs,
                 member =>
@@ -173,6 +176,27 @@ public static class RaidLogDatasetBuilder
                     : player
             ),
         ];
+    }
+
+    /// <summary>
+    /// Trinkets in order of first appearance, so a new kill appends rather than renumbers. Name,
+    /// quality and icon come from the first log that has the item at that level.
+    /// </summary>
+    private static List<RaidTrinket> TrinketTable(IReadOnlyList<RaidLog> logs)
+    {
+        var trinkets = new List<RaidTrinket>();
+        var seen = new HashSet<(int Id, int ItemLevel)>();
+        foreach (
+            var trinket in logs.SelectMany(log => log.Members).SelectMany(member => member.Trinkets)
+        )
+        {
+            if (seen.Add((trinket.Id, trinket.ItemLevel)))
+            {
+                trinkets.Add(trinket);
+            }
+        }
+
+        return trinkets;
     }
 
     /// <summary>The best per-second amount of any member who counts; the earliest kill wins a tie.</summary>

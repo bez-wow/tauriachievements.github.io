@@ -21,6 +21,11 @@ public sealed record ListedRaidLog(
 public sealed record RaidGuild(int Id, string Name, string Realm, int Faction);
 
 /// <param name="Guild">The guild the log names for this member, often empty.</param>
+/// <param name="Talents">
+/// The talent picked on each tier, top to bottom: its column, <c>0</c> to <c>2</c> from the left,
+/// or <c>.</c> for a tier left empty. Empty when the log has no talents for the member.
+/// </param>
+/// <param name="Trinkets">The trinkets worn during the kill, none to two.</param>
 public sealed record RaidLogMember(
     string Name,
     string Realm,
@@ -36,8 +41,28 @@ public sealed record RaidLogMember(
     long Overhealing,
     long DamageTaken,
     int Interrupts,
-    int Dispels
+    int Dispels,
+    string Talents,
+    IReadOnlyList<RaidTrinket> Trinkets
 );
+
+/// <summary>
+/// A trinket as a log describes it. One item can be worn at several item levels (Warforged,
+/// Titanforged), so the item level is part of what it is.
+/// </summary>
+/// <param name="Quality">0 (poor) to 7 (heirloom), as WoW colours item names.</param>
+/// <param name="Icon">Icon name without host or extension.</param>
+public sealed record RaidTrinket(int Id, int ItemLevel, string Name, int Quality, string Icon);
+
+/// <summary>A talent a spec can pick, as TauriShoot's talent calculator lists it.</summary>
+/// <param name="Icon">Icon name without host or extension.</param>
+public sealed record RaidTalent(int SpellId, string Name, string Icon);
+
+/// <summary>
+/// A spec's talent tiers, top to bottom, each with its choices left to right; the columns a
+/// member's <see cref="RaidLogMember.Talents"/> pick from. A choice TauriShoot leaves out is null.
+/// </summary>
+public sealed record RaidSpecTalents(int SpecId, IReadOnlyList<IReadOnlyList<RaidTalent?>> Tiers);
 
 /// <param name="KilledAt">Unix seconds.</param>
 /// <param name="Faction">The side most members play for.</param>
