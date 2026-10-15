@@ -86,7 +86,7 @@
               </span>
             </span>
           </th>
-          <th scope="col">Score</th>
+          <th scope="col">Score <a class="score-help" routerLink="/mythic-plus/scoring" title="How scores work" aria-label="How scores work"><span aria-hidden="true">?</span></a></th>
           <th scope="col" class="col-completed" *ngIf="completed()">
             <button type="button" class="completed-sort" *ngIf="runOrder() as order; else completedLabel"
               (click)="runOrderChange.emit('latest')" [attr.aria-sort]="order === 'latest' ? 'descending' : null"

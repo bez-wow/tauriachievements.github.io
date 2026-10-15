@@ -37,7 +37,9 @@ import {
   runIncludesCharacter,
   scoreQuality,
   sharesTables,
-  upgradeStars
+  upgradeStars,
+  ROLE_LABELS,
+  MythicPlusRole
 } from './mythic-plus';
 import { affixWeeks, countTicks, dungeonTimers, isTimed, localDay, weekIndexAt } from './mythic-plus-activity';
 import {
@@ -56,7 +58,7 @@ import {
 } from './mythic-plus-profile';
 import { compareParam } from './mythic-plus-compare';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
-import { specIconFor } from './mythic-plus-stats';
+import { specIconFor, specRoleFor } from './mythic-plus-stats';
 import {
   MYTHIC_PLUS_CARDS_PAGE_SIZE,
   MYTHIC_PLUS_CARDS_QUERY,
@@ -84,6 +86,8 @@ interface RankTile {
   scope: string;
   label: string;
   icon?: string;
+  /** The Role tile: the run table's tank / healer / DPS icon instead of an image. */
+  role?: MythicPlusRole;
   rank: number;
   total: number;
   top: string;
@@ -318,6 +322,18 @@ export class MythicPlusProfilePageComponent implements OnInit {
       : [];
   });
 
+  /** The role of the selected spec (else their main one): the Role tile. */
+  private readonly tileRole = computed(() => {
+    const member = this.player()?.member;
+    return member && (specRoleFor(member.class, this.selectedSpec() ?? member.spec) ?? member.role);
+  });
+
+  /** One role's players, each scored on their runs in it (the players view's Roles ladder). */
+  private readonly roleRanking = computed(() => {
+    const role = this.tileRole();
+    return role ? rankPlayers(this.allRuns(), entry => entry.role === role) : [];
+  });
+
   /** The header's score and the best run per dungeon: in the selected spec, or in all of them. */
   readonly shownScore = computed<PlayerScore | undefined>(() => {
     const key = this.key();
@@ -360,6 +376,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
     const realm = realmSlug(member.realm);
     const className = CLASS_NAMES[member.class] ?? 'Unknown';
     const spec = this.selectedSpec() ?? member.spec;
+    const role = this.tileRole();
     const ranking = this.ranking();
     const tile = (scope: string, label: string, found: ScopeRank | undefined, filters: Params, icon?: string): RankTile[] => {
       if (!found) {
@@ -385,7 +402,8 @@ export class MythicPlusProfilePageComponent implements OnInit {
       ...tile('Class', className, scopeRank(ranking, key, entry => entry.member.class === member.class),
         { class: member.class }, this.member()?.classIcon),
       ...tile('Spec', `${spec} ${className}`, scopeRank(this.specRanking(), key),
-        { class: member.class, spec }, specIconFor(member.class, spec))
+        { class: member.class, spec }, specIconFor(member.class, spec)),
+      ...(role ? tile('Role', ROLE_LABELS[role], scopeRank(this.roleRanking(), key), { role }).map(found => ({ ...found, role })) : [])
     ];
   });
 

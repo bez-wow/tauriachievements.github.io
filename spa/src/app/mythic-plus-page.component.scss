@@ -22,6 +22,39 @@
   .view-switch button:disabled { opacity: .45; cursor: not-allowed; }
 }
 
+// "How scores work", at the right end of the season row: quiet, but always one click away.
+.scores-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 5px 10px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #9e9e9e;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .15s ease, border-color .15s ease;
+
+  &:hover { border-color: rgba(247, 181, 0, .45); color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; border-radius: 4px; }
+}
+
+.scores-link-icon {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2e2716;
+  color: $gold;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
 // Dungeon picker — scopes both the chart and the leaderboard below it. `auto-fit` stretches the tiles
 // evenly across the full width (one row on desktop) and wraps them into even rows on small screens.
 .dungeon-picker {
@@ -110,10 +143,10 @@
   .view-switch { order: 1; }
 }
 
-// The bar-chart and trophy icons on the links to /mythic-plus/stats and /mythic-plus/records.
+// The icon on the Compare button.
 .scoring-link-chart { width: 14px; height: 14px; flex: none; fill: $gold; }
 
-// Opens /mythic-plus/stats, /mythic-plus/records or /mythic-plus/scoring.
+// The Compare button.
 .scoring-link {
   display: inline-flex;
   align-items: center;
@@ -132,17 +165,22 @@
   &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
-.scoring-link-icon {
+// Roles: Tank / Healer / DPS, each with its column icon from the run table.
+.role-switch button { display: inline-flex; align-items: center; gap: 6px; }
+
+.role-icon {
   display: grid;
-  flex: none;
   place-items: center;
   width: 18px;
   height: 18px;
+  border: 1px solid #555;
   border-radius: 50%;
-  background: #2e2716;
-  color: $gold;
-  font-size: .75rem;
-  font-weight: 700;
+  background: #0c0c0c;
+
+  svg { width: 10px; height: 10px; fill: currentColor; }
+  &.tank { color: #6ea8ff; }
+  &.healer { color: #3ecf5e; }
+  &.dps { color: #e5484d; }
 }
 
 // Same look as the spec chart's role / count filters.
@@ -379,8 +417,8 @@
     .view-switch button { flex: 1 1 0; }
   }
 
-  // Season Stats and Records share a row; the longer scoring link gets the row under them.
-  .scoring-link { flex: 1 1 40%; justify-content: center; text-align: center; }
+  // Compare gets its own full-width row under Best / Latest and Runs / Players.
+  .scoring-link { flex: 1 1 100%; justify-content: center; text-align: center; }
 
   // Search (and the Class filters) first, then the pager.
   .pager-row { flex-direction: column; align-items: stretch; }

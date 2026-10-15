@@ -152,6 +152,11 @@
           </span>
           <span class="rank-label">
             <span class="rank-icon" *ngIf="tile.icon"><img [src]="tile.icon" alt="" /></span>
+            <span class="rank-role" *ngIf="tile.role as role" [ngClass]="role" aria-hidden="true" [ngSwitch]="role">
+              <svg *ngSwitchCase="'tank'" viewBox="0 0 24 24" focusable="false"><path d="M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z" /></svg>
+              <svg *ngSwitchCase="'healer'" viewBox="0 0 24 24" focusable="false"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z" /></svg>
+              <svg *ngSwitchCase="'dps'" viewBox="0 0 24 24" focusable="false"><path d="M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z" /></svg>
+            </span>
             {{ tile.label }}
           </span>
           <span class="rank-total">of {{ tile.total | number }} · <b>{{ tile.top }}</b></span>

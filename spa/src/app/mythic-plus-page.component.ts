@@ -24,8 +24,10 @@ import {
   MythicPlusDungeonFile,
   MythicPlusIndex,
   MythicPlusMember,
+  MythicPlusRole,
   MythicPlusRun,
   NEWER_DATA_MESSAGE,
+  ROLE_LABELS,
   characterKey,
   createRunDecoder,
   currentAffixWeek,
@@ -108,6 +110,11 @@ function parsePage(value: string | null): number {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
+/** `?role=` on the players view: tank, healer or dps. */
+function parseRoleFilter(value: string | null): MythicPlusRole | undefined {
+  return value === 'tank' || value === 'healer' || value === 'dps' ? value : undefined;
+}
+
 function parseClassFilter(value: string | null): number | undefined {
   const classId = Number(value);
   return value && CLASS_NAMES[classId] ? classId : undefined;
@@ -178,6 +185,14 @@ export class MythicPlusPageComponent implements OnInit {
   readonly classFilter = signal<number | undefined>(parseClassFilter(this.route.snapshot.queryParamMap.get('class')));
   readonly specFilter = signal<string | undefined>(
     parseSpecFilter(this.classFilter(), this.route.snapshot.queryParamMap.get('spec')));
+  /**
+   * Players view, Roles: score each character only on the runs they played as a tank, a healer
+   * or DPS (like a spec filter, one role wide). Undefined is the plain Players ladder.
+   */
+  readonly roleFilter = signal<MythicPlusRole | undefined>(
+    this.view() === 'players' ? parseRoleFilter(this.route.snapshot.queryParamMap.get('role')) : undefined);
+  readonly roles: readonly MythicPlusRole[] = ['tank', 'healer', 'dps'];
+  readonly roleLabels = ROLE_LABELS;
   readonly period = signal<LeaderboardPeriod>(
     this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
 
@@ -338,11 +353,13 @@ export class MythicPlusPageComponent implements OnInit {
     const realm = this.realmFilter();
     const classId = this.classFilter();
     const spec = this.specFilter();
-    // A spec filter scores each character on the runs they played as that spec only.
-    const include = realm === undefined && classId === undefined
+    const role = this.roleFilter();
+    // A spec (or role) filter scores each character on the runs they played as that spec (role) only.
+    const include = realm === undefined && classId === undefined && role === undefined
       ? undefined
       : (member: MythicPlusMember) => (realm === undefined || realmSlug(member.realm) === realm)
-        && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)));
+        && (classId === undefined || (member.class === classId && (spec === undefined || member.spec === spec)))
+        && (role === undefined || member.role === role);
 
     const ranking = rankPlayers(this.dungeonRuns(), include);
     const ranks = playerRanks(ranking);
@@ -367,7 +384,8 @@ export class MythicPlusPageComponent implements OnInit {
       && !this.selectedDungeon()
       && this.realmFilter() === undefined
       && this.classFilter() === undefined
-      && this.specFilter() === undefined;
+      && this.specFilter() === undefined
+      && this.roleFilter() === undefined;
   });
 
   /** One lookup built from the compact index array, not a second pass over the run files. */
@@ -486,8 +504,10 @@ export class MythicPlusPageComponent implements OnInit {
 
     const classId = this.classFilter();
     const realm = this.realmName();
-    if (this.view() === 'players' && (classId !== undefined || realm)) {
-      const who = classId === undefined ? 'player' : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
+    const role = this.roleFilter();
+    if (this.view() === 'players' && (classId !== undefined || realm || role)) {
+      const who = role ? (role === 'dps' ? 'DPS player' : role)
+        : classId === undefined ? 'player' : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ');
       return `No ${who}${realm ? ` on ${realm}` : ''} has a run${dungeon ? ` in ${dungeon.name}` : ''} yet.`;
     }
 
@@ -616,6 +636,7 @@ export class MythicPlusPageComponent implements OnInit {
 
   showSpecPlayers(selection: { classId: number; spec: string }): void {
     this.view.set('players');
+    this.roleFilter.set(undefined);
     this.classFilter.set(selection.classId);
     this.specFilter.set(selection.spec);
     this.page.set(1);
@@ -635,13 +656,40 @@ export class MythicPlusPageComponent implements OnInit {
   }
 
   setView(view: LeaderboardView): void {
-    if (view === this.view()) {
+    // Players again from Roles: the same view, without the role.
+    if (view === this.view() && !(view === 'players' && this.roleFilter())) {
       return;
     }
 
     this.view.set(view);
+    this.roleFilter.set(undefined);
     this.page.set(1);
     this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+  }
+
+  /** Roles: the players ladder by role, tanks first. Class and spec filters don't apply there. */
+  showRoles(): void {
+    if (this.view() === 'players' && this.roleFilter()) {
+      return;
+    }
+
+    this.view.set('players');
+    this.roleFilter.set('tank');
+    this.classFilter.set(undefined);
+    this.specFilter.set(undefined);
+    this.page.set(1);
+    this.expandedRunId.set(undefined);
+    this.syncQueryParams();
+  }
+
+  setRole(role: MythicPlusRole): void {
+    if (role === this.roleFilter()) {
+      return;
+    }
+
+    this.roleFilter.set(role);
+    this.page.set(1);
     this.syncQueryParams();
   }
 
@@ -718,6 +766,7 @@ export class MythicPlusPageComponent implements OnInit {
         realm: players ? this.realmFilter() ?? null : null,
         class: players ? this.classFilter() ?? null : null,
         spec: players ? this.specFilter() ?? null : null,
+        role: players ? this.roleFilter() ?? null : null,
         character: character ? characterParam(character) : null,
         page: this.currentPage() > 1 ? this.currentPage() : null,
         compare: this.compareMode() ? compareParam(this.picked()) || null : null

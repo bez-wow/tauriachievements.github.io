@@ -2,6 +2,26 @@
 
 :host { display: block; }
 
+// The "?" beside the Score heading: opens /mythic-plus/scoring.
+.score-help {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: #2e2716;
+  color: $gold;
+  font-size: .7rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: middle;
+
+  &:hover { background: #4a3d17; color: #fff; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
 @include quality-colors;
 @include key-level;
 @include visually-hidden;
