@@ -17,6 +17,7 @@ import {
   formatAmount,
   formatFightTime,
   formatPerSecond,
+  formatScoreTick,
   guildProgression,
   killsBefore,
   logKey,
@@ -28,7 +29,12 @@ import {
   raidLogLink,
   scoreChanges,
   scoreCharacters,
-  speedRank
+  scoreTicks,
+  scoresBySpec,
+  specMetric,
+  specPerformance,
+  speedRank,
+  topAverage
 } from './raid-logs';
 
 // Two bosses, Heroic and Mythic, in the exporter's format (RaidLogFileWriter.cs).
@@ -255,6 +261,61 @@ describe('scoreCharacters', () => {
       ['Example', Math.floor(MAX_SCORE * .1 / 4), 1]
     ]);
     expect(fireOnly[1].spec?.name).toBe('Fire');
+  });
+
+  describe('by spec', () => {
+    it('gives each character the score the leaderboard shows with their spec picked', () => {
+      const bySpec = scoresBySpec(bosses, bossKills);
+      expect([...bySpec].map(([spec, scores]) => [spec.name, scores.map(entry => [entry.character.name, entry.score])])).toEqual([
+        ['Fire', [['Best', MAX_SCORE], ['Example', 174]]],
+        ['Holy', [['Light', MAX_SCORE]]],
+        ['Frost', [['Example', 1916]]],
+        ['Protection', [['Tank', 871]]]
+      ]);
+
+      for (const [spec, scores] of bySpec) {
+        const leaderboard = scoreCharacters(bosses, bossKills, specMetric(spec), spec.id);
+        expect(new Map(scores.map(entry => [entry.character.name, entry.score])))
+          .toEqual(new Map(leaderboard.map(entry => [entry.character.name, entry.score])));
+      }
+    });
+
+    it("averages each spec's best scores and orders classes by their best spec", () => {
+      const scores = scoresBySpec(bosses, bossKills);
+      const damage = specPerformance(scores, 'dps');
+      const mage = damage.classes[0];
+      expect(mage.className).toBe('Mage');
+      expect(mage.specs.map(spec => [spec.spec, spec.score, spec.count, spec.best?.character.name])).toEqual([
+        ['Fire', Math.round((MAX_SCORE + 174) / 2), 2, 'Best'],
+        ['Frost', 1916, 1, 'Example'],
+        ['Arcane', 0, 0, undefined]
+      ]);
+      // Example counts once, at their better spec.
+      expect([mage.count, mage.score]).toEqual([2, Math.round((MAX_SCORE + 1916) / 2)]);
+      expect(damage.characterCount).toBe(2);
+      expect(damage.classes.every(group => group.specs.every(spec => spec.role === 'dps'))).toBe(true);
+
+      // With every role, Paladin leads: Light's Holy, alone at the top, beats Fire's average.
+      const everyone = specPerformance(scores);
+      expect(everyone.classes.slice(0, 2).map(group => [group.className, group.score])).toEqual([
+        ['Paladin', Math.round((MAX_SCORE + 871) / 2)],
+        ['Mage', Math.round((MAX_SCORE + 1916) / 2)]
+      ]);
+      expect(everyone.characterCount).toBe(4);
+    });
+
+    it('averages the best scores only, or all of them when there are fewer', () => {
+      expect(topAverage([1, 5, 3], 2)).toBe(4);
+      expect(topAverage([5, 2])).toBe(4);
+      expect(topAverage([])).toBe(0);
+    });
+
+    it('draws clean score gridlines', () => {
+      expect(scoreTicks(5368)).toEqual([0, 2000, 4000, 6000]);
+      expect(scoreTicks(2400)).toEqual([0, 500, 1000, 1500, 2000, 2500]);
+      expect(scoreTicks(0)).toEqual([0, 100]);
+      expect([0, 500, 1000, 2500].map(formatScoreTick)).toEqual(['0', '500', '1k', '2.5k']);
+    });
   });
 
   describe('since the previous scan', () => {

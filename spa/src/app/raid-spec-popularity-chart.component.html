@@ -1,11 +1,22 @@
 <section class="chart-card" aria-labelledby="raid-spec-chart-title">
   <header class="chart-header">
     <div class="chart-heading">
-      <h2 id="raid-spec-chart-title">Spec Popularity · {{ raidName() }}</h2>
+      <h2 id="raid-spec-chart-title">{{ title() }} · {{ raidName() }}</h2>
       <p class="chart-subtitle" *ngIf="!loading() && !error()">{{ subtitle() }}</p>
     </div>
 
     <div class="chart-filters">
+      <div class="segmented view-filter" role="group" aria-label="Rank specs by" appGlide>
+        <button
+          *ngFor="let option of viewOptions"
+          type="button"
+          [class.active]="view() === option.value"
+          [attr.aria-pressed]="view() === option.value"
+          (click)="view.set(option.value)">
+          {{ option.label }}
+        </button>
+      </div>
+
       <div class="segmented difficulty-filter" role="group" aria-label="Raid difficulty" appGlide>
         <button
           *ngFor="let difficulty of shownDifficulties(); trackBy: trackDifficulty"
@@ -40,10 +51,10 @@
     <button type="button" (click)="retry.emit()">Try again</button>
   </div>
 
-  <div class="chart-scroll" *ngIf="!loading() && !error() && popularity().total > 0">
+  <div class="chart-scroll" *ngIf="!loading() && !error() && hasData()">
     <div class="chart" appReveal>
       <div class="y-axis" aria-hidden="true">
-        <span *ngFor="let line of gridlines()" [style.bottom.%]="line.position">{{ line.value }}%</span>
+        <span *ngFor="let line of gridlines()" [style.bottom.%]="line.position">{{ line.label }}</span>
       </div>
 
       <div class="plot" [appFlip]="groups()">
@@ -65,18 +76,33 @@
               appTapTooltip
               *ngFor="let spec of group.specs; let specIndex = index; trackBy: trackSpec"
               [style.--s]="specIndex"
-              [attr.aria-label]="spec.spec + ' ' + group.className + ': ' + spec.shareLabel + ', ' + spec.count.toLocaleString('en-US') + ' player slots'">
+              [attr.aria-label]="barLabel(spec, group)">
               <span
                 class="bar"
                 [class.empty]="spec.count === 0"
                 [attr.data-flip-height]="group.classId + '-' + spec.spec"
                 [style.height.%]="spec.heightPercent"
                 [style.background-color]="group.color">
-                <span class="bar-value" *ngIf="spec.showValue">{{ spec.shareLabel }}</span>
-                <span class="tooltip" aria-hidden="true">
-                  <strong>{{ spec.shareLabel }}</strong>
-                  <span>{{ spec.spec }} {{ group.className }}</span>
-                  <span class="tooltip-meta">{{ spec.count | number }} of {{ popularity().total | number }} player slots</span>
+                <span class="bar-value" *ngIf="spec.showValue">{{ spec.valueLabel }}</span>
+                <span class="tooltip" aria-hidden="true" [ngSwitch]="view()">
+                  <ng-container *ngSwitchCase="'performance'">
+                    <ng-container *ngIf="spec.count; else unscored">
+                      <strong>{{ spec.valueLabel }} <span class="tooltip-unit">{{ scoreKind(spec) }}</span></strong>
+                      <span>{{ spec.spec }} {{ group.className }}</span>
+                      <span class="tooltip-meta">Average of the {{ scoreSample(spec) }}</span>
+                      <span class="tooltip-meta" *ngIf="spec.best as best">Best: {{ best.character.name }}, {{ best.score }}</span>
+                    </ng-container>
+                    <ng-template #unscored>
+                      <strong>-</strong>
+                      <span>{{ spec.spec }} {{ group.className }}</span>
+                      <span class="tooltip-meta">Nobody played it on {{ selectedDifficultyName() }}</span>
+                    </ng-template>
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>
+                    <strong>{{ spec.valueLabel }}</strong>
+                    <span>{{ spec.spec }} {{ group.className }}</span>
+                    <span class="tooltip-meta">{{ spec.count | number }} of {{ popularity().total | number }} player slots</span>
+                  </ng-container>
                 </span>
               </span>
             </button>
@@ -100,14 +126,14 @@
           <div class="class-label">
             <img [src]="group.classIcon" alt="" />
             <span>{{ group.className }}</span>
-            <span class="class-share">{{ group.shareLabel }}</span>
+            <span class="class-share">{{ group.valueLabel }}</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <p class="chart-empty" *ngIf="!loading() && !error() && popularity().total === 0">
+  <p class="chart-empty" *ngIf="!loading() && !error() && !hasData()">
     No player rosters were recorded for {{ selectedDifficultyName() }}.
   </p>
 </section>
