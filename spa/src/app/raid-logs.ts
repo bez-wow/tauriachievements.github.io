@@ -1,5 +1,6 @@
-import { formatClock } from './mythic-plus';
-import { LEGION_SPECS } from './mythic-plus-stats';
+import { getClassColor } from './class-colors';
+import { CLASS_NAMES, formatClock } from './mythic-plus';
+import { LEGION_SPECS, SpecDefinition, compareSpecLists } from './mythic-plus-stats';
 
 /*
  * The /raid-logs pages: every boss kill of the current raid, from the files RaidLogExporter
@@ -666,13 +667,198 @@ export function scoreCharacters(
       bosses: performances,
       killed: performances.filter(entry => entry.best).length,
       performance,
-      // A float sum can land a hair under a whole number; the nudge keeps that from costing a point.
-      score: Math.floor(MAX_SCORE * performance + 1e-9)
+      score: toScore(performance)
     };
   });
 
   return scores.sort((a, b) =>
     b.performance - a.performance || b.killed - a.killed || a.character.name.localeCompare(b.character.name));
+}
+
+function toScore(performance: number): number {
+  // A float sum can land a hair under a whole number; the nudge keeps that from costing a point.
+  return Math.floor(MAX_SCORE * performance + 1e-9);
+}
+
+// --- Spec performance -------------------------------------------------------------------
+
+/** The metric a spec is scored on, as the leaderboard ranks it: healing for healers, damage for the rest. */
+export function specMetric(spec: RaidSpec): RaidMetric {
+  return spec.role === 'healer' ? 'hps' : 'dps';
+}
+
+export interface SpecCharacterScore {
+  character: RaidCharacter;
+  score: number;
+}
+
+/**
+ * Every character's score as each spec they played, best first: the score the leaderboard shows
+ * with that spec picked (scoreCharacters with its specId), for every spec in one pass.
+ */
+export function scoresBySpec(
+  bosses: readonly RaidBoss[],
+  bossKills: ReadonlyArray<readonly RaidKillDetails[]>
+): Map<RaidSpec, SpecCharacterScore[]> {
+  const tops: Record<RaidMetric, number[]> = { dps: bosses.map(() => 0), hps: bosses.map(() => 0) };
+  // Each character's best value on each boss, by spec and characterKey.
+  const bests = new Map<RaidSpec, Map<string, { character: RaidCharacter; values: number[] }>>();
+
+  bosses.forEach((boss, bossIndex) => {
+    for (const kill of bossKills[bossIndex] ?? []) {
+      for (const member of kill.members) {
+        if (!member.spec) {
+          continue;
+        }
+
+        const metric = specMetric(member.spec);
+        const value = member[metric];
+        tops[metric][bossIndex] = Math.max(tops[metric][bossIndex], value);
+
+        let characters = bests.get(member.spec);
+        if (!characters) {
+          characters = new Map();
+          bests.set(member.spec, characters);
+        }
+
+        const key = cachedCharacterKey(member.character);
+        let entry = characters.get(key);
+        if (!entry) {
+          entry = { character: member.character, values: bosses.map(() => 0) };
+          characters.set(key, entry);
+        }
+        entry.values[bossIndex] = Math.max(entry.values[bossIndex], value);
+      }
+    }
+  });
+
+  const scoredBosses = { dps: tops.dps.filter(top => top > 0).length, hps: tops.hps.filter(top => top > 0).length };
+  const scores = new Map<RaidSpec, SpecCharacterScore[]>();
+  for (const [spec, characters] of bests) {
+    const metric = specMetric(spec);
+    const top = tops[metric];
+    if (!scoredBosses[metric]) {
+      continue;
+    }
+
+    scores.set(spec, [...characters.values()]
+      .map(({ character, values }) => ({
+        character,
+        score: toScore(values.reduce((sum, value, bossIndex) => sum + (top[bossIndex] > 0 ? value / top[bossIndex] : 0), 0) / scoredBosses[metric])
+      }))
+      .sort((a, b) => b.score - a.score || a.character.name.localeCompare(b.character.name)));
+  }
+
+  return scores;
+}
+
+/**
+ * How many of a spec's best scores its performance averages. Averaging everyone would mostly
+ * measure attendance, as a character who killed one boss scores a seventh of one who killed all.
+ */
+export const SPEC_TOP_SCORES = 10;
+
+/** The average of the best `count` scores, or of all of them when there are fewer; 0 for none. */
+export function topAverage(scores: readonly number[], count: number = SPEC_TOP_SCORES): number {
+  const top = [...scores].sort((a, b) => b - a).slice(0, count);
+  return top.length ? Math.round(top.reduce((sum, score) => sum + score, 0) / top.length) : 0;
+}
+
+export interface SpecPerformance extends SpecDefinition {
+  /** Characters scored as the spec. */
+  count: number;
+  /** The topAverage of their scores; 0 when nobody played the spec. */
+  score: number;
+  best?: SpecCharacterScore;
+}
+
+export interface ClassPerformance {
+  classId: number;
+  className: string;
+  color: string;
+  /** Characters scored as any of the listed specs, each counted once. */
+  count: number;
+  /** The topAverage of those characters, each at their best listed spec. */
+  score: number;
+  specs: SpecPerformance[];
+}
+
+export interface SpecPerformanceSummary {
+  /** Characters scored as any listed spec, each counted once. */
+  characterCount: number;
+  classes: ClassPerformance[];
+}
+
+/**
+ * Each spec's performance, grouped by class like specPopularity: specs inside a class best first
+ * (ties keep the game's order), and classes by their best spec, then their next one. Every Legion
+ * spec of the role is listed, so a spec nobody played still shows, at 0.
+ */
+export function specPerformance(
+  scores: ReadonlyMap<RaidSpec, readonly SpecCharacterScore[]>,
+  role?: RaidRole
+): SpecPerformanceSummary {
+  const bySpec = new Map([...scores].map(([spec, entries]) => [`${spec.classId}|${spec.name}`, entries]));
+  const groups = new Map<number, { group: ClassPerformance; characters: Map<string, number> }>();
+  const characters = new Set<string>();
+
+  for (const definition of LEGION_SPECS) {
+    if (role && definition.role !== role) {
+      continue;
+    }
+
+    let entry = groups.get(definition.classId);
+    if (!entry) {
+      entry = {
+        group: {
+          classId: definition.classId,
+          className: CLASS_NAMES[definition.classId] ?? 'Unknown',
+          color: getClassColor(definition.classId) ?? '#9a9a9a',
+          count: 0,
+          score: 0,
+          specs: []
+        },
+        characters: new Map()
+      };
+      groups.set(definition.classId, entry);
+    }
+
+    const specScores = bySpec.get(`${definition.classId}|${definition.spec}`) ?? [];
+    entry.group.specs.push({
+      ...definition,
+      count: specScores.length,
+      score: topAverage(specScores.map(score => score.score)),
+      best: specScores[0]
+    });
+
+    for (const { character, score } of specScores) {
+      const key = cachedCharacterKey(character);
+      characters.add(key);
+      entry.characters.set(key, Math.max(entry.characters.get(key) ?? 0, score));
+    }
+  }
+
+  const classes = [...groups.values()].map(({ group, characters: classCharacters }) => {
+    group.count = classCharacters.size;
+    group.score = topAverage([...classCharacters.values()]);
+    group.specs.sort((a, b) => b.score - a.score);
+    return group;
+  });
+  classes.sort((a, b) => compareSpecLists(a.specs, b.specs, spec => spec.score) || a.classId - b.classId);
+
+  return { characterCount: characters.size, classes };
+}
+
+/** Clean score gridlines (0, 1000, 2000, …), at most five steps, whose top value covers the best score. */
+export function scoreTicks(maxScore: number): number[] {
+  const step = [100, 200, 250, 500, 1000, 2000].find(candidate => maxScore / candidate <= 5) ?? 2000;
+  const top = Math.max(step, Math.ceil(maxScore / step) * step);
+  return Array.from({ length: top / step + 1 }, (_, index) => index * step);
+}
+
+/** A gridline's score as the axis shows it: 500, 1k, 2.5k. */
+export function formatScoreTick(score: number): string {
+  return score >= 1000 ? `${score / 1000}k` : String(score);
 }
 
 export interface ScoreFilter {

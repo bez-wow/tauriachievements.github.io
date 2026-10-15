@@ -35,6 +35,7 @@
 
     <app-raid-spec-popularity-chart
       [kills]="popularityKills()"
+      [bosses]="index()!.bosses"
       [difficulties]="index()!.difficulties"
       [selectedDifficulty]="current.slug"
       [raidName]="index()!.raid.name"

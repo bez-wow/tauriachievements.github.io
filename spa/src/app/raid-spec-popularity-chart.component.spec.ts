@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs';
+import { MAX_SCORE, RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs';
 import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
 
 const DIFFICULTIES: RaidDifficulty[] = [
@@ -11,8 +11,10 @@ const DIFFICULTIES: RaidDifficulty[] = [
 
 const RESTORATION: RaidSpec = { id: 105, classId: 11, name: 'Restoration', role: 'healer' };
 const FIRE: RaidSpec = { id: 63, classId: 8, name: 'Fire', role: 'dps' };
+const FROST: RaidSpec = { id: 64, classId: 8, name: 'Frost', role: 'dps' };
+const BOSS: RaidBoss = { id: 1, slug: 'boss', name: 'Boss', shortName: 'Boss', index: 0, portrait: '' };
 
-function member(name: string, spec: RaidSpec): RaidMember {
+function member(name: string, spec: RaidSpec, dps = 0): RaidMember {
   return {
     character: { name, realm: 'Evermoon', classId: spec.classId, race: 4, gender: 0, guild: '' },
     spec,
@@ -24,7 +26,7 @@ function member(name: string, spec: RaidSpec): RaidMember {
     damageTaken: 0,
     interrupts: 0,
     dispels: 0,
-    dps: 0,
+    dps,
     hps: 0
   };
 }
@@ -33,7 +35,7 @@ function kill(logId: number, members: RaidMember[]): RaidKillDetails {
   return {
     realm: 'Evermoon',
     logId,
-    boss: { id: 1, slug: 'boss', name: 'Boss', shortName: 'Boss', index: 0, portrait: '' },
+    boss: BOSS,
     difficulty: DIFFICULTIES[0],
     killedAt: 0,
     fightMs: 1000,
@@ -104,5 +106,42 @@ describe('RaidSpecPopularityChartComponent', () => {
 
     chart.role.set('dps');
     expect(chart.popularity().total).toBe(1);
+  });
+
+  it('switches to Performance, which ranks specs by their leaderboard scores', async () => {
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
+    fixture.componentRef.setInput('difficulties', DIFFICULTIES);
+    fixture.componentRef.setInput('selectedDifficulty', 'normal');
+    fixture.componentRef.setInput('bosses', [BOSS]);
+    fixture.componentRef.setInput('kills', []);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const chart = fixture.componentInstance;
+
+    const views = [...element.querySelectorAll<HTMLButtonElement>('.view-filter button')];
+    expect(views.map(button => button.textContent?.trim())).toEqual(['Popularity', 'Performance']);
+    views[1].click();
+    fixture.detectChanges();
+    expect(chart.view()).toBe('performance');
+    expect(element.querySelector('h2')?.textContent).toContain('Spec Performance');
+
+    // Fire has more players, but Frost's one scores higher than Fire's average.
+    fixture.componentRef.setInput('kills', [
+      kill(1, [member('Spark', FIRE, 100), member('Ember', FIRE, 50), member('Chill', FROST, 80)])
+    ]);
+    chart.role.set('dps');
+    const mage = chart.groups()[0];
+    expect(mage.className).toBe('Mage');
+    expect(mage.specs.map(spec => [spec.spec, spec.valueLabel])).toEqual([
+      ['Frost', String(Math.floor(MAX_SCORE * .8))],
+      ['Fire', String(Math.round((MAX_SCORE + Math.floor(MAX_SCORE * .5)) / 2))],
+      ['Arcane', '0']
+    ]);
+    expect(chart.subtitle()).toContain('3 characters');
+    expect(chart.gridlines().map(line => line.label)).toEqual(['0', '2k', '4k', '6k']);
+
+    chart.view.set('popularity');
+    expect(chart.groups()[0].specs.map(spec => spec.spec)).toEqual(['Fire', 'Frost', 'Arcane']);
   });
 });
