@@ -76,6 +76,7 @@
               appTapTooltip
               *ngFor="let spec of group.specs; let specIndex = index; trackBy: trackSpec"
               [style.--s]="specIndex"
+              [class.short-bar]="spec.heightPercent < 50"
               [attr.aria-label]="barLabel(spec, group)">
               <span
                 class="bar"
@@ -89,7 +90,7 @@
                     <ng-container *ngIf="spec.count; else unscored">
                       <strong>{{ spec.valueLabel }} <span class="tooltip-unit">{{ scoreKind(spec) }}</span></strong>
                       <span>{{ spec.spec }} {{ group.className }}</span>
-                      <span class="tooltip-meta">Average of the {{ scoreSample(spec) }}</span>
+                      <span class="tooltip-meta">{{ scoreSample(spec) }}</span>
                       <span class="tooltip-meta" *ngIf="spec.best as best">Best: {{ best.character.name }}, {{ best.score }}</span>
                     </ng-container>
                     <ng-template #unscored>

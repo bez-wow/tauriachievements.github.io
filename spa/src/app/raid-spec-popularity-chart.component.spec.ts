@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { MAX_SCORE, RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs';
-import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
+import { RaidSpecPopularityChartComponent, parseChartView, parseRoleFilter } from './raid-spec-popularity-chart.component';
 
 const DIFFICULTIES: RaidDifficulty[] = [
   { id: 14, slug: 'normal', name: 'Normal', shortName: 'N', kills: 2 },
@@ -143,5 +143,39 @@ describe('RaidSpecPopularityChartComponent', () => {
 
     chart.view.set('popularity');
     expect(chart.groups()[0].specs.map(spec => spec.spec)).toEqual(['Fire', 'Frost', 'Arcane']);
+  });
+
+  it('opens on the view and role it is given, and reports a click on either', async () => {
+    await TestBed.configureTestingModule({ imports: [RaidSpecPopularityChartComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(RaidSpecPopularityChartComponent);
+    fixture.componentRef.setInput('difficulties', DIFFICULTIES);
+    fixture.componentRef.setInput('selectedDifficulty', 'mythic');
+    fixture.componentRef.setInput('kills', []);
+    fixture.componentRef.setInput('view', 'performance');
+    fixture.componentRef.setInput('role', 'healer');
+    const views: string[] = [];
+    const roles: string[] = [];
+    // A model's subscribe is its viewChange / roleChange output.
+    fixture.componentInstance.view.subscribe(view => views.push(view));
+    fixture.componentInstance.role.subscribe(role => roles.push(role));
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+
+    const active = [...element.querySelectorAll('.segmented button.active')].map(button => button.textContent?.trim());
+    expect(active).toEqual(['Performance', 'Mythic', 'Healer']);
+
+    element.querySelector<HTMLButtonElement>('.view-filter button')!.click();
+    [...element.querySelectorAll<HTMLButtonElement>('.role-filter button')].at(-1)!.click();
+    expect(views).toEqual(['popularity']);
+    expect(roles).toEqual(['dps']);
+  });
+});
+
+describe('parseChartView and parseRoleFilter', () => {
+  it('read the address bar, falling back to the defaults', () => {
+    expect(['performance', 'popularity', 'nonsense', null].map(parseChartView))
+      .toEqual(['performance', 'popularity', 'popularity', 'popularity']);
+    expect(['tank', 'healer', 'dps', 'heal', null].map(parseRoleFilter))
+      .toEqual(['tank', 'healer', 'dps', 'all', 'all']);
   });
 });

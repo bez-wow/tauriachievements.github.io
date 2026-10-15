@@ -33,7 +33,13 @@ import {
 } from './raid-logs';
 import { RaceBySpecComponent } from './race-by-spec.component';
 import { RaceSample } from './race-popularity';
-import { RaidSpecPopularityChartComponent } from './raid-spec-popularity-chart.component';
+import {
+  ChartView,
+  RaidSpecPopularityChartComponent,
+  RoleFilter,
+  parseChartView,
+  parseRoleFilter
+} from './raid-spec-popularity-chart.component';
 import { RevealDirective } from './reveal.directive';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
@@ -58,8 +64,8 @@ const RECENT_KILLS = 12;
 
 /**
  * /raid-logs: the raid at a glance on one difficulty (`?difficulty=`): each boss's kills, fastest
- * kill and best damage and healing, spec popularity and performance and each spec's races, the guilds' progress,
- * and the latest kills.
+ * kill and best damage and healing, spec popularity and performance (`?view=`, `?role=`) and each
+ * spec's races, the guilds' progress, and the latest kills.
  * The summary reads the index; the popularity sections also load the selected difficulty's rosters.
  */
 @Component({
@@ -108,6 +114,9 @@ export class RaidLogsPageComponent implements OnInit {
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
+  /** The spec chart's view and role, kept in `?view=` and `?role=` so every combination can be linked. */
+  readonly chartView = signal<ChartView>(parseChartView(this.route.snapshot.queryParamMap.get('view')));
+  readonly chartRole = signal<RoleFilter>(parseRoleFilter(this.route.snapshot.queryParamMap.get('role')));
   readonly showAllGuilds = signal(false);
   readonly bosses = computed(() => this.index()?.bosses ?? []);
   /** The progress squares' order: the order raiders kill the bosses. */
@@ -224,6 +233,16 @@ export class RaidLogsPageComponent implements OnInit {
     }
   }
 
+  setChartView(view: ChartView): void {
+    this.chartView.set(view);
+    this.writeUrl();
+  }
+
+  setChartRole(role: RoleFilter): void {
+    this.chartRole.set(role);
+    this.writeUrl();
+  }
+
   retryPopularity(): void {
     const difficulty = this.difficulty();
     if (difficulty) {
@@ -292,11 +311,18 @@ export class RaidLogsPageComponent implements OnInit {
       });
   }
 
-  /** In-page filters keep the scroll position: no navigation, only the address bar changes. */
+  /**
+   * In-page filters keep the scroll position: no navigation, only the address bar changes. The
+   * defaults (Popularity, all roles) stay out of it.
+   */
   private writeUrl(): void {
     const url = this.router.createUrlTree([], {
       relativeTo: this.route,
-      queryParams: { difficulty: this.difficulty()?.slug ?? null }
+      queryParams: {
+        difficulty: this.difficulty()?.slug ?? null,
+        view: this.chartView() === 'popularity' ? null : this.chartView(),
+        role: this.chartRole() === 'all' ? null : this.chartRole()
+      }
     });
     this.location.replaceState(this.router.serializeUrl(url));
   }
