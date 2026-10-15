@@ -29,6 +29,11 @@ html, body {
   line-height: 1.5;
 }
 
+// The page behind the open menu drawer (update-bar) stays put instead of scrolling under it.
+html:has(.site-drawer[open]) {
+  overflow: hidden;
+}
+
 // viewport-fit=cover lets the page draw under the notch; keep the content itself clear of it.
 body {
   padding-left: env(safe-area-inset-left, 0px);
