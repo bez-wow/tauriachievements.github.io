@@ -270,6 +270,11 @@ export class MythicPlusRecordsPageComponent implements OnInit {
     return runner.key;
   }
 
+  /** A click anywhere on a Most runs row, as on the leaderboard's players table. */
+  openProfile(runner: RunnerRow): void {
+    this.router.navigate(runner.member.profileLink);
+  }
+
   trackMember(index: number, member: MemberView): string {
     return `${member.name}-${member.realm}`;
   }

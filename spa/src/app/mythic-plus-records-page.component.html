@@ -200,7 +200,8 @@
       <!-- Rows slide in down the list the first time it's on screen, each bar growing to its length. -->
       <ol class="runners" *ngIf="mostRuns().length; else noRunners" [appReveal]="1600">
         <li *ngFor="let runner of mostRuns(); let index = index; trackBy: trackRunner" [style.--i]="index">
-          <a class="runner" [routerLink]="runner.member.profileLink">
+          <!-- A click anywhere on the row opens the profile; the name and the guild are links of their own. -->
+          <div class="runner" (click)="openProfile(runner)">
             <span class="runner-rank" [ngClass]="'q-' + runner.quality"><span class="visually-hidden">Rank </span>{{ runner.rank }}</span>
             <span class="runner-player">
               <span class="player-icons">
@@ -208,8 +209,18 @@
                 <span class="spec-icon" *ngIf="runner.member.specIcon"><img [src]="runner.member.specIcon" alt="" /></span>
               </span>
               <span class="runner-name">
-                <span [style.color]="runner.member.color" [title]="runner.member.spec + ' ' + runner.member.className">{{ runner.member.name }}</span>
-                <span class="runner-guild" *ngIf="runner.member.guild">{{ runner.member.guild }}</span>
+                <a
+                  class="runner-link"
+                  [routerLink]="runner.member.profileLink"
+                  [style.color]="runner.member.color"
+                  [title]="runner.member.spec + ' ' + runner.member.className"
+                  (click)="$event.stopPropagation()">{{ runner.member.name }}</a>
+                <a
+                  class="runner-guild"
+                  *ngIf="runner.member.guildLink"
+                  [routerLink]="runner.member.guildLink"
+                  title="Open the guild's Mythic+ ladder"
+                  (click)="$event.stopPropagation()">{{ runner.member.guild }}</a>
               </span>
             </span>
             <span class="runner-runs">
@@ -222,7 +233,7 @@
             <span class="runner-stat runner-best">
               <strong>{{ runner.highestTimed ? '+' + runner.highestTimed : '-' }}</strong> highest timed
             </span>
-          </a>
+          </div>
         </li>
       </ol>
       <ng-template #noRunners>

@@ -23,6 +23,7 @@ describe('findNavLocation', () => {
   it('files deeper routes under the page they belong to', () => {
     expect(locate('/mythic-plus/character/tauri/Arthas')).toBe('Mythic+ / Leaderboard');
     expect(locate('/mythic-plus/compare?a=1&b=2')).toBe('Mythic+ / Leaderboard');
+    expect(locate('/mythic-plus/guild/evermoon/Skill%20Issue')).toBe('Mythic+ / Leaderboard');
     expect(locate('/raid-logs/boss/xavius-heroic')).toBe('Raids / Raid Logs');
     expect(locate('/raid-logs/log/evermoon/12345')).toBe('Raids / Raid Logs');
     expect(locate('/raid-logs/guild/tauri/Some%20Guild')).toBe('Raids / Raid Logs');

@@ -128,7 +128,7 @@ describe('MythicPlusProfilePageComponent', () => {
 
     // Tank also has 290; the tie goes by name, as on the players view.
     expect(page.ranks().map(tile => [tile.scope, tile.rank, tile.total])).toEqual([
-      ['Overall', 1, 6], ['Realm', 1, 4], ['Class', 1, 2], ['Spec', 1, 2], ['Role', 1, 4]
+      ['Overall', 1, 6], ['Realm', 1, 4], ['Guild', 1, 1], ['Class', 1, 2], ['Spec', 1, 2], ['Role', 1, 4]
     ]);
     expect(page.ranks()[1].queryParams).toEqual({ view: 'players', realm: 'evermoon', character: 'Progtrix-Evermoon', page: undefined });
 
@@ -137,6 +137,23 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.teammates().map(mate => [mate.member.name, mate.runs])).toEqual([['Tank', 2], ['Healer', 1], ['Lili', 1]]);
     expect(page.historyRows().map(row => row.completedAt.slice(0, 10))).toEqual(['2026-09-19', '2026-09-18', '2026-09-17']);
     expect(page.timeline().at(-1)?.score).toBe(290);
+  });
+
+  it('links the guild in the header and ranks the character in it, linking to the guild ladder', async () => {
+    const { element } = await open('/mythic-plus/character/evermoon/Progtrix');
+
+    expect(element.querySelector('.profile-meta a.guild-link')?.getAttribute('href')).toBe('/mythic-plus/guild/evermoon/The%20Echoes');
+    const tile = [...element.querySelectorAll('.rank-tile')].find(link => link.querySelector('.rank-scope')?.textContent === 'Guild');
+    expect(tile?.querySelector('.rank-label')?.textContent?.trim()).toBe('The Echoes');
+    expect(tile?.getAttribute('href')).toBe('/mythic-plus/guild/evermoon/The%20Echoes?character=Progtrix-Evermoon');
+    expect(element.querySelectorAll('.rank-tile')).toHaveLength(6);
+  });
+
+  it('has no guild link or Guild tile for a character without a guild', async () => {
+    const { page, element } = await open('/mythic-plus/character/evermoon/Tank');
+
+    expect(element.querySelector('.guild-link')).toBeNull();
+    expect(page.ranks().map(tile => tile.scope)).toEqual(['Overall', 'Realm', 'Class', 'Spec', 'Role']);
   });
 
   it('shows score gain and overall rank movement from the previous scan', async () => {
@@ -184,9 +201,10 @@ describe('MythicPlusProfilePageComponent', () => {
     expect(page.summary().map(item => item.value)).toEqual(['1', '0%', '-']);
     // Overall, Realm and Class stay the character's; the Spec tile ranks them among Mistweavers.
     expect(page.ranks().map(tile => [tile.scope, tile.label, tile.rank, tile.total])).toEqual([
-      ['Overall', 'All realms', 1, 6], ['Realm', 'Evermoon', 1, 4], ['Class', 'Monk', 1, 2], ['Spec', 'Mistweaver Monk', 1, 1], ['Role', 'Healer', 2, 2]
+      ['Overall', 'All realms', 1, 6], ['Realm', 'Evermoon', 1, 4], ['Guild', 'The Echoes', 1, 1], ['Class', 'Monk', 1, 2],
+      ['Spec', 'Mistweaver Monk', 1, 1], ['Role', 'Healer', 2, 2]
     ]);
-    expect(page.ranks()[3].queryParams).toEqual({
+    expect(page.ranks()[4].queryParams).toEqual({
       view: 'players', class: 10, spec: 'Mistweaver', character: 'Progtrix-Evermoon', page: undefined
     });
     expect(page.dungeonBests().map(best => best.run?.score)).toEqual([120, undefined, undefined]);
@@ -205,7 +223,7 @@ describe('MythicPlusProfilePageComponent', () => {
 
     click(1);
     expect(page.selectedSpec()).toBe('Windwalker');
-    expect(page.ranks()[3]).toMatchObject({ label: 'Windwalker Monk', rank: 1, total: 2 });
+    expect(page.ranks()[4]).toMatchObject({ label: 'Windwalker Monk', rank: 1, total: 2 });
     click(0);
     expect(page.selectedSpec()).toBeUndefined();
     expect(pills().map(pill => pill.getAttribute('aria-pressed'))).toEqual(['true', 'false', 'false']);

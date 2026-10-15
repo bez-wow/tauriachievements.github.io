@@ -1,7 +1,8 @@
 <ng-container *ngIf="cards(); else table">
   <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon" *ngIf="rows().length; else empty">
     <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
-      <a class="player-card" [class.picking]="pickMode()" [routerLink]="row.member.profileLink" (click)="onLink($event, row)">
+      <!-- Like a table row: a tap anywhere opens the profile, and the name and the guild are links of their own. -->
+      <div class="player-card" [class.picking]="pickMode()" (click)="openProfile(row)">
         <span class="pick-box" *ngIf="pickMode()" aria-hidden="true"></span>
         <span class="card-rank" [style.color]="row.color">
           <span class="rank-metric">
@@ -26,10 +27,27 @@
                 <img [src]="row.member.specIcon" alt="" />
               </span>
             </span>
-            <span class="card-name" [style.color]="row.member.color">{{ row.member.name }}</span>
+            <a
+              class="card-name"
+              [routerLink]="row.member.profileLink"
+              [style.color]="row.member.color"
+              (click)="onLink($event, row)">{{ row.member.name }}</a>
             <span class="card-realm">{{ row.member.realm }}</span>
           </span>
-          <span class="card-guild" *ngIf="row.member.guild">&lt;{{ row.member.guild }}&gt;</span>
+          <ng-container *ngIf="ladder() === 'guild'; else guildLine">
+            <span class="card-overall" *ngIf="row.overall as overall">#{{ overall.rank | number }} overall</span>
+          </ng-container>
+          <ng-template #guildLine>
+            <ng-container *ngIf="row.member.guild">
+              <a
+                *ngIf="row.member.guildLink && !pickMode(); else plainCardGuild"
+                class="card-guild"
+                [routerLink]="row.member.guildLink"
+                [attr.aria-label]="'Open the guild ladder of ' + row.member.guild"
+                (click)="$event.stopPropagation()">&lt;{{ row.member.guild }}&gt;</a>
+              <ng-template #plainCardGuild><span class="card-guild">&lt;{{ row.member.guild }}&gt;</span></ng-template>
+            </ng-container>
+          </ng-template>
           <span class="card-bests" *ngIf="singleDungeon(); else dungeonChips">
             <ng-container *ngIf="row.bests[0] as best">
               <span class="level" [class.over-time]="!best.timed">
@@ -59,7 +77,7 @@
           </ng-container>
           <span *ngIf="row.newSinceLastScan" class="player-new" title="New since the last scan">new</span>
         </span>
-      </a>
+      </div>
     </li>
   </ol>
 </ng-container>
@@ -77,7 +95,8 @@
           <th scope="col" class="col-pick" *ngIf="pickMode()"><span class="visually-hidden">Picked</span></th>
           <th scope="col">Rank</th>
           <th scope="col" class="col-player">Player</th>
-          <th scope="col" class="col-guild">Guild</th>
+          <th scope="col" class="col-guild" *ngIf="ladder() === 'server'">Guild</th>
+          <th scope="col" class="col-overall" *ngIf="ladder() === 'guild'" title="Rank on the whole leaderboard">Overall</th>
           <ng-container *ngIf="singleDungeon(); else dungeonColumns">
             <th scope="col">Best key</th>
             <th scope="col">Time</th>
@@ -133,7 +152,24 @@
               <span class="player-realm">{{ row.member.realm }}</span>
             </span>
           </td>
-          <td class="col-guild">{{ row.member.guild }}</td>
+          <td class="col-guild" *ngIf="ladder() === 'server'">
+            <a
+              *ngIf="row.member.guildLink && !pickMode(); else plainGuild"
+              class="guild-link"
+              [routerLink]="row.member.guildLink"
+              [title]="'Open the guild ladder of ' + row.member.guild"
+              (click)="$event.stopPropagation()">{{ row.member.guild }}</a>
+            <ng-template #plainGuild>{{ row.member.guild }}</ng-template>
+          </td>
+          <td class="col-overall" *ngIf="ladder() === 'guild'">
+            <a
+              *ngIf="row.overall as overall"
+              class="overall-link"
+              routerLink="/mythic-plus"
+              [queryParams]="overall.queryParams"
+              [title]="'#' + overall.rank + ' on the whole leaderboard. Show it there'"
+              (click)="$event.stopPropagation()">#{{ overall.rank | number }}</a>
+          </td>
           <ng-container *ngIf="singleDungeon(); else dungeonCells">
             <ng-container *ngIf="row.bests[0] as best">
               <td class="col-level" [class.over-time]="!best.timed">

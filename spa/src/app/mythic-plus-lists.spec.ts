@@ -18,8 +18,8 @@ const affixes: MythicPlusAffix[] = [
   { id: 3, name: 'Volcanic', level: 7, icon: 'volcanic.png', description: 'Flames erupt.' }
 ];
 
-function member(name: string, role: MythicPlusMember['role']): MythicPlusMember {
-  return { name, realm: 'Evermoon', class: 1, race: 1, gender: 0, spec: 'Arms', role };
+function member(name: string, role: MythicPlusMember['role'], guild?: string): MythicPlusMember {
+  return { name, realm: 'Evermoon', guild, class: 1, race: 1, gender: 0, spec: 'Arms', role };
 }
 
 function runRow(id: string, rank: number): RunRow {
@@ -36,11 +36,11 @@ function runRow(id: string, rank: number): RunRow {
   return { ...toRunView(run, dungeon, new Map(affixes.map(affix => [affix.id, affix])), { tiers: undefined, dungeons: 9 }), rank };
 }
 
-function playerRow(name: string): PlayerRow {
+function playerRow(name: string, guild?: string): PlayerRow {
   return {
     key: `${name}-Evermoon`,
     rank: 1,
-    member: toMemberView(member(name, 'dps')),
+    member: toMemberView(member(name, 'dps', guild)),
     score: 300,
     color: 'rgb(163, 54, 237)',
     bests: [
@@ -140,9 +140,71 @@ describe('MythicPlusPlayersListComponent', () => {
     expect(element.querySelector('.card-time')?.textContent).toBe('00:30:00');
   });
 
-  it('links each card to the player profile', () => {
-    const card: HTMLAnchorElement = render(true).nativeElement.querySelector('a.player-card');
-    expect(card.getAttribute('href')).toBe('/mythic-plus/character/evermoon/Alpha');
+  it('opens the profile from anywhere on a card, and links the name to it', () => {
+    const fixture = render(true);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    (fixture.nativeElement.querySelector('.player-card .card-score') as HTMLElement).click();
+    expect(navigate).toHaveBeenCalledWith(['/mythic-plus', 'character', 'evermoon', 'Alpha']);
+    expect(fixture.nativeElement.querySelector('.player-card a.card-name').getAttribute('href'))
+      .toBe('/mythic-plus/character/evermoon/Alpha');
+  });
+
+  it('links the guild to its ladder in table rows and cards', () => {
+    for (const cards of [true, false]) {
+      const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+      fixture.componentRef.setInput('rows', [playerRow('Alpha', 'Skill Issue'), playerRow('Solo')]);
+      fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+      fixture.componentRef.setInput('cards', cards);
+      fixture.detectChanges();
+      const router = TestBed.inject(Router);
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      const follow = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+      const links = fixture.nativeElement.querySelectorAll(cards ? 'a.card-guild' : 'a.guild-link');
+      expect(links).toHaveLength(1);
+      expect(links[0].getAttribute('href')).toBe('/mythic-plus/guild/evermoon/Skill%20Issue');
+      // The guild link is its own: it doesn't also open the profile.
+      links[0].click();
+      expect(follow).toHaveBeenCalledTimes(1);
+      expect(navigate).not.toHaveBeenCalled();
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('keeps the guild plain text while picking players to compare', () => {
+    const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+    fixture.componentRef.setInput('rows', [playerRow('Alpha', 'Skill Issue')]);
+    fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+    fixture.componentRef.setInput('pickMode', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('a.guild-link')).toBeNull();
+    expect(fixture.nativeElement.querySelector('td.col-guild').textContent.trim()).toBe('Skill Issue');
+  });
+
+  it('shows the overall rank instead of the guild on a guild ladder', () => {
+    for (const cards of [true, false]) {
+      const fixture = TestBed.createComponent(MythicPlusPlayersListComponent);
+      fixture.componentRef.setInput('rows', [{
+        ...playerRow('Alpha', 'Skill Issue'),
+        overall: { rank: 1212, queryParams: { view: 'players', character: 'Alpha-Evermoon', page: 25 } }
+      }]);
+      fixture.componentRef.setInput('dungeons', [dungeon, otherDungeon]);
+      fixture.componentRef.setInput('cards', cards);
+      fixture.componentRef.setInput('ladder', 'guild');
+      fixture.detectChanges();
+      const element: HTMLElement = fixture.nativeElement;
+
+      expect(element.querySelector('.col-guild, .card-guild')).toBeNull();
+      if (cards) {
+        expect(element.querySelector('.card-overall')?.textContent).toBe('#1,212 overall');
+      } else {
+        expect(element.querySelector('th.col-overall')?.textContent).toBe('Overall');
+        expect(element.querySelector('a.overall-link')?.getAttribute('href'))
+          .toBe('/mythic-plus?view=players&character=Alpha-Evermoon&page=25');
+      }
+    }
   });
 
   it('shows the primary spec icon after the class icon in cards and table rows', () => {

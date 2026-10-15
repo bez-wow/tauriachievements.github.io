@@ -1,3 +1,4 @@
+import { Params } from '@angular/router';
 import { getArmoryUrl } from '../utils/armory';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { getRaceIconPath } from '../utils/raceIconHelper';
@@ -17,6 +18,7 @@ import {
   sortRoster,
   upgradeCutoffs
 } from './mythic-plus';
+import { guildLadderLink, guildOf } from './mythic-plus-guild';
 import { characterProfileLink } from './mythic-plus-profile';
 import { specIconFor } from './mythic-plus-stats';
 
@@ -38,6 +40,8 @@ export interface MemberView extends MythicPlusMember {
   armoryUrl: string;
   /** Router commands for the character's profile page. */
   profileLink: string[];
+  /** Router commands for their guild's ladder; undefined when guildless. */
+  guildLink?: string[];
   classIcon: string;
   raceIcon: string;
   specIcon?: string;
@@ -95,21 +99,44 @@ export interface PlayerRow {
   change?: { score: number; rank: number };
   /** Present in this scan but absent from the previous one. */
   newSinceLastScan?: boolean;
+  /** A guild ladder's row: the character's rank on the whole leaderboard, and the query that shows it there. */
+  overall?: { rank: number; queryParams: Params };
   /** One per dungeon in scope, in tile order; undefined where the character has no run. */
   bests: Array<BestRunCell | undefined>;
 }
 
 export function toMemberView(member: MythicPlusMember): MemberView {
+  const guild = guildOf(member);
   return {
     ...member,
     color: getClassColor(member.class) ?? '#e0e0e0',
     className: CLASS_NAMES[member.class] ?? 'Unknown',
     armoryUrl: getArmoryUrl(member.name, member.realm),
     profileLink: characterProfileLink(member),
+    guildLink: guild && guildLadderLink(guild),
     classIcon: getClassIconPath(member.class),
     raceIcon: getRaceIconPath(member.race, member.gender),
     specIcon: specIconFor(member.class, member.spec)
   };
+}
+
+/** A character's best run in each dungeon in scope, as players-table cells; undefined where they have none. */
+export function bestRunCells(
+  bestRuns: ReadonlyMap<string, MythicPlusRun>,
+  dungeons: readonly MythicPlusDungeon[]
+): Array<BestRunCell | undefined> {
+  return dungeons.map(dungeon => {
+    const run = bestRuns.get(dungeon.id);
+    const upgrades = run ? keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) : 0;
+    return run && {
+      dungeon,
+      keyLevel: run.keyLevel,
+      timed: upgrades > 0,
+      upgrades,
+      clearTime: formatDuration(run.clearTimeSeconds),
+      score: run.score
+    };
+  });
 }
 
 export function toRunView(

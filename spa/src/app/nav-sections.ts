@@ -97,7 +97,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         label: 'Leaderboard',
         icon: '🗝️',
         path: '/mythic-plus',
-        includes: ['/mythic-plus/character', '/mythic-plus/compare', '/mythic-plus/scoring'],
+        includes: ['/mythic-plus/character', '/mythic-plus/guild', '/mythic-plus/compare', '/mythic-plus/scoring'],
         description: 'Run and player rankings by dungeon and spec'
       },
       { label: 'Statistics', tab: 'Activity', icon: '⏱️', path: '/mythic-plus/stats', description: 'Runs by day, dungeon, key level and affix week' },
