@@ -5,10 +5,10 @@ import {
   ElementRef,
   HostListener,
   Input,
-  afterNextRender,
   computed,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -42,7 +42,10 @@ export class UpdateBarComponent {
   );
   /** The section whose dropdown is open, if any. */
   protected readonly openSectionId = signal<string | null>(null);
+  /** Whether the side drawer, the menu on narrow screens, is open. */
+  protected readonly drawerOpen = signal(false);
 
+  private readonly drawer = viewChild.required<ElementRef<HTMLDialogElement>>('drawer');
   private readonly router = inject(Router);
   private readonly host: HTMLElement = inject(ElementRef<HTMLElement>).nativeElement;
   /** A section opened by pointing at it; the click that usually follows keeps it open. */
@@ -59,16 +62,42 @@ export class UpdateBarComponent {
   /** Where the current page sits in the navigation. */
   protected readonly location = computed(() => findNavLocation(this.url()));
 
-  constructor() {
-    // On narrow screens the sections scroll sideways; start with the current one in view.
-    afterNextRender(() => {
-      for (const scroller of this.host.querySelectorAll<HTMLElement>('.site-nav-list')) {
-        const current = scroller.querySelector<HTMLElement>('.is-current');
-        if (current && scroller.scrollWidth > scroller.clientWidth) {
-          scroller.scrollLeft = current.offsetLeft - (scroller.clientWidth - current.offsetWidth) / 2;
-        }
-      }
-    });
+  /** The menu button shows the current page; off the navigation it just reads "Menu". */
+  protected readonly menuText = computed(() => this.location()?.page.label ?? 'Menu');
+  /** The menu button's name, which keeps its visible text. */
+  protected readonly menuLabel = computed(() => (this.location() ? `Menu: ${this.menuText()}` : null));
+
+  openDrawer(): void {
+    const dialog = this.drawer().nativeElement;
+    this.closeMenu();
+
+    if (!dialog.open) {
+      dialog.showModal();
+    }
+    this.drawerOpen.set(true);
+
+    // The list is taller than a phone; start with the current page in view.
+    const list = dialog.querySelector<HTMLElement>('.site-drawer-nav');
+    const current = list?.querySelector<HTMLElement>('.is-current');
+    if (list && current) {
+      list.scrollTop = current.offsetTop - (list.clientHeight - current.offsetHeight) / 2;
+    }
+  }
+
+  closeDrawer(): void {
+    const dialog = this.drawer().nativeElement;
+    if (dialog.open) {
+      dialog.close();
+    }
+    // The dialog's close event comes a task later; it also covers Escape.
+    this.drawerOpen.set(false);
+  }
+
+  /** The drawer fills the dialog, so a click that lands on the dialog itself is on the backdrop. */
+  onDrawerClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeDrawer();
+    }
   }
 
   toggleSection(section: NavSection): void {

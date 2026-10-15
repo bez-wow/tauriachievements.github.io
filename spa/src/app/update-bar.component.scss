@@ -1,8 +1,8 @@
 // The site header: sections with their page dropdowns.
 //
-// Up to 960 px wide the sections scroll sideways and a dropdown opens as a sheet across the
-// screen. The sheet is position: fixed inside a scroller, so no ancestor of it may have a
-// transform, filter, backdrop-filter, mask or contain: those would clip it or pin it to the strip.
+// Up to 960 px wide the sections give way to a menu button that opens every page in a side
+// drawer. The drawer is a modal <dialog>, so it sits in the top layer: nothing a page draws can
+// cover it, and no ancestor's transform or overflow can clip it.
 
 :host {
   display: block;
@@ -229,8 +229,231 @@
   white-space: nowrap;
 }
 
-.site-nav-backdrop {
+// --- Menu button and drawer (960 px and narrower) ------------------------------------------------
+
+.site-menu-toggle {
   display: none;
+  align-items: center;
+  align-self: stretch;
+  justify-self: start;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 12px 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #c3c9d3;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: color var(--dur-fast) ease, background var(--dur-fast) ease;
+
+  &:hover,
+  &[aria-expanded="true"] {
+    background: #202024;
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(247, 181, 0, 0.55);
+  }
+}
+
+.site-menu-icon,
+.site-drawer-close svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.site-menu-label {
+  min-width: 0;
+  overflow: hidden;
+  color: #fff0b3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: min(360px, 88vw);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid #242424;
+  background: #111;
+  box-shadow: 18px 0 42px rgba(0, 0, 0, 0.72);
+  color: #f4f4f4;
+
+  &[open] {
+    animation: mp-drawer-in var(--dur) var(--ease-out);
+  }
+
+  &::backdrop {
+    background: rgba(4, 4, 6, 0.6);
+  }
+
+  &[open]::backdrop {
+    animation: mp-fade-in var(--dur) ease;
+  }
+}
+
+.site-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.site-drawer-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding-left: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(25, 25, 30, 0.99), rgba(10, 10, 14, 0.995));
+}
+
+.site-drawer-title {
+  color: #ffd100;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.site-drawer-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: #c3c9d3;
+  cursor: pointer;
+
+  &:hover {
+    background: #202024;
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(247, 181, 0, 0.55);
+  }
+}
+
+// Positioned, so a page row's offsetTop is measured from here when the current one is scrolled into view.
+.site-drawer-nav {
+  position: relative;
+  flex: 1 1 auto;
+  padding-bottom: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.site-drawer-section + .site-drawer-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.site-drawer-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 14px 6px;
+  color: #d8c48a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.site-drawer-pages {
+  list-style: none;
+}
+
+.site-drawer-page {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 14px 8px 11px;
+  border-left: 3px solid transparent;
+  color: #f4f4f4;
+  text-decoration: none;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+
+  &:hover {
+    background: #202020;
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #f7b500;
+    outline-offset: -2px;
+    background: #202020;
+  }
+
+  &.is-current {
+    border-left-color: #f7b500;
+    background: #282828;
+    color: #f7b500;
+  }
+}
+
+.site-drawer-page-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.site-drawer-tag {
+  padding: 1px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+  color: #b8b8b8;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.site-drawer-foot {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0c0c0f;
+
+  .action-link {
+    flex: 1 1 0;
+    min-height: 44px;
+  }
 }
 
 // --- Support and Discord -------------------------------------------------------------------------
@@ -362,87 +585,28 @@
   }
 }
 
-// --- Narrow screens: the sections scroll and a dropdown is a sheet --------------------------------
+// --- Narrow screens: a menu button and the drawer -------------------------------------------------
 
 // Above this the sections, both side columns and the header buttons need about 950 px in one row.
 @media (max-width: 960px) {
   .site-bar {
-    grid-template-columns: 96px minmax(0, 1fr) max-content;
+    grid-template-columns: minmax(0, 1fr) max-content max-content;
   }
 
   .site-nav {
-    width: 100%;
-    justify-self: stretch;
+    display: none;
   }
 
-  // Fades the sections out under both edges, so a cut-off one reads as "there is more". The list
-  // is padded by the same widths, so nothing is faded once it is scrolled to an end.
-  .site-nav::before,
-  .site-nav::after {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    bottom: 0;
-    pointer-events: none;
+  .site-menu-toggle {
+    display: inline-flex;
   }
 
-  .site-nav::before {
-    left: 0;
-    width: 14px;
-    background: linear-gradient(270deg, rgba(20, 20, 25, 0), rgba(20, 20, 25, 0.98));
-  }
-
-  .site-nav::after {
-    right: 0;
-    width: 24px;
-    background: linear-gradient(90deg, rgba(12, 12, 16, 0), rgba(12, 12, 16, 0.98));
-  }
-
-  .site-nav-list {
-    justify-content: flex-start;
-    padding-left: 14px;
-    padding-right: 24px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  .site-nav-panel {
-    position: fixed;
-    top: calc(var(--site-bar-height) + 6px);
-    left: calc(8px + env(safe-area-inset-left, 0px));
-    right: calc(8px + env(safe-area-inset-right, 0px));
-    width: auto;
-    max-width: none;
-    max-height: calc(100dvh - var(--site-bar-height) - 16px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  .site-nav-backdrop {
-    position: fixed;
-    inset: 0;
-    display: block;
-    background: rgba(4, 4, 6, 0.6);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--dur) ease, visibility var(--dur) ease;
-    z-index: 1100;
-
-    &.is-open {
-      opacity: 1;
-      visibility: visible;
-    }
+  .update-bar-status {
+    justify-self: end;
   }
 }
 
-// --- Phones --------------------------------------------------------------------------------------
+// --- Phones: Support and Discord move into the drawer ---------------------------------------------
 
 @media (max-width: 640px) {
   // Phone pages were designed for a 30 px header.
@@ -455,29 +619,22 @@
   }
 
   .site-bar {
-    grid-template-columns: 96px minmax(0, 1fr) max-content;
+    grid-template-columns: minmax(0, 1fr) max-content;
     padding-left: calc(4px + env(safe-area-inset-left, 0px));
-    padding-right: calc(4px + env(safe-area-inset-right, 0px));
+    padding-right: calc(8px + env(safe-area-inset-right, 0px));
     gap: 4px;
   }
 
-  .site-nav-trigger {
-    height: 100%;
-    gap: 6px;
-  }
-
-  .action-link {
-    min-height: 40px;
-  }
-
-  .discord-link {
-    width: 40px;
+  .update-bar-actions {
+    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .site-nav-new,
-  .site-nav-panel {
+  .site-nav-panel,
+  .site-drawer[open],
+  .site-drawer[open]::backdrop {
     animation: none;
   }
 }

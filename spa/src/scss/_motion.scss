@@ -95,6 +95,9 @@ $gold: #f7b500;
 @keyframes mp-chip-out { to { opacity: 0; scale: .8; } }
 @keyframes mp-count-bump { from { color: $gold; scale: 1.5; } }
 
+// Site header: the menu drawer on narrow screens
+@keyframes mp-drawer-in { from { translate: -100% 0; } }
+
 // Charts (spec popularity, stats)
 @keyframes mp-bar-grow { from { height: 0; } }
 @keyframes mp-grow-y { from { transform: scaleY(0); } }
