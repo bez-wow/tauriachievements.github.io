@@ -33,8 +33,6 @@ import {
   currentAffixWeek,
   exportedAt,
   formatClock,
-  formatDuration,
-  keystoneUpgrades,
   memberNameMatches,
   pageCount,
   PlayerScore,
@@ -61,6 +59,7 @@ import {
   MYTHIC_PLUS_PAGE_SIZE,
   PlayerRow,
   RunRow,
+  bestRunCells,
   toMemberView,
   toRunView
 } from './mythic-plus-views';
@@ -473,17 +472,7 @@ export class MythicPlusPageComponent implements OnInit {
         color: playerColor(player.score),
         change,
         newSinceLastScan: showChanges && !change,
-        bests: dungeons.map(dungeon => {
-          const run = player.bestRuns.get(dungeon.id);
-          return run && {
-            dungeon,
-            keyLevel: run.keyLevel,
-            timed: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds) > 0,
-            upgrades: keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds),
-            clearTime: formatDuration(run.clearTimeSeconds),
-            score: run.score
-          };
-        })
+        bests: bestRunCells(player.bestRuns, dungeons)
       };
     });
   });

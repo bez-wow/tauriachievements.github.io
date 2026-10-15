@@ -86,7 +86,7 @@
                   <a class="player-name" [routerLink]="player.member.profileLink" [style.color]="player.member.color"
                     [style.view-transition-name]="player.nameTransition">{{ player.member.name }}</a>
                   <span class="player-meta">{{ player.member.realm }} · {{ player.member.spec }} {{ player.member.className }}</span>
-                  <span class="player-guild" *ngIf="player.member.guild">&lt;{{ player.member.guild }}&gt;</span>
+                  <a class="player-guild" *ngIf="player.member.guildLink" [routerLink]="player.member.guildLink" title="Open the guild's Mythic+ ladder">&lt;{{ player.member.guild }}&gt;</a>
                 </div>
               </th>
             </tr>

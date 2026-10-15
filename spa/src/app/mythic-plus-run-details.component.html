@@ -53,7 +53,7 @@
           <a [routerLink]="member.profileLink" [style.color]="member.color">{{ member.name }}</a>
         </span>
         <span class="roster-meta">{{ member.spec }} {{ member.className }}</span>
-        <span class="roster-meta" *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
+        <a class="roster-meta roster-guild" *ngIf="member.guildLink" [routerLink]="member.guildLink" title="Open the guild's Mythic+ ladder">&lt;{{ member.guild }}&gt;</a>
       </li>
     </ul>
   </section>

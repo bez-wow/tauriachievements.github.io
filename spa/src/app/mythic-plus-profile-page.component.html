@@ -31,7 +31,7 @@
           <h1 [style.color]="member.color" [style.view-transition-name]="nameTransition()">{{ member.name }}</h1>
           <p class="profile-meta">
             <span>{{ member.realm }}</span>
-            <span *ngIf="member.guild">&lt;{{ member.guild }}&gt;</span>
+            <a *ngIf="member.guildLink" class="guild-link" [routerLink]="member.guildLink" title="Open the guild's Mythic+ ladder">&lt;{{ member.guild }}&gt;</a>
           </p>
           <!-- With two specs or more each pill shows the profile in that spec only, and All in every
                spec; only the pressed pill is outlined. A single spec stays a plain pill with a gold edge. -->
@@ -134,7 +134,7 @@
           appSpotlight
           *ngFor="let tile of ranks(); let index = index; trackBy: trackScope"
           [style.--i]="index"
-          routerLink="/mythic-plus"
+          [routerLink]="tile.link"
           [queryParams]="tile.queryParams">
           <span class="rank-scope">{{ tile.scope }}</span>
           <span class="rank-value">
@@ -157,7 +157,7 @@
               <svg *ngSwitchCase="'healer'" viewBox="0 0 24 24" focusable="false"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z" /></svg>
               <svg *ngSwitchCase="'dps'" viewBox="0 0 24 24" focusable="false"><path d="M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z" /></svg>
             </span>
-            {{ tile.label }}
+            <span class="rank-label-text" [attr.title]="tile.scope === 'Guild' ? tile.label : null">{{ tile.label }}</span>
           </span>
           <span class="rank-total">of {{ tile.total | number }} · <b>{{ tile.top }}</b></span>
         </a>

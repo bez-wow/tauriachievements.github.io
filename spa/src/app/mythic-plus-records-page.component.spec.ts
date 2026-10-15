@@ -204,12 +204,14 @@ describe('MythicPlusRecordsPageComponent', () => {
     expect(texts(element, '.runner-count')).toEqual(['7 runs', '4 runs', '2 runs', '1 run']);
     expect(texts(element, '.runner-timed')).toEqual(['100% in time', '75% in time', '50% in time', '100% in time']);
     expect(element.querySelector('.runner-timed')?.getAttribute('title')).toBe('7 of 7 in time');
-    expect([...element.querySelectorAll('a.runner')].map(link => link.getAttribute('href'))).toEqual([
+    expect([...element.querySelectorAll('.runner a.runner-link')].map(link => link.getAttribute('href'))).toEqual([
       '/mythic-plus/character/evermoon/Progtrix',
       '/mythic-plus/character/evermoon/Tank',
       '/mythic-plus/character/tauri/Healer',
       '/mythic-plus/character/wod/Arrchangel'
     ]);
+    // The guild opens its ladder.
+    expect(element.querySelector('a.runner-guild')?.getAttribute('href')).toBe('/mythic-plus/guild/evermoon/The%20Echoes');
   });
 
   it('ignores a legacy realm filter and writes only the firsts dungeon to the URL', async () => {

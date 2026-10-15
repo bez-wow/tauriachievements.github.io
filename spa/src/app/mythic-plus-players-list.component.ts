@@ -6,7 +6,8 @@ import { BestRunCell, PlayerRow } from './mythic-plus-views';
 
 /**
  * One page of ranked players. A table with a best-key column per dungeon on wide screens; on
- * narrow ones a card per player with their best keys as chips. Picking a player opens their profile.
+ * narrow ones a card per player with their best keys as chips. Picking a player opens their
+ * profile, and their guild name opens the guild's ladder.
  */
 @Component({
   selector: 'app-mythic-plus-players-list',
@@ -35,6 +36,11 @@ export class MythicPlusPlayersListComponent {
   /** `characterKey`s already picked. */
   readonly pickedKeys = input<ReadonlySet<string>>(new Set());
   readonly pick = output<PlayerRow>();
+  /**
+   * `guild`: one guild's ladder. Its rows show their overall rank where the others show the
+   * guild, which is the same on every row.
+   */
+  readonly ladder = input<'server' | 'guild'>('server');
 
   readonly upgradeStars = upgradeStars;
 
@@ -70,7 +76,7 @@ export class MythicPlusPlayersListComponent {
     });
   }
 
-  /** A click anywhere on a table row; the name inside it is a link of its own. */
+  /** A click anywhere on a table row or card; the links inside them are links of their own. */
   openProfile(row: PlayerRow): void {
     if (this.pickMode()) {
       this.pick.emit(row);
@@ -79,7 +85,7 @@ export class MythicPlusPlayersListComponent {
     this.router.navigate(row.member.profileLink);
   }
 
-  /** A name link or card: in pick mode it picks, otherwise it opens the profile as a link. */
+  /** A name link: in pick mode it picks, otherwise it opens the profile as a link. */
   onLink(event: Event, row: PlayerRow): void {
     event.stopPropagation();
     if (this.pickMode()) {
