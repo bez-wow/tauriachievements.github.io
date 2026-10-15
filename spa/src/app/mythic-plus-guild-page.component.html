@@ -56,10 +56,10 @@
             [disabled]="!affixWeek()"
             (click)="setPeriod('week')">This week</button>
         </div>
-        <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" />
+        <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" [compact]="true" />
         <a class="scores-link" routerLink="/mythic-plus/scoring">
           <span class="scores-link-icon" aria-hidden="true">?</span>
-          How scores work
+          <span class="scores-link-text">How scores work</span>
         </a>
       </div>
 

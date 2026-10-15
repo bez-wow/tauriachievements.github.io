@@ -56,3 +56,25 @@
   line-height: 1.4;
   white-space: normal;
 }
+
+.affix-tooltip-name { display: none; }
+
+@media (max-width: $phone-breakpoint) {
+  :host(.compact) .week-affixes {
+    position: static;
+    gap: 6px 2px;
+
+    li { justify-content: center; min-width: 30px; }
+  }
+
+  :host(.compact) .affix-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  :host(.compact) .affix-tooltip-name { display: block; margin-bottom: 2px; }
+}

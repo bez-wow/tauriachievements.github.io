@@ -46,7 +46,7 @@
           [disabled]="!currentWeek()"
           (click)="setPeriod('week')">This week</button>
       </div>
-      <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" />
+      <app-mythic-plus-week-affixes *ngIf="weekAffixes().length" [affixes]="weekAffixes()" [compact]="true" />
     </div>
 
     <!-- The numbers count up, one tile after another; switching period rolls them to the new ones. -->
