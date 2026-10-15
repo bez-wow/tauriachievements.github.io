@@ -3,6 +3,7 @@ import { Observable, catchError, forkJoin, map, of, shareReplay, switchMap, thro
 import {
   RAID_GENDERS_PATH,
   RAID_LOGS_DATA_DIR,
+  RAID_TALENTS_PATH,
   RaidBoss,
   RaidBossFile,
   RaidDifficulty,
@@ -11,10 +12,13 @@ import {
   RaidKillDetails,
   RaidLogsIndex,
   RaidLogsIndexFile,
+  RaidTalentTable,
+  RaidTalentsFile,
   bossFilePath,
   decodeBossFile,
   decodeGenders,
   decodeIndex,
+  decodeTalents,
   realmSlug
 } from '../raid-logs';
 import { DataFileService } from './data-file.service';
@@ -73,6 +77,20 @@ export class RaidLogsDataService {
       catchError((error: unknown) => {
         console.warn('Could not load the raid genders; race icons keep the gender from the raid logs.', error);
         return of(new Map<string, number>());
+      })
+    ));
+  }
+
+  /**
+   * Every spec's talent tiers, to name the talents members picked. Only talent icons depend on
+   * it, so a file that won't load is an empty table, not an error.
+   */
+  talents(): Observable<RaidTalentTable> {
+    return this.memoize('talents', () => this.dataFiles.fetchJson<RaidTalentsFile>(RAID_TALENTS_PATH).pipe(
+      map(decodeTalents),
+      catchError((error: unknown) => {
+        console.warn('Could not load the talents; the boss rankings show none.', error);
+        return of(new Map() as RaidTalentTable);
       })
     ));
   }

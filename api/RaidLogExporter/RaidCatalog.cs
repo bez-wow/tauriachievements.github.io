@@ -29,6 +29,9 @@ public static class RaidCatalog
     public const int Alliance = 0;
     public const int Horde = 1;
 
+    /// <summary>Legion's talent rows, at levels 15, 30, 45, 60, 75, 90 and 100.</summary>
+    public const int TalentTiers = 7;
+
     /// <summary>In the order the page lists them, easiest first.</summary>
     public static readonly IReadOnlyList<RaidDifficulty> Difficulties =
     [

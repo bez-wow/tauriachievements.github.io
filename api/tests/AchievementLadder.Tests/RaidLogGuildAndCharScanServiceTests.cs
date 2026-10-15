@@ -164,6 +164,7 @@ public sealed class RaidLogGuildAndCharScanServiceTests
             dataset,
             DateTimeOffset.UnixEpoch,
             null,
+            null,
             CancellationToken.None
         );
     }
@@ -191,7 +192,7 @@ public sealed class RaidLogGuildAndCharScanServiceTests
         );
 
     private static RaidLogMember Raider(string name, string realm, string guild = "") =>
-        new(name, realm, 1, 71, 1, 0, guild, 870, 1_000, 0, 0, 0, 0, 0, 0);
+        new(name, realm, 1, 71, 1, 0, guild, 870, 1_000, 0, 0, 0, 0, 0, 0, "", []);
 
     private static TauriApiResponseResult Sheet(string guildName) =>
         TauriApiResponseResult.Success(

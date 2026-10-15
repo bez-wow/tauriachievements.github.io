@@ -5,12 +5,14 @@ namespace RaidLogExporter;
 
 /// <param name="ReadLogCount">How many logs' details were asked from the API this run.</param>
 /// <param name="SkippedLogs">Listed kills whose details describe another kill; left out.</param>
+/// <param name="TalentSpecCount">Specs whose talents were written; 0 when the last ones were kept.</param>
 public sealed record RaidLogExportResult(
     RaidDataset Dataset,
     int PreviousLogCount,
     int ReadLogCount,
     IReadOnlyList<RaidLogKey> SkippedLogs,
-    string OutputDirectory
+    string OutputDirectory,
+    int TalentSpecCount
 );
 
 /// <summary>
@@ -22,6 +24,7 @@ public sealed class RaidLogExportService(
     string outputDirectory,
     ITauriApiClient apiClient,
     IRaidItemSource itemSource,
+    IRaidTalentSource talentSource,
     PlayerGuildDirectory guildDirectory,
     TimeProvider? timeProvider = null
 )
@@ -56,8 +59,14 @@ public sealed class RaidLogExportService(
         var scannedAt = _timeProvider.GetUtcNow();
 
         var previous = RaidLogFileReader.Read(outputDirectory);
-        var cached = options.Full ? PreviousRaidExport.Empty.Logs : previous.Logs;
+        var cached =
+            options.Full || previous.OutOfDate ? PreviousRaidExport.Empty.Logs : previous.Logs;
         var toRead = rankings.Logs.Where(log => !cached.ContainsKey(log.Key)).ToList();
+
+        if (previous.OutOfDate)
+        {
+            Console.WriteLine("The files are in an older format: reading every log again.");
+        }
 
         if (toRead.Count > 0)
         {
@@ -103,12 +112,14 @@ public sealed class RaidLogExportService(
 
         var items = await LoadItemsAsync(logs, previous.Items, cancellationToken);
         var dataset = RaidLogDatasetBuilder.Build(logs, items, guildDirectory);
+        var talents = await talentSource.LoadAsync(cancellationToken);
 
         await RaidLogFileWriter.WriteAsync(
             outputDirectory,
             dataset,
             scannedAt,
             ScanChanges(previous, dataset),
+            talents,
             cancellationToken
         );
         return new RaidLogExportResult(
@@ -116,7 +127,8 @@ public sealed class RaidLogExportService(
             previous.LogCount,
             toRead.Count,
             details.Mismatched,
-            outputDirectory
+            outputDirectory,
+            talents?.Count ?? 0
         );
     }
 

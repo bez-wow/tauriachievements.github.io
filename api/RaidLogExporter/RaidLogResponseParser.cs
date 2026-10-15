@@ -131,8 +131,54 @@ public static class RaidLogResponseParser
             ReadLong(member, "overheal"),
             ReadLong(member, "dmg_taken"),
             ReadInt(member, "interrupts"),
-            ReadInt(member, "dispells")
+            ReadInt(member, "dispells"),
+            ParseTalents(ReadString(member, "talents")),
+            ParseTrinkets(member)
         );
+    }
+
+    /// <summary>
+    /// The columns of <c>"Za!1212212"</c>: Blizzard's talent calculator code, a class and a spec
+    /// letter, then the column picked on each tier from 0, or <c>.</c> for none. The spec is the
+    /// member's own, so only the columns are kept. Anything else reads as no talents.
+    /// </summary>
+    public static string ParseTalents(string code)
+    {
+        var columns = code[(code.IndexOf('!') + 1)..].Trim();
+        return
+            columns.Length is > 0 and <= RaidCatalog.TalentTiers
+            && columns.All(column => column is '.' or >= '0' and <= '2')
+            ? columns
+            : "";
+    }
+
+    /// <summary><c>trinket_0</c> and <c>trinket_1</c>; an empty slot has no item id.</summary>
+    private static IReadOnlyList<RaidTrinket> ParseTrinkets(JsonElement member)
+    {
+        var trinkets = new List<RaidTrinket>(2);
+        foreach (var slot in (string[])["trinket_0", "trinket_1"])
+        {
+            if (
+                !member.TryGetProperty(slot, out var trinket)
+                || trinket.ValueKind != JsonValueKind.Object
+                || ReadInt(trinket, "entry") is not (> 0 and var id)
+            )
+            {
+                continue;
+            }
+
+            trinkets.Add(
+                new RaidTrinket(
+                    id,
+                    ReadInt(trinket, "ilevel"),
+                    ReadString(trinket, "name").Trim(),
+                    Math.Clamp(ReadInt(trinket, "rarity"), 0, 7),
+                    ReadString(trinket, "icon").Trim()
+                )
+            );
+        }
+
+        return trinkets;
     }
 
     /// <summary>

@@ -1,0 +1,32 @@
+@use './mythic-plus-shared' as *;
+
+:host { display: block; }
+
+// Over the sticky update bar (z-index 1200), like the guild pages' legendary tooltips.
+.icon-tip {
+  @include tooltip-box;
+  @include tooltip-pop;
+  position: fixed;
+  z-index: 2001;
+  top: 0;
+  left: 0;
+  display: flex;
+  max-width: min(260px, calc(100vw - 16px));
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 9px;
+  font-size: .78rem;
+  line-height: 1.35;
+  white-space: normal;
+
+  &.shown { @include tooltip-shown; }
+
+  b { font-weight: 700; }
+}
+
+.icon-tip-note {
+  color: #9a9a9a;
+  font-size: .72rem;
+
+  &:empty { display: none; }
+}
