@@ -90,14 +90,13 @@ describe('UpdateBarComponent drawer', () => {
     expect(current[0].textContent).toContain('Statistics');
   });
 
-  it('shows each page description and tag', async () => {
+  it('shows a page tag beside its name', async () => {
     const fixture = await render('/');
     const drawer = openDrawer(fixture);
     const hallOfFame = Array.from(drawer.querySelectorAll('.site-drawer-page'))
       .find((link) => link.textContent?.includes('Hall of Fame'));
 
     expect(hallOfFame?.querySelector('.site-drawer-tag')?.textContent).toBe('Archive');
-    expect(hallOfFame?.querySelector('.site-drawer-page-description')?.textContent).toBe('The AP chest looters event leaderboard');
   });
 
   it('closes when a page is picked', async () => {

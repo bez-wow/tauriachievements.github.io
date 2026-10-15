@@ -5,7 +5,6 @@ export interface NavPage {
   /** Shorter name for the section tabs under the header; the label when not set. */
   readonly tab?: string;
   readonly icon: string;
-  readonly description: string;
   readonly path: string;
   /** Deeper routes that belong to this page, e.g. a character profile under its leaderboard. */
   readonly includes?: readonly string[];
@@ -38,10 +37,10 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'Ladder',
     icon: '🏆',
     pages: [
-      { label: 'Players', icon: '🏆', path: '/', description: 'Character rankings by achievements, HKs, playtime and more' },
-      { label: 'Top Gainers', tab: 'Movers', icon: '📈', path: '/top-gainers', description: 'The biggest climbers since the previous snapshot' },
-      { label: 'Compare', icon: '⚖️', path: '/compare', description: 'Two ladder characters head to head' },
-      { label: 'Guild Rankings', tab: 'Guilds', icon: '🛡️', path: '/guilds', description: 'Guilds ranked by how many of the top characters they hold' }
+      { label: 'Players', icon: '🏆', path: '/' },
+      { label: 'Top Gainers', tab: 'Movers', icon: '📈', path: '/top-gainers' },
+      { label: 'Compare', icon: '⚖️', path: '/compare' },
+      { label: 'Guild Rankings', tab: 'Guilds', icon: '🛡️', path: '/guilds' }
     ]
   },
   {
@@ -49,9 +48,9 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'Achievements',
     icon: '💎',
     pages: [
-      { label: 'Rare Achievements', tab: 'Browse', icon: '💎', path: '/rare-achievements', description: 'Who owns the rare PvP titles, mounts and KSM' },
-      { label: 'New Rare Characters', tab: 'New Discoveries', icon: '✨', path: '/new-rare-characters', description: 'Rare titles, mounts and realm firsts found in the latest scan' },
-      { label: 'Hall of Fame', icon: '👑', path: '/ap-chest-looters', description: 'The AP chest looters event leaderboard', tag: 'Archive' }
+      { label: 'Rare Achievements', tab: 'Browse', icon: '💎', path: '/rare-achievements' },
+      { label: 'New Rare Characters', tab: 'New Discoveries', icon: '✨', path: '/new-rare-characters' },
+      { label: 'Hall of Fame', icon: '👑', path: '/ap-chest-looters', tag: 'Archive' }
     ]
   },
   {
@@ -59,8 +58,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'PvP',
     icon: '⚔️',
     pages: [
-      { label: 'Battlegrounds', tab: 'BG Activity', icon: '⚔️', path: '/battleground', description: 'When battlegrounds start and how long matches last' },
-      { label: 'Rated Battlegrounds', tab: 'Rated BG', icon: '🏅', path: '/rated-battleground', description: 'Rated matches, map trends, player rankings and scoreboards' }
+      { label: 'Battlegrounds', tab: 'BG Activity', icon: '⚔️', path: '/battleground' },
+      { label: 'Rated Battlegrounds', tab: 'Rated BG', icon: '🏅', path: '/rated-battleground' }
     ]
   },
   {
@@ -73,19 +72,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         tab: 'Overview',
         icon: '📖',
         path: '/raid-logs',
-        includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/guild'],
-        description: 'Bosses, guild progression, recent kills and logs'
+        includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/guild']
       },
       {
         label: 'Character Rankings',
         tab: 'Rankings',
         icon: '🎯',
         path: '/raid-logs/leaderboard',
-        includes: ['/raid-logs/character'],
-        description: 'DPS and HPS performance scores across the raid bosses'
+        includes: ['/raid-logs/character']
       },
-      { label: 'Race to Emerald Nightmare', tab: 'Race', icon: '🌿', path: '/emerald-nightmare', description: 'The guild race replayed, boss by boss' },
-      { label: 'Realm First History', tab: 'History', icon: '📜', path: '/raid-history', description: 'Realm-first guilds across expansions and realms' }
+      { label: 'Race to Emerald Nightmare', tab: 'Race', icon: '🌿', path: '/emerald-nightmare' },
+      { label: 'Realm First History', tab: 'History', icon: '📜', path: '/raid-history' }
     ]
   },
   {
@@ -97,11 +94,10 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         label: 'Leaderboard',
         icon: '🗝️',
         path: '/mythic-plus',
-        includes: ['/mythic-plus/character', '/mythic-plus/guild', '/mythic-plus/compare', '/mythic-plus/scoring'],
-        description: 'Run and player rankings by dungeon and spec'
+        includes: ['/mythic-plus/character', '/mythic-plus/guild', '/mythic-plus/compare', '/mythic-plus/scoring']
       },
-      { label: 'Statistics', tab: 'Activity', icon: '⏱️', path: '/mythic-plus/stats', description: 'Runs by day, dungeon, key level and affix week' },
-      { label: 'Records', icon: '🥇', path: '/mythic-plus/records', description: 'Dungeon records, server firsts and unclaimed bounties' }
+      { label: 'Statistics', tab: 'Activity', icon: '⏱️', path: '/mythic-plus/stats' },
+      { label: 'Records', icon: '🥇', path: '/mythic-plus/records' }
     ]
   },
   {
@@ -109,7 +105,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'Realm Stats',
     icon: '📊',
     pages: [
-      { label: 'Realm Stats', icon: '📊', path: '/stats', description: 'Population by class, race, faction, realm and level' }
+      { label: 'Realm Stats', icon: '📊', path: '/stats' }
     ]
   }
 ];
