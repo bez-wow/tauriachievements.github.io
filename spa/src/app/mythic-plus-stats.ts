@@ -164,15 +164,18 @@ export function specPopularity(
     group.share = total > 0 ? group.count / total : 0;
     group.specs.sort((a, b) => b.count - a.count);
   }
-  classes.sort((a, b) => compareSpecCounts(a.specs, b.specs) || a.classId - b.classId);
+  classes.sort((a, b) => compareSpecLists(a.specs, b.specs, spec => spec.count) || a.classId - b.classId);
 
   return { total, runCount: runs.length, classes };
 }
 
-/** Descending by the most-seen spec, then the next one, and so on. Expects each list already sorted. */
-function compareSpecCounts(a: readonly SpecShare[], b: readonly SpecShare[]): number {
+/**
+ * Descending by the top spec's value, then the next one's, and so on: how the spec charts order
+ * their classes. Expects each list already sorted, highest first.
+ */
+export function compareSpecLists<T>(a: readonly T[], b: readonly T[], value: (spec: T) => number): number {
   for (let index = 0; index < Math.max(a.length, b.length); index++) {
-    const difference = (b[index]?.count ?? 0) - (a[index]?.count ?? 0);
+    const difference = (b[index] ? value(b[index]) : 0) - (a[index] ? value(a[index]) : 0);
     if (difference !== 0) {
       return difference;
     }

@@ -58,7 +58,7 @@ const RECENT_KILLS = 12;
 
 /**
  * /raid-logs: the raid at a glance on one difficulty (`?difficulty=`): each boss's kills, fastest
- * kill and best damage and healing, spec popularity and each DPS spec's races, the guilds' progress,
+ * kill and best damage and healing, spec popularity and performance and each spec's races, the guilds' progress,
  * and the latest kills.
  * The summary reads the index; the popularity sections also load the selected difficulty's rosters.
  */
