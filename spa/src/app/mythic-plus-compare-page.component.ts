@@ -24,7 +24,8 @@ import {
   memberNameMatches,
   rankPlayers,
   runIncludesCharacter,
-  scoreQuality,
+  scoreColor,
+  seasonScoreColors,
   sharesTables,
   upgradeStars
 } from './mythic-plus';
@@ -47,7 +48,8 @@ interface ComparedPlayer {
   crest: string;
   /** Their line on the chart: the class colour, or a spare when two share a class. */
   color: string;
-  quality: string;
+  /** The total score's colour by season rank (scoreColor). */
+  scoreColor: string;
   /** Their runs, newest first. */
   runs: MythicPlusRun[];
   /** `view-transition-name`s of their crest and name (characterTransitionName). */
@@ -151,7 +153,8 @@ export class MythicPlusComparePageComponent implements OnInit {
   readonly dungeons = computed(() => this.index()?.dungeons ?? []);
   private readonly dungeonsById = computed(() => new Map(this.dungeons().map(dungeon => [dungeon.id, dungeon])));
   private readonly affixesById = computed(() => new Map((this.index()?.affixes ?? []).map(affix => [affix.id, affix])));
-  private readonly seasonBestScore = computed(() => Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
+  /** Raider.IO-style score colours from this season's standings. */
+  private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
   private readonly timers = computed(() => dungeonTimers(this.dungeons()));
 
   readonly ranking = computed(() => rankPlayers(this.allRuns()));
@@ -161,7 +164,6 @@ export class MythicPlusComparePageComponent implements OnInit {
   /** The characters the URL names that the export has; unknown ones are listed apart. */
   readonly players = computed<ComparedPlayer[]>(() => {
     const characters = this.characters();
-    const top = this.ranking()[0]?.score ?? 0;
     const found = this.wanted()
       .map(character => findCharacters(characters, character.realm, character.name)[0]?.player)
       .filter((player): player is PlayerScore => player !== undefined)
@@ -174,7 +176,7 @@ export class MythicPlusComparePageComponent implements OnInit {
       member: members[position],
       crest: getClassCrestPath(player.member.class),
       color: colors[position],
-      quality: scoreQuality(player.score, top),
+      scoreColor: scoreColor(player.score, this.scoreColors().tiers),
       runs: this.allRuns().filter(run => runIncludesCharacter(run, player.key))
         .sort((a, b) => a.completedAt < b.completedAt ? 1 : a.completedAt > b.completedAt ? -1 : 0),
       crestTransition: characterTransitionName(player.key, 'crest'),
@@ -259,14 +261,14 @@ export class MythicPlusComparePageComponent implements OnInit {
   readonly dungeonRows = computed<DungeonRow[]>(() => {
     const players = this.players();
     const affixes = this.affixesById();
-    const bestScore = this.seasonBestScore();
+    const colors = this.scoreColors();
     const rows: DungeonRow[] = this.dungeons().map(dungeon => {
       const runs = players.map(player => player.player.bestRuns.get(dungeon.id));
       const top = Math.max(0, ...runs.map(run => run?.score ?? 0));
       return {
         dungeon,
         cells: runs.map(run => ({
-          run: run && toRunView(run, dungeon, affixes, bestScore),
+          run: run && toRunView(run, dungeon, affixes, colors),
           best: players.length > 1 && !!run && run.score === top,
           behind: Math.round((top - (run?.score ?? 0)) * 10) / 10
         }))

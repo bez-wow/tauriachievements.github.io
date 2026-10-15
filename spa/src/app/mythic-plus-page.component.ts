@@ -43,7 +43,10 @@ import {
   rankRuns,
   runIncludesCharacter,
   runIncludesPlayer,
-  scoreQuality,
+  runScoreColor,
+  scoreColor,
+  scoreTiers,
+  seasonScoreColors,
   sharesTables
 } from './mythic-plus';
 import { MythicPlusPlayersListComponent } from './mythic-plus-players-list.component';
@@ -291,9 +294,8 @@ export class MythicPlusPageComponent implements OnInit {
       .filter((affix): affix is MythicPlusAffix => affix !== undefined);
   });
 
-  /** Run colours are relative to the season's best run, whichever dungeon is shown. */
-  private readonly seasonBestScore = computed(() =>
-    Math.max(0, ...this.dungeons().map(dungeon => dungeon.bestScore)));
+  /** Raider.IO-style score colours from this season's standings, whichever dungeon is shown. */
+  private readonly scoreColors = computed(() => seasonScoreColors(this.index()));
 
   /** Runs in the selected scope, best first; undefined until every file the scope needs has loaded. */
   readonly scopeRuns = computed<readonly MythicPlusRun[] | undefined>(() => {
@@ -417,17 +419,33 @@ export class MythicPlusPageComponent implements OnInit {
   readonly totalPages = computed(() => pageCount(this.resultCount(), this.pageSize()));
   readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
 
+  /**
+   * A player's score colour by season rank (as LKH and Raider.IO). One dungeon's score is a single
+   * run, so it uses the run scale; this week's scores are placed among this week's players.
+   */
+  private readonly playerColor = computed(() => {
+    const colors = this.scoreColors();
+    if (this.selectedDungeon()) {
+      return (score: number) => runScoreColor(score, colors);
+    }
+
+    const tiers = this.period() === 'week'
+      ? scoreTiers(this.rankedPlayers().map(entry => entry.player.score))
+      : colors.tiers;
+    return (score: number) => scoreColor(score, tiers);
+  });
+
   /** Only the visible page is turned into display rows; a season holds tens of thousands of runs. */
   readonly pagedRows = computed<RunRow[]>(() => {
     const size = this.pageSize();
     const start = (this.currentPage() - 1) * size;
     const dungeons = this.dungeonsById();
     const affixes = this.affixesById();
-    const bestScore = this.seasonBestScore();
+    const colors = this.scoreColors();
 
     return this.filteredRows().slice(start, start + size).flatMap(({ run, rank }) => {
       const dungeon = dungeons.get(run.dungeon);
-      return dungeon ? [{ ...toRunView(run, dungeon, affixes, bestScore), rank }] : [];
+      return dungeon ? [{ ...toRunView(run, dungeon, affixes, colors), rank }] : [];
     });
   });
 
@@ -441,10 +459,10 @@ export class MythicPlusPageComponent implements OnInit {
     const size = this.pageSize();
     const start = (this.currentPage() - 1) * size;
     const dungeons = this.playerDungeons();
-    const topScore = this.rankedPlayers()[0]?.player.score ?? 0;
     const showChanges = this.showStandingChanges();
     const changes = this.standingChanges();
 
+    const playerColor = this.playerColor();
     return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => {
       const change = showChanges ? changes.get(player.key) : undefined;
       return {
@@ -452,7 +470,7 @@ export class MythicPlusPageComponent implements OnInit {
         rank,
         member: toMemberView({ ...player.member, spec: player.primarySpec }),
         score: player.score,
-        quality: scoreQuality(player.score, topScore),
+        color: playerColor(player.score),
         change,
         newSinceLastScan: showChanges && !change,
         bests: dungeons.map(dungeon => {

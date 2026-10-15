@@ -8,12 +8,12 @@ import {
   MythicPlusDungeon,
   MythicPlusMember,
   MythicPlusRun,
-  RunQuality,
   formatClock,
   formatDuration,
   formatTimerDelta,
   keystoneUpgrades,
-  scoreQuality,
+  runScoreColor,
+  ScoreColors,
   sortRoster,
   upgradeCutoffs
 } from './mythic-plus';
@@ -60,7 +60,8 @@ export interface RunView {
   timerPercent: number;
   cutoffs: CutoffView[];
   score: number;
-  quality: RunQuality;
+  /** The score colour (runScoreColor / scoreColor). */
+  color: string;
   completedAt: string;
   affixes: MythicPlusAffix[];
   tank?: MemberView;
@@ -88,7 +89,8 @@ export interface PlayerRow {
   rank: number;
   member: MemberView;
   score: number;
-  quality: RunQuality;
+  /** The score colour (runScoreColor / scoreColor). */
+  color: string;
   /** Changes since the previous scan. Positive rank means the player climbed. */
   change?: { score: number; rank: number };
   /** Present in this scan but absent from the previous one. */
@@ -114,7 +116,7 @@ export function toRunView(
   run: MythicPlusRun,
   dungeon: MythicPlusDungeon,
   affixes: ReadonlyMap<number, MythicPlusAffix>,
-  bestScore: number
+  colors: ScoreColors
 ): RunView {
   const upgrades = keystoneUpgrades(run.clearTimeSeconds, dungeon.timerSeconds);
   const roster = sortRoster(run.roster).map(toMemberView);
@@ -132,7 +134,7 @@ export function toRunView(
     cutoffs: upgradeCutoffs(dungeon.timerSeconds)
       .map(cutoff => ({ upgrades: cutoff.upgrades, time: formatClock(cutoff.seconds) })),
     score: run.score,
-    quality: scoreQuality(run.score, bestScore),
+    color: runScoreColor(run.score, colors),
     completedAt: run.completedAt,
     affixes: run.affixes
       .map(id => affixes.get(id))

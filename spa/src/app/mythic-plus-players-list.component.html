@@ -3,7 +3,7 @@
     <li *ngFor="let row of rows(); trackBy: trackPlayer" [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
       <a class="player-card" [class.picking]="pickMode()" [routerLink]="row.member.profileLink" (click)="onLink($event, row)">
         <span class="pick-box" *ngIf="pickMode()" aria-hidden="true"></span>
-        <span class="card-rank" [ngClass]="'q-' + row.quality">
+        <span class="card-rank" [style.color]="row.color">
           <span class="rank-metric">
             <span><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
             <span
@@ -99,7 +99,7 @@
           [class.picked]="pickedKeys().has(row.key)"
           (click)="openProfile(row)">
           <td class="col-pick" *ngIf="pickMode()"><span class="pick-box" aria-hidden="true"></span></td>
-          <td class="col-rank" [ngClass]="'q-' + row.quality">
+          <td class="col-rank" [style.color]="row.color">
             <span class="rank-metric">
               <span class="metric-value">{{ row.rank }}</span>
               <span
