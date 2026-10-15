@@ -12,6 +12,11 @@
 
 .tooltip-unit { color: #8a8a8a; font-size: .69rem; font-weight: 600; }
 
+// A bar shorter than its tooltip has the tooltip end at the axis instead of hanging below the
+// chart. Hidden tooltips still take up room, so one sticking out of .chart-scroll gave it a
+// scrollbar (Protection Warrior, Mythic, all roles, Performance).
+.bar-slot.short-bar .tooltip { top: auto; bottom: 0; }
+
 .chart-state {
   display: flex;
   min-height: 248px;

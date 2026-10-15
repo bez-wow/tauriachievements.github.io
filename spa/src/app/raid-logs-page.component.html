@@ -41,7 +41,11 @@
       [raidName]="index()!.raid.name"
       [loading]="popularityLoading()"
       [error]="popularityError()"
+      [view]="chartView()"
+      [role]="chartRole()"
       (difficultyChange)="setDifficulty($event)"
+      (viewChange)="setChartView($event)"
+      (roleChange)="setChartRole($event)"
       (retry)="retryPopularity()" />
 
     <!-- Bosses -->

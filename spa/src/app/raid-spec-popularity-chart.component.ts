@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
 import { getClassIconPath } from '../utils/classIconHelper';
 import { FlipDirective } from './flip.directive';
 import { GlideDirective } from './glide.directive';
@@ -41,8 +41,18 @@ interface ClassGroup {
   specs: SpecBar[];
 }
 
-type RoleFilter = RaidRole | 'all';
-type ChartView = 'popularity' | 'performance';
+export type RoleFilter = RaidRole | 'all';
+export type ChartView = 'popularity' | 'performance';
+
+/** The chart view a `?view=` value names; Popularity for anything else. */
+export function parseChartView(value: string | null | undefined): ChartView {
+  return value === 'performance' ? 'performance' : 'popularity';
+}
+
+/** The role a `?role=` value names; all roles for anything else. */
+export function parseRoleFilter(value: string | null | undefined): RoleFilter {
+  return value === 'tank' || value === 'healer' || value === 'dps' ? value : 'all';
+}
 
 /**
  * Raid-roster equivalent of the Mythic+ spec-popularity chart. Popularity counts each appearance
@@ -75,7 +85,8 @@ export class RaidSpecPopularityChartComponent {
     { value: 'popularity', label: 'Popularity' },
     { value: 'performance', label: 'Performance' }
   ];
-  readonly view = signal<ChartView>('popularity');
+  /** Two-way: the page keeps it, and the role, in the address bar. */
+  readonly view = model<ChartView>('popularity');
 
   readonly roleOptions: ReadonlyArray<{ value: RoleFilter; label: string }> = [
     { value: 'all', label: 'All roles' },
@@ -83,7 +94,7 @@ export class RaidSpecPopularityChartComponent {
     { value: 'healer', label: 'Healer' },
     { value: 'dps', label: 'DPS' }
   ];
-  readonly role = signal<RoleFilter>('all');
+  readonly role = model<RoleFilter>('all');
   readonly topScores = SPEC_TOP_SCORES;
 
   readonly shownDifficulties = computed(() => this.difficulties().filter(difficulty =>
@@ -211,21 +222,21 @@ export class RaidSpecPopularityChartComponent {
     return spec.role === 'healer' ? 'HPS score' : 'DPS score';
   }
 
-  /** Whose scores a performance bar averages. */
+  /** Whose scores a performance bar averages, as a sentence. */
   scoreSample(spec: SpecBar): string {
     if (spec.count === 1) {
-      return '1 character';
+      return 'Only 1 character';
     }
     return spec.count > SPEC_TOP_SCORES
-      ? `top ${SPEC_TOP_SCORES} of ${spec.count.toLocaleString('en-US')} characters`
-      : `all ${spec.count} characters`;
+      ? `Average of the top ${SPEC_TOP_SCORES} of ${spec.count.toLocaleString('en-US')} characters`
+      : `Average of all ${spec.count} characters`;
   }
 
   barLabel(spec: SpecBar, group: ClassGroup): string {
     const name = `${spec.spec} ${group.className}`;
     if (this.view() === 'performance') {
       return spec.count
-        ? `${name}: ${this.scoreKind(spec)} ${spec.valueLabel}, ${this.scoreSample(spec)} averaged`
+        ? `${name}: ${this.scoreKind(spec)} ${spec.valueLabel}. ${this.scoreSample(spec)}`
         : `${name}: nobody scored`;
     }
     return `${name}: ${spec.valueLabel}, ${spec.count.toLocaleString('en-US')} player slots`;
