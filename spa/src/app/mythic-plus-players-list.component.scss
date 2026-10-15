@@ -221,7 +221,6 @@ td.over-time { color: #8a8a8a; }
   display: grid;
   width: 100%;
   min-height: 56px;
-  // The rank column grows for 4- and 5-digit ranks; tabular digits keep it even down a page.
   grid-template-columns: minmax(32px, max-content) minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
@@ -235,8 +234,6 @@ td.over-time { color: #8a8a8a; }
 
 .card-rank { font-size: 1.05rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
 
-// Cards have no room beside the rank, so the movement sits centred above it. Still absolute, so
-// the number stays in the same place with or without one.
 .card-rank .rank-metric > .rank-change,
 .card-rank .rank-metric > .player-new {
   top: auto;
