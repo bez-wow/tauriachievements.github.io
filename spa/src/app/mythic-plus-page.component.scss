@@ -13,6 +13,7 @@
 
 // Season / this week switch, with the current week's affixes beside it.
 .period-bar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -399,7 +400,14 @@
 }
 
 @media (max-width: $phone-breakpoint) {
-  .mplus-page { padding-top: 32px; }
+  .mplus-page { padding-top: 42px; }
+
+  .dungeon-picker { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  .period-bar { column-gap: 10px; }
+  .scores-link { width: 40px; height: 40px; justify-content: center; padding: 0; }
+  .scores-link-icon { width: 20px; height: 20px; font-size: .8rem; }
+  .scores-link-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   .dungeon-tile {
     padding: 5px 2px;

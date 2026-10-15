@@ -119,6 +119,7 @@ a.summary-note {
 
 // Season / this week switch, with the current week's affixes beside it.
 .period-bar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -397,7 +398,7 @@ a.summary-note {
 }
 
 @media (max-width: $phone-breakpoint) {
-  .guild-page { padding-top: 32px; }
+  .guild-page { padding-top: 42px; }
 
   .guild-header { grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 14px; }
   .crest { width: 56px; height: 56px; font-size: 1.7rem; }
@@ -408,6 +409,13 @@ a.summary-note {
   .summary-value { font-size: 1.2rem; }
   .summary dt { font-size: .66rem; letter-spacing: .04em; }
   .summary-note { white-space: normal; }
+
+  .dungeon-picker { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+  .period-bar { column-gap: 10px; }
+  .scores-link { width: 40px; height: 40px; justify-content: center; padding: 0; }
+  .scores-link-icon { width: 20px; height: 20px; font-size: .8rem; }
+  .scores-link-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   .dungeon-tile {
     padding: 5px 2px;
