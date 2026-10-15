@@ -244,6 +244,12 @@ td.over-time { color: #8a8a8a; }
   white-space: nowrap;
 }
 
+.card-rank .rank-metric > .rank-change.down {
+  top: 100%;
+  bottom: auto;
+  margin: 2px 0 0;
+}
+
 .card-body { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
 
 .card-line {
