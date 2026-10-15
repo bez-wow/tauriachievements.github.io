@@ -265,6 +265,8 @@ $plot-height: 220px;
 }
 
 .player-meta, .player-guild { max-width: 100%; overflow: hidden; color: #9a9a9a; font-size: .72rem; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.player-guild { text-decoration: none; }
+.player-guild:hover { color: #fff; text-decoration: underline; }
 
 .remove {
   position: absolute;

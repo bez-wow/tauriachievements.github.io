@@ -503,10 +503,10 @@ $depleted: #e06666;
   gap: 4px 16px;
   padding: 10px 16px 10px 12px;
   color: inherit;
-  text-decoration: none;
+  cursor: pointer;
 
   &:hover { background: rgba(255, 255, 255, .03); }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: -2px; }
+  &:has(.runner-link:focus-visible) { outline: 2px solid $gold; outline-offset: -2px; }
 }
 
 // As on the leaderboard's players table: a bare number in its quality colour.
@@ -534,7 +534,20 @@ $depleted: #e06666;
   overflow-wrap: anywhere;
 }
 
-.runner-guild { color: #8a8a8a; font-size: .75rem; font-weight: 400; }
+.runner-link { text-decoration: none; }
+.runner-link:focus-visible { outline: none; }
+
+// Opens the guild's ladder; only as wide as the name, so the rest of the row opens the profile.
+.runner-guild {
+  align-self: flex-start;
+  color: #8a8a8a;
+  font-size: .75rem;
+  font-weight: 400;
+  text-decoration: none;
+
+  &:hover { color: #fff; text-decoration: underline; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; border-radius: 2px; }
+}
 
 .runner-runs { display: flex; min-width: 0; align-items: center; gap: 12px; grid-area: runs; }
 

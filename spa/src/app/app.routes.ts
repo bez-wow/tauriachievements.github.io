@@ -64,6 +64,11 @@ export const routes: Routes = [
       .then(module => module.MythicPlusProfilePageComponent)
   },
   {
+    path: 'mythic-plus/guild/:realm/:guild',
+    loadComponent: () => import('./mythic-plus-guild-page.component')
+      .then(module => module.MythicPlusGuildPageComponent)
+  },
+  {
     path: 'raid-logs',
     loadComponent: () => import('./raid-logs-page.component')
       .then(module => module.RaidLogsPageComponent)

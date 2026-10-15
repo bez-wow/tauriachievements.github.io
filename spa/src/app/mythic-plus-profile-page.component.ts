@@ -58,6 +58,7 @@ import {
   specsPlayed
 } from './mythic-plus-profile';
 import { compareParam } from './mythic-plus-compare';
+import { guildLadderLink, guildOf, inGuild } from './mythic-plus-guild';
 import { MythicPlusRunsListComponent } from './mythic-plus-runs-list.component';
 import { specIconFor, specRoleFor } from './mythic-plus-stats';
 import {
@@ -82,10 +83,11 @@ import { UpdateBarComponent } from './update-bar.component';
 const TEAMMATE_COUNT = 8;
 const SEARCH_RESULT_COUNT = 20;
 
-/** One of the character's ranks, linking to the players view page that shows it. */
+/** One of the character's ranks, linking to the players view page (or the guild ladder) that shows it. */
 interface RankTile {
   scope: string;
   label: string;
+  link: string[];
   icon?: string;
   /** The Role tile: the run table's tank / healer / DPS icon instead of an image. */
   role?: MythicPlusRole;
@@ -385,6 +387,7 @@ export class MythicPlusProfilePageComponent implements OnInit {
       return [{
         scope,
         label,
+        link: ['/mythic-plus'],
         icon,
         ...found,
         top: formatTopPercent(found),
@@ -394,9 +397,25 @@ export class MythicPlusProfilePageComponent implements OnInit {
       }];
     };
 
+    // The guild ladder shows every member on one list, so the tile picks out the row there.
+    const guild = guildOf(member);
+    const isMember = guild && inGuild(guild);
+    const guildRank = isMember && scopeRank(ranking, key, entry => isMember(entry.member));
+    const guildTile: RankTile[] = guild && guildRank
+      ? [{
+        scope: 'Guild',
+        label: guild.name,
+        link: guildLadderLink(guild),
+        ...guildRank,
+        top: formatTopPercent(guildRank),
+        queryParams: { character: characterParam(member) }
+      }]
+      : [];
+
     return [
       ...tile('Overall', 'All realms', scopeRank(ranking, key), {}),
       ...tile('Realm', member.realm, scopeRank(ranking, key, entry => realmSlug(entry.member.realm) === realm), { realm }),
+      ...guildTile,
       ...tile('Class', className, scopeRank(ranking, key, entry => entry.member.class === member.class),
         { class: member.class }, this.member()?.classIcon),
       ...tile('Spec', `${spec} ${className}`, scopeRank(this.specRanking(), key),
