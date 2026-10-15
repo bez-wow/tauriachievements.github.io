@@ -186,7 +186,9 @@ public static class RaidLogDatasetBuilder
     {
         var trinkets = new List<RaidTrinket>();
         var seen = new HashSet<(int Id, int ItemLevel)>();
-        foreach (var trinket in logs.SelectMany(log => log.Members).SelectMany(member => member.Trinkets))
+        foreach (
+            var trinket in logs.SelectMany(log => log.Members).SelectMany(member => member.Trinkets)
+        )
         {
             if (seen.Add((trinket.Id, trinket.ItemLevel)))
             {

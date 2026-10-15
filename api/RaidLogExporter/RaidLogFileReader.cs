@@ -209,7 +209,9 @@ public static class RaidLogFileReader
             member[8].GetInt32(),
             member[9].GetInt32(),
             hasLoadout ? member[10].GetString()! : "",
-            hasLoadout ? [.. member[11].EnumerateArray().Select(trinket => trinkets[trinket.GetInt32()])] : []
+            hasLoadout
+                ? [.. member[11].EnumerateArray().Select(trinket => trinkets[trinket.GetInt32()])]
+                : []
         );
     }
 

@@ -283,7 +283,10 @@ public static class RaidLogFileWriter
             .ToDictionary(entry => (entry.player.Realm, entry.player.Name), entry => entry.index);
         var trinketPositions = encounter
             .Trinkets.Select((trinket, index) => (trinket, index))
-            .ToDictionary(entry => (entry.trinket.Id, entry.trinket.ItemLevel), entry => entry.index);
+            .ToDictionary(
+                entry => (entry.trinket.Id, entry.trinket.ItemLevel),
+                entry => entry.index
+            );
 
         writer.WriteStartObject();
         writer.WriteNumber("version", FormatVersion);

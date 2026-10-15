@@ -90,7 +90,9 @@ public sealed class TauriShootTalentSource : IRaidTalentSource, IDisposable
             {
                 var choices =
                     tier.ValueKind == JsonValueKind.Array
-                        ? tier.EnumerateArray().Select(choice => PickTalent(choice, specId)).ToList()
+                        ? tier.EnumerateArray()
+                            .Select(choice => PickTalent(choice, specId))
+                            .ToList()
                         : [];
                 if (choices.All(talent => talent is null))
                 {
@@ -134,7 +136,11 @@ public sealed class TauriShootTalentSource : IRaidTalentSource, IDisposable
             return null;
         }
 
-        return new RaidTalent(spellId, ReadText(entry, "name").Trim(), ReadText(entry, "icon").Trim());
+        return new RaidTalent(
+            spellId,
+            ReadText(entry, "name").Trim(),
+            ReadText(entry, "icon").Trim()
+        );
     }
 
     /// <summary>TauriShoot writes numbers as strings; either reads as text.</summary>

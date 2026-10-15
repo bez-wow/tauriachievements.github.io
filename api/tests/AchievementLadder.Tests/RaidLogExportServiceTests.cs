@@ -201,7 +201,11 @@ public sealed class RaidLogExportServiceTests
         var (arms, fury) = (talents[0], talents[1]);
         Assert.Equal((71, 7), (arms.SpecId, arms.Tiers.Count));
         Assert.Equal(
-            [new RaidTalent(202297, "Dauntless", "dauntless"), new RaidTalent(7384, "Overpower", "overpower"), null],
+            [
+                new RaidTalent(202297, "Dauntless", "dauntless"),
+                new RaidTalent(7384, "Overpower", "overpower"),
+                null,
+            ],
             arms.Tiers[0]
         );
         Assert.Equal("War Machine", fury.Tiers[0][0]!.Name);
@@ -272,7 +276,15 @@ public sealed class RaidLogExportServiceTests
                 null,
                 [],
                 // A Titanforged copy of the same trinket is another entry in the table.
-                Member("Mage", "", 8, 63, race: 10, damage: 140_000_000, trinkets: [(1, 860, "Stone")]),
+                Member(
+                    "Mage",
+                    "",
+                    8,
+                    63,
+                    race: 10,
+                    damage: 140_000_000,
+                    trinkets: [(1, 860, "Stone")]
+                ),
                 Member(
                     "Warrior",
                     "r=[HU] Tauri WoW Server&amp;n=Warrior",
@@ -423,7 +435,10 @@ public sealed class RaidLogExportServiceTests
             var arms = Assert.Single(talents.RootElement.GetProperty("specs").EnumerateArray());
             Assert.Equal(71, arms[0].GetInt32());
             Assert.Equal(7, arms[1].GetArrayLength());
-            Assert.Equal("1006 Talent 6", $"{arms[1][6][0][0].GetInt32()} {arms[1][6][0][1].GetString()}");
+            Assert.Equal(
+                "1006 Talent 6",
+                $"{arms[1][6][0][0].GetInt32()} {arms[1][6][0][1].GetString()}"
+            );
             Assert.Equal(JsonValueKind.Null, arms[1][6][1].ValueKind);
         }
         finally
@@ -695,7 +710,10 @@ public sealed class RaidLogExportServiceTests
             Assert.Equal(2, index.RootElement.GetProperty("version").GetInt32());
             Assert.Equal(
                 [103],
-                index.RootElement.GetProperty("newLogs").EnumerateArray().Select(key => key[1].GetInt32())
+                index
+                    .RootElement.GetProperty("newLogs")
+                    .EnumerateArray()
+                    .Select(key => key[1].GetInt32())
             );
             Assert.Equal("Item 5", Assert.Single(result.Dataset.Items).Name);
         }
@@ -956,11 +974,11 @@ public sealed class RaidLogExportServiceTests
             trinkets.Select(
                 (trinket, slot) =>
                     $$"""
-                    "trinket_{{slot}}": {
-                      "entry": {{trinket.Id}}, "ilevel": {{trinket.ItemLevel}}, "name": "{{trinket.Name}}",
-                      "rarity": 4, "icon": "inv_{{trinket.Id}}", "gems": [], "ench": {}
-                    },
-                    """
+                        "trinket_{{slot}}": {
+                          "entry": {{trinket.Id}}, "ilevel": {{trinket.ItemLevel}}, "name": "{{trinket.Name}}",
+                          "rarity": 4, "icon": "inv_{{trinket.Id}}", "gems": [], "ench": {}
+                        },
+                        """
             )
         );
 
@@ -1067,7 +1085,15 @@ public sealed class RaidLogExportServiceTests
                                     .Range(0, RaidCatalog.TalentTiers)
                                     .Select(tier =>
                                         (IReadOnlyList<RaidTalent?>)
-                                            [new RaidTalent(1000 + tier, $"Talent {tier}", "icon"), null, null]
+                                            [
+                                                new RaidTalent(
+                                                    1000 + tier,
+                                                    $"Talent {tier}",
+                                                    "icon"
+                                                ),
+                                                null,
+                                                null,
+                                            ]
                                     ),
                             ]
                         ),
