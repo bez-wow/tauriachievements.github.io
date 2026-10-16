@@ -1,0 +1,105 @@
+<app-update-bar
+  [showLastUpdated]="false" />
+
+<main class="addon-page" appScrollRise=".section-head, .feature, .feature-shot, .closing">
+  <!-- Pitch and download -->
+  <section class="hero" aria-labelledby="addon-title">
+    <p class="kicker"><span class="kicker-dot" aria-hidden="true"></span>Free addon for Legion on Tauri</p>
+    <h1 id="addon-title">Legion Key History</h1>
+    <p class="lead">
+      Raider.IO-style Mythic+ scores and leaderboards for Evermoon, Tauri and Warriors of Darkness,
+      right inside your game. Plus a journal of every key you run.
+    </p>
+
+    <ng-container *ngTemplateOutlet="downloadButton" />
+    <p class="download-note">Windows, Mac and Linux <span aria-hidden="true">·</span> Updates itself</p>
+  </section>
+
+  <!-- One large screenshot at a time -->
+  <section class="showcase" aria-label="Screenshots">
+    <div class="showcase-tabs">
+      <button
+        type="button"
+        class="showcase-tab"
+        *ngFor="let shot of screenshots"
+        [class.is-active]="shot === shown()"
+        [attr.aria-pressed]="shot === shown()"
+        (click)="shown.set(shot)">
+        {{ shot.label }}
+      </button>
+    </div>
+
+    <div class="showcase-frame">
+      <img
+        *ngFor="let shot of screenshots; let first = first"
+        class="showcase-image"
+        [class.is-active]="shot === shown()"
+        [src]="shot.src"
+        [alt]="shot.alt"
+        [attr.width]="shot.width"
+        [attr.height]="shot.height"
+        [attr.aria-hidden]="shot === shown() ? null : 'true'"
+        [attr.loading]="first ? null : 'lazy'"
+        [attr.fetchpriority]="first ? 'high' : null"
+        decoding="async" />
+    </div>
+  </section>
+
+  <!-- What it does -->
+  <section class="features" aria-labelledby="features-title">
+    <header class="section-head">
+      <h2 id="features-title">Everything Mythic+, without leaving the game</h2>
+      <p>Scores, leaderboards and your own key history, wherever you need them.</p>
+    </header>
+
+    <div class="features-body">
+      <ul class="feature-list">
+        <li class="feature" appSpotlight *ngFor="let feature of features">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.text }}</p>
+        </li>
+      </ul>
+
+      <figure class="feature-shot">
+        <img
+          src="assets/legion-key-history/friends-list.webp"
+          alt="The friends list with each friend's Mythic+ score and current key, and a tooltip with a friend's live key, score and ranks"
+          width="674"
+          height="643"
+          loading="lazy"
+          decoding="async" />
+        <figcaption>Scores and live keys right in your friends list</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Second chance to download -->
+  <section class="closing" appSpotlight aria-labelledby="closing-title">
+    <h2 id="closing-title">Set it up once</h2>
+    <p class="closing-text">
+      The leaderboard refreshes every hour in the background and new versions install themselves,
+      so you are always up to date. Keys you already have on the leaderboard show up in your
+      journal the first time you log in.
+    </p>
+
+    <ng-container *ngTemplateOutlet="downloadButton" />
+
+    <p class="fine-print">
+      Scores are unofficial and match the
+      <a routerLink="/mythic-plus" [queryParams]="{ view: 'players' }">Mythic+ leaderboard</a> on this site.
+      Need a hand installing?
+      <a [href]="installGuideUrl" target="_blank" rel="noopener noreferrer">See the guide on GitHub<span aria-hidden="true"> ↗</span></a>
+    </p>
+  </section>
+</main>
+
+<ng-template #downloadButton>
+  <a class="download" [href]="downloadUrl">
+    <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14" />
+    </svg>
+    Download for free
+  </a>
+</ng-template>
+
+<app-back-to-top-button />

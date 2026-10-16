@@ -33,6 +33,7 @@ describe('findNavLocation', () => {
   it('keeps a sibling route out of a shorter page path', () => {
     expect(locate('/raid-logs/leaderboard')).toBe('Raids / Character Rankings');
     expect(locate('/mythic-plus/records')).toBe('Mythic+ / Records');
+    expect(locate('/legion-key-history-addon')).toBe('Mythic+ / Addon');
     expect(locate('/raid-logs-old')).toBeUndefined();
   });
 
@@ -45,6 +46,6 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(17);
+    expect(paths).toHaveLength(18);
   });
 });
