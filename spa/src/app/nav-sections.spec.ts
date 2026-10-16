@@ -26,12 +26,14 @@ describe('findNavLocation', () => {
     expect(locate('/mythic-plus/guild/evermoon/Skill%20Issue')).toBe('Mythic+ / Leaderboard');
     expect(locate('/raid-logs/boss/xavius-heroic')).toBe('Raids / Raid Logs');
     expect(locate('/raid-logs/log/evermoon/12345')).toBe('Raids / Raid Logs');
-    expect(locate('/raid-logs/guild/tauri/Some%20Guild')).toBe('Raids / Raid Logs');
+    expect(locate('/raid-logs/guild/tauri/Some%20Guild')).toBe('Raids / Guild Progression');
     expect(locate('/raid-logs/character/tauri/Name')).toBe('Raids / Character Rankings');
   });
 
   it('keeps a sibling route out of a shorter page path', () => {
     expect(locate('/raid-logs/leaderboard')).toBe('Raids / Character Rankings');
+    expect(locate('/raid-logs/guilds?difficulty=heroic')).toBe('Raids / Guild Progression');
+    expect(locate('/raid-logs/stats')).toBe('Raids / Raid Statistics');
     expect(locate('/mythic-plus/records')).toBe('Mythic+ / Records');
     expect(locate('/legion-key-history-addon')).toBe('Mythic+ / Addon');
     expect(locate('/raid-logs-old')).toBeUndefined();
@@ -46,6 +48,6 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(18);
+    expect(paths).toHaveLength(20);
   });
 });

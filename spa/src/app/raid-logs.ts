@@ -331,6 +331,9 @@ export function bossesInKillOrder<T extends Pick<RaidBoss, 'slug' | 'index'>>(bo
 
 export const FACTION_NAMES: Readonly<Record<number, string>> = { 0: 'Alliance', 1: 'Horde' };
 
+/** The realms the raid logs cover, for realm filters; `realmSlug` of one is its filter value. */
+export const RAID_REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
+
 export const ROLE_NAMES: Readonly<Record<RaidRole, string>> = { tank: 'Tank', healer: 'Healer', dps: 'Damage' };
 
 /** WoW's item quality colours, poor to heirloom. */
@@ -1075,6 +1078,21 @@ export function guildProgression(
 
   return [...rows.values()]
     .sort((a, b) => b.killed - a.killed || a.progressedAt - b.progressedAt || a.guild.name.localeCompare(b.guild.name))
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
+export interface ProgressionFilter {
+  /** 0 Alliance, 1 Horde (FACTION_NAMES). */
+  faction?: number;
+  /** A realm's `realmSlug`. */
+  realm?: string;
+}
+
+/** The guilds a filter keeps, ranked among themselves, as `rankScores` ranks characters. */
+export function filterProgression(rows: readonly GuildProgress[], filter: ProgressionFilter = {}): GuildProgress[] {
+  return rows
+    .filter(row => (filter.faction === undefined || row.guild.faction === filter.faction)
+      && (filter.realm === undefined || realmSlug(row.guild.realm) === filter.realm))
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 

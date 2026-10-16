@@ -4,8 +4,8 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="raid-page">
-  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
-    <span aria-hidden="true">‹</span> Back to Raid Logs
+  <a class="back-link" routerLink="/raid-logs/guilds" [queryParams]="{ difficulty: difficulty()?.slug }">
+    <span aria-hidden="true">‹</span> Back to Guild Progression
   </a>
 
   <section class="feedback" *ngIf="isLoading()">

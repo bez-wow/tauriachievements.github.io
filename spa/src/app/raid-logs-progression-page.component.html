@@ -1,0 +1,114 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <h1 class="visually-hidden">Guild progression, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Reading the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
+    <section class="section" aria-label="Guild progression">
+      <header class="section-header">
+        <div class="filters">
+          <app-raid-difficulty-switch
+            [difficulties]="index()!.difficulties"
+            [selected]="current.slug"
+            label="Show the progression on difficulty"
+            (selectedChange)="setDifficulty($event)" />
+          <!-- Reset and the dropdowns: one width, the widest one's. -->
+          <div class="filter-group">
+            <!-- Always there, greyed out until a filter is set, as on the leaderboards. -->
+            <button
+              type="button"
+              class="filter-reset"
+              [disabled]="!hasFilters()"
+              aria-label="Reset faction and realm filters"
+              (click)="resetFilters()">
+              Reset
+            </button>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidGuildsFaction"
+                triggerId="raidGuildsFactionTrigger"
+                ariaLabel="Filter by faction"
+                [options]="factionOptions"
+                [widthLabels]="factionWidthLabels"
+                [selectedValue]="factionFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setFactionFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidGuildsRealm"
+                triggerId="raidGuildsRealmTrigger"
+                ariaLabel="Filter by realm"
+                [options]="realmOptions"
+                [widthLabels]="realmWidthLabels"
+                [selectedValue]="realmFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setRealmFilter($event)" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="table-scroll" *ngIf="shownProgression().length; else noGuilds">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" scope="col">#</th>
+              <th scope="col">Guild</th>
+              <th scope="col">Progress</th>
+              <th scope="col" class="col-optional">Reached</th>
+              <th scope="col" class="num">Kills</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of shownProgression(); trackBy: trackGuild" [class.cleared]="row.killed === row.firsts.length">
+              <td class="rank">{{ row.rank }}</td>
+              <td>
+                <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
+                  <span class="faction" [ngClass]="'faction-' + row.guild.faction" aria-hidden="true"></span>
+                  <span class="strong">{{ row.guild.name }}</span>
+                  <span class="muted phone-hidden">{{ row.guild.realm }}</span>
+                </a>
+              </td>
+              <td>
+                <span class="progress">
+                  <span class="progress-count difficulty-text" [ngClass]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
+                  <span class="pips" aria-hidden="true">
+                    <span
+                      class="pip"
+                      *ngFor="let boss of pipBosses()"
+                      [class.down]="!!row.firsts[boss.index]"
+                      [ngClass]="current.slug"
+                      [title]="pipTitle(boss, row.firsts[boss.index])"></span>
+                  </span>
+                </span>
+              </td>
+              <td class="col-optional muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
+              <td class="num">{{ row.kills | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noGuilds>
+        <p class="empty-note">{{ progression().length ? 'No guild with these filters has a kill on ' + current.name + ' yet.' : 'No guild has a kill on ' + current.name + ' yet.' }}</p>
+      </ng-template>
+    </section>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

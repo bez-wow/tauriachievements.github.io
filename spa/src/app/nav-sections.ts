@@ -69,11 +69,19 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     pages: [
       {
         label: 'Raid Logs',
-        tab: 'Overview',
+        tab: 'Logs',
         icon: '📖',
         path: '/raid-logs',
-        includes: ['/raid-logs/boss', '/raid-logs/log', '/raid-logs/guild']
+        includes: ['/raid-logs/boss', '/raid-logs/log']
       },
+      {
+        label: 'Guild Progression',
+        tab: 'Guilds',
+        icon: '🏰',
+        path: '/raid-logs/guilds',
+        includes: ['/raid-logs/guild']
+      },
+      { label: 'Raid Statistics', tab: 'Statistics', icon: '🧮', path: '/raid-logs/stats' },
       {
         label: 'Character Rankings',
         tab: 'Rankings',

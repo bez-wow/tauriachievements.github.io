@@ -4,16 +4,7 @@
   [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
 
 <main class="raid-page">
-  <header class="raid-hero">
-    <div class="hero-text">
-      <p class="eyebrow">Raid Logs</p>
-      <h1>{{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
-      <p>Every boss kill on Evermoon, Tauri and Warriors of Darkness: who killed what, how fast, and who did the most damage and healing.</p>
-      <a class="hero-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: difficulty()?.slug }">
-        Character leaderboard <span aria-hidden="true">›</span>
-      </a>
-    </div>
-  </header>
+  <h1 class="visually-hidden">Raid logs, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
   <section class="feedback" *ngIf="isLoading()">
     <span class="spinner" aria-hidden="true"></span>
@@ -26,27 +17,12 @@
   </section>
 
   <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
-    <dl class="summary">
-      <div *ngFor="let tile of summary(); trackBy: trackLabel">
-        <dt>{{ tile.label }}</dt>
-        <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
-      </div>
-    </dl>
-
-    <app-raid-spec-popularity-chart
-      [kills]="popularityKills()"
-      [bosses]="index()!.bosses"
+    <app-raid-difficulty-switch
+      class="page-switch"
       [difficulties]="index()!.difficulties"
-      [selectedDifficulty]="current.slug"
-      [raidName]="index()!.raid.name"
-      [loading]="popularityLoading()"
-      [error]="popularityError()"
-      [view]="chartView()"
-      [role]="chartRole()"
-      (difficultyChange)="setDifficulty($event)"
-      (viewChange)="setChartView($event)"
-      (roleChange)="setChartRole($event)"
-      (retry)="retryPopularity()" />
+      [selected]="current.slug"
+      label="Show the logs of difficulty"
+      (selectedChange)="setDifficulty($event)" />
 
     <!-- Bosses -->
     <section class="section" aria-labelledby="bosses-title">
@@ -97,65 +73,6 @@
       </div>
     </section>
 
-    <!-- Guild progression -->
-    <section class="section" aria-labelledby="progression-title">
-      <header class="section-header">
-        <h2 id="progression-title">Guild progression</h2>
-        <p>Most bosses down first; at the same count, whoever got there first. Kills in a pickup group don't count.</p>
-      </header>
-
-      <div class="table-scroll" *ngIf="progression().length; else noGuilds">
-        <table>
-          <thead>
-            <tr>
-              <th class="rank" scope="col">#</th>
-              <th scope="col">Guild</th>
-              <th scope="col">Progress</th>
-              <th scope="col" class="col-optional">Reached</th>
-              <th scope="col" class="num">Kills</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of shownProgression(); trackBy: trackGuild" [class.cleared]="row.killed === row.firsts.length">
-              <td class="rank">{{ row.rank }}</td>
-              <td>
-                <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
-                  <span class="faction" [ngClass]="'faction-' + row.guild.faction" aria-hidden="true"></span>
-                  <span class="strong">{{ row.guild.name }}</span>
-                  <span class="muted phone-hidden">{{ row.guild.realm }}</span>
-                </a>
-              </td>
-              <td>
-                <span class="progress">
-                  <span class="progress-count difficulty-text" [ngClass]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
-                  <span class="pips" aria-hidden="true">
-                    <span
-                      class="pip"
-                      *ngFor="let boss of pipBosses()"
-                      [class.down]="!!row.firsts[boss.index]"
-                      [ngClass]="current.slug"
-                      [title]="pipTitle(boss, row.firsts[boss.index])"></span>
-                  </span>
-                </span>
-              </td>
-              <td class="col-optional muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
-              <td class="num">{{ row.kills | number }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <ng-template #noGuilds><p class="empty-note">No guild has a kill on {{ current.name }} yet.</p></ng-template>
-
-      <button
-        type="button"
-        class="more-button"
-        *ngIf="progression().length > previewSize"
-        [attr.aria-expanded]="showAllGuilds()"
-        (click)="showAllGuilds.set(!showAllGuilds())">
-        {{ showAllGuilds() ? 'Show the top ' + previewSize : 'Show all ' + progression().length + ' guilds' }}
-      </button>
-    </section>
-
     <!-- Latest kills -->
     <section class="section" aria-labelledby="recent-title">
       <header class="section-header">
@@ -180,16 +97,6 @@
         </li>
       </ol>
     </section>
-
-    <!-- Races by spec. The spec chart at the top shows a failed roster load and its retry. -->
-    <ng-container *ngIf="!popularityError()">
-      <app-race-by-spec
-        *ngFor="let role of raceRoles"
-        [role]="role"
-        [samples]="rosterSlots()"
-        [context]="current.name + ' raids'"
-        [loading]="popularityLoading()" />
-    </ng-container>
   </ng-container>
 </main>
 
