@@ -38,24 +38,7 @@
 }
 
 // Reset, before the dropdowns: the M+ leaderboard's.
-.filter-reset {
-  display: inline-flex;
-  align-items: center;
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid #3a3a3a;
-  border-radius: 7px;
-  background: #111;
-  color: #bdbdbd;
-  font: inherit;
-  font-size: .82rem;
-  font-weight: 700;
-  cursor: pointer;
-
-  &:hover:not(:disabled) { border-color: $gold; color: #fff; }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-  &:disabled { opacity: .45; cursor: default; }
-}
+@include filter-reset;
 
 // The (i) in the Score heading.
 .score-head { display: inline-flex; align-items: center; gap: 6px; }

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, shareReplay, switchMap, throwError } from 'rxjs';
 import {
   RAID_GENDERS_PATH,
@@ -38,6 +38,13 @@ export interface FoundKill {
 export class RaidLogsDataService {
   private readonly dataFiles = inject(DataFileService);
   private readonly memoized = new Map<string, Observable<unknown>>();
+
+  /**
+   * The difficulty slug last picked or linked on a Raids tab (Logs, Guilds, Statistics,
+   * Rankings). A tab opened without `?difficulty=` starts on it, so the tabs stay on one difficulty
+   * although the nav links carry none. Kept for the session only.
+   */
+  readonly lastDifficulty = signal<string | undefined>(undefined);
 
   index(): Observable<RaidLogsIndex> {
     return this.memoize('index', () =>
