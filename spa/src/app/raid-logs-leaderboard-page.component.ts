@@ -18,6 +18,7 @@ import {
   FACTION_NAMES,
   MAX_SCORE,
   RAID_PAGE_SIZE,
+  RAID_REALMS,
   RaidBoss,
   RaidCharacter,
   RaidDifficulty,
@@ -58,8 +59,6 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
   { id: 'dps', label: 'DPS' },
   { id: 'hps', label: 'HPS' }
 ];
-
-const REALMS: ReadonlyArray<string> = ['Evermoon', 'Tauri', 'WoD'];
 
 /**
  * /raid-logs/leaderboard: every character on one difficulty by score, their best kill of each
@@ -103,7 +102,7 @@ export class RaidLogsLeaderboardPageComponent {
   readonly lastEdited = computed(() => this.index()?.generatedAt);
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
-  private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? undefined);
+  private readonly requestedDifficulty = signal(this.query.get('difficulty') ?? this.data.lastDifficulty());
   readonly metric = signal<RaidMetric>(this.query.get('metric') === 'hps' ? 'hps' : 'dps');
   readonly classFilter = signal<number | undefined>(parseNumber(this.query.get('class')));
   readonly specFilter = signal<number | undefined>(parseNumber(this.query.get('spec')));
@@ -234,7 +233,7 @@ export class RaidLogsLeaderboardPageComponent {
 
   readonly realmOptions: ReadonlyArray<FilterDropdownOption> = [
     { value: undefined, label: 'All realms' },
-    ...REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
+    ...RAID_REALMS.map(realm => ({ value: realmSlug(realm), label: realm }))
   ];
 
   /**
@@ -255,6 +254,7 @@ export class RaidLogsLeaderboardPageComponent {
   private subscription?: Subscription;
 
   constructor() {
+    this.data.lastDifficulty.set(this.requestedDifficulty());
     this.loadData();
   }
 
@@ -276,6 +276,7 @@ export class RaidLogsLeaderboardPageComponent {
 
   setDifficulty(slug: string): void {
     this.requestedDifficulty.set(slug);
+    this.data.lastDifficulty.set(slug);
     this.page.set(1);
     this.writeUrl();
     const index = this.index();

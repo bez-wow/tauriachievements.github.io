@@ -1,0 +1,47 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <h1 class="visually-hidden">Raid statistics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Reading the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && difficulty() as current">
+    <app-raid-spec-popularity-chart
+      [kills]="popularityKills()"
+      [bosses]="index()!.bosses"
+      [difficulties]="index()!.difficulties"
+      [selectedDifficulty]="current.slug"
+      [raidName]="index()!.raid.name"
+      [loading]="popularityLoading()"
+      [error]="popularityError()"
+      [view]="chartView()"
+      [role]="chartRole()"
+      (difficultyChange)="setDifficulty($event)"
+      (viewChange)="setChartView($event)"
+      (roleChange)="setChartRole($event)"
+      (retry)="retryPopularity()" />
+
+    <!-- Races by spec. The spec chart above shows a failed roster load and its retry. -->
+    <ng-container *ngIf="!popularityError()">
+      <app-race-by-spec
+        *ngFor="let role of raceRoles"
+        [role]="role"
+        [samples]="rosterSlots()"
+        [context]="current.name + ' raids'"
+        [loading]="popularityLoading()" />
+    </ng-container>
+  </ng-container>
+</main>
+
+<app-back-to-top-button />

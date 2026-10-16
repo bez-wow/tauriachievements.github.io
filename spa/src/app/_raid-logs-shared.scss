@@ -292,6 +292,28 @@ $difficulty-colors: (
   }
 }
 
+// Reset, before a ranking's filter dropdowns: the M+ leaderboard's. Greyed out until a filter is set.
+@mixin filter-reset {
+  .filter-reset {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #3a3a3a;
+    border-radius: 7px;
+    background: #111;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover:not(:disabled) { border-color: $gold; color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+    &:disabled { opacity: .45; cursor: default; }
+  }
+}
+
 @mixin pager {
   .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; color: $raid-muted; font-size: .85rem; }
 
