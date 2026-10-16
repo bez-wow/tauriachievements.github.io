@@ -97,7 +97,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         includes: ['/mythic-plus/character', '/mythic-plus/guild', '/mythic-plus/compare', '/mythic-plus/scoring']
       },
       { label: 'Statistics', tab: 'Activity', icon: '⏱️', path: '/mythic-plus/stats' },
-      { label: 'Records', icon: '🥇', path: '/mythic-plus/records' }
+      { label: 'Records', icon: '🥇', path: '/mythic-plus/records' },
+      { label: 'Addon', icon: '⬇️', path: '/legion-key-history-addon' }
     ]
   },
   {

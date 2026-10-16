@@ -69,6 +69,11 @@ export const routes: Routes = [
       .then(module => module.MythicPlusGuildPageComponent)
   },
   {
+    path: 'legion-key-history-addon',
+    loadComponent: () => import('./legion-key-history-page.component')
+      .then(module => module.LegionKeyHistoryPageComponent)
+  },
+  {
     path: 'raid-logs',
     loadComponent: () => import('./raid-logs-page.component')
       .then(module => module.RaidLogsPageComponent)
