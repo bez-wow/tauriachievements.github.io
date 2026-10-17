@@ -190,6 +190,11 @@ export class ArenaGamesPageComponent implements OnInit {
     return (this.rows().length * cutoff.title.topPerMille) / 1000;
   }
 
+  /** The hover text of a title's +N. */
+  tiesHint(cutoff: TitleCutoff): string {
+    return `${cutoff.ties} more ${cutoff.ties === 1 ? 'holder' : 'holders'}: players on the same rating share one spot`;
+  }
+
   titleOf(player: ArenaPlayerRow): TitleCutoff | undefined {
     return this.titles().get(player);
   }

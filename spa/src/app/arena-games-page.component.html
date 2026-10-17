@@ -60,7 +60,7 @@
             <!-- 2v2 gives no Season Gladiator; the row stays so both brackets' tables match. -->
             <tr *ngIf="!hasSeasonGladiator()" class="tier-season-gladiator">
               <th scope="row">
-                Season Gladiator
+                <span class="title-name">Season Gladiator</span>
                 <span class="share-inline">top —</span>
               </th>
               <td class="share empty">—</td>
@@ -71,7 +71,8 @@
             </tr>
             <tr *ngFor="let cutoff of cutoffs()" [ngClass]="'tier-' + cutoff.title.slug">
               <th scope="row">
-                {{ cutoff.title.name }}
+                <span class="title-name">{{ cutoff.title.name }}</span>
+                <span class="ties" *ngIf="cutoff.ties" [attr.title]="tiesHint(cutoff)">+{{ cutoff.ties }}</span>
                 <span class="share-inline">top {{ formatTitleShare(cutoff.title) }}</span>
               </th>
               <td class="share">{{ formatTitleShare(cutoff.title) }}</td>
@@ -91,7 +92,8 @@
       <p class="titles-note">
         Titles go to the best ratings among active players with {{ minWins }}+ wins. Spots are the
         active players times the share, always rounded up (1.01 makes 2), counted from the top, so
-        they include the titles above. Ties on a cutoff all get the title.
+        they include the titles above. Players on the same rating share one spot; the +N beside a
+        title counts those extra holders.
       </p>
     </section>
   </section>
@@ -142,6 +144,9 @@
                   <span class="group-detail">
                     top {{ formatTitleShare(group.title) }} ·
                     {{ titleCounts().get(group) ?? 0 }} {{ titleCounts().get(group) === 1 ? 'player' : 'players' }}
+                    <ng-container *ngIf="group.ties">
+                      · <span class="group-ties" [attr.title]="tiesHint(group)">+{{ group.ties }} same rating</span>
+                    </ng-container>
                   </span>
                 </ng-container>
                 <ng-template #noTitle>

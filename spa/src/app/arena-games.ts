@@ -70,30 +70,46 @@ export function formatTitleShare(arenaTitle: ArenaTitle): string {
 
 export interface TitleCutoff {
   readonly title: ArenaTitle;
-  /** Places from the top down to the end of this title, the better titles' places included. */
+  /**
+   * Places from the top down to the end of this title, the better titles' places included. A
+   * place is one rating: players on the same rating share it.
+   */
   readonly places: number;
   /**
-   * The lowest rating that earns this title; everyone on it, ties included, and below the
-   * better title's cutoff has it. Undefined while the title has no place of its own: its share,
-   * rounded up, is no more than the better titles already cover.
+   * The lowest rating that earns this title; everyone on it and below the better title's cutoff
+   * has it. Undefined while the title has no place of its own: its share, rounded up, is no
+   * more than the better titles already cover.
    */
   readonly rating: number | undefined;
+  /** The holders beyond the title's own places, there because they share a place's rating. */
+  readonly ties: number;
 }
 
 /**
  * Where each title's line falls among the active players. A title covers its share rounded up,
- * the server's rule: any part of a place counts as a whole one, so 1.01 places are 2.
+ * the server's rule: any part of a place counts as a whole one, so 1.01 places are 2. The places
+ * are counted in ratings, not players, so everyone on the same rating takes one place together.
  */
 export function getTitleCutoffs(rows: readonly ArenaPlayerRow[], titles: readonly ArenaTitle[]): TitleCutoff[] {
   const ratings = rows.map(row => row.rating).sort((left, right) => right - left);
-  let covered = 0;
+  const placeRatings = [...new Set(ratings)];
+  let coveredPlaces = 0;
+  let coveredPlayers = 0;
 
   return titles.map(arenaTitle => {
     const places = Math.min(ratings.length, Math.ceil((ratings.length * arenaTitle.topPerMille) / 1000));
-    const rating = places > covered ? ratings[places - 1] : undefined;
-    covered = Math.max(covered, places);
+    const reached = Math.min(places, placeRatings.length);
+    if (reached <= coveredPlaces) {
+      return { title: arenaTitle, places, rating: undefined, ties: 0 };
+    }
 
-    return { title: arenaTitle, places, rating };
+    const rating = placeRatings[reached - 1];
+    const players = ratings.filter(other => other >= rating).length;
+    const ties = (players - coveredPlayers) - (reached - coveredPlaces);
+    coveredPlaces = reached;
+    coveredPlayers = players;
+
+    return { title: arenaTitle, places, rating, ties };
   });
 }
 

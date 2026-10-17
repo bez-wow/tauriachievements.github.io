@@ -111,6 +111,19 @@ describe('getTitleCutoffs', () => {
     ]);
   });
 
+  it('gives a rating one place, so everyone on it is in and the line reaches further down', () => {
+    // 100 players, so 0.6% is 1 place, 3% is 3 and 10% is 10.
+    const ratings = [2700, 2600, 2600, 2600, 2500, ...Array.from({ length: 95 }, (_, index) => 2400 - index)];
+    const cutoffs = getTitleCutoffs(field(ratings), ARENA_TITLES['2v2']);
+
+    expect(cutoffs.slice(0, 3).map(cutoff => [cutoff.title.name, cutoff.places, cutoff.rating, cutoff.ties])).toEqual([
+      ['Gladiator', 1, 2700, 0],
+      // 2600 and 2500 are its 2 places; the other two players on 2600 come in with them.
+      ['Duelist', 3, 2500, 2],
+      ['Rival', 10, 2394, 0]
+    ]);
+  });
+
   it('has no places without players', () => {
     expect(summary('2v2', []).every(([, places, rating]) => places === 0 && rating === undefined)).toBe(true);
   });
