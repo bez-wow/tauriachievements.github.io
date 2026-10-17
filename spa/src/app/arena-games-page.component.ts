@@ -102,28 +102,29 @@ export class ArenaGamesPageComponent implements OnInit {
     }
     return counts;
   });
+  readonly untitledCount = computed(() =>
+    [...this.titles().values()].filter(cutoff => !cutoff).length
+  );
   /**
-   * The title lines, by the index of the row each goes under: wherever the rating sort moves
-   * from one title to the next, either way round, named after the better side. None when the
-   * table is sorted by anything else, as the lines would mean nothing.
+   * The group headings, by the index of the row each goes above: the first row and every row
+   * whose title differs from the one before, with null for the players without a title. Every
+   * player then sits under the heading of the title they hold. Only in the rating sort, either
+   * way round; any other sort mixes the titles.
    */
-  readonly titleLines = computed(() => {
-    const lines = new Map<number, TitleCutoff>();
+  readonly titleGroups = computed(() => {
+    const groups = new Map<number, TitleCutoff | null>();
     const rows = this.players();
     if (this.sortKey() !== 'rating') {
-      return lines;
+      return groups;
     }
 
-    const descending = this.sortDirection() === 'desc';
-    for (let index = 0; index + 1 < rows.length; index++) {
-      const above = this.titleOf(rows[index]);
-      const below = this.titleOf(rows[index + 1]);
-      const better = descending ? above : below;
-      if (above !== below && better) {
-        lines.set(index, better);
+    rows.forEach((row, index) => {
+      const title = this.titleOf(row) ?? null;
+      if (index === 0 || title !== (this.titleOf(rows[index - 1]) ?? null)) {
+        groups.set(index, title);
       }
-    }
-    return lines;
+    });
+    return groups;
   });
   /** The start of the latest counted game, shown in local time in the update bar. */
   readonly lastEdited = computed(() => {
@@ -189,10 +190,10 @@ export class ArenaGamesPageComponent implements OnInit {
     return this.titles().get(player);
   }
 
-  /** A titled row carries its title's colour (tier-*), which its stripe and badge use. */
-  rowClasses(player: ArenaPlayerRow): string {
-    const title = this.titleOf(player);
-    return title ? `has-title tier-${title.title.slug}` : '';
+  /** A group heading carries its title's colour, or the muted one for the players without a title. */
+  groupClasses(index: number): string {
+    const group = this.titleGroups().get(index);
+    return group ? `tier-${group.title.slug}` : 'is-untitled';
   }
 
   isRewardEligible(player: ArenaPlayerRow): boolean {

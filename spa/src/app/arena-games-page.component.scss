@@ -25,7 +25,19 @@
 }
 
 .arena-header {
-  padding: 28px;
+  padding: 22px 24px;
+}
+
+// Wide enough, the heading and numbers sit beside the titles table instead of above it.
+@media (min-width: 900px) {
+  .arena-header {
+    display: grid;
+    grid-template-columns: minmax(0, 290px) minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .arena-header .titles { margin-top: 0; }
 }
 
 .header-top {
@@ -33,8 +45,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 16px;
-  margin-bottom: 4px;
+  gap: 8px 16px;
 
   .eyebrow { margin: 0; }
 }
@@ -51,7 +62,7 @@
   @include glide-pill;
 
   button {
-    padding: 7px 16px;
+    padding: 5px 14px;
     border: 0;
     border-radius: 4px;
     background: transparent;
@@ -77,54 +88,37 @@
   text-transform: uppercase;
 }
 
-h1 {
-  margin: 0;
-  color: #f5f2ea;
-  font-size: clamp(1.7rem, 4vw, 2.5rem);
-}
+.intro { margin: 10px 0 12px; color: #bdb8ab; font-size: 0.88rem; line-height: 1.45; }
 
-.intro { margin: 8px 0 16px; color: #bdb8ab; line-height: 1.5; }
-
-.rules {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 22px;
-  padding: 0;
-  list-style: none;
-
-  li {
-    padding: 6px 11px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    background: rgba(0, 0, 0, 0.22);
-    color: #bdb8ab;
-    font-size: 0.8rem;
-  }
-
-  strong { margin-right: 4px; color: #f5f2ea; }
-}
-
-.rules-note { color: #8fcf7a; }
-
+// The numbers as label / value rows, each rule beside its label.
 .summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 32px;
+  display: grid;
   margin: 0;
+
+  div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
 
   dt {
     color: #8f8a7d;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
+  small { margin-left: 4px; color: #6f6a5f; font-size: 0.7rem; font-weight: 600; letter-spacing: 0; text-transform: none; }
+  small.is-green { color: #8fcf7a; }
+
   dd {
-    margin: 2px 0 0;
+    margin: 0;
     color: #f5f2ea;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
@@ -137,11 +131,11 @@ h1 {
 .tier-rival { --tier: #4aa3ff; }
 .tier-challenger { --tier: #5ad65a; }
 
-// How each title's line is drawn: its share of the active players, exact and rounded up.
-.titles { margin-top: 24px; }
+// How each title's spots are counted: its share of the active players, exact and rounded up.
+.titles { margin-top: 16px; }
 
 .titles-heading {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: #8f8a7d;
   font-size: 0.72rem;
   font-weight: 700;
@@ -163,17 +157,17 @@ h1 {
 
   th,
   td {
-    padding: 9px 12px;
+    padding: 6px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.055);
     color: #cbc6ba;
-    font-size: 0.86rem;
+    font-size: 0.82rem;
     text-align: center;
     white-space: nowrap;
   }
 
   thead th {
     color: #958f80;
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -198,7 +192,7 @@ h1 {
   .share-inline { display: none; }
 }
 
-.titles-note { margin: 8px 0 0; color: #8f8a7d; font-size: 0.78rem; line-height: 1.5; }
+.titles-note { margin: 6px 0 0; color: #8f8a7d; font-size: 0.74rem; line-height: 1.45; }
 
 .feedback {
   display: flex;
@@ -253,52 +247,38 @@ h1 {
   .realm-inline { display: none; }
 
   @media (hover: hover) {
-    tbody tr:not(.title-line):hover { background: rgba(247, 181, 0, 0.045); }
+    tbody tr:not(.title-group):hover { background: rgba(247, 181, 0, 0.045); }
   }
 
-  // A titled row: a faint wash and a stripe down its first cell in the title's colour.
-  tbody tr.has-title { background: linear-gradient(90deg, color-mix(in srgb, var(--tier) 11%, transparent), transparent 75%); }
-  tbody tr.has-title td.rank { box-shadow: inset 3px 0 0 var(--tier); }
-
-  // A title's line: a rule in its colour across the table, under its last player, with its
-  // name in the middle.
-  tbody tr.title-line td {
-    position: relative;
-    padding: 14px 0;
+  // A title's heading, above its first player: the only coloured row of its group, with a rule
+  // in the title's colour along the top and a stripe down the left.
+  tbody tr.title-group td {
+    padding: 10px 18px 9px;
+    border-top: 2px solid var(--tier);
     border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-    text-align: center;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: 0;
-      left: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--tier) 18%, var(--tier) 82%, transparent);
-      box-shadow: 0 0 12px color-mix(in srgb, var(--tier) 45%, transparent);
-      transform: translateY(-50%);
-    }
+    background: color-mix(in srgb, var(--tier) 15%, #15130e);
+    box-shadow: inset 3px 0 0 var(--tier);
+    text-align: left;
   }
+
+  tbody tr.title-group.is-untitled { --tier: #6f6a5f; }
 
   tbody tr:last-child td { border-bottom: 0; }
   a { font-weight: 700; text-decoration: none; }
   a:hover { text-decoration: underline; }
 }
 
-.title-line-label {
-  position: relative;
-  padding: 4px 12px;
-  border: 1px solid color-mix(in srgb, var(--tier) 60%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--tier) 12%, #15130e);
+.group-name {
   color: var(--tier);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
+
+.group-detail { margin-left: 10px; color: #a39e91; font-size: 0.76rem; }
+
+.is-untitled .group-name { color: #a39e91; }
 
 .sort-button {
   position: relative;
@@ -331,12 +311,11 @@ h1 {
 @media (max-width: 600px) {
   // The header covers the top 30px of the page on phones.
   .arena-games-page { width: min(100% - 32px, 860px); padding-top: 46px; }
-  .arena-header { padding: 21px 14px; }
-  .rules li { font-size: 0.76rem; }
+  .arena-header { padding: 18px 14px; }
 
   // The share moves under the title's name, so the explanation fits a phone.
   .titles-table {
-    th, td { padding: 8px 4px; font-size: 0.8rem; }
+    th, td { padding: 6px 4px; font-size: 0.8rem; }
     thead th { font-size: 0.6rem; letter-spacing: 0; white-space: normal; }
     tbody th { padding-left: 9px; white-space: normal; }
     .share { display: none; }
@@ -355,8 +334,7 @@ h1 {
     // Losses shorten to W / L and the arrows sit under the labels, so the table fits a phone.
     .rank, .realm { display: none; }
     .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
-    tbody tr.title-line td { padding: 14px 0; }
-    tbody tr.has-title td:nth-child(2) { box-shadow: inset 3px 0 0 var(--tier); }
+    tbody tr.title-group td { padding: 9px 10px 8px; }
     .label-short { display: inline; }
   }
 
