@@ -47,21 +47,33 @@ public sealed class RatedArenaGameCounter
     };
 
     private readonly int _bracketType;
+    private readonly ArenaCharacterIdentityMap _identityMap;
     private readonly Dictionary<string, RatedArenaPlayer> _players;
+    private readonly Dictionary<string, UnresolvedArenaPlayer> _unresolvedPlayers;
     private int _lastMatchId;
     private DateTimeOffset? _lastMatchStart;
     private int _matchCount;
 
-    private RatedArenaGameCounter(int bracketType, RatedArenaGames? saved)
+    private RatedArenaGameCounter(
+        int bracketType,
+        RatedArenaGames? saved,
+        ArenaCharacterIdentityMap identityMap
+    )
     {
         _bracketType = bracketType;
+        _identityMap = identityMap;
         _players = (saved?.Players ?? []).ToDictionary(
+            player => GetPlayerKey(player.Guid, player.Realm),
+            StringComparer.OrdinalIgnoreCase
+        );
+        _unresolvedPlayers = (saved?.UnresolvedPlayers ?? []).ToDictionary(
             player => GetPlayerKey(player.Guid, player.Realm),
             StringComparer.OrdinalIgnoreCase
         );
         _lastMatchId = saved?.LastMatchId ?? 0;
         _lastMatchStart = saved?.LastMatchStart;
         _matchCount = saved?.MatchCount ?? 0;
+        ResolveSavedPlayers();
     }
 
     public int NewMatchCount { get; private set; }
@@ -72,12 +84,13 @@ public sealed class RatedArenaGameCounter
     public static async Task<RatedArenaGameCounter> LoadAsync(
         string path,
         int bracketType,
+        ArenaCharacterIdentityMap identityMap,
         CancellationToken cancellationToken
     )
     {
         if (!File.Exists(path))
         {
-            return new RatedArenaGameCounter(bracketType, null);
+            return new RatedArenaGameCounter(bracketType, null, identityMap);
         }
 
         await using var stream = File.OpenRead(path);
@@ -89,7 +102,8 @@ public sealed class RatedArenaGameCounter
 
         return new RatedArenaGameCounter(
             bracketType,
-            saved?.SeasonStart == SeasonStart ? saved : null
+            saved?.SeasonStart == SeasonStart ? saved : null,
+            identityMap
         );
     }
 
@@ -121,29 +135,30 @@ public sealed class RatedArenaGameCounter
 
         foreach (var member in members.EnumerateArray())
         {
-            if (
-                member.ValueKind != JsonValueKind.Object
-                || !member.TryGetProperty("character-minimal-data", out var character)
-                || character.ValueKind != JsonValueKind.Object
-            )
+            if (member.ValueKind != JsonValueKind.Object)
             {
                 continue;
             }
 
-            // Deleted characters come back without a name; there is nobody to list.
-            var name = BattlegroundCollectorService.ReadString(character, "charname");
             var guid = BattlegroundCollectorService.ReadInt(member, "guid");
-            if (name.Length == 0 || guid <= 0)
+            if (guid <= 0)
             {
                 continue;
             }
 
+            var hasCharacter =
+                member.TryGetProperty("character-minimal-data", out var character)
+                && character.ValueKind == JsonValueKind.Object;
+            var apiName = hasCharacter
+                ? BattlegroundCollectorService.ReadString(character, "charname")
+                : string.Empty;
+            var apiClass = hasCharacter
+                ? BattlegroundCollectorService.ReadInt(character, "class")
+                : 0;
             var apiRealm = BattlegroundCollectorService.ReadString(member, "realmName");
             var realm = CharacterHelpers.TryResolveRealm(apiRealm, out _, out var displayRealm)
                 ? displayRealm
                 : apiRealm;
-            var key = GetPlayerKey(guid, realm);
-            var existing = _players.GetValueOrDefault(key);
             var ratingChange = BattlegroundCollectorService.ReadInt(
                 member,
                 "personal_rating_change"
@@ -153,17 +168,42 @@ public sealed class RatedArenaGameCounter
                 winner == NoWinner
                     ? ratingChange > 0
                     : BattlegroundCollectorService.ReadInt(member, "side") != winner;
+            var rawKey = GetPlayerKey(guid, realm);
+            var hasAlias = _identityMap.TryResolve(guid, realm, out var identity);
+            var canonicalGuid = hasAlias ? identity.Guid : guid;
+            var canonicalRealm = hasAlias ? identity.Realm : realm;
+            var key = GetPlayerKey(canonicalGuid, canonicalRealm);
+            var existing = _players.GetValueOrDefault(key);
+            var name = hasAlias ? identity.Name : apiName;
+            var playerClass = hasAlias ? identity.Class : apiClass;
+
+            // The match API blanks character-minimal-data after some transfers, restorations,
+            // renames and deletions. Keep counting a GUID we already know; otherwise preserve
+            // the member so an identity added later can recover it without another API scan.
+            if (name.Length == 0 && existing is not null)
+            {
+                name = existing.Name;
+                playerClass = existing.Class;
+            }
+
+            if (name.Length == 0)
+            {
+                AddUnresolvedPlayer(matchId, guid, realm, member, won, ratingChange);
+                continue;
+            }
+
+            _unresolvedPlayers.Remove(rawKey, out var recovered);
 
             // A renamed character keeps its guid, so the latest name wins. personal_rating is
             // the rating going into the game, so the rating now is that plus the change.
             _players[key] = new RatedArenaPlayer(
-                guid,
-                realm,
+                canonicalGuid,
+                canonicalRealm,
                 name,
-                BattlegroundCollectorService.ReadInt(character, "class"),
-                (existing?.Games ?? 0) + 1,
-                (existing?.Wins ?? 0) + (won ? 1 : 0),
-                (existing?.Losses ?? 0) + (won ? 0 : 1),
+                playerClass,
+                (existing?.Games ?? 0) + (recovered?.Games ?? 0) + 1,
+                (existing?.Wins ?? 0) + (recovered?.Wins ?? 0) + (won ? 1 : 0),
+                (existing?.Losses ?? 0) + (recovered?.Losses ?? 0) + (won ? 0 : 1),
                 BattlegroundCollectorService.ReadInt(member, "personal_rating") + ratingChange
             );
         }
@@ -187,6 +227,11 @@ public sealed class RatedArenaGameCounter
                 .Values.OrderByDescending(player => player.Games)
                 .ThenBy(player => player.Name, StringComparer.Ordinal)
                 .ThenBy(player => player.Realm, StringComparer.Ordinal)
+                .ToList(),
+            _unresolvedPlayers
+                .Values.OrderByDescending(player => player.Games)
+                .ThenBy(player => player.Realm, StringComparer.Ordinal)
+                .ThenBy(player => player.Guid)
                 .ToList()
         );
 
@@ -194,6 +239,55 @@ public sealed class RatedArenaGameCounter
     }
 
     private static string GetPlayerKey(int guid, string realm) => $"{realm}|{guid}";
+
+    private void AddUnresolvedPlayer(
+        int matchId,
+        int guid,
+        string realm,
+        JsonElement member,
+        bool won,
+        int ratingChange
+    )
+    {
+        var key = GetPlayerKey(guid, realm);
+        var existing = _unresolvedPlayers.GetValueOrDefault(key);
+        _unresolvedPlayers[key] = new UnresolvedArenaPlayer(
+            guid,
+            realm,
+            BattlegroundCollectorService.ReadInt(member, "specid"),
+            (existing?.Games ?? 0) + 1,
+            (existing?.Wins ?? 0) + (won ? 1 : 0),
+            (existing?.Losses ?? 0) + (won ? 0 : 1),
+            BattlegroundCollectorService.ReadInt(member, "personal_rating") + ratingChange,
+            existing is null ? matchId : Math.Min(existing.FirstMatchId, matchId),
+            existing is null ? matchId : Math.Max(existing.LastMatchId, matchId)
+        );
+    }
+
+    private void ResolveSavedPlayers()
+    {
+        foreach (var unresolved in _unresolvedPlayers.Values.ToList())
+        {
+            if (!_identityMap.TryResolve(unresolved.Guid, unresolved.Realm, out var identity))
+            {
+                continue;
+            }
+
+            var canonicalKey = GetPlayerKey(identity.Guid, identity.Realm);
+            var existing = _players.GetValueOrDefault(canonicalKey);
+            _players[canonicalKey] = new RatedArenaPlayer(
+                identity.Guid,
+                identity.Realm,
+                identity.Name,
+                identity.Class,
+                (existing?.Games ?? 0) + unresolved.Games,
+                (existing?.Wins ?? 0) + unresolved.Wins,
+                (existing?.Losses ?? 0) + unresolved.Losses,
+                existing?.Rating ?? unresolved.Rating
+            );
+            _unresolvedPlayers.Remove(GetPlayerKey(unresolved.Guid, unresolved.Realm));
+        }
+    }
 }
 
 public sealed record RatedArenaGames(
@@ -201,7 +295,8 @@ public sealed record RatedArenaGames(
     int LastMatchId,
     DateTimeOffset? LastMatchStart,
     int MatchCount,
-    IReadOnlyList<RatedArenaPlayer> Players
+    IReadOnlyList<RatedArenaPlayer> Players,
+    IReadOnlyList<UnresolvedArenaPlayer>? UnresolvedPlayers = null
 );
 
 public sealed record RatedArenaPlayer(
@@ -213,4 +308,16 @@ public sealed record RatedArenaPlayer(
     int Wins,
     int Losses,
     int Rating
+);
+
+public sealed record UnresolvedArenaPlayer(
+    int Guid,
+    string Realm,
+    int Spec,
+    int Games,
+    int Wins,
+    int Losses,
+    int Rating,
+    int FirstMatchId,
+    int LastMatchId
 );
