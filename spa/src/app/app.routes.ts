@@ -89,6 +89,11 @@ export const routes: Routes = [
       .then(module => module.RaidLogsStatsPageComponent)
   },
   {
+    path: 'raid-logs/talents',
+    loadComponent: () => import('./raid-logs-talents-page.component')
+      .then(module => module.RaidLogsTalentsPageComponent)
+  },
+  {
     path: 'raid-logs/leaderboard',
     loadComponent: () => import('./raid-logs-leaderboard-page.component')
       .then(module => module.RaidLogsLeaderboardPageComponent)

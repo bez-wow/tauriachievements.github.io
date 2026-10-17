@@ -1,0 +1,364 @@
+<app-update-bar
+  [showLastUpdated]="!!lastEdited()"
+  [lastEdited]="lastEdited()"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="raid-page">
+  <h1 class="visually-hidden">Talent analytics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Reading the logs...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="loadData()">Try again</button>
+  </section>
+
+  <ng-container *ngIf="!isLoading() && !loadError() && index() as loaded">
+    <div class="controls">
+      <app-raid-difficulty-switch
+        [difficulties]="loaded.difficulties"
+        [selected]="difficulty()?.slug"
+        label="Raid difficulty"
+        (selectedChange)="setDifficulty($event)" />
+      <div class="spec-slot">
+        <app-filter-dropdown
+          dropdownId="talentSpec"
+          triggerId="talentSpecTrigger"
+          ariaLabel="Pick a spec"
+          [options]="specOptions()"
+          [selectedValue]="specId()"
+          [showIcons]="true"
+          [highlightWhenSelected]="true"
+          (selectionChange)="setSpec($event)" />
+      </div>
+    </div>
+
+    <nav class="boss-picker" aria-label="Pick a boss">
+      <button
+        type="button"
+        class="boss-pick all-bosses"
+        [class.active]="!boss()"
+        [attr.aria-pressed]="!boss()"
+        (click)="setBoss(undefined)">
+        <span class="all-mark" aria-hidden="true">{{ loaded.bosses.length }}</span>
+        <span>All bosses</span>
+      </button>
+      <button
+        type="button"
+        class="boss-pick"
+        *ngFor="let other of loaded.bosses"
+        [class.active]="other === boss()"
+        [attr.aria-pressed]="other === boss()"
+        [disabled]="!killsLoading() && !bossesWithKills().has(other)"
+        [title]="other.name"
+        (click)="setBoss(other)">
+        <img [src]="other.portrait" alt="" loading="lazy" />
+        <span>{{ other.shortName }}</span>
+      </button>
+    </nav>
+
+    <section class="feedback" *ngIf="killsLoading()" role="status">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Reading the {{ difficulty()?.name }} raid rosters...</p>
+    </section>
+
+    <section class="feedback error" *ngIf="!killsLoading() && killsError()">
+      <p>{{ killsError() }}</p>
+      <button type="button" (click)="retryKills()">Try again</button>
+    </section>
+
+    <app-icon-tips *ngIf="!killsLoading() && !killsError()">
+      <!-- Every spec at a glance -->
+      <ng-container *ngIf="!spec(); else specView">
+        <section class="section">
+          <div class="section-header">
+            <h2>Talent meta · {{ difficulty()?.name }} · {{ boss()?.shortName ?? 'All bosses' }}</h2>
+            <p>Each spec's most picked talent on every tier. Pick a spec for the details.</p>
+          </div>
+
+          <ul class="highlights" *ngIf="highlights().length">
+            <li *ngFor="let highlight of highlights(); trackBy: trackLabel">
+              <a class="highlight" [routerLink]="[]" [queryParams]="queryParams(highlight.spec.id)" [style.--class-color]="highlight.color">
+                <span class="insight-label">{{ highlight.label }}</span>
+                <span class="highlight-spec">
+                  <img *ngIf="highlight.spec.icon" [src]="highlight.spec.icon" alt="" loading="lazy" />
+                  <span [style.color]="highlight.color">{{ highlight.spec.name }} {{ highlight.className }}</span>
+                </span>
+                <b class="insight-title">{{ highlight.title }}</b>
+                <span class="insight-text">{{ highlight.text }}</span>
+              </a>
+            </li>
+          </ul>
+
+          <div class="role-group" *ngFor="let group of specGroups()">
+            <h3>{{ group.title }}</h3>
+            <ul class="spec-grid">
+              <li *ngFor="let card of group.cards; trackBy: trackSpec">
+                <a
+                  class="spec-card"
+                  [class.nobody]="!card.picks.picks"
+                  [routerLink]="[]"
+                  [queryParams]="queryParams(card.spec.id)"
+                  [style.--class-color]="card.color"
+                  [attr.aria-label]="card.spec.name + ' ' + card.className + ', ' + card.picks.characters + ' characters, ' + formatShare(card.agreement) + ' agreement'">
+                  <span class="spec-card-head">
+                    <img class="spec-icon" *ngIf="card.spec.icon" [src]="card.spec.icon" alt="" loading="lazy" />
+                    <span class="spec-card-name">
+                      <b [style.color]="card.color">{{ card.spec.name }}</b>
+                      <span>{{ card.className }}</span>
+                    </span>
+                    <span class="spec-card-count">{{ card.picks.characters | number }}<span> {{ card.picks.characters === 1 ? 'character' : 'characters' }}</span></span>
+                  </span>
+
+                  <ng-container *ngIf="card.picks.picks; else nobodyYet">
+                    <span class="consensus">
+                      <span class="consensus-pick" *ngFor="let pick of card.consensus" [attr.data-tip]="pick.talent?.name ?? 'Unknown talent'" [attr.data-tip-note]="'Level ' + pick.level + ' · ' + formatShare(pick.share)">
+                        <img *ngIf="pick.talent; else unknownIcon" [src]="icon(pick.talent.icon, 'medium')" [srcset]="iconSrcset(pick.talent.icon)" sizes="28px" width="28" height="28" alt="" loading="lazy" />
+                        <span class="consensus-share">{{ formatShare(pick.share) }}</span>
+                      </span>
+                    </span>
+                    <span class="agreement">
+                      <span class="agreement-text"><b>{{ formatShare(card.agreement) }}</b> agreement · {{ card.label }}</span>
+                      <span class="meter" aria-hidden="true"><span [style.width.%]="card.agreement * 100"></span></span>
+                      <span class="agreement-builds">{{ card.buildCount | number }} {{ card.buildCount === 1 ? 'build' : 'builds' }} · most played {{ formatShare(card.topBuild?.share ?? 0) }}</span>
+                    </span>
+                  </ng-container>
+                  <ng-template #nobodyYet><span class="nobody-note">Nobody played it here yet.</span></ng-template>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <p class="method-note">
+            Each character counts once per boss, with the talents of their best kill there. Agreement is how often players take a tier's most picked talent, averaged over the seven tiers.
+          </p>
+        </section>
+      </ng-container>
+
+      <!-- One spec -->
+      <ng-template #specView>
+        <ng-container *ngIf="spec() as current">
+          <a class="back-link" [routerLink]="[]" [queryParams]="queryParams(undefined)">
+            <span aria-hidden="true">‹</span> All specs
+          </a>
+
+          <header class="spec-header" [style.--class-color]="specColor()">
+            <img class="spec-header-icon" *ngIf="current.icon" [src]="current.icon" alt="" />
+            <div class="spec-heading">
+              <p class="eyebrow">{{ difficulty()?.name }} · {{ boss()?.name ?? 'All bosses' }}</p>
+              <h2><span [style.color]="specColor()">{{ current.name }}</span> {{ className() }}</h2>
+            </div>
+            <dl class="summary">
+              <div *ngFor="let tile of stats(); trackBy: trackLabel">
+                <dt>{{ tile.label }}</dt>
+                <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+              </div>
+            </dl>
+          </header>
+
+          <p class="empty-note" *ngIf="!picks().picks">
+            Nobody has killed {{ boss()?.shortName ?? 'a boss' }} on {{ difficulty()?.name }} as {{ current.name }} {{ className() }} yet.
+          </p>
+
+          <ng-container *ngIf="picks().picks">
+            <p class="thin-note" *ngIf="isThin()">
+              Only {{ picks().characters }} {{ picks().characters === 1 ? 'character' : 'characters' }} to go on, so a single player moves these shares a lot.
+            </p>
+
+            <section class="section">
+              <div class="section-header">
+                <h2>Talent picks</h2>
+                <p class="legend">
+                  <span class="legend-key everyone" aria-hidden="true"></span> Everyone
+                  <span class="legend-key top" aria-hidden="true"></span> Top 10% by {{ metricLabel() }}<ng-container *ngIf="picks().topPicks < 10"> (only {{ picks().topPicks }})</ng-container>
+                </p>
+              </div>
+
+              <ol class="talent-tree">
+                <li class="tier" *ngFor="let tier of tierViews(); trackBy: trackTier">
+                  <div class="tier-label">
+                    <span class="tier-level"><span>Level</span> {{ tier.level }}</span>
+                    <span class="tier-swap" *ngIf="tier.swapNote">{{ tier.swapNote }}</span>
+                  </div>
+                  <div class="tier-choices">
+                    <a
+                      class="talent"
+                      *ngFor="let choice of tier.choices; trackBy: trackColumn"
+                      [class.leader]="choice.isLeader"
+                      [class.unpicked]="!choice.count"
+                      [attr.href]="choice.talent ? spellUrl(choice.talent.id) : null"
+                      target="_blank"
+                      rel="noopener"
+                      [attr.aria-label]="(choice.talent?.name ?? 'Unknown talent') + ': ' + formatShare(choice.share) + ' of everyone, ' + formatShare(choice.topShare) + ' of the top 10%'">
+                      <span class="talent-head">
+                        <img
+                          *ngIf="choice.talent; else unknownIcon"
+                          class="talent-icon"
+                          [src]="icon(choice.talent.icon, 'medium')"
+                          [srcset]="iconSrcset(choice.talent.icon)"
+                          sizes="36px"
+                          width="36"
+                          height="36"
+                          alt=""
+                          loading="lazy" />
+                        <span class="talent-name">{{ choice.talent?.name ?? 'Unknown talent' }}</span>
+                        <span class="talent-share">{{ formatShare(choice.share) }}</span>
+                      </span>
+                      <span class="share-bars" aria-hidden="true">
+                        <span class="share-bar everyone"><span [style.width.%]="choice.share * 100"></span></span>
+                        <span class="share-bar top"><span [style.width.%]="choice.topShare * 100"></span></span>
+                      </span>
+                      <span class="talent-top">
+                        Top 10% <b>{{ formatShare(choice.topShare) }}</b>
+                        <span class="edge" *ngIf="choice.edge" [ngClass]="choice.edgeTone">{{ choice.edge }}</span>
+                      </span>
+                    </a>
+                  </div>
+                </li>
+              </ol>
+              <p class="method-note" *ngIf="swapExplanation()">{{ swapExplanation() }}</p>
+            </section>
+
+            <section class="section" *ngIf="insights().length">
+              <div class="section-header">
+                <h2>What stands out</h2>
+              </div>
+              <ul class="insights">
+                <li class="insight" *ngFor="let insight of insights(); trackBy: trackId" [ngClass]="insight.tone">
+                  <img *ngIf="insight.icon" class="insight-icon" [src]="icon(insight.icon, 'medium')" [srcset]="iconSrcset(insight.icon)" sizes="36px" width="36" height="36" alt="" loading="lazy" />
+                  <span class="insight-body">
+                    <span class="insight-label">{{ insight.label }}</span>
+                    <b class="insight-title">{{ insight.title }}</b>
+                    <span class="insight-text">{{ insight.text }}</span>
+                  </span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="section">
+              <div class="section-header">
+                <h2>Most played builds</h2>
+                <p>All seven talents. {{ buildCount() | number }} different {{ buildCount() === 1 ? 'build' : 'builds' }} seen{{ buildCount() > buildRows().length ? '; the ' + buildRows().length + ' most played' : '' }}.</p>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="rank" scope="col">#</th>
+                      <th scope="col">Build</th>
+                      <th scope="col">Played by</th>
+                      <th scope="col" class="num">Top 10%</th>
+                      <th scope="col" class="col-optional">Best showing</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let build of buildRows(); trackBy: trackBuild">
+                      <td class="rank">{{ build.rank }}</td>
+                      <td>
+                        <span class="icons">
+                          <ng-container *ngFor="let talent of build.picked">
+                            <a
+                              *ngIf="talent; else emptyTier"
+                              class="icon"
+                              [href]="spellUrl(talent.id)"
+                              target="_blank"
+                              rel="noopener"
+                              [attr.aria-label]="talent.name"
+                              [attr.data-tip]="talent.name">
+                              <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+                            </a>
+                          </ng-container>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="build-share">
+                          <span class="meter" aria-hidden="true"><span [style.width.%]="build.meter * 100"></span></span>
+                          <b>{{ formatShare(build.share) }}</b>
+                          <span class="muted phone-hidden">{{ build.characters | number }} {{ build.characters === 1 ? 'character' : 'characters' }}</span>
+                        </span>
+                      </td>
+                      <td class="num">{{ formatShare(build.topShare) }}</td>
+                      <td class="col-optional">
+                        <span class="best">
+                          <a class="best-name" [style.color]="classColor(build.best.character.classId)" [routerLink]="characterLink(build.best.character)" [queryParams]="{ difficulty: difficulty()?.slug }">{{ build.best.character.name }}</a>
+                          <a class="muted" [routerLink]="logLink(build.best.kill)">{{ formatPerSecond(build.best.value) }} {{ metricLabel() }} on {{ build.best.boss.shortName }}</a>
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="method-note">Played by: the share of picks; the bar is measured against the most played build. Best showing: the player closest to the top of their boss's ranking with the build.</p>
+            </section>
+
+            <section class="section">
+              <div class="section-header">
+                <h2>Boss by boss</h2>
+                <p>How often each talent is picked on each boss. <span class="notable-key" aria-hidden="true">▲</span> marks a talent picked {{ notableDifference }} or more points more there than on the other bosses.</p>
+              </div>
+              <div class="table-scroll">
+                <table class="heatmap">
+                  <thead>
+                    <tr>
+                      <th scope="col" colspan="2"><span class="visually-hidden">Talent</span></th>
+                      <th
+                        scope="col"
+                        class="heat-boss"
+                        *ngFor="let entry of heatBosses(); trackBy: trackBoss"
+                        [class.selected]="entry.boss === boss()"
+                        [class.thin]="entry.thin">
+                        <img [src]="entry.boss.portrait" alt="" loading="lazy" />
+                        <span>{{ entry.boss.shortName }}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of heatRows(); trackBy: trackKey" [class.tier-start]="row.first">
+                      <th *ngIf="row.first" scope="rowgroup" class="heat-level" [attr.rowspan]="row.tierSize">{{ row.level }}</th>
+                      <th scope="row" class="heat-talent">
+                        <span>
+                          <img *ngIf="row.talent; else unknownIcon" [src]="icon(row.talent.icon, 'medium')" [srcset]="iconSrcset(row.talent.icon)" sizes="20px" width="20" height="20" alt="" loading="lazy" />
+                          {{ row.talent?.name ?? 'Unknown talent' }}
+                        </span>
+                      </th>
+                      <td
+                        *ngFor="let cell of row.cells; let bossIndex = index"
+                        class="heat-cell"
+                        [class.selected]="heatBosses()[bossIndex].boss === boss()"
+                        [class.thin]="cell.thin"
+                        [class.high]="cell.share >= .5"
+                        [style.background-color]="heatColor(cell.share)"
+                        [attr.data-tip]="cell.tip"
+                        [attr.data-tip-note]="cell.tipNote">
+                        {{ cell.label }}<span class="notable-mark" *ngIf="cell.notable"><span aria-hidden="true">▲</span><span class="visually-hidden"> picked more here</span></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th scope="row" colspan="2">Characters</th>
+                      <td *ngFor="let entry of heatBosses(); trackBy: trackBoss" [class.selected]="entry.boss === boss()">{{ entry.picks | number }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p class="method-note">Faded columns have fewer than 10 characters.</p>
+            </section>
+
+            <p class="method-note">
+              Each character counts once per boss, with the talents of their best kill there by {{ metricLabel() }}, as the boss rankings have it. The top 10% are the best tenth of each boss's {{ current.name }} ranking.
+            </p>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+    </app-icon-tips>
+  </ng-container>
+
+  <ng-template #unknownIcon><span class="icon-placeholder" aria-hidden="true"></span></ng-template>
+  <ng-template #emptyTier><span class="icon empty" data-tip="No talent picked"></span></ng-template>
+</main>
+
+<app-back-to-top-button />

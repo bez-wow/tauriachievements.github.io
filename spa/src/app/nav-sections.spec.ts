@@ -48,6 +48,6 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(20);
+    expect(paths).toHaveLength(21);
   });
 });
