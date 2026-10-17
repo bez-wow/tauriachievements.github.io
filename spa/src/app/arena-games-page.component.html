@@ -50,13 +50,25 @@
             <tr>
               <th scope="col">Title</th>
               <th scope="col" class="share">Top</th>
-              <th scope="col">{{ players().length | number }} × top</th>
+              <th scope="col">Active × top</th>
               <th scope="col">Rounded up</th>
               <th scope="col">Holders</th>
               <th scope="col">Cutoff</th>
             </tr>
           </thead>
           <tbody>
+            <!-- 2v2 gives no Season Gladiator; the row stays so both brackets' tables match. -->
+            <tr *ngIf="!hasSeasonGladiator()" class="tier-season-gladiator">
+              <th scope="row">
+                Season Gladiator
+                <span class="share-inline">top —</span>
+              </th>
+              <td class="share empty">—</td>
+              <td class="empty">—</td>
+              <td class="empty">—</td>
+              <td class="empty">—</td>
+              <td class="empty">—</td>
+            </tr>
             <tr *ngFor="let cutoff of cutoffs()" [ngClass]="'tier-' + cutoff.title.slug">
               <th scope="row">
                 {{ cutoff.title.name }}
@@ -64,7 +76,10 @@
               </th>
               <td class="share">{{ formatTitleShare(cutoff.title) }}</td>
               <td class="exact">{{ exactSpots(cutoff) | number: '1.0-3' }}</td>
-              <td class="spots">{{ cutoff.places | number }}</td>
+              <td class="spots">
+                {{ cutoff.places | number }}
+                <span class="exact-inline">from {{ exactSpots(cutoff) | number: '1.0-3' }}</span>
+              </td>
               <td>{{ titleCounts().get(cutoff) ?? 0 | number }}</td>
               <td [class.cutoff]="cutoff.rating !== undefined" [class.empty]="cutoff.rating === undefined">
                 {{ cutoff.rating !== undefined ? (cutoff.rating | number) + '+' : '—' }}

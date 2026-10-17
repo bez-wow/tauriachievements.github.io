@@ -157,7 +157,7 @@
 
   th,
   td {
-    padding: 6px 10px;
+    padding: 6px 7px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.055);
     color: #cbc6ba;
     font-size: 0.82rem;
@@ -175,6 +175,15 @@
 
   thead th:first-child { text-align: left; }
 
+  // Set shares of the width, the title taking the rest, so switching bracket changes only the
+  // numbers and not where the columns sit. On a desktop the table only just fits without a
+  // scrollbar: each share is its header's width, padding included.
+  thead th:nth-child(2) { width: 9%; }
+  thead th:nth-child(3) { width: 18.2%; }
+  thead th:nth-child(4) { width: 17.8%; }
+  thead th:nth-child(5) { width: 13.8%; }
+  thead th:nth-child(6) { width: 11.8%; }
+
   // The title's name, in its colour with a stripe down the edge.
   tbody th {
     box-shadow: inset 3px 0 0 var(--tier);
@@ -189,7 +198,8 @@
   .spots { color: #f5f2ea; font-weight: 800; }
   .cutoff { color: #f7c948; font-weight: 700; }
   .empty { color: #6f6a5f; }
-  .share-inline { display: none; }
+  .share-inline,
+  .exact-inline { display: none; }
 }
 
 .titles-note { margin: 6px 0 0; color: #8f8a7d; font-size: 0.74rem; line-height: 1.45; }
@@ -313,13 +323,16 @@
   .arena-games-page { width: min(100% - 32px, 860px); padding-top: 46px; }
   .arena-header { padding: 18px 14px; }
 
-  // The share moves under the title's name, so the explanation fits a phone.
+  // The share moves under the title's name and the exact spots under the rounded ones, so the
+  // explanation fits a phone without scrolling sideways.
   .titles-table {
     th, td { padding: 6px 4px; font-size: 0.8rem; }
     thead th { font-size: 0.6rem; letter-spacing: 0; white-space: normal; }
     tbody th { padding-left: 9px; white-space: normal; }
-    .share { display: none; }
-    .share-inline { display: block; margin-top: 1px; color: #8f8a7d; font-size: 0.7rem; font-weight: 600; }
+    .share,
+    tr > :nth-child(3) { display: none; }
+    .share-inline,
+    .exact-inline { display: block; margin-top: 1px; color: #8f8a7d; font-size: 0.7rem; font-weight: 600; }
   }
 
   .players-table {
