@@ -5,48 +5,43 @@
 
 <main class="arena-games-page">
   <section class="arena-header">
-    <div class="header-top">
-      <p class="eyebrow">Rated {{ bracket() }} arena</p>
-      <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
-        <button
-          type="button"
-          *ngFor="let option of brackets"
-          [class.active]="option === bracket()"
-          [attr.aria-pressed]="option === bracket()"
-          (click)="selectBracket(option)">
-          {{ option }}
-        </button>
+    <div class="header-main">
+      <div class="header-top">
+        <h1 class="eyebrow">Rated {{ bracket() }} arena</h1>
+        <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
+          <button
+            type="button"
+            *ngFor="let option of brackets"
+            [class.active]="option === bracket()"
+            [attr.aria-pressed]="option === bracket()"
+            (click)="selectBracket(option)">
+            {{ option }}
+          </button>
+        </div>
       </div>
+      <p class="intro" *ngIf="dataset() as data">
+        The season's active players: {{ minGames }}+ rated {{ bracket() }} games since
+        {{ data.seasonStart | date: 'd MMM y' : '+0200' }} on Tauri, Evermoon and WoD. Rating is the
+        personal rating after a player's latest game.
+      </p>
+
+      <dl class="summary" *ngIf="dataset() as data">
+        <div>
+          <dt>Active players <small>{{ minGames }}+ games</small></dt>
+          <dd>{{ players().length | number }}</dd>
+        </div>
+        <div>
+          <dt>Reward eligible <small class="is-green">{{ minWins }}+ wins, in green</small></dt>
+          <dd>{{ eligibleCount() | number }}</dd>
+        </div>
+        <div>
+          <dt>Games counted</dt>
+          <dd>{{ data.matchCount | number }}</dd>
+        </div>
+      </dl>
     </div>
-    <h1>{{ minGames }}+ Games Played</h1>
-    <p class="intro" *ngIf="dataset() as data">
-      Every active player of the season: {{ minGames }} or more rated {{ bracket() }} arena games since
-      {{ data.seasonStart | date: 'd MMMM y' : '+0200' }}, across Tauri, Evermoon and WoD.
-      Rating is each player's personal rating after their latest game.
-    </p>
 
-    <ul class="rules" aria-label="Season rules">
-      <li><strong>Active</strong> {{ minGames }}+ games played</li>
-      <li><strong>Reward eligible</strong> {{ minWins }}+ wins <span class="rules-note">(wins shown in green)</span></li>
-      <li><strong>Titles</strong> the best ratings among active players, with {{ minWins }}+ wins</li>
-    </ul>
-
-    <dl class="summary" *ngIf="dataset() as data">
-      <div>
-        <dt>Active players</dt>
-        <dd>{{ players().length | number }}</dd>
-      </div>
-      <div>
-        <dt>Reward eligible</dt>
-        <dd>{{ eligibleCount() | number }}</dd>
-      </div>
-      <div>
-        <dt>Games counted</dt>
-        <dd>{{ data.matchCount | number }}</dd>
-      </div>
-    </dl>
-
-    <!-- How each title's line is drawn: its share of the active players, exact and rounded up. -->
+    <!-- How each title's spots are counted: its share of the active players, exact and rounded up. -->
     <section class="titles" *ngIf="dataset()" aria-labelledby="titles-heading">
       <h2 id="titles-heading" class="titles-heading">Season titles</h2>
       <div class="titles-scroll">
@@ -79,9 +74,9 @@
         </table>
       </div>
       <p class="titles-note">
-        A title's spots are the active players times its share, always rounded up: 1.01 spots
-        count as 2. Shares count from the top, so a title's spots include the players of the
-        titles above it, and the rest hold the title. Everyone tied on a cutoff rating gets the title.
+        Titles go to the best ratings among active players with {{ minWins }}+ wins. Spots are the
+        active players times the share, always rounded up (1.01 makes 2), counted from the top, so
+        they include the titles above. Ties on a cutoff all get the title.
       </p>
     </section>
   </section>
@@ -121,7 +116,26 @@
         </thead>
         <tbody>
           <ng-container *ngFor="let player of players(); let index = index; trackBy: trackPlayer">
-            <tr [ngClass]="rowClasses(player)">
+            <!-- In the rating sort each title's players sit under a heading of their own. -->
+            <tr
+              *ngIf="titleGroups().has(index)"
+              class="title-group"
+              [ngClass]="groupClasses(index)">
+              <td colspan="8">
+                <ng-container *ngIf="titleGroups().get(index) as group; else noTitle">
+                  <span class="group-name">{{ group.title.name }}</span>
+                  <span class="group-detail">
+                    top {{ formatTitleShare(group.title) }} ·
+                    {{ titleCounts().get(group) ?? 0 }} {{ titleCounts().get(group) === 1 ? 'player' : 'players' }}
+                  </span>
+                </ng-container>
+                <ng-template #noTitle>
+                  <span class="group-name">No title</span>
+                  <span class="group-detail">{{ untitledCount() }} {{ untitledCount() === 1 ? 'player' : 'players' }}</span>
+                </ng-template>
+              </td>
+            </tr>
+            <tr>
               <td class="rank">{{ index + 1 }}</td>
               <td>
                 <a
@@ -144,11 +158,6 @@
               <td class="num losses">{{ player.losses | number }}</td>
               <td class="num win-rate">{{ player.winRate | percent: '1.1-1' }}</td>
               <td class="num rating">{{ player.rating | number }}</td>
-            </tr>
-            <tr class="title-line" *ngIf="titleLines().get(index) as line" [ngClass]="'tier-' + line.title.slug">
-              <td colspan="8">
-                <span class="title-line-label">{{ line.title.name }} · top {{ formatTitleShare(line.title) }}</span>
-              </td>
             </tr>
           </ng-container>
         </tbody>
