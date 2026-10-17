@@ -5,9 +5,9 @@ using Tauri.Core.Infrastructure;
 namespace BattlegroundCollector;
 
 /// <summary>
-/// Counts every character's rated 2v2 arena games since <see cref="SeasonStart"/> for the
-/// /50-games-played-arenas page. Match ids are shared by all three realms, so the one
-/// collector run sees every realm's games.
+/// Counts every character's rated arena games in one bracket (2v2 or 3v3) since
+/// <see cref="SeasonStart"/> for the /arena page. Match ids are shared by all three realms, so
+/// the one collector run sees every realm's games.
 /// </summary>
 /// <remarks>
 /// The collector walks match ids in order and resumes where it stopped, so each match reaches
@@ -17,16 +17,18 @@ namespace BattlegroundCollector;
 /// </remarks>
 public sealed class RatedArenaGameCounter
 {
-    // The API reports rated 2v2 as bgtype 2. Rated 3v3 and every skirmish are 3,
-    // battlegrounds 0.
-    private const int Rated2v2BracketType = 2;
+    // The API's bgtype for each bracket. Skirmishes are 3 as well but not ranked;
+    // battlegrounds are 0.
+    public const int Rated2v2 = 2;
+    public const int Rated3v3 = 3;
 
     // "winner" holds the side that did NOT win (checked against every rating change of the
     // season), or 2 when no winner was recorded: mostly a team leaving in the first minute,
     // a few timeouts.
     private const int NoWinner = 2;
 
-    // The first rated 2v2 game of the season is match 140940, at 09:30 that day.
+    // The first rated games of the season: 2v2 match 140940 at 09:30 that day, 3v3 match 141087
+    // at 19:12.
     public static readonly DateTimeOffset SeasonStart = new(
         2026,
         9,
@@ -44,13 +46,15 @@ public sealed class RatedArenaGameCounter
         WriteIndented = true,
     };
 
+    private readonly int _bracketType;
     private readonly Dictionary<string, RatedArenaPlayer> _players;
     private int _lastMatchId;
     private DateTimeOffset? _lastMatchStart;
     private int _matchCount;
 
-    private RatedArenaGameCounter(RatedArenaGames? saved)
+    private RatedArenaGameCounter(int bracketType, RatedArenaGames? saved)
     {
+        _bracketType = bracketType;
         _players = (saved?.Players ?? []).ToDictionary(
             player => GetPlayerKey(player.Guid, player.Realm),
             StringComparer.OrdinalIgnoreCase
@@ -64,14 +68,16 @@ public sealed class RatedArenaGameCounter
 
     public int MatchCount => _matchCount;
 
+    /// <param name="bracketType">The bracket's bgtype: <see cref="Rated2v2"/> or <see cref="Rated3v3"/>.</param>
     public static async Task<RatedArenaGameCounter> LoadAsync(
         string path,
+        int bracketType,
         CancellationToken cancellationToken
     )
     {
         if (!File.Exists(path))
         {
-            return new RatedArenaGameCounter(null);
+            return new RatedArenaGameCounter(bracketType, null);
         }
 
         await using var stream = File.OpenRead(path);
@@ -81,10 +87,13 @@ public sealed class RatedArenaGameCounter
             cancellationToken
         );
 
-        return new RatedArenaGameCounter(saved?.SeasonStart == SeasonStart ? saved : null);
+        return new RatedArenaGameCounter(
+            bracketType,
+            saved?.SeasonStart == SeasonStart ? saved : null
+        );
     }
 
-    /// <summary>Counts the match when it is a rated 2v2 game of this season not counted yet.</summary>
+    /// <summary>Counts the match when it is a rated game of this bracket and season not counted yet.</summary>
     public void Add(int matchId, JsonElement response)
     {
         if (matchId <= _lastMatchId)
@@ -98,7 +107,7 @@ public sealed class RatedArenaGameCounter
             BattlegroundCollectorService.ReadLong(response, "starttime")
         );
         if (
-            BattlegroundCollectorService.ReadInt(response, "bgtype") != Rated2v2BracketType
+            BattlegroundCollectorService.ReadInt(response, "bgtype") != _bracketType
             || !BattlegroundCollectorService.ReadBoolean(response, "isranked")
             || startTime < SeasonStart
             || !response.TryGetProperty("members", out var members)

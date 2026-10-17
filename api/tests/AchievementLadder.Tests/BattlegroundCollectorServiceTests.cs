@@ -87,7 +87,7 @@ public sealed class BattlegroundCollectorServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_CountsEachRated2v2GameOfTheSeasonOnce()
+    public async Task ExecuteAsync_CountsEachRatedArenaGameOfTheSeasonOncePerBracket()
     {
         var testRoot = Path.Combine(
             Path.GetTempPath(),
@@ -117,9 +117,19 @@ public sealed class BattlegroundCollectorServiceTests
                             side1: (1600, -12)
                         )
                     ),
-                    // Rated 3v3 and skirmishes are bracket type 3.
+                    // Rated 3v3 and skirmishes are both bracket type 3; only the rated one counts.
+                    // Cid's side (1) wins.
                     [201] = Success(
-                        ArenaJson(201, bracketType: 3, isRanked: true, seasonStart + 120, "Ann")
+                        ArenaJson(
+                            201,
+                            bracketType: 3,
+                            isRanked: true,
+                            seasonStart + 120,
+                            "Ann",
+                            winner: 0,
+                            side0: (1500, -15),
+                            side1: (1450, 15)
+                        )
                     ),
                     [202] = Success(
                         ArenaJson(202, bracketType: 3, isRanked: false, seasonStart + 180, "Ann")
@@ -160,36 +170,47 @@ public sealed class BattlegroundCollectorServiceTests
             var firstRun = await collector.ExecuteAsync(options, CancellationToken.None);
             var rerun = await collector.ExecuteAsync(options, CancellationToken.None);
 
-            Assert.Equal(2, firstRun.NewRatedArenaGameCount);
-            Assert.Equal(0, rerun.NewRatedArenaGameCount);
-            Assert.Equal(2, rerun.TotalRatedArenaGameCount);
-
-            using var output = JsonDocument.Parse(
-                await File.ReadAllTextAsync(rerun.RatedArenaGamesPath)
-            );
-            Assert.Equal(204, output.RootElement.GetProperty("lastMatchId").GetInt32());
-            Assert.Equal(2, output.RootElement.GetProperty("matchCount").GetInt32());
-            var players = output
-                .RootElement.GetProperty("players")
-                .EnumerateArray()
-                .Select(player =>
-                    (
-                        Name: player.GetProperty("name").GetString(),
-                        Realm: player.GetProperty("realm").GetString(),
-                        Games: player.GetProperty("games").GetInt32(),
-                        Wins: player.GetProperty("wins").GetInt32(),
-                        Losses: player.GetProperty("losses").GetInt32(),
-                        Rating: player.GetProperty("rating").GetInt32()
-                    )
+            Assert.Equal(
+                [("2v2", 2), ("3v3", 1)],
+                firstRun.RatedArenaBrackets.Select(bracket =>
+                    (bracket.Bracket, bracket.NewGameCount)
                 )
-                .ToList();
+            );
+            Assert.Equal(
+                [("2v2", 0, 2), ("3v3", 0, 1)],
+                rerun.RatedArenaBrackets.Select(bracket =>
+                    (bracket.Bracket, bracket.NewGameCount, bracket.TotalGameCount)
+                )
+            );
+
+            var twos = await ReadArenaGamesAsync(rerun.RatedArenaBrackets[0].Path);
+            Assert.Equal(
+                "rated-2v2-arena-games.json",
+                Path.GetFileName(rerun.RatedArenaBrackets[0].Path)
+            );
+            Assert.Equal(204, twos.LastMatchId);
             Assert.Equal(
                 [
                     ("Anna", "Evermoon", 2, 2, 0, 1532),
                     ("Bob", "Tauri", 2, 2, 0, 1532),
                     ("Cid", "WoD", 2, 0, 2, 1588),
                 ],
-                players
+                twos.Players
+            );
+
+            var threes = await ReadArenaGamesAsync(rerun.RatedArenaBrackets[1].Path);
+            Assert.Equal(
+                "rated-3v3-arena-games.json",
+                Path.GetFileName(rerun.RatedArenaBrackets[1].Path)
+            );
+            Assert.Equal(204, threes.LastMatchId);
+            Assert.Equal(
+                [
+                    ("Ann", "Evermoon", 1, 0, 1, 1485),
+                    ("Bob", "Tauri", 1, 0, 1, 1485),
+                    ("Cid", "WoD", 1, 1, 0, 1465),
+                ],
+                threes.Players
             );
         }
         finally
@@ -201,7 +222,31 @@ public sealed class BattlegroundCollectorServiceTests
         }
     }
 
-    // A two-a-side arena game: the first player and Bob are side 0, Cid and a deleted character
+    private static async Task<(
+        int LastMatchId,
+        List<(string? Name, string? Realm, int Games, int Wins, int Losses, int Rating)> Players
+    )> ReadArenaGamesAsync(string path)
+    {
+        using var output = JsonDocument.Parse(await File.ReadAllTextAsync(path));
+        var players = output
+            .RootElement.GetProperty("players")
+            .EnumerateArray()
+            .Select(player =>
+                (
+                    player.GetProperty("name").GetString(),
+                    player.GetProperty("realm").GetString(),
+                    player.GetProperty("games").GetInt32(),
+                    player.GetProperty("wins").GetInt32(),
+                    player.GetProperty("losses").GetInt32(),
+                    player.GetProperty("rating").GetInt32()
+                )
+            )
+            .ToList();
+
+        return (output.RootElement.GetProperty("lastMatchId").GetInt32(), players);
+    }
+
+    // An arena game: the first player and Bob are side 0, Cid and a deleted character
     // without a name side 1. Each side is given its rating going in and its change.
     private static string ArenaJson(
         int matchId,

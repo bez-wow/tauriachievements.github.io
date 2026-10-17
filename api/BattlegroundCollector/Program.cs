@@ -58,9 +58,12 @@ internal static class Program
             Console.WriteLine($"Next match id to try: {result.NextMatchId}");
             Console.WriteLine($"New battlegrounds: {result.NewBattlegroundCount}");
             Console.WriteLine($"New rated battlegrounds: {result.NewRatedBattlegroundCount}");
-            Console.WriteLine(
-                $"New rated 2v2 arena games: {result.NewRatedArenaGameCount} (season total {result.TotalRatedArenaGameCount})"
-            );
+            foreach (var bracket in result.RatedArenaBrackets)
+            {
+                Console.WriteLine(
+                    $"New rated {bracket.Bracket} arena games: {bracket.NewGameCount} (season total {bracket.TotalGameCount})"
+                );
+            }
             Console.WriteLine($"New guilds: {result.NewGuildCount}");
             Console.WriteLine($"Total battlegrounds in JSON: {result.TotalBattlegroundCount}");
             Console.WriteLine(
@@ -69,7 +72,10 @@ internal static class Program
             Console.WriteLine($"Stop reason: {result.StopReason}");
             Console.WriteLine($"Output: {result.OutputPath}");
             Console.WriteLine($"Rated output: {result.RatedOutputPath}");
-            Console.WriteLine($"Rated 2v2 arena games: {result.RatedArenaGamesPath}");
+            foreach (var bracket in result.RatedArenaBrackets)
+            {
+                Console.WriteLine($"Rated {bracket.Bracket} arena games: {bracket.Path}");
+            }
             Console.WriteLine($"State: {result.StatePath}");
 
             return 0;
