@@ -40,7 +40,7 @@ export class RaidLogsDataService {
   private readonly memoized = new Map<string, Observable<unknown>>();
 
   /**
-   * The difficulty slug last picked or linked on a Raids tab (Logs, Guilds, Statistics,
+   * The difficulty slug last picked or linked on a Raids tab (Logs, Guilds, Statistics, Talents,
    * Rankings). A tab opened without `?difficulty=` starts on it, so the tabs stay on one difficulty
    * although the nav links carry none. Kept for the session only.
    */
