@@ -1,11 +1,33 @@
 @echo off
 setlocal
 
-rem Double-click entry point for Run-DailyUpdate.ps1; arguments are passed through
-rem (for example: Run-DailyUpdate.cmd -From Ladder).
+rem Double-click entry point for the daily update. It runs, in order:
+rem   1. Run-DailyUpdate.ps1: MythicPlusExporter, RaidLogExporter, MythicPlusGuildAndCharScan,
+rem      RaidLogGuildAndCharScan, RealmFirstAchievements, BattlegroundCollector,
+rem      GuildCharacterExporter, AchievementLadder, MissingPlayerFinder, then the
+rem      "sync data" commit and push.
+rem   2. guild-analysis.cmd: Guildkukker for every guild page,
+rem      then its own "sync guilds statistics" commit and push. Only runs if step 1 succeeded.
+rem Arguments go to Run-DailyUpdate.ps1 (for example: Run-DailyUpdate.cmd -From Ladder).
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Run-DailyUpdate.ps1" %*
 set "EXIT_CODE=%ERRORLEVEL%"
+if not "%EXIT_CODE%"=="0" goto :Done
 
+rem guild-analysis.cmd pushes on its own, which would also push the "sync data" commit.
+echo(%*| findstr /i /c:"-NoPush" >nul
+if not errorlevel 1 (
+    echo.
+    echo Skipping guild-analysis.cmd because -NoPush was given. Run it yourself after pushing.
+    goto :Done
+)
+
+echo.
+echo === Guild analysis ===
+rem Input comes from nul so the pause commands inside guild-analysis.cmd don't stop the run.
+call "%~dp0guild-analysis.cmd" <nul
+set "EXIT_CODE=%ERRORLEVEL%"
+
+:Done
 echo.
 pause
 exit /b %EXIT_CODE%
