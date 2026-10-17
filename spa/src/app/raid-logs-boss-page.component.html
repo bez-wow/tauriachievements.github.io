@@ -120,6 +120,7 @@
 
       <p class="list-note" *ngIf="isRanking()">
         Each character's best kill. {{ tab() === 'hps' ? 'Healing counts absorbs; only healers are ranked.' : 'Damage done over the length of the fight; healers are ranked under Healing.' }}
+        <a class="talents-link" routerLink="/raid-logs/talents" [queryParams]="talentsQueryParams()">Which talents do they pick? <span aria-hidden="true">›</span></a>
       </p>
 
       <!-- Damage / Healing. The talent and trinket icons name themselves in app-icon-tips. -->

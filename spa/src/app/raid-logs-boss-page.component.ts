@@ -259,6 +259,13 @@ export class RaidLogsBossPageComponent {
     realm: this.isRanking() ? this.realmFilter() ?? null : null
   }));
 
+  /** The talent analytics of this boss and difficulty, for the spec filtered on if there is one. */
+  readonly talentsQueryParams = computed(() => ({
+    difficulty: this.difficulty()?.slug ?? null,
+    boss: this.boss()?.slug ?? null,
+    spec: this.specFilter() ?? null
+  }));
+
   private killsSubscription?: Subscription;
   private shownBoss?: string;
 

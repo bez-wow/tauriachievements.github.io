@@ -69,6 +69,17 @@
 
 .list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
 
+.talents-link {
+  margin-left: 6px;
+  color: $gold;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
 // Talents and trinkets: rows of small icons, linked to TauriShoot. A trinket's frame is in its
 // item quality's colour.
 .icons { display: inline-flex; gap: 3px; vertical-align: middle; }
