@@ -1,0 +1,122 @@
+<app-update-bar
+  [lastEdited]="lastEdited()"
+  lastEditedLabel="Latest game:"
+  [lastEditedTimeZoneLabel]="lastEditedTimeZoneLabel()" />
+
+<main class="arena-games-page">
+  <section class="arena-header">
+    <p class="eyebrow">Rated 2v2 arena</p>
+    <h1>{{ minGames }}+ Games Played</h1>
+    <p class="intro" *ngIf="dataset() as data">
+      Every active player of the season: {{ minGames }} or more rated 2v2 arena games since
+      {{ data.seasonStart | date: 'd MMMM y' : '+0200' }}, across Tauri, Evermoon and WoD.
+      Rating is each player's personal rating after their latest game.
+    </p>
+
+    <ul class="rules" aria-label="Season rules">
+      <li><strong>Active</strong> {{ minGames }}+ games played</li>
+      <li><strong>Reward eligible</strong> {{ minWins }}+ wins <span class="rules-note">(wins shown in green)</span></li>
+      <li><strong>Gladiator</strong> top 0.6% of active players by rating, with {{ minWins }}+ wins</li>
+    </ul>
+
+    <dl class="summary" *ngIf="dataset() as data">
+      <div>
+        <dt>Active players</dt>
+        <dd>{{ players().length | number }}</dd>
+      </div>
+      <div>
+        <dt>Reward eligible</dt>
+        <dd>{{ eligibleCount() | number }}</dd>
+      </div>
+      <div *ngIf="cutoff() as cutoff" class="summary-gladiator">
+        <dt>Gladiator cutoff</dt>
+        <dd>
+          {{ cutoff.rating | number }}
+          <small>top {{ cutoff.places }} of {{ players().length | number }}</small>
+        </dd>
+      </div>
+      <div>
+        <dt>Games counted</dt>
+        <dd>{{ data.matchCount | number }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="feedback" *ngIf="isLoading()">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Loading arena games...</p>
+  </section>
+
+  <section class="feedback error" *ngIf="!isLoading() && loadError()">
+    <p>{{ loadError() }}</p>
+    <button type="button" (click)="retryLoad()">Try again</button>
+  </section>
+
+  <section class="results" *ngIf="!isLoading() && !loadError()">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" class="rank">#</th>
+            <th scope="col">Character</th>
+            <th scope="col" class="realm">Realm</th>
+            <th *ngFor="let column of sortColumns" scope="col" class="num" [attr.aria-sort]="ariaSort(column.key)">
+              <button
+                type="button"
+                class="sort-button"
+                [class.is-active]="sortKey() === column.key"
+                (click)="sortBy(column.key)">
+                <span class="label-full">{{ column.label }}</span>
+                <span class="label-short" aria-hidden="true">{{ column.shortLabel }}</span>
+                <span class="sort-arrow" aria-hidden="true">
+                  {{ sortKey() === column.key && sortDirection() === 'asc' ? '▲' : '▼' }}
+                </span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let player of players(); let index = index; trackBy: trackPlayer">
+            <tr [class.is-gladiator]="isInsideCutoff(player)">
+              <td class="rank">{{ index + 1 }}</td>
+              <td>
+                <a
+                  [href]="getArmoryUrl(player.name, player.realm)"
+                  [style.color]="getPlayerClassColor(player)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  {{ player.name }}
+                </a>
+                <span class="realm-inline">{{ player.realm }}</span>
+                <ng-container *ngIf="isInsideCutoff(player)">
+                  <span class="glad-badge" *ngIf="isRewardEligible(player); else shortOfWins">Gladiator</span>
+                  <ng-template #shortOfWins>
+                    <span class="glad-badge is-short">{{ minWins - player.wins }} wins short</span>
+                  </ng-template>
+                </ng-container>
+              </td>
+              <td class="realm">{{ player.realm }}</td>
+              <td class="num games">{{ player.games | number }}</td>
+              <td
+                class="num wins"
+                [class.is-short]="!isRewardEligible(player)"
+                [attr.title]="isRewardEligible(player) ? null : (minWins - player.wins) + ' more wins for season rewards'">
+                {{ player.wins | number }}
+              </td>
+              <td class="num losses">{{ player.losses | number }}</td>
+              <td class="num win-rate">{{ player.winRate | percent: '1.1-1' }}</td>
+              <td class="num rating">{{ player.rating | number }}</td>
+            </tr>
+            <tr class="cutoff-row" *ngIf="index === cutoffLineAfter()">
+              <td colspan="8">
+                <span class="cutoff-label">Gladiator cutoff · top 0.6%</span>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<app-back-to-top-button />
