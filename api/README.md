@@ -116,6 +116,12 @@ concurrency, timeouts, and retry behavior; see
 Commands with additional options expose usage through `--help` or document their arguments
 at startup.
 
+`BattlegroundCollector/Data/arena-character-identities.json` maps obsolete arena member GUIDs
+to their current character identity after transfers or restorations. Arena members whose API
+character data is still blank are retained in each bracket's `unresolvedPlayers` collection;
+adding an identity mapping merges those saved totals on the next collector run without rescanning
+the season.
+
 ## Daily update
 
 `Run-DailyUpdate.cmd` (or `Run-DailyUpdate.ps1`) runs the whole refresh end to end:

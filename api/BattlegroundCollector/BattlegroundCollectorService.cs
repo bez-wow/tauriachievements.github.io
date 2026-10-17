@@ -54,6 +54,10 @@ public sealed class BattlegroundCollectorService(
         var outputPath = ResolveOutputPath(options.OutputPath);
         var statePath = ResolveStatePath(options.StatePath);
         var ratedOutputPath = Path.Combine(_frontendSrcDirectory, "rated-battlegrounds.json");
+        var arenaIdentityMap = await ArenaCharacterIdentityMap.LoadAsync(
+            Path.Combine(_projectRoot, "Data", ArenaCharacterIdentityMap.FileName),
+            cancellationToken
+        );
         var arenaBrackets = new List<(string Label, string Path, RatedArenaGameCounter Counter)>();
         foreach (var (label, bracketType, fileName) in RatedArenaBrackets)
         {
@@ -62,7 +66,12 @@ public sealed class BattlegroundCollectorService(
                 (
                     label,
                     path,
-                    await RatedArenaGameCounter.LoadAsync(path, bracketType, cancellationToken)
+                    await RatedArenaGameCounter.LoadAsync(
+                        path,
+                        bracketType,
+                        arenaIdentityMap,
+                        cancellationToken
+                    )
                 )
             );
         }

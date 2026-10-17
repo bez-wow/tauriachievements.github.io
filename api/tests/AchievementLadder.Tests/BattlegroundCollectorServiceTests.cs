@@ -222,6 +222,200 @@ public sealed class BattlegroundCollectorServiceTests
         }
     }
 
+    [Fact]
+    public async Task ExecuteAsync_ResolvesArenaGuidAliasesAndPreservesUnknownMembers()
+    {
+        var testRoot = Path.Combine(
+            Path.GetTempPath(),
+            $"battleground-collector-tests-{Guid.NewGuid():N}"
+        );
+        var projectRoot = Path.Combine(testRoot, "BattlegroundCollector");
+        var frontendSrc = Path.Combine(testRoot, "frontend", "src");
+        var dataDirectory = Path.Combine(projectRoot, "Data");
+        Directory.CreateDirectory(dataDirectory);
+        Directory.CreateDirectory(frontendSrc);
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(dataDirectory, ArenaCharacterIdentityMap.FileName),
+                """
+                {
+                  "aliases": [
+                    {
+                      "sourceGuid": 10,
+                      "realm": "Evermoon",
+                      "canonicalGuid": 20,
+                      "canonicalRealm": "Evermoon",
+                      "name": "Wuhji",
+                      "class": 11
+                    }
+                  ]
+                }
+                """
+            );
+
+            var seasonStart = RatedArenaGameCounter.SeasonStart.ToUnixTimeSeconds();
+            var apiClient = new MatchSequenceApiClient(
+                new Dictionary<int, TauriApiResponseResult>
+                {
+                    // The historical GUID no longer resolves a name, but the alias recovers it.
+                    [300] = Success(
+                        ArenaJson(
+                            300,
+                            bracketType: 3,
+                            isRanked: true,
+                            seasonStart + 60,
+                            "",
+                            firstGuid: 10,
+                            winner: 1,
+                            side0: (1500, 12)
+                        )
+                    ),
+                    [301] = Success(
+                        ArenaJson(
+                            301,
+                            bracketType: 3,
+                            isRanked: true,
+                            seasonStart + 120,
+                            "Wuhji",
+                            firstGuid: 20,
+                            winner: 0,
+                            side0: (1512, -10)
+                        )
+                    ),
+                    // Once known, the canonical GUID keeps counting when its name is blank too.
+                    [302] = Success(
+                        ArenaJson(
+                            302,
+                            bracketType: 3,
+                            isRanked: true,
+                            seasonStart + 180,
+                            "",
+                            firstGuid: 20,
+                            winner: 1,
+                            side0: (1502, 15)
+                        )
+                    ),
+                    // A genuinely unknown GUID is retained for a later identity repair.
+                    [303] = Success(
+                        ArenaJson(
+                            303,
+                            bracketType: 3,
+                            isRanked: true,
+                            seasonStart + 240,
+                            "",
+                            firstGuid: 30,
+                            winner: 1,
+                            side0: (0, 96)
+                        )
+                    ),
+                }
+            );
+            var collector = new BattlegroundCollectorService(
+                projectRoot,
+                testRoot,
+                frontendSrc,
+                apiClient
+            );
+
+            var result = await collector.ExecuteAsync(
+                new BattlegroundCollectorOptions(
+                    300,
+                    "[EN] Evermoon",
+                    "Evermoon",
+                    null,
+                    null
+                ),
+                CancellationToken.None
+            );
+
+            var threesPath = result.RatedArenaBrackets.Single(bracket =>
+                bracket.Bracket == "3v3"
+            ).Path;
+            using var output = JsonDocument.Parse(await File.ReadAllTextAsync(threesPath));
+            var wuhji = output
+                .RootElement.GetProperty("players")
+                .EnumerateArray()
+                .Single(player => player.GetProperty("name").GetString() == "Wuhji");
+            Assert.Equal(20, wuhji.GetProperty("guid").GetInt32());
+            Assert.Equal(3, wuhji.GetProperty("games").GetInt32());
+            Assert.Equal(2, wuhji.GetProperty("wins").GetInt32());
+            Assert.Equal(1, wuhji.GetProperty("losses").GetInt32());
+            Assert.Equal(1517, wuhji.GetProperty("rating").GetInt32());
+
+            var unresolved = output
+                .RootElement.GetProperty("unresolvedPlayers")
+                .EnumerateArray()
+                .Single(player => player.GetProperty("guid").GetInt32() == 30);
+            Assert.Equal(1, unresolved.GetProperty("games").GetInt32());
+            Assert.Equal(1, unresolved.GetProperty("wins").GetInt32());
+            Assert.Equal(0, unresolved.GetProperty("losses").GetInt32());
+            Assert.Equal(96, unresolved.GetProperty("rating").GetInt32());
+            Assert.Equal(303, unresolved.GetProperty("firstMatchId").GetInt32());
+            Assert.Equal(303, unresolved.GetProperty("lastMatchId").GetInt32());
+
+            // Adding an identity later repairs the saved unresolved aggregate on the next run;
+            // the season's match API does not need to be scanned again.
+            await File.WriteAllTextAsync(
+                Path.Combine(dataDirectory, ArenaCharacterIdentityMap.FileName),
+                """
+                {
+                  "aliases": [
+                    {
+                      "sourceGuid": 10,
+                      "realm": "Evermoon",
+                      "canonicalGuid": 20,
+                      "canonicalRealm": "Evermoon",
+                      "name": "Wuhji",
+                      "class": 11
+                    },
+                    {
+                      "sourceGuid": 30,
+                      "realm": "Evermoon",
+                      "canonicalGuid": 40,
+                      "canonicalRealm": "Evermoon",
+                      "name": "Recovered",
+                      "class": 11
+                    }
+                  ]
+                }
+                """
+            );
+            await collector.ExecuteAsync(
+                new BattlegroundCollectorOptions(
+                    null,
+                    "[EN] Evermoon",
+                    "Evermoon",
+                    null,
+                    null
+                ),
+                CancellationToken.None
+            );
+
+            using var repairedOutput = JsonDocument.Parse(
+                await File.ReadAllTextAsync(threesPath)
+            );
+            var recovered = repairedOutput
+                .RootElement.GetProperty("players")
+                .EnumerateArray()
+                .Single(player => player.GetProperty("name").GetString() == "Recovered");
+            Assert.Equal(40, recovered.GetProperty("guid").GetInt32());
+            Assert.Equal(1, recovered.GetProperty("games").GetInt32());
+            Assert.DoesNotContain(
+                repairedOutput.RootElement.GetProperty("unresolvedPlayers").EnumerateArray(),
+                player => player.GetProperty("guid").GetInt32() == 30
+            );
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+            {
+                Directory.Delete(testRoot, recursive: true);
+            }
+        }
+    }
+
     private static async Task<(
         int LastMatchId,
         List<(string? Name, string? Realm, int Games, int Wins, int Losses, int Rating)> Players
@@ -254,6 +448,7 @@ public sealed class BattlegroundCollectorServiceTests
         bool isRanked,
         long startTime,
         string firstName,
+        int firstGuid = 1,
         int winner = 1,
         (int Rating, int Change) side0 = default,
         (int Rating, int Change) side1 = default
@@ -268,7 +463,7 @@ public sealed class BattlegroundCollectorServiceTests
               "length": 120000,
               "winner": {{winner}},
               "members": [
-                { "guid": 1, "realmName": "[EN] Evermoon", "side": 0, "personal_rating": {{side0.Rating}}, "personal_rating_change": {{side0.Change}}, "character-minimal-data": { "charname": "{{firstName}}", "class": 4 } },
+                { "guid": {{firstGuid}}, "realmName": "[EN] Evermoon", "side": 0, "personal_rating": {{side0.Rating}}, "personal_rating_change": {{side0.Change}}, "specid": 103, "character-minimal-data": { "charname": "{{firstName}}", "class": 4 } },
                 { "guid": 2, "realmName": "[HU] Tauri WoW Server", "side": 0, "personal_rating": {{side0.Rating}}, "personal_rating_change": {{side0.Change}}, "character-minimal-data": { "charname": "Bob", "class": 8 } },
                 { "guid": 3, "realmName": "[HU] Warriors of Darkness", "side": 1, "personal_rating": {{side1.Rating}}, "personal_rating_change": {{side1.Change}}, "character-minimal-data": { "charname": "Cid", "class": 1 } },
                 { "guid": 4, "realmName": "[EN] Evermoon", "side": 1, "personal_rating": {{side1.Rating}}, "personal_rating_change": {{side1.Change}}, "character-minimal-data": { "charname": "", "class": 5 } }
