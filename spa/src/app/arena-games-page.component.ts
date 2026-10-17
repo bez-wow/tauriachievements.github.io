@@ -88,6 +88,10 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly eligibleCount = computed(() => this.rows().filter(row => row.wins >= REWARD_MIN_WINS).length);
   /** This bracket's titles and where each one's line falls. */
   readonly cutoffs = computed(() => getTitleCutoffs(this.rows(), ARENA_TITLES[this.bracket() ?? '2v2']));
+  /** 2v2 has no Season Gladiator; its table still keeps the row so both brackets' boxes match. */
+  readonly hasSeasonGladiator = computed(() =>
+    this.cutoffs().some(cutoff => cutoff.title.slug === 'season-gladiator')
+  );
   private readonly titles = computed(() => {
     const cutoffs = this.cutoffs();
     return new Map(this.rows().map(row => [row, getTitle(row.rating, cutoffs)]));
