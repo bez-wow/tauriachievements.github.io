@@ -184,12 +184,24 @@
   thead th:nth-child(5) { width: 13.8%; }
   thead th:nth-child(6) { width: 11.8%; }
 
-  // The title's name, in its colour with a stripe down the edge.
+  // The title's name, in its colour with a stripe down the edge. A +N for players on a shared
+  // rating goes beside it, or under it when the column has no room.
   tbody th {
     box-shadow: inset 3px 0 0 var(--tier);
     color: var(--tier);
     font-weight: 800;
     text-align: left;
+    white-space: normal;
+  }
+
+  .title-name { white-space: nowrap; }
+
+  .ties {
+    display: inline-block;
+    margin-left: 5px;
+    color: #a39e91;
+    font-size: 0.72rem;
+    font-weight: 700;
   }
 
   tbody tr:last-child > * { border-bottom: 0; }
@@ -288,6 +300,8 @@
 
 .group-detail { margin-left: 10px; color: #a39e91; font-size: 0.76rem; }
 
+.group-ties { color: var(--tier); font-weight: 700; }
+
 .is-untitled .group-name { color: #a39e91; }
 
 .sort-button {
@@ -328,7 +342,8 @@
   .titles-table {
     th, td { padding: 6px 4px; font-size: 0.8rem; }
     thead th { font-size: 0.6rem; letter-spacing: 0; white-space: normal; }
-    tbody th { padding-left: 9px; white-space: normal; }
+    tbody th { padding-left: 9px; }
+    .title-name { white-space: normal; }
     .share,
     tr > :nth-child(3) { display: none; }
     .share-inline,
