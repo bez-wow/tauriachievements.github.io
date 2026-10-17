@@ -5,10 +5,22 @@
 
 <main class="arena-games-page">
   <section class="arena-header">
-    <p class="eyebrow">Rated 2v2 arena</p>
+    <div class="header-top">
+      <p class="eyebrow">Rated {{ bracket() }} arena</p>
+      <div class="bracket-switch" role="group" aria-label="Bracket" appGlide>
+        <button
+          type="button"
+          *ngFor="let option of brackets"
+          [class.active]="option === bracket()"
+          [attr.aria-pressed]="option === bracket()"
+          (click)="selectBracket(option)">
+          {{ option }}
+        </button>
+      </div>
+    </div>
     <h1>{{ minGames }}+ Games Played</h1>
     <p class="intro" *ngIf="dataset() as data">
-      Every active player of the season: {{ minGames }} or more rated 2v2 arena games since
+      Every active player of the season: {{ minGames }} or more rated {{ bracket() }} arena games since
       {{ data.seasonStart | date: 'd MMMM y' : '+0200' }}, across Tauri, Evermoon and WoD.
       Rating is each player's personal rating after their latest game.
     </p>
@@ -16,7 +28,7 @@
     <ul class="rules" aria-label="Season rules">
       <li><strong>Active</strong> {{ minGames }}+ games played</li>
       <li><strong>Reward eligible</strong> {{ minWins }}+ wins <span class="rules-note">(wins shown in green)</span></li>
-      <li><strong>Gladiator</strong> top 0.6% of active players by rating, with {{ minWins }}+ wins</li>
+      <li><strong>Titles</strong> the best ratings among active players, with {{ minWins }}+ wins</li>
     </ul>
 
     <dl class="summary" *ngIf="dataset() as data">
@@ -28,18 +40,50 @@
         <dt>Reward eligible</dt>
         <dd>{{ eligibleCount() | number }}</dd>
       </div>
-      <div *ngIf="cutoff() as cutoff" class="summary-gladiator">
-        <dt>Gladiator cutoff</dt>
-        <dd>
-          {{ cutoff.rating | number }}
-          <small>top {{ cutoff.places }} of {{ players().length | number }}</small>
-        </dd>
-      </div>
       <div>
         <dt>Games counted</dt>
         <dd>{{ data.matchCount | number }}</dd>
       </div>
     </dl>
+
+    <!-- How each title's line is drawn: its share of the active players, exact and rounded up. -->
+    <section class="titles" *ngIf="dataset()" aria-labelledby="titles-heading">
+      <h2 id="titles-heading" class="titles-heading">Season titles</h2>
+      <div class="titles-scroll">
+        <table class="titles-table">
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col" class="share">Top</th>
+              <th scope="col">{{ players().length | number }} × top</th>
+              <th scope="col">Rounded up</th>
+              <th scope="col">Holders</th>
+              <th scope="col">Cutoff</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cutoff of cutoffs()" [ngClass]="'tier-' + cutoff.title.slug">
+              <th scope="row">
+                {{ cutoff.title.name }}
+                <span class="share-inline">top {{ formatTitleShare(cutoff.title) }}</span>
+              </th>
+              <td class="share">{{ formatTitleShare(cutoff.title) }}</td>
+              <td class="exact">{{ exactSpots(cutoff) | number: '1.0-3' }}</td>
+              <td class="spots">{{ cutoff.places | number }}</td>
+              <td>{{ titleCounts().get(cutoff) ?? 0 | number }}</td>
+              <td [class.cutoff]="cutoff.rating !== undefined" [class.empty]="cutoff.rating === undefined">
+                {{ cutoff.rating !== undefined ? (cutoff.rating | number) + '+' : '—' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="titles-note">
+        A title's spots are the active players times its share, always rounded up: 1.01 spots
+        count as 2. Shares count from the top, so a title's spots include the players of the
+        titles above it, and the rest hold the title. Everyone tied on a cutoff rating gets the title.
+      </p>
+    </section>
   </section>
 
   <section class="feedback" *ngIf="isLoading()">
@@ -54,7 +98,7 @@
 
   <section class="results" *ngIf="!isLoading() && !loadError()">
     <div class="table-scroll">
-      <table>
+      <table class="players-table">
         <thead>
           <tr>
             <th scope="col" class="rank">#</th>
@@ -77,7 +121,7 @@
         </thead>
         <tbody>
           <ng-container *ngFor="let player of players(); let index = index; trackBy: trackPlayer">
-            <tr [class.is-gladiator]="isInsideCutoff(player)">
+            <tr [ngClass]="rowClasses(player)">
               <td class="rank">{{ index + 1 }}</td>
               <td>
                 <a
@@ -88,12 +132,6 @@
                   {{ player.name }}
                 </a>
                 <span class="realm-inline">{{ player.realm }}</span>
-                <ng-container *ngIf="isInsideCutoff(player)">
-                  <span class="glad-badge" *ngIf="isRewardEligible(player); else shortOfWins">Gladiator</span>
-                  <ng-template #shortOfWins>
-                    <span class="glad-badge is-short">{{ minWins - player.wins }} wins short</span>
-                  </ng-template>
-                </ng-container>
               </td>
               <td class="realm">{{ player.realm }}</td>
               <td class="num games">{{ player.games | number }}</td>
@@ -107,9 +145,9 @@
               <td class="num win-rate">{{ player.winRate | percent: '1.1-1' }}</td>
               <td class="num rating">{{ player.rating | number }}</td>
             </tr>
-            <tr class="cutoff-row" *ngIf="index === cutoffLineAfter()">
+            <tr class="title-line" *ngIf="titleLines().get(index) as line" [ngClass]="'tier-' + line.title.slug">
               <td colspan="8">
-                <span class="cutoff-label">Gladiator cutoff · top 0.6%</span>
+                <span class="title-line-label">{{ line.title.name }} · top {{ formatTitleShare(line.title) }}</span>
               </td>
             </tr>
           </ng-container>

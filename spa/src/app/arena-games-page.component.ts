@@ -1,24 +1,35 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { getArmoryUrl } from '../utils/armory';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import {
+  ARENA_BRACKETS,
+  ARENA_TITLES,
+  ArenaBracket,
   ArenaPlayer,
   ArenaPlayerRow,
   ArenaSortKey,
   REWARD_MIN_WINS,
   SortDirection,
-  getGladiatorCutoff,
+  TitleCutoff,
+  formatTitleShare,
+  getArenaGamesFile,
+  getTitle,
+  getTitleCutoffs,
+  parseArenaBracket,
   sortArenaRows,
   toArenaRows
 } from './arena-games';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
+import { GlideDirective } from './glide.directive';
 import { DataFileService } from './services/data-file.service';
 import { getClassColor } from './class-colors';
 import { UpdateBarComponent } from './update-bar.component';
 
-/** A character counts as active, and is listed, once they have played this many rated 2v2 games. */
+/** A character counts as active, and is listed, once they have played this many rated games in the bracket. */
 const MIN_GAMES = 50;
 
 interface SortColumn {
@@ -50,41 +61,69 @@ interface RatedArenaGames {
   templateUrl: './arena-games-page.component.html',
   styleUrls: ['./arena-games-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, BackToTopButtonComponent, UpdateBarComponent],
+  imports: [CommonModule, BackToTopButtonComponent, GlideDirective, UpdateBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArenaGamesPageComponent implements OnInit {
   private readonly dataFiles = inject(DataFileService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private loading?: Subscription;
 
   readonly minGames = MIN_GAMES;
   readonly minWins = REWARD_MIN_WINS;
   readonly sortColumns = SORT_COLUMNS;
+  readonly brackets = ARENA_BRACKETS;
+  readonly bracket = signal<ArenaBracket | undefined>(undefined);
   readonly dataset = signal<RatedArenaGames | undefined>(undefined);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
-  // Rating first, so the Gladiator cutoff line shows straight away.
+  // Rating first, so the title lines show straight away.
   readonly sortKey = signal<ArenaSortKey>('rating');
   readonly sortDirection = signal<SortDirection>('desc');
 
   private readonly rows = computed(() => toArenaRows(this.dataset()?.players ?? [], MIN_GAMES));
   readonly players = computed(() => sortArenaRows(this.rows(), this.sortKey(), this.sortDirection()));
   readonly eligibleCount = computed(() => this.rows().filter(row => row.wins >= REWARD_MIN_WINS).length);
-  readonly cutoff = computed(() => getGladiatorCutoff(this.rows()));
+  /** This bracket's titles and where each one's line falls. */
+  readonly cutoffs = computed(() => getTitleCutoffs(this.rows(), ARENA_TITLES[this.bracket() ?? '2v2']));
+  private readonly titles = computed(() => {
+    const cutoffs = this.cutoffs();
+    return new Map(this.rows().map(row => [row, getTitle(row.rating, cutoffs)]));
+  });
+  /** How many players hold each title. */
+  readonly titleCounts = computed(() => {
+    const counts = new Map<TitleCutoff, number>();
+    for (const cutoff of this.titles().values()) {
+      if (cutoff) {
+        counts.set(cutoff, (counts.get(cutoff) ?? 0) + 1);
+      }
+    }
+    return counts;
+  });
   /**
-   * The row the Gladiator line goes under: where the rating sort crosses the cutoff, either
-   * way round. -1 when the table is sorted by anything else, as the line would mean nothing.
+   * The title lines, by the index of the row each goes under: wherever the rating sort moves
+   * from one title to the next, either way round, named after the better side. None when the
+   * table is sorted by anything else, as the lines would mean nothing.
    */
-  readonly cutoffLineAfter = computed(() => {
-    const cutoff = this.cutoff();
+  readonly titleLines = computed(() => {
+    const lines = new Map<number, TitleCutoff>();
     const rows = this.players();
-    if (!cutoff || this.sortKey() !== 'rating') {
-      return -1;
+    if (this.sortKey() !== 'rating') {
+      return lines;
     }
 
-    return rows.findIndex((row, index) =>
-      index + 1 < rows.length && (row.rating >= cutoff.rating) !== (rows[index + 1].rating >= cutoff.rating)
-    );
+    const descending = this.sortDirection() === 'desc';
+    for (let index = 0; index + 1 < rows.length; index++) {
+      const above = this.titleOf(rows[index]);
+      const below = this.titleOf(rows[index + 1]);
+      const better = descending ? above : below;
+      if (above !== below && better) {
+        lines.set(index, better);
+      }
+    }
+    return lines;
   });
   /** The start of the latest counted game, shown in local time in the update bar. */
   readonly lastEdited = computed(() => {
@@ -94,9 +133,28 @@ export class ArenaGamesPageComponent implements OnInit {
   readonly lastEditedTimeZoneLabel = computed(() => getLocalTimeZoneLabel(this.lastEdited()));
 
   readonly getArmoryUrl = getArmoryUrl;
+  readonly formatTitleShare = formatTitleShare;
 
   ngOnInit(): void {
-    this.loadData();
+    // The bracket lives in the address (?bracket=3v3), so a link opens the same table.
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const bracket = parseArenaBracket(params.get('bracket'));
+        if (bracket !== this.bracket()) {
+          this.bracket.set(bracket);
+          this.loadData();
+        }
+      });
+  }
+
+  selectBracket(bracket: ArenaBracket): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { bracket: bracket === '2v2' ? null : bracket },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   retryLoad(): void {
@@ -122,9 +180,19 @@ export class ArenaGamesPageComponent implements OnInit {
     return this.sortDirection() === 'desc' ? 'descending' : 'ascending';
   }
 
-  isInsideCutoff(player: ArenaPlayerRow): boolean {
-    const cutoff = this.cutoff();
-    return !!cutoff && player.rating >= cutoff.rating;
+  /** The active players times the title's share, before rounding up: at most three decimals. */
+  exactSpots(cutoff: TitleCutoff): number {
+    return (this.rows().length * cutoff.title.topPerMille) / 1000;
+  }
+
+  titleOf(player: ArenaPlayerRow): TitleCutoff | undefined {
+    return this.titles().get(player);
+  }
+
+  /** A titled row carries its title's colour (tier-*), which its stripe and badge use. */
+  rowClasses(player: ArenaPlayerRow): string {
+    const title = this.titleOf(player);
+    return title ? `has-title tier-${title.title.slug}` : '';
   }
 
   isRewardEligible(player: ArenaPlayerRow): boolean {
@@ -140,10 +208,14 @@ export class ArenaGamesPageComponent implements OnInit {
   }
 
   private loadData(): void {
+    const bracket = this.bracket() ?? '2v2';
     this.isLoading.set(true);
     this.loadError.set(undefined);
+    this.dataset.set(undefined);
 
-    this.dataFiles.getJson<RatedArenaGames>('rated-2v2-arena-games.json')
+    // A quick switch back and forth must not let the slower file land last.
+    this.loading?.unsubscribe();
+    this.loading = this.dataFiles.getJson<RatedArenaGames>(getArenaGamesFile(bracket))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: dataset => {
@@ -151,7 +223,7 @@ export class ArenaGamesPageComponent implements OnInit {
           this.isLoading.set(false);
         },
         error: error => {
-          console.error('Failed to load rated 2v2 arena games:', error);
+          console.error(`Failed to load rated ${bracket} arena games:`, error);
           this.loadError.set('The arena data could not be loaded. Please try again.');
           this.isLoading.set(false);
         }

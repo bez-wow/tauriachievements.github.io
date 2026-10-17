@@ -1,9 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { ArenaPlayer, getGladiatorCutoff, sortArenaRows, toArenaRows } from './arena-games';
+import {
+  ARENA_TITLES,
+  ArenaPlayer,
+  formatTitleShare,
+  getArenaGamesFile,
+  getTitle,
+  getTitleCutoffs,
+  parseArenaBracket,
+  sortArenaRows,
+  toArenaRows
+} from './arena-games';
 
 function player(name: string, wins: number, losses: number, rating: number): ArenaPlayer {
   return { guid: 1, realm: 'Evermoon', name, class: 1, games: wins + losses, wins, losses, rating };
 }
+
+describe('parseArenaBracket', () => {
+  it('reads a known bracket and falls back to 2v2', () => {
+    expect(parseArenaBracket('3v3')).toBe('3v3');
+    expect(parseArenaBracket('2v2')).toBe('2v2');
+    expect(parseArenaBracket('5v5')).toBe('2v2');
+    expect(parseArenaBracket(null)).toBe('2v2');
+  });
+
+  it('names the data file of each bracket', () => {
+    expect(getArenaGamesFile('2v2')).toBe('rated-2v2-arena-games.json');
+    expect(getArenaGamesFile('3v3')).toBe('rated-3v3-arena-games.json');
+  });
+});
 
 describe('toArenaRows', () => {
   it('keeps characters with at least the threshold of games and adds their win rate', () => {
@@ -47,21 +71,70 @@ describe('sortArenaRows', () => {
   });
 });
 
-describe('getGladiatorCutoff', () => {
+describe('getTitleCutoffs', () => {
   const field = (ratings: number[]) =>
     toArenaRows(ratings.map((rating, index) => player(`P${index}`, 30, 30, rating)), 50);
+  const summary = (bracket: '2v2' | '3v3', ratings: number[]) =>
+    getTitleCutoffs(field(ratings), ARENA_TITLES[bracket]).map(cutoff => [cutoff.title.name, cutoff.places, cutoff.rating]);
 
-  it('covers 0.6% of the active players, rounded down', () => {
+  it('covers the share of the active players each title names', () => {
     const ratings = Array.from({ length: 500 }, (_, index) => 3000 - index);
 
-    expect(getGladiatorCutoff(field(ratings))).toEqual({ places: 3, rating: 2998 });
+    expect(summary('2v2', ratings)).toEqual([
+      ['Gladiator', 3, 2998],
+      ['Duelist', 15, 2986],
+      ['Rival', 50, 2951],
+      ['Challenger', 175, 2826]
+    ]);
   });
 
-  it('keeps at least one place for a small field', () => {
-    expect(getGladiatorCutoff(field([1800, 2400, 2100]))).toEqual({ places: 1, rating: 2400 });
+  it('rounds every share up, so 3.03 places are 4', () => {
+    const ratings = Array.from({ length: 101 }, (_, index) => 3000 - index);
+
+    expect(summary('2v2', ratings)).toEqual([
+      ['Gladiator', 1, 3000],
+      ['Duelist', 4, 2997],
+      ['Rival', 11, 2990],
+      ['Challenger', 36, 2965]
+    ]);
   });
 
-  it('has no cutoff without players', () => {
-    expect(getGladiatorCutoff([])).toBeUndefined();
+  it('leaves a title empty while its share rounds to no more than the better titles cover', () => {
+    const ratings = Array.from({ length: 15 }, (_, index) => 2000 - index * 10);
+
+    expect(summary('3v3', ratings)).toEqual([
+      ['Season Gladiator', 1, 2000],
+      ['Gladiator', 1, undefined],
+      ['Duelist', 2, 1990],
+      ['Rival', 6, 1950],
+      ['Challenger', 7, 1940]
+    ]);
+  });
+
+  it('has no places without players', () => {
+    expect(summary('2v2', []).every(([, places, rating]) => places === 0 && rating === undefined)).toBe(true);
+  });
+});
+
+describe('getTitle', () => {
+  const cutoffs = getTitleCutoffs(
+    toArenaRows([2400, 2300, 2300, 2100, 1900].map((rating, index) => player(`P${index}`, 30, 30, rating)), 50),
+    [
+      { name: 'Top', slug: 'top', topPerMille: 200 },
+      { name: 'Next', slug: 'next', topPerMille: 400 }
+    ]
+  );
+
+  it('gives the best title a rating reaches, ties on a cutoff included', () => {
+    expect(getTitle(2400, cutoffs)?.title.name).toBe('Top');
+    expect(getTitle(2300, cutoffs)?.title.name).toBe('Next');
+    expect(getTitle(2100, cutoffs)).toBeUndefined();
+  });
+});
+
+describe('formatTitleShare', () => {
+  it('writes the share as a percentage', () => {
+    expect(ARENA_TITLES['2v2'].map(formatTitleShare)).toEqual(['0.6%', '3%', '10%', '35%']);
+    expect(ARENA_TITLES['3v3'].map(formatTitleShare)).toEqual(['0.5%', '3%', '10%', '35%', '45%']);
   });
 });

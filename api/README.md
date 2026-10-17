@@ -44,7 +44,7 @@ workflow and its output contract.
 | `GuildCharacterExporter` | Expands configured guilds into character sources. |
 | `MissingPlayerFinder` | Backfills characters absent from an existing export. |
 | `RealmFirstAchievements` | Rebuilds and validates realm-first character sources. |
-| `BattlegroundCollector` | Collects sequential PvP matches with resumable state, appends complete ranked responses to the frontend archive, and counts each character's rated 2v2 arena games this season. |
+| `BattlegroundCollector` | Collects sequential PvP matches with resumable state, appends complete ranked responses to the frontend archive, and counts each character's rated 2v2 and 3v3 arena games this season. |
 | `MythicPlusExporter` | Merges every realm's Mythic+ leaderboards into scored, ranked per-dungeon files for the `/mythic-plus` page. |
 | `MythicPlusGuildAndCharScan` | Adds the guilds and guildless characters seen on the Mythic+ leaderboards to the scan inputs. |
 | `RaidLogExporter` | Exports every Emerald Nightmare boss kill with per-player damage, healing, talents, trinkets and loot for the `/raid-logs` pages, reading only kills the last export lacks, plus every spec's talent tiers from TauriShoot. |
