@@ -58,6 +58,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'PvP',
     icon: '⚔️',
     pages: [
+      { label: 'Arena', icon: '🏟️', path: '/arena' },
       { label: 'Battlegrounds', tab: 'BG Activity', icon: '⚔️', path: '/battleground' },
       { label: 'Rated Battlegrounds', tab: 'Rated BG', icon: '🏅', path: '/rated-battleground' }
     ]
