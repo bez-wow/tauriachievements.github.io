@@ -320,19 +320,13 @@ public sealed class BattlegroundCollectorServiceTests
             );
 
             var result = await collector.ExecuteAsync(
-                new BattlegroundCollectorOptions(
-                    300,
-                    "[EN] Evermoon",
-                    "Evermoon",
-                    null,
-                    null
-                ),
+                new BattlegroundCollectorOptions(300, "[EN] Evermoon", "Evermoon", null, null),
                 CancellationToken.None
             );
 
-            var threesPath = result.RatedArenaBrackets.Single(bracket =>
-                bracket.Bracket == "3v3"
-            ).Path;
+            var threesPath = result
+                .RatedArenaBrackets.Single(bracket => bracket.Bracket == "3v3")
+                .Path;
             using var output = JsonDocument.Parse(await File.ReadAllTextAsync(threesPath));
             var wuhji = output
                 .RootElement.GetProperty("players")
@@ -383,19 +377,11 @@ public sealed class BattlegroundCollectorServiceTests
                 """
             );
             await collector.ExecuteAsync(
-                new BattlegroundCollectorOptions(
-                    null,
-                    "[EN] Evermoon",
-                    "Evermoon",
-                    null,
-                    null
-                ),
+                new BattlegroundCollectorOptions(null, "[EN] Evermoon", "Evermoon", null, null),
                 CancellationToken.None
             );
 
-            using var repairedOutput = JsonDocument.Parse(
-                await File.ReadAllTextAsync(threesPath)
-            );
+            using var repairedOutput = JsonDocument.Parse(await File.ReadAllTextAsync(threesPath));
             var recovered = repairedOutput
                 .RootElement.GetProperty("players")
                 .EnumerateArray()
