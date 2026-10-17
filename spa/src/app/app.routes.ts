@@ -145,6 +145,17 @@ export const routes: Routes = [
       .then(module => module.RatedBattlegroundPageComponent)
   },
   {
+    path: 'arena',
+    loadComponent: () => import('./arena-games-page.component')
+      .then(module => module.ArenaGamesPageComponent)
+  },
+  {
+    // The page's first, unlisted address; links to it were already shared.
+    path: '50-games-played-arenas',
+    redirectTo: 'arena',
+    pathMatch: 'full'
+  },
+  {
     path: 'ap-chest-looters',
     component: ApChestLootersPageComponent
   },

@@ -18,6 +18,7 @@ describe('findNavLocation', () => {
     expect(locate('/mythic-plus/stats#weeks')).toBe('Mythic+ / Statistics');
     expect(locate('/guilds;realm=wod')).toBe('Ladder / Guild Rankings');
     expect(locate('/stats/')).toBe('Realm Stats / Realm Stats');
+    expect(locate('/arena?x=1')).toBe('PvP / Arena');
   });
 
   it('files deeper routes under the page they belong to', () => {
@@ -48,6 +49,6 @@ describe('findNavLocation', () => {
     const paths = NAV_SECTIONS.flatMap((section) => section.pages.map((page) => page.path));
 
     expect(new Set(paths).size).toBe(paths.length);
-    expect(paths).toHaveLength(21);
+    expect(paths).toHaveLength(22);
   });
 });

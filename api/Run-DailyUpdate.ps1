@@ -9,7 +9,7 @@
       MythicPlusNames  MythicPlusGuildAndCharScan -> new guilds, guildless characters from M+ runs
       RaidLogNames     RaidLogGuildAndCharScan  -> new guilds, guildless characters from raid kills
       RealmFirst       RealmFirstAchievements   -> valid-realm-first-characters.txt
-      Battlegrounds    BattlegroundCollector    -> battlegrounds, new guilds, guildless characters
+      Battlegrounds    BattlegroundCollector    -> battlegrounds, rated 2v2 arena games, new guilds, guildless characters
       GuildCharacters  GuildCharacterExporter   -> GuildCharacters.txt (retries and prunes dead guilds)
       Ladder           AchievementLadder        -> Players.csv and the rare exports
       MissingPlayers   MissingPlayerFinder      -> backfills skipped characters in rounds
@@ -68,6 +68,7 @@ $publishPaths = @(
     'spa/src/battleground-collector-state.json',
     'spa/src/battlegrounds.json',
     'spa/src/rated-battlegrounds.json',
+    'spa/src/rated-2v2-arena-games.json',
     'spa/src/mythic-plus-data',
     'spa/src/raid-log-data',
     'api/AchievementLadder/Data/Guilds/tauri-guilds.txt',
