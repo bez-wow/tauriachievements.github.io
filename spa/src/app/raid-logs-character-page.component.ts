@@ -22,6 +22,7 @@ import {
   RaidMetric,
   RaidSpec,
   RankedScore,
+  bossStanding,
   characterKey,
   countsFor,
   formatFightTime,
@@ -31,7 +32,6 @@ import {
   raidBossLink,
   raidGuildLink,
   raidLogLink,
-  rankCharacters,
   rankScores,
   realmSlug,
   scoreCharacters
@@ -44,13 +44,16 @@ interface Appearance {
   member: RaidMember;
 }
 
+/** Who "Of best" and Rank compare the character with: everyone, or only their own class. */
+export type RaidComparison = 'all' | 'class';
+
 interface BossRow {
   boss: RaidBoss;
   kills: number;
   /** The best kill by the metric, among the specs the metric ranks. */
   best?: Appearance;
   value: number;
-  /** The value over the best anyone did on the boss: 0 to 1. */
+  /** The value over the best on the boss, by anyone or by the class compared with: 0 to 1. */
   relative: number;
   rank?: number;
   ranked: number;
@@ -75,7 +78,8 @@ const RECENT_KILLS = 20;
 /**
  * /raid-logs/character/:realm/:name: one character on one difficulty (`?difficulty=`, else the
  * hardest one they have kills on). Their best damage or healing on each boss and where it ranks,
- * and their latest kills. Loads the difficulty's seven boss files.
+ * among everyone or (`?compare=class`) their own class, and their latest kills. Loads the
+ * difficulty's seven boss files.
  */
 @Component({
   selector: 'app-raid-logs-character-page',
@@ -104,6 +108,7 @@ export class RaidLogsCharacterPageComponent {
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
   /** Picked on the page; otherwise the character's main role decides. */
   private readonly pickedMetric = signal<RaidMetric | undefined>(parseMetric(this.route.snapshot.queryParamMap.get('metric')));
+  readonly comparison = signal<RaidComparison>(parseComparison(this.route.snapshot.queryParamMap.get('compare')));
 
   readonly appearances = computed<Appearance[]>(() => {
     const loaded = this.loaded();
@@ -116,6 +121,28 @@ export class RaidLogsCharacterPageComponent {
   });
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
+
+  /** Comparing by class: the character's class. Undefined comparing with all players. */
+  readonly comparedClass = computed(() => this.comparison() === 'class' ? this.character()?.classId : undefined);
+
+  /** "Mage": the class Same class compares the character with. */
+  readonly ownClass = computed(() => {
+    const classId = this.character()?.classId;
+    return classId === undefined ? '' : CLASS_NAMES[classId] ?? 'Character';
+  });
+  readonly classPlural = computed(() => `${this.ownClass()}s`);
+
+  /** The Of best and Rank headings explained, for the comparison shown. */
+  readonly columnTitles = computed(() => this.comparison() === 'class'
+    ? { relative: `The best kill against the best any ${this.ownClass()} did on the boss`, rank: `Among every ${this.ownClass()}'s best kill of the boss` }
+    : { relative: 'The best kill against the best anyone did on the boss', rank: "Among every character's best kill of the boss" });
+
+  /** A boss's page on this difficulty and metric; comparing by class, ranking only the class. */
+  readonly bossQueryParams = computed(() => ({
+    difficulty: this.loaded()?.difficulty.slug,
+    tab: this.metric(),
+    class: this.comparedClass() ?? null
+  }));
 
   /** The spec played most often, the latest kill breaking a tie. */
   readonly mainSpec = computed<RaidSpec | undefined>(() => {
@@ -150,22 +177,25 @@ export class RaidLogsCharacterPageComponent {
     }
 
     const metric = this.metric();
+    const byClass = this.comparison() === 'class';
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
       const best = own
         .filter(appearance => countsFor(metric, appearance.member.spec))
         .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
-      const ranking = best ? rankCharacters(kills, metric) : [];
-      const rank = ranking.findIndex(entry => characterKey(entry.member.character) === loaded.key) + 1;
+      // The class as this boss file has it, so the character is always in their own class's ranking.
+      const standing = best
+        ? bossStanding(kills, metric, loaded.key, byClass ? { classId: best.member.character.classId } : {})
+        : undefined;
       return {
         boss,
         kills: own.length,
         best,
         value: best?.member[metric] ?? 0,
-        relative: this.score()?.bosses[boss.index]?.relative ?? 0,
-        rank: rank || undefined,
-        ranked: ranking.length
+        relative: standing?.relative ?? 0,
+        rank: standing?.rank,
+        ranked: standing?.ranked ?? 0
       };
     });
   });
@@ -179,17 +209,23 @@ export class RaidLogsCharacterPageComponent {
     const latest = this.recent()[0];
     const spec = this.mainSpec();
     const score = this.score();
+    const byClass = this.comparison() === 'class';
     return [
       { label: 'Bosses killed', value: `${killed.length}/${rows.length}`, note: `${this.appearances().length} kills` },
       {
+        // The score always compares with every player, as the leaderboard does; say so when the table doesn't.
         label: `${this.metric().toUpperCase()} score`,
         value: score ? String(score.score) : '-',
-        note: score ? `#${score.rank} of ${this.scores().length.toLocaleString('en-US')} on the leaderboard` : 'No ranked kill'
+        note: score
+          ? `#${score.rank} of ${this.scores().length.toLocaleString('en-US')} ${byClass ? 'among all players' : 'on the leaderboard'}`
+          : 'No ranked kill'
       },
       {
         label: `Best ${this.metric() === 'hps' ? 'healing' : 'damage'} rank`,
         value: bestRank ? `#${bestRank.rank}` : '-',
-        note: bestRank ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}` : 'No ranked kill'
+        note: bestRank
+          ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}${byClass ? ` ${this.classPlural()}` : ''}`
+          : 'No ranked kill'
       },
       { label: 'Main spec', value: spec?.name ?? '-', note: spec ? CLASS_NAMES[spec.classId] ?? '' : '' },
       { label: 'Item level', value: latest ? String(latest.member.itemLevel) : '-', note: 'At the latest kill' }
@@ -246,6 +282,11 @@ export class RaidLogsCharacterPageComponent {
 
   setMetric(metric: RaidMetric): void {
     this.pickedMetric.set(metric);
+    this.writeUrl();
+  }
+
+  setComparison(comparison: RaidComparison): void {
+    this.comparison.set(comparison);
     this.writeUrl();
   }
 
@@ -343,7 +384,8 @@ export class RaidLogsCharacterPageComponent {
       relativeTo: this.route,
       queryParams: {
         difficulty: this.requestedDifficulty() ?? null,
-        metric: this.pickedMetric() ?? null
+        metric: this.pickedMetric() ?? null,
+        compare: this.comparison() === 'class' ? 'class' : null
       }
     });
     this.location.replaceState(this.router.serializeUrl(url));
@@ -356,4 +398,8 @@ function latestFirst(appearances: readonly Appearance[]): Appearance[] {
 
 function parseMetric(value: string | null): RaidMetric | undefined {
   return value === 'dps' || value === 'hps' ? value : undefined;
+}
+
+function parseComparison(value: string | null): RaidComparison {
+  return value === 'class' ? 'class' : 'all';
 }
