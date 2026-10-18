@@ -14,7 +14,9 @@ import {
   decodeIndex,
   decodeTalents,
   memberTalents,
+  bossStanding,
   bossesInKillOrder,
+  characterKey,
   defaultDifficulty,
   fastestKills,
   filterProgression,
@@ -233,6 +235,29 @@ describe('rankCharacters', () => {
   });
 });
 
+describe('bossStanding', () => {
+  const light = characterKey({ name: 'Light', realm: 'Evermoon' });
+  const sosa = characterKey({ name: 'Sósa', realm: 'Evermoon' });
+
+  it('ranks the character among everyone, against the best anyone did', () => {
+    // The paladin tank's 200k is third of three, a third of Kael's 600k.
+    expect(bossStanding(kills, 'dps', light)).toEqual({ rank: 3, ranked: 3, relative: 1 / 3 });
+    expect(bossStanding(kills, 'dps', sosa)).toEqual({ rank: 2, ranked: 3, relative: 500_000 / 600_000 });
+  });
+
+  it('ranks the character among their class only, against the best of the class', () => {
+    expect(bossStanding(kills, 'dps', light, { classId: 2 })).toEqual({ rank: 1, ranked: 1, relative: 1 });
+    expect(bossStanding(kills, 'dps', sosa, { classId: 8 })).toEqual({ rank: 2, ranked: 2, relative: 500_000 / 600_000 });
+  });
+
+  it('has no rank or share for a character the ranking leaves out, but counts the others', () => {
+    // A mage has no healing spec: Light is ranked alone.
+    expect(bossStanding(kills, 'hps', sosa)).toEqual({ rank: undefined, ranked: 1, relative: 0 });
+    expect(bossStanding(kills, 'hps', sosa, { classId: 8 })).toEqual({ rank: undefined, ranked: 0, relative: 0 });
+    expect(bossStanding([], 'dps', sosa)).toEqual({ rank: undefined, ranked: 0, relative: 0 });
+  });
+});
+
 describe('scoreCharacters', () => {
   const bosses = ['one', 'two', 'three', 'four'].map((slug, bossIndex): RaidBoss =>
     ({ id: bossIndex, slug, name: slug, shortName: slug, index: bossIndex, portrait: '' }));
@@ -277,6 +302,12 @@ describe('scoreCharacters', () => {
     expect(example.performance).toBeCloseTo(.3);
     expect(example.bosses.map(entry => entry.relative)).toEqual([.1, .8, .3, 0]);
     expect(example.bosses[3].best).toBeUndefined();
+  });
+
+  it("gives the score's share of each boss as bossStanding among everyone", () => {
+    const example = scoreCharacters(bosses, bossKills, 'dps')[1];
+    const key = characterKey(example.character);
+    expect(bossKills.map(kills => bossStanding(kills, 'dps', key).relative)).toEqual(example.bosses.map(entry => entry.relative));
   });
 
   it('scores healers only by healing', () => {

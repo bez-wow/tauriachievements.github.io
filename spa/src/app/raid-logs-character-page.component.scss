@@ -74,6 +74,9 @@
   @include glide-pill;
 
   button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 6px 12px;
     border: 0;
     border-radius: 4px;
@@ -82,6 +85,7 @@
     font: inherit;
     font-size: .82rem;
     font-weight: 600;
+    white-space: nowrap;
     cursor: pointer;
 
     &.active { background: #2e2716; color: #fff; }
@@ -89,6 +93,11 @@
     &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
   }
 }
+
+// Damage / Healing and All players / Same class, side by side; they wrap under the title on a phone.
+.section-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.comparison-switch img { width: 16px; height: 16px; border-radius: 3px; }
+.class-name { font-weight: 600; }
 
 .boss-cell { display: inline-flex; align-items: center; gap: 10px; }
 .boss-cell img { @include boss-portrait(30px); }
@@ -109,5 +118,6 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
   .character-header app-raid-difficulty-switch { margin-left: 0; }
   .crest { width: 56px; height: 56px; img { width: 46px; height: 46px; } }
   .character-heading h1 { font-size: 1.3rem; }
+  .view-switch button { padding: 6px 9px; }
   .col-optional { display: none; }
 }
