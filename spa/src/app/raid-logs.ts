@@ -600,6 +600,33 @@ function matchesFilter(member: RaidMember, filter: RankingFilter): boolean {
     && (filter.realm === undefined || realmSlug(member.character.realm) === filter.realm);
 }
 
+export interface BossStanding {
+  /** From 1; undefined while the character has no kill the ranking counts. */
+  rank?: number;
+  /** How many characters the ranking holds. */
+  ranked: number;
+  /** The character's best over the best in the ranking: 0 to 1. */
+  relative: number;
+}
+
+/**
+ * Where one character's best kill of a boss stands among the characters rankCharacters ranks
+ * with the filter: their rank, out of how many, and their best over the ranking's best. Without
+ * a filter the relative value is the one the character's score counts for the boss; with a class,
+ * every number is among that class only.
+ */
+export function bossStanding(
+  kills: readonly RaidKillDetails[],
+  metric: RaidMetric,
+  key: string,
+  filter: RankingFilter = {}
+): BossStanding {
+  const ranking = rankCharacters(kills, metric, filter);
+  const own = ranking.find(entry => characterKey(entry.member.character) === key);
+  const top = ranking[0]?.value ?? 0;
+  return { rank: own?.rank, ranked: ranking.length, relative: own && top > 0 ? own.value / top : 0 };
+}
+
 // --- Character score --------------------------------------------------------------------
 
 /** The score of a character who did the most damage (or healing) on every boss. */
