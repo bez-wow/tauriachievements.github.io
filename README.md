@@ -27,3 +27,8 @@ dotnet test AchievementLadder.sln --no-build
 ```
 
 See [`api/README.md`](api/README.md) for backend details.
+
+## Contributing
+
+[`AGENTS.md`](AGENTS.md) holds the working rules and conventions, for people and AI coding
+agents alike. Topic docs and how-to guides live in [`docs/`](docs/).
