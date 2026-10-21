@@ -1,25 +1,25 @@
 import { getRaceIconPath } from '../utils/raceIconHelper';
 import { buildRareAchievementCharacterKey } from './rare-achievement-groups';
 import { buildRareAchievementSummaryLabel } from './rare-achievement-summary';
-import { Player } from './models/character.model';
-import { HighlightPart, LadderPlayerView } from './ladder.types';
+import { HighlightPart, LadderPlayerView, LadderRow } from './ladder.types';
 import { RareAchievementSummary } from './rare-achievements.types';
 
+/** The ladder's rows as the table shows them. `#` is each row's ladder rank, not its place on screen. */
 export function mapLadderPlayersToView(
-  players: Player[],
+  rows: LadderRow[],
   searchQuery: string,
   rareAchievementsByCharacter: ReadonlyMap<string, RareAchievementSummary> = new Map<string, RareAchievementSummary>()
 ): LadderPlayerView[] {
   const normalizedSearchQuery = searchQuery.trim();
 
-  return players.map((player, index) => {
+  return rows.map(({ player, rank }) => {
     const rareAchievementSummary = rareAchievementsByCharacter.get(
       buildRareAchievementCharacterKey(player.name, player.realm)
     );
 
     return {
       ...player,
-      rank: index + 1,
+      rank,
       raceIcon: getRaceIconPath(player.race, player.gender),
       classIcon: String(player.class),
       nameParts: buildHighlightParts(player.name, normalizedSearchQuery),

@@ -716,12 +716,15 @@
     font-size: 0.78rem;
   }
 
+  // A search keeps each row's ladder rank, which runs to six digits at the bottom of the
+  // ladder. The template shrinks the font for five and six digits so they fit these 40 px
+  // (a binding there, as this stylesheet sits at its size budget).
   .wow-table :is(th, td):nth-child(1) {
     width: 40px;
     min-width: 40px;
     text-align: center;
-    padding-left: 6px;
-    padding-right: 4px;
+    padding-left: 2px;
+    padding-right: 2px;
   }
 
   .wow-table :is(th, td):nth-child(2) {

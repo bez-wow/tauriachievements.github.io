@@ -54,7 +54,9 @@ class FakeDataSyncService {
 function fakeLadderService(dataSync: FakeDataSyncService, matches: { count: number }) {
   return {
     getLadder: () => dataSync.players$.pipe(
-      map((players) => players.length === 0 ? [] : Array.from({ length: matches.count }, () => players[0]))
+      map((players) => players.length === 0
+        ? []
+        : Array.from({ length: matches.count }, (_, index) => ({ player: players[0], rank: index + 1 })))
     )
   };
 }

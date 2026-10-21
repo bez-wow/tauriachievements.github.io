@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { LadderQuery, LadderService, RankedLadderPlayer } from './ladder.service';
-import { LadderSort } from './ladder.types';
+import { LadderRow, LadderSort } from './ladder.types';
 import { Player, PlayerRankings } from './models/character.model';
 import { DataSyncService } from './services/data-sync.service';
 import { makePlayer } from './testing/player.fixture';
@@ -29,10 +29,18 @@ function serviceWith(players: Player[]): LadderService {
   return TestBed.inject(LadderService);
 }
 
-function collect(service: LadderService, sort: LadderSort, query: Partial<LadderQuery> = {}): Player[] {
-  let result: Player[] = [];
+function collectRows(service: LadderService, sort: LadderSort, query: Partial<LadderQuery> = {}): LadderRow[] {
+  let result: LadderRow[] = [];
   service.getLadder(sort, { limit: 100, ...query }).subscribe((value) => (result = value));
   return result;
+}
+
+function collect(service: LadderService, sort: LadderSort, query: Partial<LadderQuery> = {}): Player[] {
+  return collectRows(service, sort, query).map((row) => row.player);
+}
+
+function rankByName(rows: LadderRow[]): Record<string, number> {
+  return Object.fromEntries(rows.map((row) => [row.player.name, row.rank]));
 }
 
 function cohortFixture(): Player[] {
@@ -115,6 +123,54 @@ describe('LadderService rank movement', () => {
 
     expect(rows.map((row) => row.name)).toEqual(['A', 'B', 'C']);
     expect(Object.fromEntries(rows.map((row) => [row.name, row.appearanceRankDelta]))).toEqual({ A: 0, B: 1, C: -1 });
+  });
+});
+
+describe('LadderService ranks', () => {
+  // Ladder: A 1, M 2, B 3, C 4. Within class 2: A 1, B 2, C 3.
+  it('numbers the unfiltered ladder by position', () => {
+    expect(rankByName(collectRows(serviceWith(cohortFixture()), 'achievementPoints'))).toEqual({ A: 1, M: 2, B: 3, C: 4 });
+  });
+
+  it('gives each search match its ladder rank instead of renumbering from 1', () => {
+    const rows = collectRows(serviceWith(cohortFixture()), 'achievementPoints', { search: 'c' });
+
+    expect(rankByName(rows)).toEqual({ C: 4 });
+  });
+
+  it('ranks a match found through its guild name at its ladder place', () => {
+    const players = [
+      makePlayer({ name: 'Morron', guild: 'Echo' }),
+      makePlayer({ name: 'Kegor', guild: 'Echo' }),
+      makePlayer({ name: 'Nudal', guild: 'Forlorn' })
+    ];
+
+    expect(rankByName(collectRows(serviceWith(players), 'achievementPoints', { search: 'or' })))
+      .toEqual({ Morron: 1, Kegor: 2, Nudal: 3 });
+    expect(rankByName(collectRows(serviceWith(players), 'achievementPoints', { search: 'forlorn' })))
+      .toEqual({ Nudal: 3 });
+  });
+
+  it('gives a filter plus a search the rank inside the filtered ladder', () => {
+    const rows = collectRows(serviceWith(cohortFixture()), 'achievementPoints', { playerClass: 2, search: 'c' });
+
+    expect(rankByName(rows)).toEqual({ C: 3 });
+  });
+
+  it('ranks a search on another sort by that sort', () => {
+    const players = [
+      makePlayer({ name: 'Alpha', achievementPoints: 300, playedTime: 10 }),
+      makePlayer({ name: 'Bravo', achievementPoints: 200, playedTime: 50 }),
+      makePlayer({ name: 'Charlie', achievementPoints: 100, playedTime: 30 })
+    ];
+
+    expect(rankByName(collectRows(serviceWith(players), 'playedTime', { search: 'alpha' }))).toEqual({ Alpha: 3 });
+  });
+
+  it('keeps ladder ranks when the page size cuts the matches short', () => {
+    const rows = collectRows(serviceWith(cohortFixture()), 'achievementPoints', { search: 'm', limit: 1 });
+
+    expect(rankByName(rows)).toEqual({ M: 2 });
   });
 });
 
