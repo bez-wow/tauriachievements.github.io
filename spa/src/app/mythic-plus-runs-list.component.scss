@@ -109,6 +109,20 @@
   }
 }
 
+// Tank and healer cells, one name per line. Stacked names trade the tall tap area for tight
+// lines, so a hover over one never lands on its neighbour; the tooltip keeps its 6 px gap.
+.member-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .member-link:not(:only-child) {
+    padding-block: 2px;
+
+    .member-tooltip { bottom: calc(100% + 4px); }
+  }
+}
+
 // Instant dark tooltip above a player name (class icon, spec icon, "Spec Class") or an affix icon (its name).
 .member-tooltip,
 .affix-tooltip {
