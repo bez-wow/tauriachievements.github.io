@@ -4,7 +4,6 @@ import { buildRareAchievementSummaryLabel } from './rare-achievement-summary';
 import { HighlightPart, LadderPlayerView, LadderRow } from './ladder.types';
 import { RareAchievementSummary } from './rare-achievements.types';
 
-/** The ladder's rows as the table shows them. `#` is each row's ladder rank, not its place on screen. */
 export function mapLadderPlayersToView(
   rows: LadderRow[],
   searchQuery: string,

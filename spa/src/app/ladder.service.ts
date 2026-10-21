@@ -206,12 +206,6 @@ export class LadderService {
     return this.collectRanked(players, query.limit, (player) => this.matchesFilters(player, query, normalizedSearch));
   }
 
-  /**
-   * The first `limit` players that match, each ranked by its position in `ladder`. The rank is
-   * taken before the match narrows the list, so a search keeps every row at its place on the
-   * ladder. On the default ladder with only the head loaded, the head is the top of the
-   * achievement-point order, so a position in it is already the server-wide rank.
-   */
   private collectRanked(
     ladder: IndexedLadderPlayer[],
     limit: number,

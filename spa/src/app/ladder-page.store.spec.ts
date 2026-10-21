@@ -50,7 +50,6 @@ class FakeDataSyncService {
   isCurrentDatasetComplete() { return this.complete$.value; }
 }
 
-/** Answers every query with `matchCount` players, so a test can set how many matches the head has. */
 function fakeLadderService(dataSync: FakeDataSyncService, matches: { count: number }) {
   return {
     getLadder: () => dataSync.players$.pipe(

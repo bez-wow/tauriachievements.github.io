@@ -127,7 +127,6 @@ describe('LadderService rank movement', () => {
 });
 
 describe('LadderService ranks', () => {
-  // Ladder: A 1, M 2, B 3, C 4. Within class 2: A 1, B 2, C 3.
   it('numbers the unfiltered ladder by position', () => {
     expect(rankByName(collectRows(serviceWith(cohortFixture()), 'achievementPoints'))).toEqual({ A: 1, M: 2, B: 3, C: 4 });
   });
