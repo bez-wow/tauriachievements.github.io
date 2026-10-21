@@ -1,21 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { buildHighlightParts, mapLadderPlayersToView } from './ladder-player-view.mapper';
+import { LadderRow } from './ladder.types';
 import { Player } from './models/character.model';
 import { makePlayer } from './testing/player.fixture';
 import { RareAchievementSummary } from './rare-achievements.types';
 
-function achievement(overrides: Partial<Player> = {}): Player {
-  return makePlayer({
-    name: 'Larahh',
-    race: 4,
-    gender: 1,
-    class: 11,
-    guild: 'Outlaws',
-    achievementPoints: 19325,
-    honorableKills: 329412,
-    appearanceCount: 1234,
-    ...overrides
-  });
+function achievement(overrides: Partial<Player> = {}, rank = 1): LadderRow {
+  return {
+    player: makePlayer({
+      name: 'Larahh',
+      race: 4,
+      gender: 1,
+      class: 11,
+      guild: 'Outlaws',
+      achievementPoints: 19325,
+      honorableKills: 329412,
+      appearanceCount: 1234,
+      ...overrides
+    }),
+    rank
+  };
 }
 
 describe('buildHighlightParts', () => {
@@ -41,13 +45,13 @@ describe('buildHighlightParts', () => {
 });
 
 describe('mapLadderPlayersToView', () => {
-  it('assigns 1-based ranks in list order', () => {
+  it('shows each row at its ladder rank, not its place in the list', () => {
     const views = mapLadderPlayersToView(
-      [achievement({ name: 'A' }), achievement({ name: 'B' }), achievement({ name: 'C' })],
-      ''
+      [achievement({ name: 'A' }, 5), achievement({ name: 'B' }, 22), achievement({ name: 'C' }, 34)],
+      'or'
     );
 
-    expect(views.map((view) => view.rank)).toEqual([1, 2, 3]);
+    expect(views.map((view) => view.rank)).toEqual([5, 22, 34]);
     expect(views.map((view) => view.name)).toEqual(['A', 'B', 'C']);
   });
 

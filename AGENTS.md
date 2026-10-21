@@ -34,6 +34,11 @@ this file, so Claude Code reads it at the start of every session.
 5. **Build shared things once.** When a second page needs something, move it into the shared
    file and reuse it there (see the building blocks in [docs/frontend.md](docs/frontend.md) and
    `Tauri.Core` in [docs/data-pipeline.md](docs/data-pipeline.md)). Don't copy it.
+6. **Leave the docs true.** When a change makes a doc wrong or incomplete, update that doc in
+   the same PR: a rule in its topic doc, a new shared building block in
+   [docs/frontend.md](docs/frontend.md), a trap that cost time under "Gotchas" below. If no doc
+   covers it yet, add it where the next person will look. Write down what is true now, not
+   the story of how it got there.
 
 ## Repository layout
 
@@ -53,7 +58,7 @@ this file, so Claude Code reads it at the start of every session.
 
 There is no root package manager; each half has its own toolchain.
 
-## Docs: read the one that covers your change
+## Docs: read the one that covers your change, and update it when the change makes it wrong
 
 - [docs/data-pipeline.md](docs/data-pipeline.md): which job writes which file, the daily
   update, data commit messages, `prepare-app.js`, the data manifest, publishing safety.
@@ -96,6 +101,12 @@ There is no root package manager; each half has its own toolchain.
 
 ## Conventions
 
+- **No comments in code.** That covers every source file: TypeScript, templates, SCSS, C#,
+  scripts and tests. Names, types and small functions say what the code does. The why goes in
+  the doc that covers it, the commit message or the PR. The only exception is a directive a
+  tool reads (`// eslint-disable-next-line`, `#pragma`). When you change code that has
+  comments, delete them and move anything still worth knowing into its doc.
+
 ### Frontend
 
 - Standalone components with `ChangeDetectionStrategy.OnPush`, signals for state, and
@@ -107,8 +118,6 @@ There is no root package manager; each half has its own toolchain.
   cover the pure functions.
 - Strict TypeScript, no `any`. Single quotes and 2-space indents (`.editorconfig`). There is no
   Prettier or ESLint config, so match the file you're in.
-- Comments: a JSDoc on each exported function or type that says which rule it implements and
-  why. Add inline comments only for a non-obvious why, and never narrate the code.
 
 ### Backend
 
@@ -128,7 +137,7 @@ There is no root package manager; each half has its own toolchain.
 - Commit messages: a conventional prefix (`feat:`, `fix:`, `chore:`, `perf:`, `refactor:`,
   `style:`, `docs:`), an optional scope (`feat(raid-logs):`), then a plain sentence.
 - PR body: `Closes #N`, why the change exists, what changed (tables for numbers), a test plan,
-  and "Choices to confirm". PRs are squash-merged.
+  the docs it updated (or "no doc change"), and "Choices to confirm". PRs are squash-merged.
 - Push to `origin` (`tauriachievements/tauriachievements.github.io`). The `hugoredinho` remote
   is a fork that refuses pushes.
 - Issues: a conventional-prefix title, then `## Description` and `## Suggested fix`, with

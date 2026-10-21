@@ -61,7 +61,6 @@ Before designing the parsing, read [tauri-api.md](../tauri-api.md) for the endpo
 - `api/Run-DailyUpdate.ps1`: add `@{ Name = '<Step>'; Project = '<Name>' }` to `$steps` at the
   agreed place, and the output path to `$publishPaths`. The `sync data` commit only includes
   listed paths.
-- Update the step list in the comment at the top of `Run-DailyUpdate.cmd`.
 - `api/README.md`: add the project to the projects table and its command to the commands
   table, and update the daily update's step list.
 - Update the step list in [data-pipeline.md](../data-pipeline.md#the-daily-update).
