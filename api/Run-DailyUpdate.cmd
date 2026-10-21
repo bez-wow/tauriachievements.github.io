@@ -1,14 +1,6 @@
 @echo off
 setlocal
 
-rem Double-click entry point for the daily update. It runs, in order:
-rem   1. Run-DailyUpdate.ps1: MythicPlusExporter, RaidLogExporter, MythicPlusGuildAndCharScan,
-rem      RaidLogGuildAndCharScan, RealmFirstAchievements, BattlegroundCollector,
-rem      GuildCharacterExporter, AchievementLadder, MissingPlayerFinder, then the
-rem      "sync data" commit and push.
-rem   2. guild-analysis.cmd: Guildkukker for every guild page,
-rem      then its own "sync guilds statistics" commit and push. Only runs if step 1 succeeded.
-rem Arguments go to Run-DailyUpdate.ps1 (for example: Run-DailyUpdate.cmd -From Ladder).
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Run-DailyUpdate.ps1" %*
 set "EXIT_CODE=%ERRORLEVEL%"
 if not "%EXIT_CODE%"=="0" goto :Done

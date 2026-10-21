@@ -12,6 +12,11 @@ export interface LadderFilterState {
   search: string;
 }
 
+export interface LadderRow {
+  player: Player;
+  rank: number;
+}
+
 export interface HighlightPart {
   text: string;
   isMatch: boolean;

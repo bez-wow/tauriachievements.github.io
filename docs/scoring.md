@@ -16,7 +16,12 @@ explains it together.
 - What's still tied falls back to the achievement-point order, which ends on the player key
   (`realm::name`). That's only correct because every ranking also compares achievement points
   and honorable kills, and the module asserts this when it loads.
-- **Tests:** `scripts/player-ranking.test.js`.
+- **The `#` column** (`collectRanked` in `spa/src/app/ladder.service.ts`) is a row's place on
+  the ladder being shown: the whole server, or inside the realm, faction or class filter when
+  one is on. That's the same group the movement arrows measure (`buildCohortRankDeltas`).
+  **A search only hides rows. It never renumbers them**, so a character looked up keeps their
+  real place, as on the Mythic+ leaderboard. The order has no ties, so no two rows share a place.
+- **Tests:** `scripts/player-ranking.test.js`, `ladder.service.spec.ts`.
 
 ## Guild Rankings
 

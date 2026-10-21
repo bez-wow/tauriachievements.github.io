@@ -9,8 +9,7 @@ import {
 } from './ladder-filter-state';
 import { mapLadderPlayersToView } from './ladder-player-view.mapper';
 import { LadderService } from './ladder.service';
-import { LadderFilterState, LadderPlayerView } from './ladder.types';
-import { Player } from './models/character.model';
+import { LadderFilterState, LadderPlayerView, LadderRow } from './ladder.types';
 import { RareAchievementSummary } from './rare-achievements.types';
 import { RareAchievementsService } from './rare-achievements.service';
 import { DataSyncService } from './services/data-sync.service';
@@ -226,11 +225,11 @@ export class LadderPageStore {
   }
 
   private mapPlayersForView(
-    players: Player[],
+    rows: LadderRow[],
     search: string,
     rareAchievementIndicators: ReadonlyMap<string, RareAchievementSummary>
   ): LadderPlayerView[] {
-    return mapLadderPlayersToView(players, search, rareAchievementIndicators);
+    return mapLadderPlayersToView(rows, search, rareAchievementIndicators);
   }
 
   private loadLastUpdated(): void {

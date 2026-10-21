@@ -34,6 +34,7 @@
           <button
             type="button"
             class="row-toggle"
+            [style.font-size.rem]="player.rank >= 10000 ? 0.68 : null"
             [attr.aria-expanded]="isExpanded(player)"
             [attr.aria-controls]="getDetailsId(player)"
             [attr.aria-label]="(isExpanded(player) ? 'Hide' : 'Show') + ' details for ' + player.name"

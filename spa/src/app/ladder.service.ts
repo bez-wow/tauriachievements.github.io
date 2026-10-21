@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { Player, PlayerRankingField, PlayerRankings } from './models/character.model';
-import { LadderSort } from './ladder.types';
+import { LadderRow, LadderSort } from './ladder.types';
 import { DataSyncService, PlayerDataset } from './services/data-sync.service';
 
 export interface LadderQuery {
@@ -65,7 +65,7 @@ export class LadderService {
   private indexedPlayers: IndexedLadderPlayer[] = [];
   private readonly sortedIndexes = new Map<LadderSort, IndexedLadderPlayer[]>();
 
-  getLadder(sort: LadderSort, query: LadderQuery): Observable<Player[]> {
+  getLadder(sort: LadderSort, query: LadderQuery): Observable<LadderRow[]> {
     return this.dataSyncService.getDataset().pipe(
       map((dataset) => {
         const sortedPlayers = this.getSortedIndex(dataset, sort);
@@ -139,7 +139,7 @@ export class LadderService {
     sort: LadderSort,
     rankings: PlayerRankings | undefined,
     query: LadderQuery
-  ): Player[] {
+  ): LadderRow[] {
     const cohort = sortedPlayers.filter((player) => this.matchesFilters(player, query, undefined));
     const rankDeltaField = RANK_DELTA_FIELD[sort];
     const rankDeltaByKey = rankDeltaField
@@ -147,16 +147,14 @@ export class LadderService {
       : new Map<string, number>();
     const normalizedSearch = query.search?.trim().toLowerCase();
 
-    const visible = normalizedSearch
-      ? cohort.filter((player) =>
-        player.nameLower.includes(normalizedSearch) || player.guildLower.includes(normalizedSearch))
-      : cohort;
+    const visible = this.collectRanked(cohort, query.limit, (player) => this.matchesSearch(player, normalizedSearch));
 
-    return this.take(visible, query.limit).map(({ player }) =>
-      rankDeltaField
-        ? { ...player, [rankDeltaField]: rankDeltaByKey.get(this.getPlayerKey(player)) ?? 0 }
-        : player
-    );
+    return rankDeltaField
+      ? visible.map(({ player, rank }) => ({
+        player: { ...player, [rankDeltaField]: rankDeltaByKey.get(this.getPlayerKey(player)) ?? 0 },
+        rank
+      }))
+      : visible;
   }
 
   /**
@@ -202,26 +200,27 @@ export class LadderService {
     return realmActive || factionActive || classActive;
   }
 
-  private collectPage(players: IndexedLadderPlayer[], query: LadderQuery): Player[] {
+  private collectPage(players: IndexedLadderPlayer[], query: LadderQuery): LadderRow[] {
     const normalizedSearch = query.search?.trim().toLowerCase();
-    const limit = this.safeLimit(query.limit);
-    const results: Player[] = [];
 
-    for (const player of players) {
-      if (results.length >= limit) {
-        break;
-      }
+    return this.collectRanked(players, query.limit, (player) => this.matchesFilters(player, query, normalizedSearch));
+  }
 
-      if (this.matchesFilters(player, query, normalizedSearch)) {
-        results.push(player.player);
+  private collectRanked(
+    ladder: IndexedLadderPlayer[],
+    limit: number,
+    matches: (player: IndexedLadderPlayer) => boolean
+  ): LadderRow[] {
+    const safeLimit = this.safeLimit(limit);
+    const rows: LadderRow[] = [];
+
+    for (let index = 0; index < ladder.length && rows.length < safeLimit; index++) {
+      if (matches(ladder[index])) {
+        rows.push({ player: ladder[index].player, rank: index + 1 });
       }
     }
 
-    return results;
-  }
-
-  private take<T>(items: T[], limit: number): T[] {
-    return items.slice(0, this.safeLimit(limit));
+    return rows;
   }
 
   private safeLimit(limit: number): number {
@@ -243,13 +242,13 @@ export class LadderService {
       return false;
     }
 
-    if (normalizedSearch
-      && !player.nameLower.includes(normalizedSearch)
-      && !player.guildLower.includes(normalizedSearch)) {
-      return false;
-    }
+    return this.matchesSearch(player, normalizedSearch);
+  }
 
-    return true;
+  private matchesSearch(player: IndexedLadderPlayer, normalizedSearch: string | undefined): boolean {
+    return !normalizedSearch
+      || player.nameLower.includes(normalizedSearch)
+      || player.guildLower.includes(normalizedSearch);
   }
 
   private getPlayerKey(player: Player): string {
