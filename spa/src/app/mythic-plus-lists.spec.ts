@@ -22,7 +22,11 @@ function member(name: string, role: MythicPlusMember['role'], guild?: string): M
   return { name, realm: 'Evermoon', guild, class: 1, race: 1, gender: 0, spec: 'Arms', role };
 }
 
-function runRow(id: string, rank: number): RunRow {
+function runRow(
+  id: string,
+  rank: number,
+  roster = [member('Dps', 'dps'), member('Tank', 'tank'), member('Healer', 'healer')]
+): RunRow {
   const run: MythicPlusRun = {
     id,
     dungeon: 'brh',
@@ -31,7 +35,7 @@ function runRow(id: string, rank: number): RunRow {
     score: 150,
     completedAt: '2026-10-01T20:00:00Z',
     affixes: [6, 3],
-    roster: [member('Dps', 'dps'), member('Tank', 'tank'), member('Healer', 'healer')]
+    roster
   };
   return { ...toRunView(run, dungeon, new Map(affixes.map(affix => [affix.id, affix])), { tiers: undefined, dungeons: 9 }), rank };
 }
@@ -76,6 +80,19 @@ describe('MythicPlusRunsListComponent', () => {
 
     expect(element.querySelector('.run-card')).toBeNull();
     expect(element.querySelectorAll('tbody .run-row').length).toBe(2);
+  });
+
+  it('lists every tank and healer of an unusual group in the table, one under the other', () => {
+    const fixture = TestBed.createComponent(MythicPlusRunsListComponent);
+    fixture.componentRef.setInput('rows', [runRow('a', 1, [
+      member('Hanate', 'tank'), member('Glunky', 'healer'), member('Alonya', 'dps'),
+      member('Lastguard', 'tank'), member('Mender', 'healer')
+    ])]);
+    fixture.detectChanges();
+
+    const cells = [...fixture.nativeElement.querySelectorAll('.run-row td.col-member, .run-row td.col-dps')]
+      .map((cell: Element) => [...cell.querySelectorAll('a.member-link')].map(link => link.firstChild?.textContent));
+    expect(cells).toEqual([['Hanate', 'Lastguard'], ['Glunky', 'Mender'], ['Alonya']]);
   });
 
   it('links names in the table and in the run details to their profiles, not the armory', () => {
