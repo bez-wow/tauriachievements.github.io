@@ -440,10 +440,12 @@
   // Filters button (players view) and the search share the first row; the class and spec
   // dropdowns and Reset open on the row under them.
   .leaderboard-filters { flex-wrap: wrap; }
-  .player-search { flex: 1 1 0; min-width: 140px; order: -1; }
+  // The search takes at least half the row and each dropdown a third, so the dropdowns can't
+  // squeeze in beside them and always wrap onto their own row, three across.
+  .player-search { flex: 1 1 50%; min-width: 140px; order: -1; }
   .player-search input { width: 100%; }
   .character-chip { flex: 1 1 100%; order: -2; }
-  .filter-slot { flex: 1 1 0; width: auto; min-width: 0; }
+  .filter-slot { flex: 1 1 calc((100% - 16px) / 3); width: auto; min-width: 0; }
   .filters-collapsed .collapsible-filter { display: none; }
   // These rows wrap anyway, so Reset only shows once something is filtered, after the dropdowns.
   .filter-reset { order: 1; }

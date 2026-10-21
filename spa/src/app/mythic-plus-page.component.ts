@@ -237,11 +237,13 @@ export class MythicPlusPageComponent implements OnInit {
   });
 
   /** The realm / class / spec filters in use, as chips under the phone Filters button. */
+  /** One label per filter picked, so a class and its spec count as two. */
   readonly activeFilterLabels = computed(() => {
     const classId = this.classFilter();
     return [
       this.realmName(),
-      classId === undefined ? undefined : [this.specFilter(), CLASS_NAMES[classId]].filter(Boolean).join(' ')
+      classId === undefined ? undefined : CLASS_NAMES[classId],
+      classId === undefined ? undefined : this.specFilter()
     ].filter((label): label is string => !!label);
   });
 

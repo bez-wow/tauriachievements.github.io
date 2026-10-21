@@ -148,6 +148,8 @@ describe('MythicPlusPageComponent character and realm in the URL', () => {
     expect(page.view()).toBe('players');
     expect(page.classFilter()).toBe(11);
     expect(page.specFilter()).toBe('Restoration');
+    // A class and its spec are two filters, so the phone's Filters button counts 2.
+    expect(page.activeFilterLabels()).toEqual(['Druid', 'Restoration']);
   });
 });
 
