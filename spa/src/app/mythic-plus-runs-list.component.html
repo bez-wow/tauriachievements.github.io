@@ -132,10 +132,10 @@
               </span>
             </td>
             <td class="col-member">
-              <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.tank }"></ng-container>
+              <ng-container *ngTemplateOutlet="memberStack; context: { $implicit: row.tanks }"></ng-container>
             </td>
             <td class="col-member">
-              <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: row.healer }"></ng-container>
+              <ng-container *ngTemplateOutlet="memberStack; context: { $implicit: row.healers }"></ng-container>
             </td>
             <td class="col-dps">
               <ng-container *ngFor="let member of row.dps; trackBy: trackMember">
@@ -161,6 +161,15 @@
       </tbody>
     </table>
   </div>
+</ng-template>
+
+<!-- A second tank or healer goes under the first, so the row grows taller instead of wider. -->
+<ng-template #memberStack let-members>
+  <span class="member-stack">
+    <ng-container *ngFor="let member of members; trackBy: trackMember">
+      <ng-container *ngTemplateOutlet="memberLink; context: { $implicit: member }"></ng-container>
+    </ng-container>
+  </span>
 </ng-template>
 
 <ng-template #memberLink let-member>

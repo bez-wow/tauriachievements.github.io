@@ -68,8 +68,9 @@ export interface RunView {
   color: string;
   completedAt: string;
   affixes: MythicPlusAffix[];
-  tank?: MemberView;
-  healer?: MemberView;
+  /** Usually one each, but a group can bring two tanks, two healers or none: every member is kept. */
+  tanks: MemberView[];
+  healers: MemberView[];
   dps: MemberView[];
   roster: MemberView[];
 }
@@ -167,8 +168,8 @@ export function toRunView(
       .map(id => affixes.get(id))
       .filter((affix): affix is MythicPlusAffix => affix !== undefined)
       .sort((a, b) => a.level - b.level),
-    tank: roster.find(member => member.role === 'tank'),
-    healer: roster.find(member => member.role === 'healer'),
+    tanks: roster.filter(member => member.role === 'tank'),
+    healers: roster.filter(member => member.role === 'healer'),
     dps: roster.filter(member => member.role === 'dps'),
     roster
   };
