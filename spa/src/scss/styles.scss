@@ -66,6 +66,12 @@ app-root:not(.no-header) > router-outlet + *::before {
   app-root:not(.no-header) > router-outlet + *::before {
     height: calc(var(--update-bar-height) - 30px);
   }
+
+  app-root > router-outlet + *::after {
+    content: '';
+    display: block;
+    height: calc(72px + var(--bottom-bar-height, 0px));
+  }
 }
 
 @media (max-width: 768px) {

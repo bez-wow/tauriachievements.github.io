@@ -270,7 +270,7 @@
     }
   }
   @if (compareMode()) {
-    <aside class="compare-tray" aria-label="Players picked to compare" animate.leave="tray-leaving">
+    <aside class="compare-tray" appBottomBar aria-label="Players picked to compare" animate.leave="tray-leaving">
       @if (!picked().length) {
         <p class="compare-tray-hint">
           Click up to {{ compareLimit }} players to compare@if (view() !== 'players') { on the Players view}.

@@ -49,6 +49,6 @@
 @media (max-width: 640px) {
   .back-to-top {
     right: calc(14px + env(safe-area-inset-right, 0px));
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(14px + var(--bottom-bar-height, 0px) + env(safe-area-inset-bottom, 0px));
   }
 }

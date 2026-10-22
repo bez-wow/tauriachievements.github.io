@@ -505,4 +505,6 @@
   &.disabled { background: #3a3a3a; color: #8a8a8a; pointer-events: none; }
 }
 
-:host:has(.compare-tray) .mplus-page { padding-bottom: 110px; }
+@media (min-width: $phone-breakpoint + 1) {
+  :host:has(.compare-tray) .mplus-page { padding-bottom: 110px; }
+}

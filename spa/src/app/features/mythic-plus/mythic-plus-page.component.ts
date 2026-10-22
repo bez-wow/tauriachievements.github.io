@@ -71,6 +71,7 @@ import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
+import { BottomBarDirective } from '../../core/bottom-bar.directive';
 import { formatClock } from '../../shared/time-format';
 import { mythicPlusProfileLink } from '../../core/page-links';
 
@@ -98,6 +99,7 @@ interface CharacterFilter {
     FilterDropdownComponent,
     MobileFilterToggleComponent,
     GlideDirective,
+    BottomBarDirective,
     DecimalPipe,
     NgTemplateOutlet,
     LoadStateComponent
