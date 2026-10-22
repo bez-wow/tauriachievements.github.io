@@ -106,4 +106,11 @@ export const VISUAL_VIEWPORTS: ReadonlyArray<{ readonly name: ViewportName; read
 
 export const PHONE_WIDTHS: readonly number[] = [320, 360, 390, 412];
 
-export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string }> = [];
+export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string }> = [
+  { selector: 'app-rated-battleground-page .match-tabs', reason: 'a swipe strip of match cards; the next card peeks in' },
+  { selector: 'app-rated-battleground-page .activity-chart', reason: 'a day-by-day season chart that opens on the latest day' },
+  { selector: 'app-mythic-plus-compare-page .chart-scroll', reason: 'a week-by-week score chart that opens on the latest week' },
+  { selector: 'app-mythic-plus-profile-page .chart-scroll', reason: 'a week-by-week score chart that opens on the latest week' },
+  { selector: 'app-mythic-plus-stats-page .chart-scroll', reason: 'a day-by-day runs chart that opens on the latest day' },
+  { selector: 'app-emerald-nightmare-page .timeline-scroll', reason: 'the race timeline, 18:00 to 22:00, scrolled by hand or played back' }
+];
