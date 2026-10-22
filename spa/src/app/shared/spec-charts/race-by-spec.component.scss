@@ -185,7 +185,7 @@
 
 @media (max-width: shared.$phone-breakpoint) {
   .race-row {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
     gap: 6px 12px;
     padding: 8px 0;
   }

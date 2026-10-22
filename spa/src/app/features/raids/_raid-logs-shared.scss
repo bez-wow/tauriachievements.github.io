@@ -109,10 +109,13 @@ $difficulty-colors: (
   td a:hover { text-decoration: underline; }
   td a:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 
-  @media (max-width: 640px) {
+  @include phone-columns;
+  @include phone-detail-rows;
+
+  @media (max-width: $phone-breakpoint) {
     th, td { padding: 8px 6px; }
     th { font-size: .66rem; }
-    .phone-hidden { display: none; }
+    .phone-fluid { @include fluid-cell; }
   }
 }
 
@@ -126,9 +129,9 @@ $difficulty-colors: (
   .character-sub { overflow: hidden; color: $raid-muted; font-size: .74rem; text-overflow: ellipsis; }
   .spec-icon { width: 18px; height: 18px; border-radius: 3px; vertical-align: middle; }
 
-  @media (max-width: 640px) {
-    .character-text { max-width: 132px; }
-    .character-name, .character-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: $phone-breakpoint) {
+    .character { display: flex; max-width: 100%; }
+    .character-name, .character-sub { @include truncate; }
   }
 }
 
@@ -182,6 +185,48 @@ $difficulty-colors: (
   }
 
   .difficulty-dot { display: inline-block; width: 8px; height: 8px; flex: none; border-radius: 50%; }
+}
+
+@mixin boss-picker($count) {
+  .boss-picker {
+    display: grid;
+    grid-template-columns: repeat($count, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .boss-pick {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 4px;
+    border: 1px solid $raid-line;
+    border-radius: 7px;
+    background: $raid-card;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .72rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+
+    img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; opacity: .75; }
+    > span:last-child { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
+
+    &:hover:not(:disabled) { border-color: rgba(247, 181, 0, .35); color: #fff; img { opacity: 1; } }
+    &.active { border-color: rgba(247, 181, 0, .7); background: #1d1a10; color: #fff; img { opacity: 1; } }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+    &:disabled { opacity: .35; cursor: not-allowed; }
+  }
+
+  @media (max-width: $phone-breakpoint) {
+    .boss-picker { gap: 4px; }
+    .boss-pick { padding: 5px 2px; }
+    .boss-pick img, .boss-pick .all-mark { width: 28px; height: 28px; }
+    .boss-pick > span:last-child { @include hidden-visually; }
+  }
 }
 
 @mixin boss-portrait($size: 44px) {

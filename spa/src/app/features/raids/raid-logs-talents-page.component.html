@@ -274,8 +274,8 @@
                     <th class="rank" scope="col">#</th>
                     <th scope="col">Build</th>
                     <th scope="col">Played by</th>
-                    <th scope="col" class="num">Top 10%</th>
-                    <th scope="col" class="col-optional">Best showing</th>
+                    <th scope="col" class="num narrow-phone-hidden">Top 10%</th>
+                    <th scope="col" class="phone-hidden">Best showing</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -309,8 +309,8 @@
                           <span class="muted phone-hidden">{{ build.characters | number }} {{ build.characters === 1 ? 'character' : 'characters' }}</span>
                         </span>
                       </td>
-                      <td class="num">{{ formatShare(build.topShare) }}</td>
-                      <td class="col-optional">
+                      <td class="num narrow-phone-hidden">{{ formatShare(build.topShare) }}</td>
+                      <td class="phone-hidden">
                         <span class="best">
                           <a class="best-name" [style.color]="classColor(build.best.character.classId)" [routerLink]="characterLink(build.best.character)" [queryParams]="{ difficulty: difficulty()?.slug }">{{ build.best.character.name }}</a>
                           <a class="muted" [routerLink]="logLink(build.best.kill)">{{ formatPerSecond(build.best.value) }} {{ metricLabel() }} on {{ build.best.boss.shortName }}</a>
@@ -359,7 +359,7 @@
                           } @else {
                             <span class="icon-placeholder" aria-hidden="true"></span>
                           }
-                          {{ row.talent?.name ?? 'Unknown talent' }}
+                          <span class="heat-talent-name">{{ row.talent?.name ?? 'Unknown talent' }}</span>
                         </span>
                       </th>
                       @for (cell of row.cells; track cell; let bossIndex = $index) {
@@ -381,7 +381,7 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <th scope="row" colspan="2">Characters</th>
+                  <th scope="row" colspan="2"><span class="phone-hidden">Characters</span><span class="phone-only">Chars</span></th>
                   @for (entry of heatBosses(); track entry.boss.slug) {
                     <td [class.selected]="entry.boss === boss()">{{ entry.picks | number }}</td>
                   }

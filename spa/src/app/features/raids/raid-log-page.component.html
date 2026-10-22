@@ -69,16 +69,16 @@
               <th scope="col">Character</th>
               <th scope="col" class="bar-col">{{ metric() === 'taken' ? 'Damage taken' : metric() === 'healing' ? 'Healing and absorbs' : 'Damage done' }}</th>
               <th scope="col" class="num">Per second</th>
-              <th scope="col" class="num col-optional">Item level</th>
-              <th scope="col" class="num col-optional" title="Interrupts">Int.</th>
-              <th scope="col" class="num col-optional" title="Dispels">Disp.</th>
+              <th scope="col" class="num phone-hidden">Item level</th>
+              <th scope="col" class="num phone-hidden" title="Interrupts">Int.</th>
+              <th scope="col" class="num phone-hidden" title="Dispels">Disp.</th>
             </tr>
           </thead>
           <tbody [appReveal]="900">
             @for (row of rows(); track characterKey(row.member.character); let position = $index) {
               <tr>
                 <td class="rank">{{ position + 1 }}</td>
-                <td>
+                <td class="phone-fluid">
                   <span class="character">
                     <img [src]="row.member.spec?.icon || classIcon(row.member.character.classId)" alt="" loading="lazy" />
                     <span class="character-text">
@@ -98,9 +98,9 @@
                   </span>
                 </td>
                 <td class="num strong">{{ formatPerSecond(row.perSecond) }}</td>
-                <td class="num col-optional">{{ row.member.itemLevel }}</td>
-                <td class="num col-optional">{{ row.member.interrupts }}</td>
-                <td class="num col-optional">{{ row.member.dispels }}</td>
+                <td class="num phone-hidden">{{ row.member.itemLevel }}</td>
+                <td class="num phone-hidden">{{ row.member.interrupts }}</td>
+                <td class="num phone-hidden">{{ row.member.dispels }}</td>
               </tr>
             }
           </tbody>

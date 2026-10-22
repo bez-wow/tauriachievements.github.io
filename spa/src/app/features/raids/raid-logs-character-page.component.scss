@@ -110,11 +110,9 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
   .boss-cell { gap: 8px; }
-  .boss-cell .strong { white-space: normal; }
   .character-header { padding: 14px; }
   .character-header app-raid-difficulty-switch { margin-left: 0; }
   .crest { width: 56px; height: 56px; img { width: 46px; height: 46px; } }
   .character-heading h1 { font-size: 1.3rem; }
   .view-switch button { padding: 6px 9px; }
-  .col-optional { display: none; }
 }

@@ -117,7 +117,6 @@ tr.alive td { color: $raid-muted; }
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
   .boss-cell { gap: 8px; }
-  .boss-cell .strong { white-space: normal; }
   .guild-header { padding: 14px; }
   .guild-header app-raid-difficulty-switch { margin-left: 0; }
   .crest { width: 52px; height: 52px; font-size: 1.4rem; }

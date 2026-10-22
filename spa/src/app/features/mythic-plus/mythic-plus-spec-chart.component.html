@@ -99,7 +99,7 @@
                       class="bar"
                       [class.empty]="spec.count === 0"
                       [attr.data-flip-height]="group.classId + '-' + spec.spec"
-                      [style.height.%]="spec.heightPercent"
+                      [style.--bar]="spec.heightPercent + '%'"
                       [style.background-color]="group.color">
                       @if (spec.showValue) {
                         <span class="bar-value">{{ spec.shareLabel }}</span>

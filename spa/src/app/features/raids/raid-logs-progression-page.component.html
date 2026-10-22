@@ -57,7 +57,7 @@
                 <th class="rank" scope="col">#</th>
                 <th scope="col">Guild</th>
                 <th scope="col">Progress</th>
-                <th scope="col" class="col-optional">Reached</th>
+                <th scope="col" class="phone-hidden">Reached</th>
                 <th scope="col" class="num">Kills</th>
               </tr>
             </thead>
@@ -66,7 +66,7 @@
                 @let moved = change(row);
                 <tr [class.cleared]="row.killed === row.firsts.length">
                   <td class="rank">{{ row.rank }}</td>
-                  <td>
+                  <td class="phone-fluid">
                     <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
                       <span class="faction" [class]="'faction-' + row.guild.faction" aria-hidden="true"></span>
                       <span class="strong">{{ row.guild.name }}</span>
@@ -95,7 +95,7 @@
                       }
                     </span>
                   </td>
-                  <td class="col-optional muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
+                  <td class="phone-hidden muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
                   <td class="num">{{ row.kills | number }}</td>
                 </tr>
               }

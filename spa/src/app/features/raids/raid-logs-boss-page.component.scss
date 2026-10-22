@@ -14,35 +14,7 @@
 
 .raid-page { @include raid-page; }
 
-.boss-picker {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.boss-pick {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 7px 4px;
-  border: 1px solid $raid-line;
-  border-radius: 7px;
-  background: $raid-card;
-  color: #bdbdbd;
-  font-size: .72rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
-
-  img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; opacity: .75; }
-  span { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
-
-  &:hover { border-color: rgba(247, 181, 0, .35); color: #fff; img { opacity: 1; } }
-  &.active { border-color: rgba(247, 181, 0, .7); background: #1d1a10; color: #fff; img { opacity: 1; } }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-}
+@include boss-picker(7);
 
 .boss-header {
   display: flex;
@@ -107,7 +79,6 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
 }
 
 @media (max-width: 900px) {
-  .boss-picker { grid-template-columns: repeat(7, 60px); overflow-x: auto; padding-bottom: 4px; }
   .narrow-hidden, .kill-link .muted { display: none; }
 }
 
@@ -117,5 +88,5 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
   .boss-header app-raid-difficulty-switch { margin-left: 0; }
   .boss-portrait { width: 52px; height: 52px; }
   .boss-heading h1 { font-size: 1.25rem; }
-  .col-optional { display: none; }
+  .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
 }

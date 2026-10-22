@@ -58,7 +58,7 @@
             <tbody>
               @for (row of bossRows(); track row.boss.slug) {
                 <tr [class.alive]="!row.kills">
-                  <td>
+                  <td class="phone-fluid">
                     <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="{ difficulty: diff.slug }">
                       <img [src]="row.boss.portrait" alt="" loading="lazy" />
                       <span class="strong">{{ row.boss.shortName }}</span>

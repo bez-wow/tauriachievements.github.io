@@ -72,16 +72,16 @@
                 <th scope="col" class="num">Best {{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
                 <th scope="col" class="num" [title]="columnTitles().relative">Of best</th>
                 <th scope="col" class="num" [title]="columnTitles().rank">Rank</th>
-                <th scope="col" class="col-optional">Spec</th>
-                <th scope="col" class="num col-optional">Item level</th>
-                <th scope="col" class="num col-optional">Kills</th>
+                <th scope="col" class="phone-hidden">Spec</th>
+                <th scope="col" class="num phone-hidden">Item level</th>
+                <th scope="col" class="num phone-hidden">Kills</th>
                 <th scope="col"><span class="visually-hidden">Log</span></th>
               </tr>
             </thead>
             <tbody>
               @for (row of bossRows(); track row.boss.slug) {
                 <tr [class.alive]="!row.kills">
-                  <td>
+                  <td class="phone-fluid">
                     <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="bossQueryParams()">
                       <img [src]="row.boss.portrait" alt="" loading="lazy" />
                       <span class="strong">{{ row.boss.shortName }}</span>
@@ -94,7 +94,7 @@
                       <span class="rank-cell">#{{ row.rank }} <span class="muted phone-hidden">/ {{ row.ranked | number }}</span></span>
                     }
                   </td>
-                  <td class="col-optional">
+                  <td class="phone-hidden">
                     @if (row.best?.member?.spec; as spec) {
                       <span class="spec-cell">
                         @if (spec.icon) {
@@ -103,8 +103,8 @@
                         </span>
                       }
                     </td>
-                    <td class="num col-optional">{{ row.best?.member?.itemLevel ?? '' }}</td>
-                    <td class="num col-optional">{{ row.kills || '' }}</td>
+                    <td class="num phone-hidden">{{ row.best?.member?.itemLevel ?? '' }}</td>
+                    <td class="num phone-hidden">{{ row.kills || '' }}</td>
                     <td>
                       @if (row.best; as best) {
                         <a class="log-link" [routerLink]="logLink(best.kill)">Log <span aria-hidden="true">›</span></a>
@@ -140,34 +140,34 @@
             <thead>
               <tr>
                 <th scope="col">Boss</th>
-                <th scope="col" class="col-optional">Guild</th>
-                <th scope="col" class="col-optional">Spec</th>
+                <th scope="col" class="phone-hidden">Guild</th>
+                <th scope="col" class="phone-hidden">Spec</th>
                 <th scope="col" class="num">DPS</th>
                 <th scope="col" class="num">HPS</th>
-                <th scope="col" class="num col-optional">Time</th>
+                <th scope="col" class="num phone-hidden">Time</th>
                 <th scope="col">Date</th>
               </tr>
             </thead>
             <tbody>
               @for (entry of recent(); track logKey(entry.kill)) {
                 <tr>
-                  <td>
+                  <td class="phone-fluid">
                     <a class="boss-cell" [routerLink]="logLink(entry.kill)">
                       <img [src]="entry.kill.boss.portrait" alt="" loading="lazy" />
                       <span class="strong">{{ entry.kill.boss.shortName }}</span>
                     </a>
                   </td>
-                  <td class="col-optional">
+                  <td class="phone-hidden">
                     @if (entry.kill.guild?.name) {
                       <a [routerLink]="guildLink(entry.kill.guild!)" [queryParams]="{ difficulty: entry.kill.difficulty.slug }">{{ entry.kill.guild!.name }}</a>
                     } @else {
                       <span class="muted">Pickup group</span>
                     }
                   </td>
-                  <td class="col-optional">{{ entry.member.spec?.name }}</td>
+                  <td class="phone-hidden">{{ entry.member.spec?.name }}</td>
                   <td class="num" [class.strong]="metric() === 'dps'">{{ formatPerSecond(entry.member.dps) }}</td>
                   <td class="num" [class.strong]="metric() === 'hps'">{{ formatPerSecond(entry.member.hps) }}</td>
-                  <td class="num col-optional">{{ formatFightTime(entry.kill.fightMs) }}</td>
+                  <td class="num phone-hidden">{{ formatFightTime(entry.kill.fightMs) }}</td>
                   <td class="muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
                 </tr>
               }

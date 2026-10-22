@@ -46,7 +46,6 @@ tr.cleared .guild-name .strong { color: $gold; }
   .filter-group { display: flex; width: 100%; }
   .filter-slot { min-width: 0; flex: 1 1 0; }
   .filter-reset:disabled { display: none; }
-  .col-optional { display: none; }
   .pips { display: none; }
   .progress { flex-wrap: wrap; gap: 3px 6px; }
   .progress-gain { min-width: 0; padding: 1px 6px; }

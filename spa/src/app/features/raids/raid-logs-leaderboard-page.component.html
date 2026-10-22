@@ -189,14 +189,14 @@
                   </span>
                 </th>
                 <th scope="col" class="num center col-bosses">Bosses</th>
-                <th scope="col" class="num center col-optional col-ilvl">Item level</th>
+                <th scope="col" class="num center phone-hidden col-ilvl">Item level</th>
               </tr>
             </thead>
             <tbody>
               @for (entry of shownRankings(); track characterKey(entry.character)) {
                 <tr>
                   <td class="rank" [class]="'q-' + scoreTier(entry)">{{ entry.rank }}</td>
-                  <td>
+                  <td class="phone-fluid">
                     <span class="character">
                       <img [src]="entry.spec?.icon || classIcon(entry.character.classId)" [title]="entry.spec?.name ?? ''" alt="" loading="lazy" />
                       <img class="race-icon" [src]="raceIcon(entry.character)" alt="" loading="lazy" />
@@ -240,7 +240,7 @@
                         } @else {{{ entry.score }}}
                       </td>
                       <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
-                      <td class="num center col-optional col-ilvl">{{ entry.itemLevel }}</td>
+                      <td class="num center phone-hidden col-ilvl">{{ entry.itemLevel }}</td>
                     </tr>
                   }
                 </tbody>

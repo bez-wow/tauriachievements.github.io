@@ -146,6 +146,7 @@ $plot-height: 180px;
 .bar {
   position: relative;
   width: 100%;
+  height: var(--bar);
   border-radius: 4px 4px 0 0;
 
   &.empty { height: 2px !important; background: #3a3a3a !important; }
@@ -295,4 +296,57 @@ $plot-height: 180px;
   .segmented button { flex: 1 1 0; padding: 7px 6px; }
   .filter-reset { order: 1; min-height: 40px; }
   .filter-reset:disabled { display: none; }
+}
+
+@media (max-width: $phone-breakpoint) {
+  .chart { display: block; min-width: 0; padding: 4px 0 0; }
+  .y-axis, .gridlines { display: none; }
+  .plot { flex-direction: column; gap: 14px; }
+
+  .class-group {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: 20px minmax(0, 1fr);
+    align-items: center;
+    gap: 4px 8px;
+  }
+
+  .bars, .spec-icons { display: contents; }
+
+  @for $row from 1 through 4 {
+    .bars > :nth-child(#{$row}), .spec-icons > :nth-child(#{$row}) { grid-row: $row + 1; }
+  }
+
+  .spec-icons > * { grid-column: 1; margin: 0; }
+
+  .class-label {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 6px;
+    margin: 0;
+    font-size: .78rem;
+    text-align: left;
+
+    img { margin: 0; }
+  }
+
+  .bar-slot {
+    grid-column: 2;
+    width: auto;
+    height: 16px;
+    align-items: stretch;
+    padding: 0 52px 0 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bar { width: var(--bar); height: 100%; border-radius: 0 4px 4px 0; }
+  .bar.empty { width: 2px !important; height: 100% !important; }
+  .bar-value { top: 50%; bottom: auto; left: calc(100% + 6px); transform: translateY(-50%); }
+  .tooltip, .flip .tooltip { top: calc(100% + 4px); right: auto; left: 0; }
+
+  @include motion-safe {
+    .chart[data-reveal='pending'] .bar { transform: none; width: 0; }
+    .chart[data-reveal='in'] .bar { animation-name: mp-bar-grow-wide; }
+  }
 }

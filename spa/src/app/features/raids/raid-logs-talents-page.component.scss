@@ -31,37 +31,7 @@ $down: #ff6b6b;
 .filters { display: flex; flex: 1 1 auto; align-items: center; justify-content: flex-end; gap: 8px; }
 .class-slot { min-width: 200px; max-width: 360px; flex: 1 1 200px; }
 
-.boss-picker {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.boss-pick {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 7px 4px;
-  border: 1px solid $raid-line;
-  border-radius: 7px;
-  background: $raid-card;
-  color: #bdbdbd;
-  font: inherit;
-  font-size: .72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
-
-  img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; opacity: .75; }
-  > span:last-child { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
-
-  &:hover:not(:disabled) { border-color: rgba(247, 181, 0, .35); color: #fff; img { opacity: 1; } }
-  &.active { border-color: rgba(247, 181, 0, .7); background: #1d1a10; color: #fff; img { opacity: 1; } }
-  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-  &:disabled { opacity: .35; cursor: not-allowed; }
-}
+@include boss-picker(8);
 
 .all-mark {
   display: grid;
@@ -469,10 +439,6 @@ td a.icon:hover img { filter: brightness(1.25); }
   }
 }
 
-@media (max-width: 900px) {
-  .boss-picker { grid-template-columns: repeat(8, 64px); overflow-x: auto; padding-bottom: 4px; }
-}
-
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
   .filters { width: 100%; }
@@ -481,7 +447,6 @@ td a.icon:hover img { filter: brightness(1.25); }
   .spec-header { padding: 14px; }
   .spec-header-icon { width: 44px; height: 44px; }
   .spec-heading h2 { font-size: 1.25rem; }
-  .col-optional { display: none; }
 
   .tier-choices { gap: 5px; }
   .talent { gap: 6px; padding: 7px; }
@@ -494,5 +459,15 @@ td a.icon:hover img { filter: brightness(1.25); }
 
   .consensus-pick img { width: 26px; height: 26px; }
   .build-share .meter { width: 36px; }
-  .heat-talent { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+  .icons { gap: 2px; }
+  .icon { width: 18px; height: 18px; }
+
+  .heat-boss { min-width: 0; padding: 6px 2px; }
+  .heat-boss img { width: 22px; height: 22px; margin-bottom: 0; }
+  .heat-boss span, .heat-talent-name { @include hidden-visually; }
+  .heat-level { padding: 0 4px; }
+  .heat-talent { padding: 4px; }
+  .heat-talent > span { gap: 0; }
+  .heat-cell { position: relative; padding: 0 2px; font-size: .7rem; }
+  .notable-mark { position: absolute; top: 1px; right: 2px; margin: 0; font-size: .5rem; line-height: 1; }
 }
