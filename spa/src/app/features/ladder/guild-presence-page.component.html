@@ -91,7 +91,7 @@
                 <tr>
                   <th>#</th>
                   <th>Guild</th>
-                  <th>Realm</th>
+                  <th class="phone-hidden">Realm</th>
                   <th>Players</th>
                 </tr>
               </thead>
@@ -107,9 +107,10 @@
                         rel="noopener noreferrer">
                         {{ guild.guild }}
                       </a>
+                      <span class="guild-meta phone-only">{{ guild.realm }}</span>
                       <span class="guild-meta">Best member: {{ guild.topMemberName }} ({{ guild.topMemberMetricValue | number }})</span>
                     </td>
-                    <td>{{ guild.realm }}</td>
+                    <td class="phone-hidden">{{ guild.realm }}</td>
                     <td class="metric-cell">{{ guild.playerCount | number }}</td>
                   </tr>
                 }
@@ -133,7 +134,7 @@
                 <tr>
                   <th>#</th>
                   <th>Guild</th>
-                  <th>Realm</th>
+                  <th class="phone-hidden">Realm</th>
                   <th>Players</th>
                 </tr>
               </thead>
@@ -149,9 +150,10 @@
                         rel="noopener noreferrer">
                         {{ guild.guild }}
                       </a>
+                      <span class="guild-meta phone-only">{{ guild.realm }}</span>
                       <span class="guild-meta">Best member: {{ guild.topMemberName }} ({{ guild.topMemberMetricValue | number }})</span>
                     </td>
-                    <td>{{ guild.realm }}</td>
+                    <td class="phone-hidden">{{ guild.realm }}</td>
                     <td class="metric-cell">{{ guild.playerCount | number }}</td>
                   </tr>
                 }

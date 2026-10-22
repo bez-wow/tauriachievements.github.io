@@ -1,3 +1,5 @@
+@use '../../shared/tables' as *;
+
 :host {
   display: block;
 }
@@ -214,6 +216,8 @@
   table-layout: auto;
   border-collapse: collapse;
 
+  @include phone-columns;
+
   tr.Alliance {
     background: linear-gradient(90deg, rgba(25, 35, 55, 0.55) 0%, rgba(15, 25, 45, 0.68) 100%);
   }
@@ -356,5 +360,10 @@
   .status-action,
   .feedback-action {
     width: 100%;
+  }
+
+  .guild-presence-table th,
+  .guild-presence-table td {
+    padding: 10px 6px;
   }
 }
