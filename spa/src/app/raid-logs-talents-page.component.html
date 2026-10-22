@@ -17,25 +17,6 @@
   </section>
 
   <ng-container *ngIf="!isLoading() && !loadError() && index() as loaded">
-    <div class="controls">
-      <app-raid-difficulty-switch
-        [difficulties]="loaded.difficulties"
-        [selected]="difficulty()?.slug"
-        label="Raid difficulty"
-        (selectedChange)="setDifficulty($event)" />
-      <div class="spec-slot">
-        <app-filter-dropdown
-          dropdownId="talentSpec"
-          triggerId="talentSpecTrigger"
-          ariaLabel="Pick a spec"
-          [options]="specOptions()"
-          [selectedValue]="specId()"
-          [showIcons]="true"
-          [highlightWhenSelected]="true"
-          (selectionChange)="setSpec($event)" />
-      </div>
-    </div>
-
     <nav class="boss-picker" aria-label="Pick a boss">
       <button
         type="button"
@@ -60,6 +41,49 @@
       </button>
     </nav>
 
+    <div class="controls">
+      <h2 class="meta-title">
+        <span>{{ title() }}</span>
+        <span class="title-sizer" aria-hidden="true" *ngFor="let option of titleOptions()">{{ option }}</span>
+      </h2>
+      <app-raid-difficulty-switch
+        [difficulties]="loaded.difficulties"
+        [selected]="difficulty()?.slug"
+        label="Raid difficulty"
+        (selectedChange)="setDifficulty($event)" />
+      <div class="role-switch" role="group" aria-label="Filter by role" appGlide>
+        <button
+          type="button"
+          *ngFor="let option of roleOptions"
+          [class.active]="selectedRole() === option.value"
+          [attr.aria-pressed]="selectedRole() === option.value"
+          [disabled]="option.value !== 'all' && !availableRoles().has(option.value)"
+          (click)="setRole(option.value)">{{ option.label }}</button>
+      </div>
+      <div class="filters">
+        <button
+          type="button"
+          class="filter-reset"
+          [disabled]="!hasFilters()"
+          aria-label="Reset boss, role, class and spec"
+          (click)="resetFilters()">
+          Reset
+        </button>
+        <div class="class-slot">
+          <app-filter-dropdown
+            dropdownId="talentClass"
+            triggerId="talentClassTrigger"
+            ariaLabel="Filter by class"
+            [options]="classOptions"
+            [selectedValue]="selectedClass()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            (selectionChange)="setClass($event)" />
+        </div>
+      </div>
+    </div>
+
     <section class="feedback" *ngIf="killsLoading()" role="status">
       <span class="spinner" aria-hidden="true"></span>
       <p>Reading the {{ difficulty()?.name }} raid rosters...</p>
@@ -70,32 +94,12 @@
       <button type="button" (click)="retryKills()">Try again</button>
     </section>
 
-    <app-icon-tips *ngIf="!killsLoading() && !killsError()">
-      <!-- Every spec at a glance -->
+    <app-icon-tips *ngIf="!killsLoading() && !killsError()" [spells]="talentTooltips()">
       <ng-container *ngIf="!spec(); else specView">
         <section class="section">
-          <div class="section-header">
-            <h2>Talent meta · {{ difficulty()?.name }} · {{ boss()?.shortName ?? 'All bosses' }}</h2>
-            <p>Each spec's most picked talent on every tier. Pick a spec for the details.</p>
-          </div>
-
-          <ul class="highlights" *ngIf="highlights().length">
-            <li *ngFor="let highlight of highlights(); trackBy: trackLabel">
-              <a class="highlight" [routerLink]="[]" [queryParams]="queryParams(highlight.spec.id)" [style.--class-color]="highlight.color">
-                <span class="insight-label">{{ highlight.label }}</span>
-                <span class="highlight-spec">
-                  <img *ngIf="highlight.spec.icon" [src]="highlight.spec.icon" alt="" loading="lazy" />
-                  <span [style.color]="highlight.color">{{ highlight.spec.name }} {{ highlight.className }}</span>
-                </span>
-                <b class="insight-title">{{ highlight.title }}</b>
-                <span class="insight-text">{{ highlight.text }}</span>
-              </a>
-            </li>
-          </ul>
-
-          <div class="role-group" *ngFor="let group of specGroups()">
-            <h3>{{ group.title }}</h3>
-            <ul class="spec-grid">
+          <div class="role-group" *ngFor="let group of specGroups(); trackBy: trackKey">
+            <h3 class="visually-hidden">{{ group.title }}</h3>
+            <ul class="spec-grid" [style.--spec-columns]="group.columns">
               <li *ngFor="let card of group.cards; trackBy: trackSpec">
                 <a
                   class="spec-card"
@@ -115,7 +119,7 @@
 
                   <ng-container *ngIf="card.picks.picks; else nobodyYet">
                     <span class="consensus">
-                      <span class="consensus-pick" *ngFor="let pick of card.consensus" [attr.data-tip]="pick.talent?.name ?? 'Unknown talent'" [attr.data-tip-note]="'Level ' + pick.level + ' · ' + formatShare(pick.share)">
+                      <span class="consensus-pick" *ngFor="let pick of card.consensus" [attr.data-tip]="pick.talent?.name ?? 'Unknown talent'" [attr.data-tip-note]="'Level ' + pick.level + ' · ' + formatShare(pick.share)" [attr.data-tip-spell]="pick.talent?.id">
                         <img *ngIf="pick.talent; else unknownIcon" [src]="icon(pick.talent.icon, 'medium')" [srcset]="iconSrcset(pick.talent.icon)" sizes="28px" width="28" height="28" alt="" loading="lazy" />
                         <span class="consensus-share">{{ formatShare(pick.share) }}</span>
                       </span>
@@ -133,16 +137,15 @@
           </div>
 
           <p class="method-note">
-            Each character counts once per boss, with the talents of their best kill there. Agreement is how often players take a tier's most picked talent, averaged over the seven tiers.
+            Each character counts once per boss, with the talents of their best kill there. Agreement is how often players take a tier's most picked talent, averaged over the seven tiers.<ng-container *ngIf="!classFilterName()"> Each role lists its specs by their <a routerLink="/raid-logs/stats" [queryParams]="{ difficulty: difficulty()?.slug, view: 'performance' }">{{ difficulty()?.name }} performance</a>, best first.</ng-container>
           </p>
         </section>
       </ng-container>
 
-      <!-- One spec -->
       <ng-template #specView>
         <ng-container *ngIf="spec() as current">
           <a class="back-link" [routerLink]="[]" [queryParams]="queryParams(undefined)">
-            <span aria-hidden="true">‹</span> All specs
+            <span aria-hidden="true">‹</span> {{ backLabel() }}
           </a>
 
           <header class="spec-header" [style.--class-color]="specColor()">
@@ -192,6 +195,8 @@
                       [attr.href]="choice.talent ? spellUrl(choice.talent.id) : null"
                       target="_blank"
                       rel="noopener"
+                      [attr.data-tip]="choice.talent?.name"
+                      [attr.data-tip-spell]="choice.talent?.id"
                       [attr.aria-label]="(choice.talent?.name ?? 'Unknown talent') + ': ' + formatShare(choice.share) + ' of everyone, ' + formatShare(choice.topShare) + ' of the top 10%'">
                       <span class="talent-head">
                         <img
@@ -228,7 +233,7 @@
               </div>
               <ul class="insights">
                 <li class="insight" *ngFor="let insight of insights(); trackBy: trackId" [ngClass]="insight.tone">
-                  <img *ngIf="insight.icon" class="insight-icon" [src]="icon(insight.icon, 'medium')" [srcset]="iconSrcset(insight.icon)" sizes="36px" width="36" height="36" alt="" loading="lazy" />
+                  <img *ngIf="insight.talent as talent" class="insight-icon" [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="36px" width="36" height="36" alt="" loading="lazy" [attr.data-tip]="talent.name" [attr.data-tip-spell]="talent.id" />
                   <span class="insight-body">
                     <span class="insight-label">{{ insight.label }}</span>
                     <b class="insight-title">{{ insight.title }}</b>
@@ -267,7 +272,8 @@
                               target="_blank"
                               rel="noopener"
                               [attr.aria-label]="talent.name"
-                              [attr.data-tip]="talent.name">
+                              [attr.data-tip]="talent.name"
+                              [attr.data-tip-spell]="talent.id">
                               <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
                             </a>
                           </ng-container>
@@ -319,7 +325,7 @@
                     <tr *ngFor="let row of heatRows(); trackBy: trackKey" [class.tier-start]="row.first">
                       <th *ngIf="row.first" scope="rowgroup" class="heat-level" [attr.rowspan]="row.tierSize">{{ row.level }}</th>
                       <th scope="row" class="heat-talent">
-                        <span>
+                        <span [attr.data-tip]="row.talent?.name" [attr.data-tip-spell]="row.talent?.id">
                           <img *ngIf="row.talent; else unknownIcon" [src]="icon(row.talent.icon, 'medium')" [srcset]="iconSrcset(row.talent.icon)" sizes="20px" width="20" height="20" alt="" loading="lazy" />
                           {{ row.talent?.name ?? 'Unknown talent' }}
                         </span>

@@ -110,6 +110,55 @@ public static class RaidLogFileReader
         }
     }
 
+    public static IReadOnlyDictionary<int, RaidSpellTooltip> ReadTalentTooltips(
+        string outputDirectory
+    )
+    {
+        var path = Path.Combine(outputDirectory, RaidLogFileWriter.TalentTooltipsFileName);
+        if (!File.Exists(path))
+        {
+            return new Dictionary<int, RaidSpellTooltip>();
+        }
+
+        try
+        {
+            using var file = JsonDocument.Parse(File.ReadAllBytes(path));
+            var root = file.RootElement;
+            if (
+                !root.TryGetProperty("version", out var version)
+                || !version.TryGetInt32(out var number)
+                || number != RaidLogFileWriter.TalentTooltipsFormatVersion
+            )
+            {
+                return new Dictionary<int, RaidSpellTooltip>();
+            }
+
+            return root.GetProperty("spells")
+                .EnumerateArray()
+                .Select(spell => new RaidSpellTooltip(
+                    spell[0].GetInt32(),
+                    [.. spell[1].EnumerateArray().Select(detail => detail.GetString()!)],
+                    spell[2].GetString()!
+                ))
+                .ToDictionary(tooltip => tooltip.SpellId);
+        }
+        catch (Exception error)
+            when (error
+                    is JsonException
+                        or IOException
+                        or InvalidOperationException
+                        or IndexOutOfRangeException
+                        or KeyNotFoundException
+                        or ArgumentException
+            )
+        {
+            Console.Error.WriteLine(
+                $"Could not read the previous talent tooltips ({error.Message}); looking every one up again."
+            );
+            return new Dictionary<int, RaidSpellTooltip>();
+        }
+    }
+
     /// <summary>The file's format version, or null for one this reader doesn't know.</summary>
     private static int? ReadVersion(JsonElement root) =>
         root.ValueKind == JsonValueKind.Object

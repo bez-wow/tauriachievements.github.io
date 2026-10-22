@@ -157,11 +157,11 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     expect(rows(page)).toEqual([
       ['Nythendra', .8, 2, 4],
       ["Il'gynoth", .375, 3, 3],
-      ['Elerethe Renferal', 0, undefined, 0]
+      ['Elerethe', 0, undefined, 0]
     ]);
     // The same shares the score averages.
     expect(page.bossRows().map(row => row.relative)).toEqual(page.score()?.bosses.map(entry => entry.relative));
-    expect(cells(element)).toEqual([['Nythendra', '80%', '#2 / 4'], ["Il'gynoth", '37%', '#3 / 3'], ['Elerethe Renferal', '', '']]);
+    expect(cells(element)).toEqual([['Nythendra', '80%', '#2 / 4'], ["Il'gynoth", '37%', '#3 / 3'], ['Elerethe', '', '']]);
 
     // (.8 + .375 + 0) / 3 of 6969; Kael and Ret score higher.
     expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 on the leaderboard' });
@@ -183,9 +183,9 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     expect(rows(page)).toEqual([
       ['Nythendra', 1, 1, 2],
       ["Il'gynoth", .5, 2, 2],
-      ['Elerethe Renferal', 0, undefined, 0]
+      ['Elerethe', 0, undefined, 0]
     ]);
-    expect(cells(element)).toEqual([['Nythendra', '100%', '#1 / 2'], ["Il'gynoth", '50%', '#2 / 2'], ['Elerethe Renferal', '', '']]);
+    expect(cells(element)).toEqual([['Nythendra', '100%', '#1 / 2'], ["Il'gynoth", '50%', '#2 / 2'], ['Elerethe', '', '']]);
 
     expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 among all players' });
     expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#1', note: 'Nythendra, of 2 Mages' });

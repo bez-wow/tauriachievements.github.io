@@ -29,13 +29,15 @@ public sealed record RaidLogExporterOptions(
               dotnet run --project RaidLogExporter -- --full
 
             Writes spa/src/raid-log-data/index.json and one <boss>-<difficulty>.json per boss
-            and difficulty with kills. Only kills the last export does not have are read.
+            and difficulty with kills, plus talents.json and talent-tooltips.json from
+            TauriShoot. Only kills and talent tooltips the last export does not have are read.
 
             Options:
               --realm <name>   Realm whose logs to read; repeat for several.
                                Accepts Evermoon, Tauri, WoD or the full API realm name.
                                Defaults to all three.
-              --full           Read every log again instead of reusing the last export.
+              --full           Read every log and talent tooltip again instead of reusing
+                               the last export.
               --allow-shrink   Publish even if there are fewer kills than last time.
               --help           Show this help text.
             """;

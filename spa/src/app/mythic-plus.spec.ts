@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  CLASS_FILTER_OPTIONS,
   runScoreColor,
   scoreColor,
   scoreTiers,
@@ -30,6 +31,17 @@ describe('upgradeStars', () => {
     expect(upgradeStars(1)).toBe('★');
     expect(upgradeStars(2)).toBe('★★');
     expect(upgradeStars(3)).toBe('★★★');
+  });
+});
+
+describe('CLASS_FILTER_OPTIONS', () => {
+  it('lists All classes, then every class A to Z with its icon and colour', () => {
+    expect(CLASS_FILTER_OPTIONS.map(option => option.label)).toEqual([
+      'All classes', 'Death Knight', 'Demon Hunter', 'Druid', 'Hunter', 'Mage', 'Monk',
+      'Paladin', 'Priest', 'Rogue', 'Shaman', 'Warlock', 'Warrior'
+    ]);
+    expect(CLASS_FILTER_OPTIONS[0].value).toBeUndefined();
+    expect(CLASS_FILTER_OPTIONS.slice(1).every(option => typeof option.value === 'number' && option.icon && option.color)).toBe(true);
   });
 });
 

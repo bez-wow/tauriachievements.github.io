@@ -237,6 +237,113 @@ public sealed class RaidLogExportServiceTests
     }
 
     [Fact]
+    public void ParsePower_ReadsTheDetailsAndAPlainDescription()
+    {
+        var tooltip = TauriShootSpellTooltipSource.ParsePower(
+            """
+            $TauriPower.registerSpell(123986, 0,{icon: 'spell_arcane_arcanetorrent',tooltip_enus: '<table class=\"tooltip-t\"><tr><td><b>Chi Burst<\/b><br />40 yd range<br /><table width=\"100%\"><tr><td>1 sec cast<\/td><th>30 sec cooldown<\/th><\/tr><\/table><\/td><\/tr><\/table><table><tr><td><span class=\"q\">Hurls a torrent of Chi energy up to 40 yds forward, dealing 0 Nature damage to all enemies, and 0 healing to the Monk and all allies in its path.<\/span><\/td><\/tr><\/table>'}, "legion");
+            """,
+            123986
+        );
+
+        Assert.NotNull(tooltip);
+        Assert.Equal(123986, tooltip.SpellId);
+        Assert.Equal(["40 yd range", "1 sec cast", "30 sec cooldown"], tooltip.Details);
+        Assert.Equal(
+            "Hurls a torrent of Chi energy up to 40 yds forward, dealing Nature damage to all enemies, and healing to the Monk and all allies in its path.",
+            tooltip.Description
+        );
+    }
+
+    [Fact]
+    public void ParsePower_KeepsParagraphsAndGivesAPassiveNoDetails()
+    {
+        var tooltip = TauriShootSpellTooltipSource.ParsePower(
+            """
+            $TauriPower.registerSpell(213313, 0,{icon: 'spell_nature_timestop',tooltip_enus: '<table class=\"tooltip-t\"><tr><td><b>Divine Intervention<\/b><br />Instant<\/td><\/tr><\/table><table><tr><td><span class=\"q\">Reduces your Divine Shield cooldown by -20%. In addition, any attack which would kill you instead reduces you to 20% of your maximum health and triggers Divine Shield.<br /><br />Cannot occur while Divine Shield is on cooldown or Forbearance is active. <\/span><\/td><\/tr><\/table>'}, "legion");
+            """,
+            213313
+        );
+
+        Assert.NotNull(tooltip);
+        Assert.Empty(tooltip.Details);
+        Assert.Equal(
+            "Reduces your Divine Shield cooldown by 20%. In addition, any attack which would kill you instead reduces you to 20% of your maximum health and triggers Divine Shield.\n\nCannot occur while Divine Shield is on cooldown or Forbearance is active.",
+            tooltip.Description
+        );
+    }
+
+    [Fact]
+    public void ParsePower_ReadsNothingForASpellTauriShootDoesNotKnow()
+    {
+        Assert.Null(
+            TauriShootSpellTooltipSource.ParsePower(
+                """$TauriPower.registerSpell(999999999, 0,{}, "legion");""",
+                999999999
+            )
+        );
+    }
+
+    [Theory]
+    [InlineData(
+        """<table class="tooltip-t"><tr><td><b>Grimoire of Sacrifice</b><br /><table width="100%"><tr><td>1% of base mana<br /></td><th>40 yd range<br /></th></tr></table><table width="100%"><tr><td>Instant</td><th>30 sec cooldown</th></tr></table></td></tr></table><table><tr><td>""",
+        "40 yd range|Instant|30 sec cooldown"
+    )]
+    [InlineData(
+        """<table class="tooltip-t"><tr><td><b>Channel</b><br />40 yd range<br /><table width="100%"><tr><td>Channeled</td><th>2 min cooldown</th></tr></table></td></tr></table><table><tr><td>""",
+        "40 yd range|Channeled|2 min cooldown"
+    )]
+    [InlineData(
+        """<table class="tooltip-t"><tr><td><b>Disengage</b><br />Unlimited range<br /><table width="100%"><tr><td>Instant</td><th>1 sec cooldown</th></tr></table></td></tr></table><table><tr><td>""",
+        ""
+    )]
+    [InlineData(
+        """<table class="tooltip-t"><tr><td><b>Dauntless</b><br />Instant</td></tr></table><table><tr><td>""",
+        ""
+    )]
+    public void ReadDetails_KeepsRangeCastAndCooldownButNoCostOrShortCooldown(
+        string header,
+        string expected
+    )
+    {
+        Assert.Equal(expected, string.Join("|", TauriShootSpellTooltipSource.ReadDetails(header)));
+    }
+
+    [Theory]
+    [InlineData(
+        "Hurls your weapon at an enemy, causing 0 Physical damage and stunning for 5 sec.",
+        "Hurls your weapon at an enemy, causing Physical damage and stunning for 5 sec."
+    )]
+    [InlineData(
+        "A powerful shot which deals up to 1550 Physical damage to the target.",
+        "A powerful shot which deals Physical damage to the target."
+    )]
+    [InlineData("Heals up to 6 allies for 0.", "Heals up to 6 allies.")]
+    [InlineData(
+        "Grants Critical Strike, Haste, or Mastery by 0 for 10 sec.",
+        "Grants Critical Strike, Haste, or Mastery for 10 sec."
+    )]
+    [InlineData("Your abilities cost -10% less Rage.", "Your abilities cost 10% less Rage.")]
+    [InlineData(
+        "Mortal Strike and Execute hit 2 additional nearby targets.",
+        "Mortal Strike and Execute hit 2 additional nearby targets."
+    )]
+    [InlineData("Abilities cost 0% less Energy while Stealth is active.", "")]
+    [InlineData("Restores 25% health every 0 sec1 sec.", "")]
+    [InlineData("Grants $192082s% increased movement speed for 5 sec.", "")]
+    [InlineData("Reduces all damage you take by %.", "")]
+    [InlineData("Heals the target and -1 injured allies.", "")]
+    [InlineData("Increases your run speed by -15000% for 3 sec.", "")]
+    [InlineData("Reduces the cooldown of Light of Dawn by -1.5.1 sec.", "")]
+    public void CleanDescription_DropsStandInAmountsAndHidesUnresolvedOnes(
+        string text,
+        string expected
+    )
+    {
+        Assert.Equal(expected, TauriShootSpellTooltipSource.CleanDescription(text));
+    }
+
+    [Fact]
     public async Task ExportAsync_WritesBossFilesAndAnIndexOfEveryKill()
     {
         var outputDirectory = CreateTempDirectory();
@@ -328,6 +435,7 @@ public sealed class RaidLogExportServiceTests
                 api,
                 new FakeItemSource(),
                 new FakeTalentSource(),
+                new FakeTooltipSource(),
                 directory,
                 new FixedTimeProvider(
                     new DateTimeOffset(2026, 10, 12, 18, 0, 0, TimeSpan.FromHours(2))
@@ -342,6 +450,7 @@ public sealed class RaidLogExportServiceTests
                     "index.json",
                     "nythendra-heroic.json",
                     "nythendra-normal.json",
+                    "talent-tooltips.json",
                     "talents.json",
                     "xavius-mythic.json",
                 ],
@@ -556,6 +665,7 @@ public sealed class RaidLogExportServiceTests
                     api,
                     new FakeItemSource(),
                     new FakeTalentSource(),
+                    new FakeTooltipSource(),
                     directory,
                     new FixedTimeProvider(
                         new DateTimeOffset(2026, 10, 12, hour, 0, 0, TimeSpan.Zero)
@@ -742,20 +852,127 @@ public sealed class RaidLogExportServiceTests
                 Member("Warrior", "", 1, 71)
             );
             var talentsPath = Path.Combine(outputDirectory, "talents.json");
+            var tooltipsPath = Path.Combine(outputDirectory, "talent-tooltips.json");
 
             var first = await Service(outputDirectory, api, PlayerGuildDirectory.Empty)
                 .ExportAsync(Options(), CancellationToken.None);
             var written = File.ReadAllText(talentsPath);
+            var writtenTooltips = File.ReadAllText(tooltipsPath);
+            var tooltips = new FakeTooltipSource();
             var second = await Service(
                     outputDirectory,
                     api,
                     PlayerGuildDirectory.Empty,
-                    new FakeTalentSource(fails: true)
+                    new FakeTalentSource(fails: true),
+                    tooltips
                 )
                 .ExportAsync(Options(), CancellationToken.None);
 
             Assert.Equal((1, 0), (first.TalentSpecCount, second.TalentSpecCount));
             Assert.Equal(written, File.ReadAllText(talentsPath));
+            Assert.Null(second.TalentTooltips);
+            Assert.Empty(tooltips.Requests);
+            Assert.Equal(writtenTooltips, File.ReadAllText(tooltipsPath));
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_WritesTalentTooltipsAndLooksUpOnlyNewOnes()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                null,
+                [],
+                Member("Warrior", "", 1, 71)
+            );
+            var first = new FakeTooltipSource();
+            var cached = new FakeTooltipSource();
+            var full = new FakeTooltipSource();
+
+            var result = await Service(
+                    outputDirectory,
+                    api,
+                    PlayerGuildDirectory.Empty,
+                    tooltips: first
+                )
+                .ExportAsync(Options(), CancellationToken.None);
+            await Service(outputDirectory, api, PlayerGuildDirectory.Empty, tooltips: cached)
+                .ExportAsync(Options(), CancellationToken.None);
+            await Service(outputDirectory, api, PlayerGuildDirectory.Empty, tooltips: full)
+                .ExportAsync(Options() with { Full = true }, CancellationToken.None);
+
+            Assert.Equal(new RaidTooltipLookup(7, 7, 7), result.TalentTooltips);
+            Assert.Equal(7, first.Requests.Count);
+            Assert.Empty(cached.Requests);
+            Assert.Equal(7, full.Requests.Count);
+            using var file = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(outputDirectory, "talent-tooltips.json"))
+            );
+            Assert.Equal(1, file.RootElement.GetProperty("version").GetInt32());
+            var spells = file.RootElement.GetProperty("spells");
+            Assert.Equal(
+                Enumerable.Range(1000, 7),
+                spells.EnumerateArray().Select(spell => spell[0].GetInt32())
+            );
+            Assert.Equal("""[1000,["Instant"],"Spell 1000."]""", spells[0].GetRawText());
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ExportAsync_LeavesOutATooltipThatCannotBeReadAndLooksItUpNextRun()
+    {
+        var outputDirectory = CreateTempDirectory();
+        try
+        {
+            var api = new FakeRaidApiClient();
+            api.Rankings[(Tauri, Nythendra, Heroic)] = [100];
+            api.Logs[(Tauri, 100)] = LogJson(
+                100,
+                Nythendra,
+                Heroic,
+                10,
+                100_000,
+                null,
+                [],
+                Member("Warrior", "", 1, 71)
+            );
+            var retry = new FakeTooltipSource();
+
+            var first = await Service(
+                    outputDirectory,
+                    api,
+                    PlayerGuildDirectory.Empty,
+                    tooltips: new FakeTooltipSource(1003)
+                )
+                .ExportAsync(Options(), CancellationToken.None);
+            var second = await Service(
+                    outputDirectory,
+                    api,
+                    PlayerGuildDirectory.Empty,
+                    tooltips: retry
+                )
+                .ExportAsync(Options(), CancellationToken.None);
+
+            Assert.Equal(new RaidTooltipLookup(7, 6, 7), first.TalentTooltips);
+            Assert.Equal([1003], retry.Requests);
+            Assert.Equal(new RaidTooltipLookup(7, 7, 1), second.TalentTooltips);
         }
         finally
         {
@@ -901,13 +1118,15 @@ public sealed class RaidLogExportServiceTests
         string outputDirectory,
         FakeRaidApiClient api,
         PlayerGuildDirectory directory,
-        IRaidTalentSource? talents = null
+        IRaidTalentSource? talents = null,
+        IRaidSpellTooltipSource? tooltips = null
     ) =>
         new(
             outputDirectory,
             api,
             new FakeItemSource(),
             talents ?? new FakeTalentSource(),
+            tooltips ?? new FakeTooltipSource(),
             directory
         );
 
@@ -1099,6 +1318,21 @@ public sealed class RaidLogExportServiceTests
                         ),
                     ]
             );
+    }
+
+    private sealed class FakeTooltipSource(params int[] failing) : IRaidSpellTooltipSource
+    {
+        public ConcurrentQueue<int> Requests { get; } = new();
+
+        public Task<RaidSpellTooltip?> LoadAsync(int spellId, CancellationToken cancellationToken)
+        {
+            Requests.Enqueue(spellId);
+            return Task.FromResult<RaidSpellTooltip?>(
+                failing.Contains(spellId)
+                    ? null
+                    : new RaidSpellTooltip(spellId, ["Instant"], $"Spell {spellId}.")
+            );
+        }
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

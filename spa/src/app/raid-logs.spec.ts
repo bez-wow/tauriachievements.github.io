@@ -12,8 +12,10 @@ import {
   decodeBossFile,
   decodeGenders,
   decodeIndex,
+  decodeTalentTooltips,
   decodeTalents,
   memberTalents,
+  bossShortName,
   bossStanding,
   bossesInKillOrder,
   characterKey,
@@ -29,6 +31,7 @@ import {
   killsBefore,
   logKey,
   nameMatches,
+  parseRoleFilter,
   performanceQuality,
   raceFaction,
   rankCharacters,
@@ -113,6 +116,15 @@ const bossFile: RaidBossFile = {
 };
 
 const kills = decodeBossFile(bossFile, nythendra, mythic, index.specs);
+
+describe('bossShortName', () => {
+  it('cuts the name at its first comma, except for the bosses with a shorter name of their own', () => {
+    expect(bossShortName({ slug: 'ilgynoth', name: "Il'gynoth, The Heart of Corruption" })).toBe("Il'gynoth");
+    expect(bossShortName({ slug: 'ursoc', name: 'Ursoc' })).toBe('Ursoc');
+    expect(bossShortName({ slug: 'elerethe-renferal', name: 'Elerethe Renferal' })).toBe('Elerethe');
+    expect(bossShortName({ slug: 'dragons-of-nightmare', name: 'Dragons of Nightmare' })).toBe('Dragons');
+  });
+});
 
 describe('decodeIndex', () => {
   it('reads kills, guilds, the top performers and the loot', () => {
@@ -202,6 +214,22 @@ describe('memberTalents', () => {
     expect(memberTalents({ spec: frost, talents: '' }, table)).toEqual([]);
     expect(memberTalents({ spec: index.specs.get(63), talents: '01' }, table)).toEqual([]);
     expect(memberTalents({ spec: undefined, talents: '01' }, table)).toEqual([]);
+  });
+});
+
+describe('decodeTalentTooltips', () => {
+  it('joins the details into one line and keeps the description by spell', () => {
+    const tooltips = decodeTalentTooltips({
+      version: 1,
+      spells: [
+        [123986, ['40 yd range', '1 sec cast', '30 sec cooldown'], 'Hurls a torrent of Chi energy.'],
+        [202297, [], '']
+      ]
+    });
+
+    expect(tooltips.get(123986)).toEqual({ details: '40 yd range · 1 sec cast · 30 sec cooldown', description: 'Hurls a torrent of Chi energy.' });
+    expect(tooltips.get(202297)).toEqual({ details: '', description: '' });
+    expect(tooltips.get(1)).toBeUndefined();
   });
 });
 
@@ -505,6 +533,13 @@ describe('defaultDifficulty', () => {
   it('opens on the hardest difficulty with a kill', () => {
     expect(defaultDifficulty(index.difficulties)?.slug).toBe('mythic');
     expect(defaultDifficulty(index.difficulties.map(difficulty => ({ ...difficulty, kills: difficulty.id === 15 ? 1 : 0 })))?.slug).toBe('heroic');
+  });
+});
+
+describe('parseRoleFilter', () => {
+  it('reads ?role=, falling back to every role', () => {
+    expect(['tank', 'healer', 'dps', 'heal', null].map(parseRoleFilter))
+      .toEqual(['tank', 'healer', 'dps', 'all', 'all']);
   });
 });
 

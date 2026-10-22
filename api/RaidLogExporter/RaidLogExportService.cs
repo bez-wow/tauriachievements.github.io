@@ -3,28 +3,24 @@ using Tauri.Core.Infrastructure;
 
 namespace RaidLogExporter;
 
-/// <param name="ReadLogCount">How many logs' details were asked from the API this run.</param>
-/// <param name="SkippedLogs">Listed kills whose details describe another kill; left out.</param>
-/// <param name="TalentSpecCount">Specs whose talents were written; 0 when the last ones were kept.</param>
 public sealed record RaidLogExportResult(
     RaidDataset Dataset,
     int PreviousLogCount,
     int ReadLogCount,
     IReadOnlyList<RaidLogKey> SkippedLogs,
     string OutputDirectory,
-    int TalentSpecCount
+    int TalentSpecCount,
+    RaidTooltipLookup? TalentTooltips
 );
 
-/// <summary>
-/// Lists every kill of the tracked raid on each realm, reads the details of the ones the last
-/// export did not have yet, and publishes the /raid-logs data files. Nothing is written unless
-/// every ranking and every new log was read, so a flaky API never publishes a partial raid.
-/// </summary>
+public sealed record RaidTooltipLookup(int SpellCount, int WrittenCount, int LookedUpCount);
+
 public sealed class RaidLogExportService(
     string outputDirectory,
     ITauriApiClient apiClient,
     IRaidItemSource itemSource,
     IRaidTalentSource talentSource,
+    IRaidSpellTooltipSource tooltipSource,
     PlayerGuildDirectory guildDirectory,
     TimeProvider? timeProvider = null
 )
@@ -36,6 +32,7 @@ public sealed class RaidLogExportService(
     private const double MaxShrinkFraction = 0.02;
 
     private const int MaxParallelItems = 8;
+    private const int MaxParallelTooltips = 4;
 
     private readonly RaidLogReader _reader = new(apiClient);
     private readonly RaidGuildResolver _guildResolver = new(apiClient, guildDirectory);
@@ -55,7 +52,6 @@ public sealed class RaidLogExportService(
                     + string.Join(Environment.NewLine, rankings.Failures)
             );
         }
-        // Every kill in the files was in the rankings by now, so this is how current they are.
         var scannedAt = _timeProvider.GetUtcNow();
 
         var previous = RaidLogFileReader.Read(outputDirectory);
@@ -113,6 +109,16 @@ public sealed class RaidLogExportService(
         var items = await LoadItemsAsync(logs, previous.Items, cancellationToken);
         var dataset = RaidLogDatasetBuilder.Build(logs, items, guildDirectory);
         var talents = await talentSource.LoadAsync(cancellationToken);
+        (IReadOnlyList<RaidSpellTooltip> Tooltips, RaidTooltipLookup Lookup)? tooltips = talents
+            is null
+            ? null
+            : await LoadTooltipsAsync(
+                talents,
+                options.Full
+                    ? new Dictionary<int, RaidSpellTooltip>()
+                    : RaidLogFileReader.ReadTalentTooltips(outputDirectory),
+                cancellationToken
+            );
 
         await RaidLogFileWriter.WriteAsync(
             outputDirectory,
@@ -120,6 +126,7 @@ public sealed class RaidLogExportService(
             scannedAt,
             ScanChanges(previous, dataset),
             talents,
+            tooltips?.Tooltips,
             cancellationToken
         );
         return new RaidLogExportResult(
@@ -128,8 +135,52 @@ public sealed class RaidLogExportService(
             toRead.Count,
             details.Mismatched,
             outputDirectory,
-            talents?.Count ?? 0
+            talents?.Count ?? 0,
+            tooltips?.Lookup
         );
+    }
+
+    private async Task<(
+        IReadOnlyList<RaidSpellTooltip> Tooltips,
+        RaidTooltipLookup Lookup
+    )> LoadTooltipsAsync(
+        IReadOnlyList<RaidSpecTalents> talents,
+        IReadOnlyDictionary<int, RaidSpellTooltip> known,
+        CancellationToken cancellationToken
+    )
+    {
+        var spellIds = talents
+            .SelectMany(spec => spec.Tiers)
+            .SelectMany(tier => tier)
+            .OfType<RaidTalent>()
+            .Select(talent => talent.SpellId)
+            .Distinct()
+            .Order()
+            .ToList();
+        var missing = spellIds.Where(id => !known.ContainsKey(id)).ToList();
+        var loaded = new ConcurrentDictionary<int, RaidSpellTooltip>();
+
+        await Parallel.ForEachAsync(
+            missing,
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = MaxParallelTooltips,
+                CancellationToken = cancellationToken,
+            },
+            async (id, token) =>
+            {
+                if (await tooltipSource.LoadAsync(id, token) is { } tooltip)
+                {
+                    loaded[id] = tooltip;
+                }
+            }
+        );
+
+        var tooltips = spellIds
+            .Select(id => known.GetValueOrDefault(id) ?? loaded.GetValueOrDefault(id))
+            .OfType<RaidSpellTooltip>()
+            .ToList();
+        return (tooltips, new RaidTooltipLookup(spellIds.Count, tooltips.Count, missing.Count));
     }
 
     /// <summary>

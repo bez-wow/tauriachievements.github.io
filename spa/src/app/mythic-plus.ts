@@ -1,3 +1,7 @@
+import { getClassIconPath } from '../utils/classIconHelper';
+import { getClassColor } from './class-colors';
+import { FilterDropdownOption } from './filter-dropdown.types';
+
 export type MythicPlusRole = 'tank' | 'healer' | 'dps';
 export type RunQuality = 'artifact' | 'legendary' | 'epic' | 'rare' | 'uncommon';
 
@@ -199,6 +203,18 @@ export const CLASS_NAMES: Readonly<Record<number, string>> = {
   5: 'Priest', 6: 'Death Knight', 7: 'Shaman', 8: 'Mage',
   9: 'Warlock', 10: 'Monk', 11: 'Druid', 12: 'Demon Hunter'
 };
+
+export const CLASS_FILTER_OPTIONS: ReadonlyArray<FilterDropdownOption> = [
+  { value: undefined, label: 'All classes' },
+  ...Object.entries(CLASS_NAMES)
+    .sort(([, a], [, b]) => a.localeCompare(b))
+    .map(([id, name]) => ({
+      value: Number(id),
+      label: name,
+      icon: getClassIconPath(Number(id)),
+      color: getClassColor(Number(id))
+    }))
+];
 
 export function keystoneUpgrades(clearTimeSeconds: number, timerSeconds: number): number {
   if (!(clearTimeSeconds > 0) || !(timerSeconds > 0)) {

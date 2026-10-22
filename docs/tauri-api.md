@@ -85,10 +85,37 @@ response first.
 - A few logs pair a class with another class's spec. Those members get spec 0 and are left out
   of the spec rankings. Code: `RaidCatalog.ValidSpecId`.
 - Talents come as one string per member, for example `"Za!1212212"`: class and spec letters,
-  then one 0-based column per tier, with `.` for none. The talent trees come from TauriShoot
-  (`?talent-frag&c=<classId>`, `RaidTalentSource`). If TauriShoot can't be read, the last
-  `talents.json` stays. Item names, qualities and icons come from TauriShoot's
-  `?item=<id>&xml` (`RaidItemSource`).
+  then one 0-based column per tier, with `.` for none. The talent trees, their tooltips and
+  the item names come from TauriShoot (below).
+
+## TauriShoot (`legion-shoot.tauri.hu`)
+
+The Legion database site. RaidLogExporter reads three of its endpoints, with no key:
+
+- `?talent-frag&c=<classId>`: a class's talent tiers, each talent's spell id, name and icon.
+  Numbers come as strings. If any class can't be read, the last `talents.json` and
+  `talent-tooltips.json` stay. Code: `TauriShootTalentSource`.
+- `?item=<id>&xml`: an item's name, quality and icon. Code: `TauriShootItemSource`.
+- `ajax/ajax.php?spell=<id>&power2`: a spell's tooltip, the request TauriShoot's own
+  `power.js` embed makes. It answers JavaScript,
+  `$TauriPower.registerSpell(<id>, 0,{icon: '…',tooltip_enus: '…'}, "legion");`, with the
+  tooltip as HTML in a single-quoted string. A spell it doesn't know comes back as `{}`. About
+  1 kB and 0.2 s per spell. Code: `TauriShootSpellTooltipSource`.
+- `?spell=<id>` is the page for people: about 15 kB of HTML, and no CORS headers, so the site
+  can't read it from the browser.
+
+Tooltip quirks, observed 2026-10-22 over the 603 talent spells. The exporter cleans them up as
+[data-pipeline.md](data-pipeline.md#talent-tooltips) describes.
+
+- Amounts that scale with attack or spell power come out as `0` ("dealing 0 Nature damage")
+  or as a stand-in number ("dealing 1 Frost damage", once even a spell id).
+- Some formulas stay unresolved: `${15 sec-1.5}`, `$192082s%`, "every 0 sec1 sec", "by %".
+- Reductions carry a minus: "cost -10% less Rage", "by -25%".
+- Rage, Runic Power and Pain costs read ten times too high (Focused Rage: "200 Rage"). Not
+  checked in game.
+- A spell with charges shows its short per-use cooldown (Shimmer 0.5 sec, Rune Tap 1.5 sec), not
+  its recharge. Disengage, Ranger's Net and Hungering Rune Weapon show "1 sec cooldown".
+- A self-cast spell shows "Unlimited range", and a passive talent "Instant".
 
 ## PvP matches (`pvp-match`)
 

@@ -44,6 +44,8 @@ public static class RaidLogFileWriter
     public const int FormatVersion = 2;
     public const string IndexFileName = "index.json";
     public const string TalentsFileName = "talents.json";
+    public const string TalentTooltipsFileName = "talent-tooltips.json";
+    public const int TalentTooltipsFormatVersion = 1;
 
     /// <summary>The export's folder under spa/src.</summary>
     public const string DataDirectoryName = "raid-log-data";
@@ -54,14 +56,13 @@ public static class RaidLogFileWriter
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
-    /// <param name="changes">Null on a first export.</param>
-    /// <param name="talents">Null when they could not be read; the last export's file stays.</param>
     public static async Task WriteAsync(
         string outputDirectory,
         RaidDataset dataset,
         DateTimeOffset generatedAt,
         RaidScanChanges? changes,
         IReadOnlyList<RaidSpecTalents>? talents,
+        IReadOnlyList<RaidSpellTooltip>? tooltips,
         CancellationToken cancellationToken
     )
     {
@@ -72,6 +73,15 @@ public static class RaidLogFileWriter
             await AtomicFile.WriteAsync(
                 Path.Combine(outputDirectory, TalentsFileName),
                 (stream, token) => WriteTalentsAsync(stream, talents, token),
+                cancellationToken
+            );
+        }
+
+        if (tooltips is not null)
+        {
+            await AtomicFile.WriteAsync(
+                Path.Combine(outputDirectory, TalentTooltipsFileName),
+                (stream, token) => WriteTalentTooltipsAsync(stream, tooltips, token),
                 cancellationToken
             );
         }
@@ -448,6 +458,42 @@ public static class RaidLogFileWriter
         await writer.FlushAsync(cancellationToken);
     }
 
+    private static async Task WriteTalentTooltipsAsync(
+        Stream stream,
+        IReadOnlyList<RaidSpellTooltip> tooltips,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var writer = new Utf8JsonWriter(stream, WriterOptions);
+        var line = new JsonLineWriter(WriterOptions);
+
+        writer.WriteStartObject();
+        writer.WriteNumber("version", TalentTooltipsFormatVersion);
+        writer.WriteStartArray("spells");
+        foreach (var tooltip in tooltips)
+        {
+            line.WriteTo(
+                writer,
+                item =>
+                {
+                    item.WriteStartArray();
+                    item.WriteNumberValue(tooltip.SpellId);
+                    item.WriteStartArray();
+                    foreach (var detail in tooltip.Details)
+                    {
+                        item.WriteStringValue(detail);
+                    }
+                    item.WriteEndArray();
+                    item.WriteStringValue(tooltip.Description);
+                    item.WriteEndArray();
+                }
+            );
+        }
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+        await writer.FlushAsync(cancellationToken);
+    }
+
     private static void WriteGuilds(
         Utf8JsonWriter writer,
         JsonLineWriter line,
@@ -512,10 +558,6 @@ public static class RaidLogFileWriter
         RaidGuild? guild
     ) => guild is null ? -1 : positions[(guild.Realm, guild.Id)];
 
-    /// <summary>
-    /// Removes files from an earlier run that this run did not write. The talents stay even when
-    /// this run could not read them.
-    /// </summary>
     private static void RemoveStaleFiles(string outputDirectory, RaidDataset dataset)
     {
         var expected = dataset
@@ -523,6 +565,7 @@ public static class RaidLogFileWriter
             .Select(encounter => RaidCatalog.BossFileName(encounter.Boss, encounter.Difficulty))
             .Append(IndexFileName)
             .Append(TalentsFileName)
+            .Append(TalentTooltipsFileName)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (var path in Directory.EnumerateFiles(outputDirectory, "*.json"))

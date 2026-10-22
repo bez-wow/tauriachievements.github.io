@@ -64,6 +64,12 @@ public sealed record RaidTalent(int SpellId, string Name, string Icon);
 /// </summary>
 public sealed record RaidSpecTalents(int SpecId, IReadOnlyList<IReadOnlyList<RaidTalent?>> Tiers);
 
+public sealed record RaidSpellTooltip(
+    int SpellId,
+    IReadOnlyList<string> Details,
+    string Description
+);
+
 /// <param name="KilledAt">Unix seconds.</param>
 /// <param name="Faction">The side most members play for.</param>
 /// <param name="Deaths">Deaths during the kill attempt itself.</param>

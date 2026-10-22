@@ -54,8 +54,9 @@ difficulty, the page number. Defaults are left out of it.
 
   `syncQueryParams()` in `mythic-plus-page.component.ts` is the reference.
 - **Real navigation** is only for a change the Back button should undo. For example, on the
-  Talent Analytics page, picking a spec navigates, while difficulty and boss use
-  `replaceState`.
+  Talent Analytics page, opening a spec's card navigates, while difficulty, boss, role and class
+  use `replaceState`. On a spec's page, picking a role or a class, or pressing Reset, navigates
+  back to the overview.
 - The router never sees parameters written with `replaceState`. When you build a link or
   navigation from the current state, spell out every parameter you want kept.
 
@@ -81,21 +82,42 @@ decision (ask first).
 | `app-update-bar` (`update-bar.component`) | the site header; every page renders it. `lastEditedLabel` / `lastEdited` set the timestamp on the right |
 | `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201 |
+| `CLASS_FILTER_OPTIONS` (`mythic-plus.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
 | `app-mobile-filter-toggle` | folds a page's filters behind one button on phones |
 | `injectCompactViewport()` (`compact-viewport.ts`) | a signal that's true on phone-sized screens (`(max-width: 640px)`, or a wider query you pass) |
 | `appTapTooltip` | makes a hover tooltip open on tap on touch screens |
-| `app-icon-tips` | one fixed tooltip for every icon in a table (talents, trinkets) |
+| `app-icon-tips` | one fixed tooltip for every talent or trinket icon inside it ([below](#app-icon-tips)) |
 | `app-raid-difficulty-switch`, `app-race-by-spec` | the raid difficulty switch; the most-popular-race boxes |
 | `app-back-to-top-button` | the floating back-to-top button |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `utils/armory.ts` | `getArmoryUrl()` for every armory link |
 | `utils/time-zone-label.ts` | the "GMT+2"-style label beside local times |
-| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs |
+| `raid-logs.ts` helpers | `nameMatches`, `realmSlug`, `RAID_REALMS` for name search and realm URLs; `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`); `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch` |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, and `segmented-switch` (the difficulty switch's pill look, for any other switch beside it) |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
+
+### `app-icon-tips`
+
+- It shows one tooltip for whichever `data-tip` element inside it the mouse is over, or
+  keyboard focus is on:
+  - the name (`data-tip`), in `data-tip-color` if set;
+  - a `data-tip-note` line;
+  - for a talent, the element's `data-tip-spell` looked up in the `[spells]` input: its details
+    line and description, from `talent-tooltips.json`
+    ([data-pipeline.md](data-pipeline.md#talent-tooltips)).
+- Every talent icon on the Raids pages carries `data-tip-spell`. A page passes its
+  `talentTooltips()` signal to `[spells]`; until the file loads, tooltips show the name only.
+- One element serves every icon, so a table of 25 rows doesn't carry hundreds of hidden
+  tooltips.
+- The tooltip is fixed to the viewport, at z-index 2001 over the header, because the tables it
+  sits in scroll sideways and would clip it.
+- Touch screens get no tooltip: the icons link to TauriShoot, which describes them in full.
+  Screen readers read the links' own labels; the tooltip is hidden from them.
+- Its listeners run outside Angular and only touch the tooltip's DOM, so moving the mouse
+  across a table runs no change detection.
 
 ## The header-height contract
 

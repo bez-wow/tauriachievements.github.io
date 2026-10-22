@@ -14,10 +14,8 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { forkJoin, map, switchMap } from 'rxjs';
 import { getGuildArmoryUrl } from '../utils/armory';
-import { getClassIconPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
-import { getClassColor } from './class-colors';
 import { injectCompactViewport } from './compact-viewport';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
@@ -25,6 +23,7 @@ import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.typ
 import { GlideDirective } from './glide.directive';
 import { MobileFilterToggleComponent } from './mobile-filter-toggle.component';
 import {
+  CLASS_FILTER_OPTIONS,
   CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
@@ -177,15 +176,7 @@ export class MythicPlusGuildPageComponent implements OnInit {
   readonly roles: readonly MythicPlusRole[] = ['tank', 'healer', 'dps'];
   readonly roleLabels = ROLE_LABELS;
 
-  readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All classes' },
-    ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
-      value: Number(id),
-      label: name,
-      icon: getClassIconPath(Number(id)),
-      color: getClassColor(Number(id))
-    }))
-  ];
+  readonly classOptions = CLASS_FILTER_OPTIONS;
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
     const classId = this.classFilter();

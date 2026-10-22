@@ -12,11 +12,11 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { getClassIconPath } from '../utils/classIconHelper';
 import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { injectCompactViewport } from './compact-viewport';
 import {
+  CLASS_FILTER_OPTIONS,
   CLASS_NAMES,
   MYTHIC_PLUS_DATA_DIR,
   MythicPlusAffix,
@@ -198,15 +198,7 @@ export class MythicPlusPageComponent implements OnInit {
   readonly period = signal<LeaderboardPeriod>(
     this.route.snapshot.queryParamMap.get('period') === 'week' ? 'week' : 'season');
 
-  readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All classes' },
-    ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
-      value: Number(id),
-      label: name,
-      icon: getClassIconPath(Number(id)),
-      color: getClassColor(Number(id))
-    }))
-  ];
+  readonly classOptions = CLASS_FILTER_OPTIONS;
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
     const classId = this.classFilter();

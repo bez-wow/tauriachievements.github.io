@@ -12,7 +12,7 @@ import { FilterDropdownComponent } from './filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
-import { CLASS_NAMES, RunQuality, scoreQuality } from './mythic-plus';
+import { CLASS_FILTER_OPTIONS, CLASS_NAMES, RunQuality, scoreQuality } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   FACTION_NAMES,
@@ -202,24 +202,12 @@ export class RaidLogsLeaderboardPageComponent {
   readonly shownRankings = computed(() =>
     this.rankings().slice((this.currentPage() - 1) * RAID_PAGE_SIZE, this.currentPage() * RAID_PAGE_SIZE));
 
-  /** "All classes", then the classes the tab ranks A to Z: on HPS only those with a healing spec. */
   readonly classOptions = computed<FilterDropdownOption[]>(() => {
     const metric = this.metric();
     const ranked = new Set([...(this.index()?.specs.values() ?? [])]
       .filter(spec => countsFor(metric, spec))
       .map(spec => spec.classId));
-    return [
-      { value: undefined, label: 'All classes' },
-      ...Object.entries(CLASS_NAMES)
-        .filter(([id]) => ranked.has(Number(id)))
-        .sort(([, a], [, b]) => a.localeCompare(b))
-        .map(([id, name]) => ({
-          value: Number(id),
-          label: name,
-          icon: getClassIconPath(Number(id)),
-          color: getClassColor(Number(id))
-        }))
-    ];
+    return CLASS_FILTER_OPTIONS.filter(option => typeof option.value !== 'number' || ranked.has(option.value));
   });
 
   /** The picked class's specs that the tab ranks: healers on HPS, everyone else on DPS. */

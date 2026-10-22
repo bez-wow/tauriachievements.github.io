@@ -74,8 +74,36 @@ On top of that:
 - RaidLogExporter is incremental: it re-reads its own boss files and fetches only new logs.
   `--full` refetches everything. A boss file with an older format version makes the next run
   re-read every log.
+- RaidLogExporter looks up each talent's tooltip once and keeps it in `talent-tooltips.json`
+  ([below](#talent-tooltips)). A run looks up only the spells the file lacks; `--full`, or a
+  file of another `version`, looks them all up again (about 20 s). A tooltip TauriShoot can't
+  give is left out and looked up again next run. When TauriShoot's talent trees can't be read,
+  `talents.json` and `talent-tooltips.json` both stay as they are.
 
 Keep these guards in any new exporter ([guides/howto-add-exporter.md](guides/howto-add-exporter.md)).
+
+## Talent tooltips
+
+`raid-log-data/talent-tooltips.json` holds a tooltip for every spell in `talents.json`, one per
+line: `{"version": 1, "spells": [[spellId, [detail, ...], description], ...]}`, in spell id
+order. RaidLogExporter turns TauriShoot's tooltip HTML into plain text (paragraphs kept as
+`\n\n`) and drops what TauriShoot gets wrong ([tauri-api.md](tauri-api.md#taurishoot-legion-shoottaurihu)),
+so a tooltip never shows a number it knows is wrong:
+
+- The details keep the range, the cast time and a cooldown of 2 sec or more, in TauriShoot's
+  order. Costs go, and so do "Unlimited range" and a lone "Instant" (a passive talent).
+- The description loses the stand-in amount before "damage" or "healing" ("causing 375
+  Physical damage" becomes "causing Physical damage"), a zero heal or rating ("for 0", "by 0
+  for"), and the minus of a reduction ("by -25%" becomes "by 25%").
+- A description that still holds an unresolved value (`$`, a lone `0`, `sec1`, a `%` without
+  a number, a stray minus, `1.5.1`, a four-digit percentage) is written as `""`. The tooltip
+  then shows the talent's name and details only. On 2026-10-22 that was 140 of 603 spells.
+
+The rules are in `TauriShootSpellTooltipSource`. Changing them means bumping
+`RaidLogFileWriter.TalentTooltipsFormatVersion`, so the next run looks every tooltip up again
+with the new rules. The site decodes the file with `decodeTalentTooltips` (`raid-logs.ts`) and
+loads it through `RaidLogsDataService.talentTooltips()` once a page's kills are in, so it never
+holds up the page.
 
 ## What `prepare-app.js` builds
 

@@ -6,14 +6,8 @@ import { getLocalTimeZoneLabel } from '../utils/time-zone-label';
 import { BackToTopButtonComponent } from './back-to-top-button.component';
 import { RaceBySpecComponent } from './race-by-spec.component';
 import { RaceSample } from './race-popularity';
-import { RaidDifficulty, RaidKillDetails, RaidLogsIndex, RaidRole, defaultDifficulty } from './raid-logs';
-import {
-  ChartView,
-  RaidSpecPopularityChartComponent,
-  RoleFilter,
-  parseChartView,
-  parseRoleFilter
-} from './raid-spec-popularity-chart.component';
+import { RaidDifficulty, RaidKillDetails, RaidLogsIndex, RaidRole, RoleFilter, defaultDifficulty, parseRoleFilter } from './raid-logs';
+import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 import { RaidLogsDataService } from './services/raid-logs-data.service';
 import { UpdateBarComponent } from './update-bar.component';
 

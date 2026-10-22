@@ -1,35 +1,31 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, afterNextRender, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, afterNextRender, inject, input, viewChild } from '@angular/core';
 
 const VIEWPORT_MARGIN = 8;
 const ANCHOR_GAP = 6;
 
-/**
- * Wraps rows of small icons (talents, trinkets) and shows one tooltip for whichever element with
- * `data-tip` the mouse is over or keyboard focus is on: the name, in `data-tip-color` if set, and
- * a `data-tip-note` line under it. One element serves every icon, so a page of 25 rows doesn't
- * carry 225 hidden tooltips. It is fixed to the viewport because the tables these icons sit in
- * scroll sideways, and an absolutely placed tooltip would be cut off at their edges.
- *
- * Touch screens get no tooltip: the icons link to TauriShoot, which describes them in full. Screen
- * readers read the links' own labels; the tooltip is hidden from them.
- *
- * The listeners run outside Angular and only touch the tooltip's DOM, so moving the mouse across a
- * table runs no change detection.
- */
+export interface IconTipSpell {
+  details: string;
+  description: string;
+}
+
 @Component({
   selector: 'app-icon-tips',
   standalone: true,
-  template: `<ng-content /><span #tip class="icon-tip" aria-hidden="true"><b #name></b><span #note class="icon-tip-note"></span></span>`,
+  template: `<ng-content /><span #tip class="icon-tip" aria-hidden="true"><b #name></b><span #note class="icon-tip-note"></span><span #details class="icon-tip-details"></span><span #description class="icon-tip-description"></span></span>`,
   styleUrl: './icon-tips.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IconTipsComponent {
+  readonly spells = input<ReadonlyMap<number, IconTipSpell>>(new Map());
+
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly document = inject(DOCUMENT);
   private readonly tip = viewChild.required<ElementRef<HTMLElement>>('tip');
   private readonly name = viewChild.required<ElementRef<HTMLElement>>('name');
   private readonly note = viewChild.required<ElementRef<HTMLElement>>('note');
+  private readonly details = viewChild.required<ElementRef<HTMLElement>>('details');
+  private readonly description = viewChild.required<ElementRef<HTMLElement>>('description');
   private anchor?: HTMLElement;
   private shownByFocus = false;
   private followFrame = 0;
@@ -100,10 +96,8 @@ export class IconTipsComponent {
     });
   }
 
-  /** Shows the tooltip of the `data-tip` element the event came from, or hides it for anything else. */
   private showFor(target: EventTarget | null, byFocus: boolean): void {
     const anchor = target instanceof Element ? target.closest<HTMLElement>('[data-tip]') : null;
-    // Focus from a mouse click or a tap shows nothing: only keyboard focus does.
     if (!anchor || !this.host.contains(anchor) || (byFocus && !anchor.matches(':focus-visible'))) {
       this.hide();
       return;
@@ -113,9 +107,12 @@ export class IconTipsComponent {
     }
 
     const tip = this.tip().nativeElement;
+    const spell = this.spells().get(Number(anchor.dataset['tipSpell']));
     this.name().nativeElement.textContent = anchor.dataset['tip'] ?? '';
     this.name().nativeElement.style.color = anchor.dataset['tipColor'] ?? '';
     this.note().nativeElement.textContent = anchor.dataset['tipNote'] ?? '';
+    this.details().nativeElement.textContent = spell?.details ?? '';
+    this.description().nativeElement.textContent = spell?.description ?? '';
     this.place(tip, anchor.getBoundingClientRect());
     tip.classList.add('shown');
 

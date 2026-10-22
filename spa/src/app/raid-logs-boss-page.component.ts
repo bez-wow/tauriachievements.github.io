@@ -12,7 +12,7 @@ import { FilterDropdownCoordinatorService } from './filter-dropdown-coordinator.
 import { FilterDropdownOption, FilterDropdownValue } from './filter-dropdown.types';
 import { GlideDirective } from './glide.directive';
 import { IconTipsComponent } from './icon-tips.component';
-import { CLASS_NAMES } from './mythic-plus';
+import { CLASS_FILTER_OPTIONS } from './mythic-plus';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
   ITEM_QUALITY_COLORS,
@@ -24,6 +24,7 @@ import {
   RaidMetric,
   RaidTalent,
   RaidTalentTable,
+  RaidTalentTooltips,
   RankedPerformance,
   characterKey,
   defaultDifficulty,
@@ -116,6 +117,7 @@ export class RaidLogsBossPageComponent {
   readonly kills = signal<RaidKillDetails[]>([]);
   /** Empty until talents.json loads, or if it doesn't: the rows then show no talents. */
   private readonly talentTable = signal<RaidTalentTable>(new Map());
+  readonly talentTooltips = signal<RaidTalentTooltips>(new Map());
   readonly isLoading = signal(true);
   readonly loadError = signal<string | undefined>(undefined);
   readonly now = signal(Date.now());
@@ -213,15 +215,7 @@ export class RaidLogsBossPageComponent {
     ];
   });
 
-  readonly classOptions: ReadonlyArray<FilterDropdownOption> = [
-    { value: undefined, label: 'All classes' },
-    ...Object.entries(CLASS_NAMES).map(([id, name]) => ({
-      value: Number(id),
-      label: name,
-      icon: getClassIconPath(Number(id)),
-      color: getClassColor(Number(id))
-    }))
-  ];
+  readonly classOptions = CLASS_FILTER_OPTIONS;
 
   /** Only the specs the tab ranks: healers on Healing, everyone else on Damage. */
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
@@ -403,6 +397,7 @@ export class RaidLogsBossPageComponent {
           this.kills.set(kills);
           this.now.set(Date.now());
           this.isLoading.set(false);
+          this.loadTalentTooltips();
         },
         error: error => {
           console.error('Failed to load the boss kills:', error);
@@ -410,6 +405,12 @@ export class RaidLogsBossPageComponent {
           this.isLoading.set(false);
         }
       });
+  }
+
+  private loadTalentTooltips(): void {
+    this.data.talentTooltips()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tooltips => this.talentTooltips.set(tooltips));
   }
 
   /** In-page filters keep the scroll position: no navigation, only the address bar changes. */

@@ -71,6 +71,22 @@ explains it together.
   measured against everyone.
 - **Tests:** `raid-logs.spec.ts`.
 
+## Raid spec performance
+
+- **Code:** `scoresBySpec`, `topAverage` and `specPerformance` in `spa/src/app/raid-logs.ts`;
+  `sortByPerformance` in `spa/src/app/raid-talents.ts`.
+- Every character gets the raid leaderboard score for each spec they played, as if that spec
+  were picked on the leaderboard. A spec's performance is the average of its best
+  `SPEC_TOP_SCORES` (10) character scores, or of all of them when it has fewer, and 0 when
+  nobody played it. Only the best ten count, so attendance doesn't drag a spec down.
+- Each difficulty is scored on its own, over every boss of the raid.
+- Where it shows:
+  - Raid Stats → Performance draws it as bars.
+  - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
+    the order is the same whichever boss is picked, and a picked class shows its specs in the
+    game's order instead.
+- **Tests:** `raid-logs.spec.ts`, `raid-talents.spec.ts`.
+
 ## Arena titles
 
 - **Code:** `ARENA_TITLES`, `getTitleCutoffs` and `getTitle` in `spa/src/app/arena-games.ts`.

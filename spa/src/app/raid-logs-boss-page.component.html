@@ -123,8 +123,7 @@
         <a class="talents-link" routerLink="/raid-logs/talents" [queryParams]="talentsQueryParams()">Which talents do they pick? <span aria-hidden="true">›</span></a>
       </p>
 
-      <!-- Damage / Healing. The talent and trinket icons name themselves in app-icon-tips. -->
-      <app-icon-tips class="table-scroll" *ngIf="isRanking() && rankings().length">
+      <app-icon-tips class="table-scroll" *ngIf="isRanking() && rankings().length" [spells]="talentTooltips()">
         <table>
           <thead>
             <tr>
@@ -173,7 +172,8 @@
                       target="_blank"
                       rel="noopener"
                       [attr.aria-label]="talent.name"
-                      [attr.data-tip]="talent.name">
+                      [attr.data-tip]="talent.name"
+                      [attr.data-tip-spell]="talent.id">
                       <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
                     </a>
                   </ng-container>

@@ -2,7 +2,6 @@
 
 :host { display: block; }
 
-// Over the sticky update bar (z-index 1200), like the guild pages' legendary tooltips.
 .icon-tip {
   @include tooltip-box;
   @include tooltip-pop;
@@ -11,7 +10,7 @@
   top: 0;
   left: 0;
   display: flex;
-  max-width: min(260px, calc(100vw - 16px));
+  max-width: min(300px, calc(100vw - 16px));
   flex-direction: column;
   gap: 1px;
   padding: 5px 9px;
@@ -24,9 +23,18 @@
   b { font-weight: 700; }
 }
 
-.icon-tip-note {
+.icon-tip-note,
+.icon-tip-details {
   color: #9a9a9a;
   font-size: .72rem;
+
+  &:empty { display: none; }
+}
+
+.icon-tip-description {
+  margin-top: 4px;
+  color: #e0e0e0;
+  white-space: pre-line;
 
   &:empty { display: none; }
 }

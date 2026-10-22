@@ -49,6 +49,7 @@ internal static class Program
             using var apiClient = new TauriApiClient(settings.TauriApi);
             using var itemSource = new TauriShootItemSource();
             using var talentSource = new TauriShootTalentSource();
+            using var tooltipSource = new TauriShootSpellTooltipSource();
             var guildDirectory = PlayerGuildDirectory.Load(
                 Path.Combine(frontendSrc, "Players.csv")
             );
@@ -57,6 +58,7 @@ internal static class Program
                 apiClient,
                 itemSource,
                 talentSource,
+                tooltipSource,
                 guildDirectory
             );
 
@@ -95,6 +97,19 @@ internal static class Program
                     ? $"Talents: {result.TalentSpecCount} specs"
                     : "Talents: TauriShoot could not be read; the last talents.json stays"
             );
+            if (result.TalentTooltips is { } tooltips)
+            {
+                Console.WriteLine(
+                    $"Talent tooltips: {tooltips.WrittenCount} of {tooltips.SpellCount} spells, "
+                        + $"{tooltips.LookedUpCount} looked up on TauriShoot"
+                );
+                if (tooltips.WrittenCount < tooltips.SpellCount)
+                {
+                    Console.Error.WriteLine(
+                        $"{tooltips.SpellCount - tooltips.WrittenCount} talent tooltips could not be read; they are looked up again next run."
+                    );
+                }
+            }
             Console.WriteLine($"Output: {result.OutputDirectory}");
 
             return 0;

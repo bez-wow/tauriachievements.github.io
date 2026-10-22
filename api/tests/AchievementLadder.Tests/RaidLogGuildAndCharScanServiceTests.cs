@@ -165,6 +165,7 @@ public sealed class RaidLogGuildAndCharScanServiceTests
             DateTimeOffset.UnixEpoch,
             null,
             null,
+            null,
             CancellationToken.None
         );
     }

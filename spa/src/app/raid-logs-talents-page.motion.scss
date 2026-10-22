@@ -1,0 +1,18 @@
+@use './raid-logs-shared' as *;
+
+@include motion-safe {
+  .spec-card:hover { translate: 0 -2px; }
+
+  .share-bar > span, .meter > span {
+    transform-origin: left;
+    animation: mp-grow-x 700ms var(--ease-out) both;
+  }
+
+  .tier {
+    animation: mp-card-rise 420ms var(--ease-out) both;
+
+    @for $i from 1 through 7 {
+      &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
+    }
+  }
+}

@@ -166,44 +166,45 @@ $difficulty-colors: (
   }
 }
 
-// LFR / Normal / Heroic / Mythic. The picked one glides (appGlide).
-@mixin difficulty-switch {
-  .difficulty-switch {
+@mixin segmented-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid $raid-line;
+  border-radius: 7px;
+  background: #111;
+
+  @include glide-pill;
+
+  button {
     display: inline-flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 4px;
-    border: 1px solid $raid-line;
-    border-radius: 7px;
-    background: #111;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
 
-    @include glide-pill;
-
-    button {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 13px;
-      border: 0;
-      border-radius: 4px;
-      background: transparent;
-      color: #bdbdbd;
-      font: inherit;
-      font-size: .85rem;
-      font-weight: 600;
-      cursor: pointer;
-
-      &.active { background: #2e2716; color: #fff; }
-      &:hover:not(:disabled) { color: #fff; }
-      &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-      &:disabled { opacity: .4; cursor: not-allowed; }
-    }
-
-    @media (max-width: 640px) {
-      gap: 2px;
-      button { gap: 5px; padding: 6px 8px; font-size: .8rem; }
-    }
+    &.active { background: #2e2716; color: #fff; }
+    &:hover:not(:disabled) { color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+    &:disabled { opacity: .4; cursor: not-allowed; }
   }
+
+  @media (max-width: 640px) {
+    gap: 2px;
+    button { gap: 5px; padding: 6px 8px; font-size: .8rem; }
+  }
+}
+
+@mixin difficulty-switch {
+  .difficulty-switch { @include segmented-switch; }
 
   @include difficulty-colors;
 }

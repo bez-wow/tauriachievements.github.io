@@ -8,7 +8,7 @@ import {
   RaidBoss,
   RaidDifficulty,
   RaidKillDetails,
-  RaidRole,
+  RoleFilter,
   SPEC_TOP_SCORES,
   SpecCharacterScore,
   formatScoreTick,
@@ -41,17 +41,11 @@ interface ClassGroup {
   specs: SpecBar[];
 }
 
-export type RoleFilter = RaidRole | 'all';
 export type ChartView = 'popularity' | 'performance';
 
 /** The chart view a `?view=` value names; Popularity for anything else. */
 export function parseChartView(value: string | null | undefined): ChartView {
   return value === 'performance' ? 'performance' : 'popularity';
-}
-
-/** The role a `?role=` value names; all roles for anything else. */
-export function parseRoleFilter(value: string | null | undefined): RoleFilter {
-  return value === 'tank' || value === 'healer' || value === 'dps' ? value : 'all';
 }
 
 /**

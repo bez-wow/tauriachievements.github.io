@@ -4,6 +4,7 @@ import {
   RAID_GENDERS_PATH,
   RAID_LOGS_DATA_DIR,
   RAID_TALENTS_PATH,
+  RAID_TALENT_TOOLTIPS_PATH,
   RaidBoss,
   RaidBossFile,
   RaidDifficulty,
@@ -13,11 +14,14 @@ import {
   RaidLogsIndex,
   RaidLogsIndexFile,
   RaidTalentTable,
+  RaidTalentTooltips,
+  RaidTalentTooltipsFile,
   RaidTalentsFile,
   bossFilePath,
   decodeBossFile,
   decodeGenders,
   decodeIndex,
+  decodeTalentTooltips,
   decodeTalents,
   realmSlug
 } from '../raid-logs';
@@ -98,6 +102,16 @@ export class RaidLogsDataService {
       catchError((error: unknown) => {
         console.warn('Could not load the talents; the boss rankings show none.', error);
         return of(new Map() as RaidTalentTable);
+      })
+    ));
+  }
+
+  talentTooltips(): Observable<RaidTalentTooltips> {
+    return this.memoize('talentTooltips', () => this.dataFiles.fetchJson<RaidTalentTooltipsFile>(RAID_TALENT_TOOLTIPS_PATH).pipe(
+      map(decodeTalentTooltips),
+      catchError((error: unknown) => {
+        console.warn('Could not load the talent tooltips; talents show their names only.', error);
+        return of(new Map() as RaidTalentTooltips);
       })
     ));
   }

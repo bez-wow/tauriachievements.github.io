@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { MAX_SCORE, RaidBoss, RaidDifficulty, RaidKillDetails, RaidMember, RaidSpec } from './raid-logs';
-import { RaidSpecPopularityChartComponent, parseChartView, parseRoleFilter } from './raid-spec-popularity-chart.component';
+import { RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 
 const DIFFICULTIES: RaidDifficulty[] = [
   { id: 14, slug: 'normal', name: 'Normal', shortName: 'N', kills: 2 },
@@ -173,11 +173,9 @@ describe('RaidSpecPopularityChartComponent', () => {
   });
 });
 
-describe('parseChartView and parseRoleFilter', () => {
-  it('read the address bar, falling back to the defaults', () => {
+describe('parseChartView', () => {
+  it('reads the address bar, falling back to Popularity', () => {
     expect(['performance', 'popularity', 'nonsense', null].map(parseChartView))
       .toEqual(['performance', 'popularity', 'popularity', 'popularity']);
-    expect(['tank', 'healer', 'dps', 'heal', null].map(parseRoleFilter))
-      .toEqual(['tank', 'healer', 'dps', 'all', 'all']);
   });
 });
