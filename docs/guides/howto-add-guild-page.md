@@ -1,8 +1,10 @@
 # How to add a guild page
 
 Guild pages are unlisted statistics pages, one per guild, at `/<key>-<8 hex>` (for example
-`/endless-f8c2a91d`). All of them are `Endless6531PageComponent`, reading
-`spa/src/guild-analysis/<key>.json`, which `api/Guildkukker` writes.
+`/endless-f8c2a91d`). All of them are `GuildAnalysisPageComponent`, reading
+`spa/src/guild-analysis/<key>.json`, which `api/Guildkukker` writes. `GUILD_PAGES` in
+`spa/src/app/features/guild-analysis/guild-analysis.ts` lists them, and
+`guild-analysis.routes.ts` makes one route per entry.
 
 The owner asks for these by guild name and realm. They're routine and don't need an
 architecture discussion.
@@ -12,23 +14,18 @@ architecture discussion.
 1. **Pick the key.** It's the guild name, lowercased and kebab-cased, with accents dropped
    ("Témérité" → `temerite`). Guildkukker names the JSON file the same way. Check the first run's
    output file name before you rely on it.
-2. **`spa/src/app/guild-analysis.ts`:** add the key to the `GuildAnalysisKey` union.
-3. **`spa/src/app/app.routes.ts`:** copy one guild route block and change `path` and
-   `data.guild`. The path is `<key>-` followed by 8 random hex characters, so the address can't
-   be guessed:
+2. **`GUILD_PAGES` in `spa/src/app/features/guild-analysis/guild-analysis.ts`:** add one
+   line. The page's address is the key, a hyphen and `hash`, 8 random hex characters, so it
+   can't be guessed. `name` and `realm` show until the scan's own guild details load:
 
    ```ts
-   {
-     path: '<key>-<8 hex>',
-     loadComponent: () => import('./endless6531-page.component')
-       .then(module => module.Endless6531PageComponent),
-     data: { guild: '<key>' },
-     resolve: { analysis: guildAnalysisResolver }
-   },
+   { key: '<key>', hash: '<8 hex>', name: '<Guild Name>', realm: '<Realm>' },
    ```
 
    Generate the hex with, for example,
-   `node -e "console.log(require('crypto').randomBytes(4).toString('hex'))"`.
+   `node -e "console.log(require('crypto').randomBytes(4).toString('hex'))"`. Nothing else in
+   the app changes: the route comes from the table.
+3. **`spa/e2e/visual-pages.ts`:** add the page, so the visual check covers it.
 4. **`api/guild-analysis.cmd`:** add `call :ScanGuild "<Realm>" "<Guild Name>"` with its
    `if errorlevel 1 goto :ScanFailed` line, so the daily update keeps the page fresh. The realm
    is `Evermoon`, `Tauri` or `WoD`.

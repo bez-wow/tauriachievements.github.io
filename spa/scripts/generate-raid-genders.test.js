@@ -6,7 +6,6 @@ function player(name, realm, playerClass, gender) {
   return { name, realm, playerClass, gender };
 }
 
-// [name, realm, class, race, gender, guild], as the boss files have them.
 function raider(name, realm, classId, gender) {
   return [name, realm, classId, 10, gender, ""];
 }

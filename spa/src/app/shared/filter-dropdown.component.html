@@ -1,0 +1,95 @@
+<div
+  class="dropdown"
+  [class.open]="isOpen"
+  [class.has-icons]="showIcons()"
+  [class.compact]="compact()"
+  [class.has-selection]="highlightWhenSelected() && hasSelectedValue">
+  <button
+    #trigger
+    [id]="triggerId()"
+    type="button"
+    class="filter-select dropdown-trigger"
+    [class.no-icon]="showIcons() && !hasSelectedIcon"
+    aria-haspopup="listbox"
+    [disabled]="disabled()"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-controls]="dropdownId() + 'Menu'"
+    [attr.aria-expanded]="isOpen"
+    (click)="toggleMenu()"
+    (focus)="onTriggerFocus()"
+    (keydown)="onTriggerKeydown($event)">
+    @if (widthLabels(); as labels) {
+      <span class="trigger-fit">
+        <span class="trigger-current"><ng-container *ngTemplateOutlet="currentSelection" /></span>
+        @for (label of labels; track label) {
+          <span class="trigger-sizer" aria-hidden="true">
+            @if (showIcons()) {
+              <span class="option-icon"></span>
+            }
+            <span class="option-label">{{ label }}</span>
+          </span>
+        }
+      </span>
+    } @else {
+      @if (showIcons()) {
+        @if (hasSelectedIcon) {
+          <img
+            [src]="displaySelectedIcon"
+            [alt]="displaySelectedLabel + ' icon'"
+            class="option-icon" />
+        }
+        @if (!hasSelectedIcon) {
+          <span class="option-icon placeholder"></span>
+        }
+      }
+      <span class="option-label" [style.color]="displaySelectedColor">{{ displaySelectedLabel }}</span>
+    }
+    <ng-template #currentSelection>
+      @if (showIcons()) {
+        @if (hasSelectedIcon) {
+          <img
+            [src]="displaySelectedIcon"
+            [alt]="displaySelectedLabel + ' icon'"
+            class="option-icon" />
+        }
+        @if (!hasSelectedIcon) {
+          <span class="option-icon placeholder"></span>
+        }
+      }
+      <span class="option-label" [style.color]="displaySelectedColor">{{ displaySelectedLabel }}</span>
+    </ng-template>
+  </button>
+
+  <div
+    [id]="dropdownId() + 'Menu'"
+    class="dropdown-menu"
+    role="listbox"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-hidden]="!isOpen">
+    @for (option of options(); track option.label + ':' + $index; let i = $index) {
+      <button
+        #optionButton
+        type="button"
+        class="dropdown-option"
+        [class.no-icon]="showIcons() && !option.icon"
+        role="option"
+        [attr.aria-selected]="isOptionSelected(option)"
+        [attr.tabindex]="isOpen ? 0 : -1"
+        (click)="selectOption(option)"
+        (keydown)="onOptionKeydown($event, i)">
+        @if (showIcons()) {
+          @if (option.icon) {
+            <img
+              [src]="option.icon"
+              [alt]="option.label + ' icon'"
+              class="option-icon" />
+          }
+          @if (!option.icon) {
+            <span class="option-icon placeholder"></span>
+          }
+        }
+        <span class="option-label" [style.color]="option.color">{{ option.label }}</span>
+      </button>
+    }
+  </div>
+</div>

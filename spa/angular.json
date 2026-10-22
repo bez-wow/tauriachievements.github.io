@@ -26,16 +26,12 @@
             "outputPath": "dist/tauri-achievements",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": [
-              "@angular/localize/init"
-            ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "preserveSymlinks": true,
             "assets": [
               "src/404.html",
               "src/assets",
-              "src/characterCollection",
               "src/guild-analysis",
               "src/RareAchievements.json",
               "src/RareItems.json",
@@ -97,12 +93,6 @@
             }
           },
           "defaultConfiguration": "development"
-        },
-        "extract-i18n": {
-          "builder": "@angular/build:extract-i18n",
-          "options": {
-            "buildTarget": "tauri-achievements:build"
-          }
         },
         "test": {
           "builder": "@angular/build:unit-test",

@@ -1,0 +1,121 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include back-link;
+@include summary-tiles;
+@include sections;
+@include raid-table;
+@include character-cell;
+@include faction-marks;
+@include pager;
+@include ranking-toolbar;
+
+.raid-page { @include raid-page; }
+
+.boss-picker {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.boss-pick {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 4px;
+  border: 1px solid $raid-line;
+  border-radius: 7px;
+  background: $raid-card;
+  color: #bdbdbd;
+  font-size: .72rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+
+  img { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; opacity: .75; }
+  span { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
+
+  &:hover { border-color: rgba(247, 181, 0, .35); color: #fff; img { opacity: 1; } }
+  &.active { border-color: rgba(247, 181, 0, .7); background: #1d1a10; color: #fff; img { opacity: 1; } }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.boss-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 18px;
+  border: 1px solid $raid-line;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(64, 200, 120, .14), transparent 45%),
+    radial-gradient(circle at 95% 120%, rgba(120, 40, 160, .18), transparent 50%),
+    #101210;
+
+  app-raid-difficulty-switch { margin-left: auto; }
+}
+
+.boss-portrait { @include boss-portrait(64px); }
+.boss-heading { min-width: 0; flex: 1 1 260px; }
+.boss-heading h1 { margin: 2px 0 0; color: #fff; font-size: 1.55rem; line-height: 1.2; }
+.eyebrow { margin: 0; color: $gold; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
+
+.talents-link {
+  margin-left: 6px;
+  color: $gold;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+}
+
+.icons { display: inline-flex; gap: 3px; vertical-align: middle; }
+
+.icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid #000;
+  border-radius: 3px;
+  background: #0d0d0d;
+
+  img { display: block; width: 100%; height: 100%; }
+
+  &.empty { border: 1px dashed #3a3a3a; background: none; }
+}
+
+td a.icon:hover img { filter: brightness(1.25); }
+
+.kill-link { display: inline-flex; align-items: baseline; gap: 8px; }
+.guild-cell { display: inline-flex; align-items: center; gap: 8px; }
+.realm { font-size: .78rem; }
+td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
+
+@media (max-width: 1100px) {
+  .tablet-hidden { display: none; }
+}
+
+@media (max-width: 900px) {
+  .boss-picker { grid-template-columns: repeat(7, 60px); overflow-x: auto; padding-bottom: 4px; }
+  .narrow-hidden, .kill-link .muted { display: none; }
+}
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .boss-header { padding: 14px; }
+  .boss-header app-raid-difficulty-switch { margin-left: 0; }
+  .boss-portrait { width: 52px; height: 52px; }
+  .boss-heading h1 { font-size: 1.25rem; }
+  .col-optional { display: none; }
+}

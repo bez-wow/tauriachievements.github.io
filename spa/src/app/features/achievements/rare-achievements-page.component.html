@@ -1,0 +1,182 @@
+<div class="ladder-container rare-achievements-container">
+  <section class="ladder-header rare-achievements-header" aria-label="Rare achievement filters">
+    <div class="rare-achievements-filter-row rare-achievements-filter-row--primary">
+      <div class="filter-group reset-group">
+        <button type="button" class="reset-button" (click)="resetFilter()">Reset</button>
+      </div>
+
+      @for (dropdown of achievementDropdowns(); track dropdown.key) {
+        <div
+          class="filter-group filter-group--achievement"
+          >
+          <app-filter-dropdown
+            [dropdownId]="dropdown.dropdownId"
+            [triggerId]="dropdown.triggerId"
+            [ariaLabel]="dropdown.ariaLabel"
+            [options]="dropdown.options"
+            [selectedValue]="dropdown.selectedValue"
+            [selectedLabel]="dropdown.selectedLabel"
+            [highlightWhenSelected]="true"
+            (selectionChange)="onAchievementSelection($event)" />
+        </div>
+      }
+    </div>
+
+    <div class="rare-achievements-filter-row rare-achievements-filter-row--secondary">
+      <div class="filter-group filter-group--secondary">
+        <app-filter-dropdown
+          dropdownId="rareAchievementRealm"
+          triggerId="rareAchievementRealmTrigger"
+          ariaLabel="Filter by realm"
+          [options]="realmFilterOptions"
+          [selectedValue]="selectedRealm()"
+          [selectedLabel]="selectedRealmLabel()"
+          (selectionChange)="onRealmSelection($event)" />
+      </div>
+
+      <div class="filter-group filter-group--secondary">
+        <app-filter-dropdown
+          dropdownId="rareAchievementClass"
+          triggerId="rareAchievementClassTrigger"
+          ariaLabel="Filter by class"
+          [options]="classFilterOptions"
+          [selectedValue]="selectedClassId()"
+          [selectedLabel]="selectedClassLabel()"
+          [selectedIcon]="selectedClassIcon()"
+          [showIcons]="true"
+          (selectionChange)="onClassSelection($event)" />
+      </div>
+
+      <div class="filter-group filter-group--search">
+        <input
+          id="rareAchievementNameGuildSearch"
+          type="search"
+          class="filter-select search-input"
+          [value]="searchQuery()"
+          placeholder="Name or guild"
+          aria-label="Search rare achievement characters by name or guild"
+          (input)="onSearchInput($event)" />
+      </div>
+    </div>
+  </section>
+
+  @if (isLoading()) {
+    <div class="ladder-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Loading rare achievement data...</h2>
+    </div>
+  }
+
+  @if (!isLoading() && loadError()) {
+    <div class="ladder-feedback error">
+      <h2>Could not load rare achievement data</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+    </div>
+  }
+
+  @if (showSelectionPrompt()) {
+    <div class="ladder-feedback empty">
+      <h2>Select a rare achievement</h2>
+      <p>Choose one from the PvP dropdowns above to list every tracked character who owns it, or switch to one of the count rankings for mounts and rank 1 titles.</p>
+    </div>
+  }
+
+  @if (showEmptyState()) {
+    <div class="ladder-feedback empty">
+      <h2>No characters found</h2>
+      <p>{{ emptyStateMessage() }}</p>
+    </div>
+  }
+
+  @if (hasMatches()) {
+    <div class="wow-table-scroll">
+      <table class="wow-table wow-table-rare-achievements">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Race / Class</th>
+            <th>Realm</th>
+            <th>Guild</th>
+            <th>{{ metricColumnLabel() }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (character of matchingCharacters(); track `${character.realm}::${character.name}`) {
+            <tr [class]="character.faction">
+              <td>{{ character.rank }}</td>
+              <td>
+                <div class="player-identity">
+                  <a
+                    class="player-name clickable"
+                    [class.player-name--gladiator-title]="character.gladiatorTitleCount > 0"
+                    [class.player-name--gladiator-mount]="character.gladiatorMountCount > 0"
+                    [class.player-name--rbg-hero-alliance]="character.ratedBattlegroundHeroCount > 0 && character.faction === 'Alliance'"
+                    [class.player-name--rbg-hero-horde]="character.ratedBattlegroundHeroCount > 0 && character.faction === 'Horde'"
+                    [class.player-name--realm-first]="character.realmFirstCount > 0"
+                    [class.player-name--scarab-lord]="character.hasScarabLord"
+                    [href]="getArmoryUrl(character.name, character.realm)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [title]="getCharacterLinkTitle(character)">
+                    <span class="tap-area" aria-hidden="true"></span>
+                    @if (character.ratedBattlegroundHeroCount > 0) {
+                      <span
+                        class="player-name-rbg-sigil"
+                        [class]="character.faction === 'Alliance' ? 'player-name-rbg-sigil--alliance' : 'player-name-rbg-sigil--horde'"
+                        aria-hidden="true">
+                        &#10022;
+                      </span>
+                    }
+                    {{ character.name }}
+                  </a>
+                </div>
+              </td>
+              <td>
+                <img
+                  [src]="character.raceIcon"
+                  [alt]="'Race ' + character.race + '-' + character.gender"
+                  class="icon race-icon"
+                  loading="lazy"
+                  (error)="onImageError($event)" />
+                <img
+                  [src]="character.classIcon"
+                  [alt]="'Class ' + character.classId"
+                  class="icon class-icon"
+                  loading="lazy"
+                  (error)="onImageError($event)" />
+              </td>
+              <td>{{ character.realm }}</td>
+              <td>
+                @if (character.guild) {
+                  <a
+                    class="guild-name clickable"
+                    [href]="getGuildArmoryUrl(character.guild, character.realm)"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    {{ character.guild }}
+                  </a>
+                }
+              </td>
+              <td>
+                @if (isCountRanking()) {
+                  <span class="rare-achievement-count">
+                    {{ countRankingMetric() === 'gladiatorTitleCount' ? character.gladiatorTitleCount : character.gladiatorMountCount }}
+                  </span>
+                } @else {
+                  <span
+                    class="rare-achievement-date"
+                    [class.is-unknown]="!character.obtainedAt"
+                    [attr.title]="character.obtainedAt ?? 'Unknown obtain date'">
+                    {{ character.obtainedAtLabel }}
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

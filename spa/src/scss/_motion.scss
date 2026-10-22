@@ -1,17 +1,6 @@
-// Motion shared by the whole site: easing and duration tokens, the page-change transition, and
-// every @keyframes the Mythic+ and support pages animate with.
-//
-// Why the keyframes live here and not in the components: Angular renames a component's own
-// @keyframes (emulated encapsulation), but only rewrites references to them in top-level rules.
-// The M+ animations sit inside @media (prefers-reduced-motion: no-preference), where a reference
-// keeps the plain name and would miss the renamed keyframes. Global keyframes are never renamed,
-// so the plain names match. Prefixed mp- so they can't collide with anything else.
-
 $gold: #f7b500;
 
 :root {
-  // --ease-spring overshoots by under 2%; keep it in step with SPRING in src/app/motion.ts, which
-  // the directives use for Web Animations.
   --ease-out: cubic-bezier(.16, 1, .3, 1);
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: linear(0, .006, .025 2.8%, .101 6.1%, .539 18.9%, .721 25.3%, .849 31.5%, .937 38.1%,
@@ -21,14 +10,8 @@ $gold: #f7b500;
   --dur-slow: 600ms;
 }
 
-// Text being decoded (DecodeDirective). The host's own text keeps its place but isn't painted;
-// an overlay of the same characters, each where the text has it, is drawn over it instead: glyphs
-// at first, then the real letters as they land. Global, as the directive makes these elements
-// itself. Hidden with -webkit-text-fill-color rather than color, so whatever takes currentColor
-// (an icon, a border) stays as it is.
 .is-decoding { -webkit-text-fill-color: transparent; }
 
-// What isn't decoded (aria-hidden) shows as ever, the overlay included.
 .is-decoding [aria-hidden='true'] { -webkit-text-fill-color: currentColor; }
 
 .decode-overlay {
@@ -50,11 +33,9 @@ $gold: #f7b500;
 
   &.is-scrambled { opacity: .45; }
 
-  // About to land: the bright edge of the wave.
   &.is-near { opacity: 1; }
 }
 
-// Text filled by a background-clip: text image (a gradient title): each character takes its slice.
 .decode-run.is-filled .decode-glyph {
   background-image: inherit;
   -webkit-background-clip: text;
@@ -62,15 +43,10 @@ $gold: #f7b500;
   -webkit-text-fill-color: transparent;
 }
 
-// Page changes (the router's withViewTransitions): the header stays where it is, the old page
-// fades out quickly and the new one rises into place, instead of the whole screen cross-fading.
 .update-bar { view-transition-name: update-bar; }
 
-// mix-blend-mode: normal; the browser's plus-lighter is made for a straight cross-fade and would
-// brighten the moment the two pages overlap.
 ::view-transition-old(root) { animation: var(--dur-fast) ease-in both mp-page-out; mix-blend-mode: normal; }
 ::view-transition-new(root) { animation: var(--dur) var(--ease-out) 40ms both mp-page-in; mix-blend-mode: normal; }
-// A character carried from one place to the next (characterTransitionName): glide, don't blink.
 ::view-transition-group(*.character) { animation-duration: 420ms; animation-timing-function: var(--ease-out); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -82,30 +58,25 @@ $gold: #f7b500;
 @keyframes mp-page-out { to { opacity: 0; } }
 @keyframes mp-page-in { from { opacity: 0; transform: translateY(8px); } }
 
-// Shared by the M+ panels (_mythic-plus-shared.scss)
 @keyframes mp-details-open { from { grid-template-rows: 0fr; } }
 @keyframes mp-details-close { to { grid-template-rows: 0fr; opacity: 0; } }
 @keyframes mp-details-content-in { from { opacity: 0; transform: translateY(-6px); } }
 @keyframes mp-fade-out { to { opacity: 0; } }
 
-// Leaderboard: the compare tray, its picks and count
 @keyframes mp-tray-in { from { opacity: 0; translate: 0 calc(100% + 24px); } }
 @keyframes mp-tray-out { to { opacity: 0; translate: 0 calc(100% + 24px); } }
 @keyframes mp-chip-in { from { opacity: 0; scale: .8; } }
 @keyframes mp-chip-out { to { opacity: 0; scale: .8; } }
 @keyframes mp-count-bump { from { color: $gold; scale: 1.5; } }
 
-// Site header: the menu drawer on narrow screens
 @keyframes mp-drawer-in { from { translate: -100% 0; } }
 
-// Charts (spec popularity, stats)
 @keyframes mp-bar-grow { from { height: 0; } }
 @keyframes mp-grow-y { from { transform: scaleY(0); } }
 @keyframes mp-grow-x { from { transform: scaleX(0); } }
 @keyframes mp-label-rise { from { opacity: 0; translate: 0 4px; } }
 @keyframes mp-label-slide { from { opacity: 0; translate: -6px 0; } }
 
-// Records
 @keyframes mp-card-rise { from { opacity: 0; translate: 0 14px; } }
 @keyframes mp-level-shine { to { background-position: 0 0; } }
 
@@ -115,8 +86,6 @@ $gold: #f7b500;
   100% { opacity: 1; transform: none; }
 }
 
-// Two values: the rail is a gradient layer over a colour layer, and a list of another length
-// wouldn't blend (it would jump from empty to full halfway).
 @keyframes mp-rail-fill { from { background-size: 100% 0%, auto; } }
 @keyframes mp-first-in { from { opacity: 0; translate: -10px 0; } }
 @keyframes mp-pill-pop { from { opacity: 0; scale: .5; } }
@@ -133,7 +102,6 @@ $gold: #f7b500;
   to { box-shadow: 0 0 26px 2px rgba(247, 181, 0, .35); }
 }
 
-// Compare
 @keyframes mp-crest-in { from { opacity: 0; scale: .88; translate: 0 8px; } }
 @keyframes mp-aura-in { from { opacity: 0; scale: .5; } }
 
@@ -145,13 +113,11 @@ $gold: #f7b500;
 
 @keyframes mp-delta-in { from { opacity: 0; translate: -4px 0; } }
 
-// Character profile
 @keyframes mp-rise { from { opacity: 0; translate: 0 8px; } }
 @keyframes mp-dot-pop { from { opacity: 0; scale: 0; } }
 @keyframes mp-panel-in { from { opacity: 0; translate: 0 -6px; } }
 @keyframes mp-panel-out { to { opacity: 0; translate: 0 -6px; } }
 
-// A flash of the score's own (quality) colour as it lands.
 @keyframes mp-score-land {
   0% { text-shadow: 0 0 0 transparent; }
   30% { text-shadow: 0 0 24px currentColor; }
@@ -160,7 +126,6 @@ $gold: #f7b500;
 @keyframes mp-line-draw { from { clip-path: inset(-12px 100% -12px -12px); } to { clip-path: inset(-12px); } }
 @keyframes mp-fade-in { from { opacity: 0; } }
 
-// Support page (support-page.motion.scss)
 @keyframes mp-materialize { from { opacity: 0; translate: 0 10px; filter: blur(6px); } }
 @keyframes mp-grid-scan { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @keyframes mp-grid-drift { to { translate: 0 220px; opacity: .35; } }
@@ -182,7 +147,6 @@ $gold: #f7b500;
   50% { box-shadow: 0 0 14px rgba(247, 181, 0, 1); }
 }
 
-// No 0% or 100%: the border lights up gold and goes back to its own colour.
 @keyframes mp-edge-flash { 30% { border-color: rgba(247, 181, 0, .3); } }
 
 @keyframes mp-ping {
@@ -190,10 +154,7 @@ $gold: #f7b500;
   70%, 100% { box-shadow: 0 0 0 6px rgba(247, 181, 0, 0); }
 }
 
-// The same sweep twice: the hover one needs a name of its own to play again on every hover.
 @keyframes mp-sheen { from { background-position: -150% 0; } to { background-position: 250% 0; } }
 @keyframes mp-sheen-hover { from { background-position: -150% 0; } to { background-position: 250% 0; } }
 
-// Scrubbed by the scroll position (animation-timeline: view()). Only a `from`, so the end is whatever
-// the element would show without it, including another animation that is playing on it.
 @keyframes mp-scroll-rise { from { opacity: 0; translate: 0 24px; scale: .97; } }

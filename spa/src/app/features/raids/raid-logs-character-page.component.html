@@ -1,0 +1,179 @@
+<main class="raid-page">
+  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: loaded()?.difficulty?.slug }">
+    <span aria-hidden="true">‹</span> Back to Raid Logs
+  </a>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Looking through the logs..." (retry)="loadData()">
+    @if (index(); as loadedIndex) {
+      <app-raid-difficulty-switch
+        [difficulties]="loadedIndex.difficulties"
+        [selected]="loaded()?.difficulty?.slug"
+        label="Look on another difficulty"
+        (selectedChange)="setDifficulty($event)" />
+    }
+  </app-load-state>
+
+  @if (!isLoading() && !loadError() && character(); as current) {
+    <header class="character-header" [style.--class-color]="classColor(current.classId)">
+      <span class="crest"><img [src]="classCrest(current.classId)" alt="" /></span>
+      <div class="character-heading">
+        <p class="eyebrow">{{ mainSpec()?.name }} {{ className(current.classId) }} · {{ current.realm }}</p>
+        <h1 [style.color]="classColor(current.classId)">{{ current.name }}</h1>
+        <p class="character-meta">
+          @if (current.guild) {
+            <span>&lt;{{ current.guild }}&gt;</span>
+          }
+          @if (armoryUrl(); as url) {
+            <a [href]="url" target="_blank" rel="noopener">Armory <span aria-hidden="true">↗</span></a>
+          }
+        </p>
+      </div>
+      @if (index(); as loadedIndex) {
+        <app-raid-difficulty-switch
+          [difficulties]="loadedIndex.difficulties"
+          [selected]="loaded()?.difficulty?.slug"
+          label="Show the character's kills on difficulty"
+          (selectedChange)="setDifficulty($event)" />
+      }
+    </header>
+
+    <dl class="summary">
+      @for (tile of summary(); track tile.label) {
+        <div>
+          <dt>{{ tile.label }}</dt>
+          <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+        </div>
+      }
+    </dl>
+
+    @if (loaded(); as data) {
+      <section class="section" aria-labelledby="character-bosses-title">
+        <header class="section-header">
+          <h2 id="character-bosses-title">Bosses <span class="difficulty-text" [class]="data.difficulty.slug">{{ data.difficulty.name }}</span></h2>
+          <div class="section-controls">
+            <div class="view-switch" role="tablist" aria-label="Rank by" appGlide>
+              <button type="button" role="tab" [class.active]="metric() === 'dps'" [attr.aria-selected]="metric() === 'dps'" (click)="setMetric('dps')">Damage</button>
+              <button type="button" role="tab" [class.active]="metric() === 'hps'" [attr.aria-selected]="metric() === 'hps'" (click)="setMetric('hps')">Healing</button>
+            </div>
+            <div class="view-switch comparison-switch" role="group" aria-label="Compare with" appGlide>
+              <button type="button" [class.active]="comparison() === 'all'" [attr.aria-pressed]="comparison() === 'all'" (click)="setComparison('all')">All players</button>
+              <button type="button" [class.active]="comparison() === 'class'" [attr.aria-pressed]="comparison() === 'class'" [title]="'Compare with ' + classPlural() + ' only'" (click)="setComparison('class')">
+                <img [src]="classIcon(current.classId)" alt="" /> Same class
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Boss</th>
+                <th scope="col" class="num">Best {{ metric() === 'hps' ? 'HPS' : 'DPS' }}</th>
+                <th scope="col" class="num" [title]="columnTitles().relative">Of best</th>
+                <th scope="col" class="num" [title]="columnTitles().rank">Rank</th>
+                <th scope="col" class="col-optional">Spec</th>
+                <th scope="col" class="num col-optional">Item level</th>
+                <th scope="col" class="num col-optional">Kills</th>
+                <th scope="col"><span class="visually-hidden">Log</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of bossRows(); track row.boss.slug) {
+                <tr [class.alive]="!row.kills">
+                  <td>
+                    <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="bossQueryParams()">
+                      <img [src]="row.boss.portrait" alt="" loading="lazy" />
+                      <span class="strong">{{ row.boss.shortName }}</span>
+                    </a>
+                  </td>
+                  <td class="num strong">{{ row.best ? formatPerSecond(row.value) : '' }}</td>
+                  <td class="num strong" [style.color]="qualityColor(row.relative)">{{ row.best ? percent(row.relative) : '' }}</td>
+                  <td class="num">
+                    @if (row.rank) {
+                      <span class="rank-cell">#{{ row.rank }} <span class="muted phone-hidden">/ {{ row.ranked | number }}</span></span>
+                    }
+                  </td>
+                  <td class="col-optional">
+                    @if (row.best?.member?.spec; as spec) {
+                      <span class="spec-cell">
+                        @if (spec.icon) {
+                          <img class="spec-icon" [src]="spec.icon" alt="" loading="lazy" />
+                        } {{ spec.name }}
+                        </span>
+                      }
+                    </td>
+                    <td class="num col-optional">{{ row.best?.member?.itemLevel ?? '' }}</td>
+                    <td class="num col-optional">{{ row.kills || '' }}</td>
+                    <td>
+                      @if (row.best; as best) {
+                        <a class="log-link" [routerLink]="logLink(best.kill)">Log <span aria-hidden="true">›</span></a>
+                      }
+                      @if (!row.kills) {
+                        <span class="muted">Not killed</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="list-note">
+            @if (comparison() === 'class') {
+              "Of best" and Rank compare with <span class="class-name" [style.color]="classColor(current.classId)">{{ classPlural() }}</span> only: every {{ ownClass() }}'s best kill of the boss on this difficulty.
+            } @else {Rank among every character's best kill of the boss on this difficulty.}
+            {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
+            @if (comparison() === 'class') {
+              The {{ metric() === 'hps' ? 'HPS' : 'DPS' }} score above still compares each boss with the best of all players, out of {{ maxScore }}:
+            } @else {The score averages "Of best" over the bosses, out of {{ maxScore }}:}
+            <a class="leaderboard-link" routerLink="/raid-logs/leaderboard" [queryParams]="{ difficulty: data.difficulty.slug, metric: metric() === 'hps' ? 'hps' : null }">see the leaderboard <span aria-hidden="true">›</span></a>
+          </p>
+        </section>
+      }
+
+      <section class="section" aria-labelledby="character-recent-title">
+        <header class="section-header">
+          <h2 id="character-recent-title">Latest kills</h2>
+        </header>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Boss</th>
+                <th scope="col" class="col-optional">Guild</th>
+                <th scope="col" class="col-optional">Spec</th>
+                <th scope="col" class="num">DPS</th>
+                <th scope="col" class="num">HPS</th>
+                <th scope="col" class="num col-optional">Time</th>
+                <th scope="col">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of recent(); track logKey(entry.kill)) {
+                <tr>
+                  <td>
+                    <a class="boss-cell" [routerLink]="logLink(entry.kill)">
+                      <img [src]="entry.kill.boss.portrait" alt="" loading="lazy" />
+                      <span class="strong">{{ entry.kill.boss.shortName }}</span>
+                    </a>
+                  </td>
+                  <td class="col-optional">
+                    @if (entry.kill.guild?.name) {
+                      <a [routerLink]="guildLink(entry.kill.guild!)" [queryParams]="{ difficulty: entry.kill.difficulty.slug }">{{ entry.kill.guild!.name }}</a>
+                    } @else {
+                      <span class="muted">Pickup group</span>
+                    }
+                  </td>
+                  <td class="col-optional">{{ entry.member.spec?.name }}</td>
+                  <td class="num" [class.strong]="metric() === 'dps'">{{ formatPerSecond(entry.member.dps) }}</td>
+                  <td class="num" [class.strong]="metric() === 'hps'">{{ formatPerSecond(entry.member.hps) }}</td>
+                  <td class="num col-optional">{{ formatFightTime(entry.kill.fightMs) }}</td>
+                  <td class="muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </main>

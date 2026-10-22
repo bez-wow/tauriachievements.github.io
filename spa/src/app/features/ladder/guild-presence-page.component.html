@@ -1,0 +1,169 @@
+<div class="guild-presence-container">
+  <section class="guild-presence-filters" aria-label="Guild ranking filters">
+    <div class="guild-presence-controls">
+      <div class="filter-group reset-group">
+        <button type="button" class="reset-button" (click)="resetFilters()">Reset</button>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="guildSourceLimitTrigger">Sample Size</label>
+        <app-filter-dropdown
+          dropdownId="guildSourceLimit"
+          triggerId="guildSourceLimitTrigger"
+          ariaLabel="Choose ladder sample size"
+          [options]="sourceLimitOptions"
+          [selectedValue]="sourceLimit()"
+          [selectedLabel]="selectedSourceLimitLabel()"
+          (selectionChange)="onSourceLimitSelection($event)" />
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="guildDisplayLimitTrigger">Guilds Shown</label>
+        <app-filter-dropdown
+          dropdownId="guildDisplayLimit"
+          triggerId="guildDisplayLimitTrigger"
+          ariaLabel="Choose how many guilds to display"
+          [options]="displayLimitOptions"
+          [selectedValue]="displayLimit()"
+          [selectedLabel]="selectedDisplayLimitLabel()"
+          (selectionChange)="onDisplayLimitSelection($event)" />
+      </div>
+    </div>
+
+    @if (hasGuildRankings()) {
+      <div class="guild-presence-filter-summary">
+        <span class="guild-presence-summary-pill">
+          Achievement Guilds: {{ allAchievementGuilds().length | number }}
+        </span>
+        <span class="guild-presence-summary-pill">
+          HK Guilds: {{ allHonorableKillGuilds().length | number }}
+        </span>
+      </div>
+    }
+  </section>
+
+  @if (showRefreshingBanner()) {
+    <div class="guild-presence-status-banner info">
+      <span>{{ syncMessage() || 'Refreshing guild rankings...' }}</span>
+    </div>
+  }
+
+  @if (showErrorBanner()) {
+    <div class="guild-presence-status-banner warning">
+      <span>{{ loadError() }}</span>
+      <button type="button" class="status-action" (click)="syncData()">Try again</button>
+    </div>
+  }
+
+  @if (showLoadingState()) {
+    <div class="guild-presence-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Loading guild rankings...</h2>
+    </div>
+  }
+
+  @if (showErrorState()) {
+    <div class="guild-presence-feedback error">
+      <h2>Could not load guild rankings</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+    </div>
+  }
+
+  @if (showEmptyState()) {
+    <div class="guild-presence-feedback empty">
+      <h2>No guild rankings available</h2>
+      <p>No guilded characters were found in the current top ladder samples.</p>
+    </div>
+  }
+
+  @if (hasGuildRankings()) {
+    <div class="guild-presence-grid">
+      <article class="guild-presence-panel">
+        <div class="guild-presence-panel-header">
+          <h2>Achievement Top {{ achievementLeaderboardSize() | number }}</h2>
+        </div>
+
+        @if (achievementGuilds().length > 0) {
+          <div class="guild-presence-table-wrap">
+            <table class="guild-presence-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Guild</th>
+                  <th>Realm</th>
+                  <th>Players</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (guild of achievementGuilds(); track guild.key) {
+                  <tr [class]="guild.faction">
+                    <td>{{ guild.rank }}</td>
+                    <td>
+                      <a
+                        class="guild-link"
+                        [href]="getGuildArmoryUrl(guild.guild, guild.realm)"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        {{ guild.guild }}
+                      </a>
+                      <span class="guild-meta">Best member: {{ guild.topMemberName }} ({{ guild.topMemberMetricValue | number }})</span>
+                    </td>
+                    <td>{{ guild.realm }}</td>
+                    <td class="metric-cell">{{ guild.playerCount | number }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="guild-presence-empty">No guilded characters were found in the achievement top sample.</p>
+        }
+      </article>
+
+      <article class="guild-presence-panel">
+        <div class="guild-presence-panel-header">
+          <h2>Honorable Kill Top {{ honorableKillLeaderboardSize() | number }}</h2>
+        </div>
+
+        @if (honorableKillGuilds().length > 0) {
+          <div class="guild-presence-table-wrap">
+            <table class="guild-presence-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Guild</th>
+                  <th>Realm</th>
+                  <th>Players</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (guild of honorableKillGuilds(); track guild.key) {
+                  <tr [class]="guild.faction">
+                    <td>{{ guild.rank }}</td>
+                    <td>
+                      <a
+                        class="guild-link"
+                        [href]="getGuildArmoryUrl(guild.guild, guild.realm)"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        {{ guild.guild }}
+                      </a>
+                      <span class="guild-meta">Best member: {{ guild.topMemberName }} ({{ guild.topMemberMetricValue | number }})</span>
+                    </td>
+                    <td>{{ guild.realm }}</td>
+                    <td class="metric-cell">{{ guild.playerCount | number }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="guild-presence-empty">No guilded characters were found in the honorable kill top sample.</p>
+        }
+      </article>
+    </div>
+  }
+</div>
+
+

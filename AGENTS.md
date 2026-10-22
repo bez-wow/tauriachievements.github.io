@@ -43,7 +43,9 @@ this file, so Claude Code reads it at the start of every session.
 ## Repository layout
 
 - `spa/` is the Angular 21 single-page app served by GitHub Pages at
-  <https://tauriachievements.github.io/>. All app code sits flat in `spa/src/app/`.
+  <https://tauriachievements.github.io/>. App code sits in `spa/src/app/`: `core/`, `shared/`,
+  `game/`, `players/`, and one folder per menu section under `features/`
+  ([docs/frontend.md](docs/frontend.md#where-things-go)).
 - `api/` holds .NET 10 console apps (batch jobs, not a web API). They call the Tauri API and
   write the data files into `spa/src/`. Solution: `api/AchievementLadder.sln`. Shared code is
   in `api/Tauri.Core`, tests in `api/tests`.
@@ -57,8 +59,7 @@ this file, so Claude Code reads it at the start of every session.
 - `docs/` holds the topic docs below.
 - `.claude/skills/angular-developer/` is Angular's agent skill, copied unchanged from
   [angular/skills](https://github.com/angular/skills). To update it, copy that folder again.
-  Where it disagrees with this file or `docs/`, these win: `npm run build`, not `ng build`;
-  `*ngIf` / `*ngFor`, not `@if` / `@for`.
+  Where it disagrees with this file or `docs/`, these win: `npm run build`, not `ng build`.
 
 There is no root package manager; each half has its own toolchain.
 
@@ -90,6 +91,10 @@ There is no root package manager; each half has its own toolchain.
   and fails.
 - `npm run build`: the production build. Always use `npm run build`, never plain `ng build`:
   the `prebuild` step generates data files the app needs.
+- `npm run test:visual:baseline`, then `npm run test:visual` after a change: Playwright
+  screenshots of every page at 360 and 1280 px against a local baseline, for changes that
+  should look the same ([docs/frontend.md](docs/frontend.md#visual-check)). Both run against
+  the last `npm run build`. The first run needs `npx playwright install chromium`.
 
 ### Backend (from `api/`)
 
@@ -114,9 +119,16 @@ There is no root package manager; each half has its own toolchain.
 ### Frontend
 
 - Standalone components with `ChangeDetectionStrategy.OnPush`, signals for state, and
-  `inject()` for dependencies (constructors only set up effects and listeners).
-- Templates use `*ngIf` / `*ngFor` with `CommonModule`; no template uses `@if` / `@for` yet.
-  Switching is an architectural decision (ask).
+  `inject()` for dependencies (constructors only set up effects and listeners). Inputs,
+  outputs and queries are the signal functions `input()`, `output()` and `viewChild()`, not
+  decorators; a value derived from inputs is a `computed`, not a getter. A spec sets an input
+  with `fixture.componentRef.setInput()`.
+- Templates use the built-in control flow: `@if`, `@for`, `@switch`. A `@for` tracks a key of
+  the item (`track row.id`), not a method. A block inside running text stays on one line
+  (`side by side@if (season) { · {{ season }}}.`): a line break inside it renders as a space.
+- A feature never imports from another feature; what two features share moves down into
+  `shared/`, `game/`, `core/` or `players/`. `scripts/app-boundaries.test.js` enforces this
+  ([docs/frontend.md](docs/frontend.md#where-things-go)).
 - Pure logic lives in `<feature>.ts` with `<feature>.spec.ts` beside it, for example
   `arena-games.ts` next to `arena-games-page.component.ts`. Components stay thin. Most tests
   cover the pure functions.

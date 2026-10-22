@@ -1,0 +1,98 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Raid logs, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && difficulty(); as current) {
+    <app-raid-difficulty-switch
+      class="page-switch"
+      [difficulties]="index()!.difficulties"
+      [selected]="current.slug"
+      label="Show the logs of difficulty"
+      (selectedChange)="setDifficulty($event)" />
+
+    <section class="section" aria-labelledby="bosses-title">
+      <header class="section-header">
+        <h2 id="bosses-title">Bosses <span class="difficulty-text" [class]="current.slug">{{ current.name }}</span></h2>
+        <p>Open a boss for its damage and healing rankings and every kill.</p>
+      </header>
+
+      <div class="boss-grid" [appReveal]="1400">
+        @for (card of bossCards(); track card.boss.slug; let index = $index) {
+          <a
+            class="boss-card"
+            [style.--i]="index"
+            [routerLink]="bossLink(card.boss)"
+            [queryParams]="{ difficulty: current.slug }"
+            [class.untouched]="!card.kills">
+            <header class="boss-head">
+              <img class="boss-portrait" [src]="card.boss.portrait" alt="" loading="lazy" />
+              <div class="boss-title">
+                <span class="boss-number">Boss {{ card.boss.index + 1 }}</span>
+                <h3>{{ card.boss.shortName }}</h3>
+              </div>
+              <span class="boss-kills"><strong>{{ card.kills | number }}</strong> kills</span>
+            </header>
+
+            @if (card.kills) {
+              <dl class="boss-stats">
+                @if (card.fastest; as fastest) {
+                  <div>
+                    <dt>Fastest</dt>
+                    <dd><strong>{{ formatFightTime(fastest.fightMs) }}</strong> <span class="stat-sub">{{ fastest.guild?.name || 'Pickup group' }}</span></dd>
+                  </div>
+                }
+                @if (card.dps; as dps) {
+                  <div>
+                    <dt>Top DPS</dt>
+                    <dd>
+                      <strong>{{ formatPerSecond(dps.perSecond) }}</strong>
+                      <span class="stat-sub" [style.color]="classColor(dps.classId)">{{ dps.name }}</span>
+                    </dd>
+                  </div>
+                }
+                @if (card.hps; as hps) {
+                  <div>
+                    <dt>Top HPS</dt>
+                    <dd>
+                      <strong>{{ formatPerSecond(hps.perSecond) }}</strong>
+                      <span class="stat-sub" [style.color]="classColor(hps.classId)">{{ hps.name }}</span>
+                    </dd>
+                  </div>
+                }
+              </dl>
+            } @else {
+              <p class="boss-alive">Not killed on {{ current.name }} yet.</p>
+            }
+          </a>
+        }
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="recent-title">
+      <header class="section-header">
+        <h2 id="recent-title">Latest kills</h2>
+        <p>Open a kill for its damage, healing and loot.</p>
+      </header>
+
+      <ol class="kill-list">
+        @for (kill of recentKills(); track logKey(kill)) {
+          <li>
+            <a class="kill-row" [routerLink]="logLink(kill)">
+              <img class="kill-portrait" [src]="kill.boss.portrait" alt="" loading="lazy" />
+              <span class="kill-main">
+                <span class="kill-boss">{{ kill.boss.shortName }}</span>
+                <span class="kill-guild">
+                  <span class="faction" [class]="'faction-' + kill.faction" aria-hidden="true"></span>
+                  {{ kill.guild?.name || 'Pickup group' }}
+                </span>
+              </span>
+              <span class="kill-time">{{ formatFightTime(kill.fightMs) }}</span>
+              <time class="kill-ago" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ ago(kill) }}</time>
+            </a>
+          </li>
+        }
+      </ol>
+    </section>
+  }
+</main>

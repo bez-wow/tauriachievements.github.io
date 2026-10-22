@@ -1,0 +1,120 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include back-link;
+@include summary-tiles;
+@include sections;
+@include raid-table;
+@include character-cell;
+@include difficulty-colors;
+
+.raid-page { @include raid-page; }
+
+.character-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 18px;
+  border: 1px solid $raid-line;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 6% 0%, color-mix(in srgb, var(--class-color, #fff) 18%, transparent), transparent 45%),
+    radial-gradient(circle at 95% 120%, rgba(120, 40, 160, .16), transparent 50%),
+    #101210;
+
+  app-raid-difficulty-switch { margin-left: auto; }
+}
+
+.crest {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  width: 68px;
+  height: 68px;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 50%;
+  background: #0b0b0b;
+
+  @include crest-glow(14px);
+
+  img { width: 56px; height: 56px; }
+}
+
+.character-heading { min-width: 0; flex: 1 1 260px; }
+.character-heading h1 { margin: 2px 0 2px; font-size: 1.6rem; line-height: 1.2; overflow-wrap: anywhere; }
+.eyebrow { margin: 0; color: #bdbdbd; font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+
+.character-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 0;
+  color: #bdbdbd;
+  font-size: .88rem;
+
+  a { color: $gold; font-weight: 600; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+}
+
+.view-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid $raid-line;
+  border-radius: 7px;
+  background: #111;
+
+  @include glide-pill;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #bdbdbd;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &.active { background: #2e2716; color: #fff; }
+    &:hover { color: #fff; }
+    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  }
+}
+
+.section-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.comparison-switch img { width: 16px; height: 16px; border-radius: 3px; }
+.class-name { font-weight: 600; }
+
+.boss-cell { display: inline-flex; align-items: center; gap: 10px; }
+.boss-cell img { @include boss-portrait(30px); }
+.spec-cell { display: inline-flex; align-items: center; gap: 6px; }
+.rank-cell { white-space: nowrap; }
+tr.alive td { color: $raid-muted; }
+td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
+.leaderboard-link { color: $gold; font-weight: 600; text-decoration: none; }
+.leaderboard-link:hover { text-decoration: underline; }
+.leaderboard-link:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+.list-note { margin: 0; color: $raid-muted; font-size: .8rem; }
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .boss-cell { gap: 8px; }
+  .boss-cell .strong { white-space: normal; }
+  .character-header { padding: 14px; }
+  .character-header app-raid-difficulty-switch { margin-left: 0; }
+  .crest { width: 56px; height: 56px; img { width: 46px; height: 46px; } }
+  .character-heading h1 { font-size: 1.3rem; }
+  .view-switch button { padding: 6px 9px; }
+  .col-optional { display: none; }
+}

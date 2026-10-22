@@ -1,0 +1,194 @@
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { Observable, of } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MythicPlusDungeonFile, MythicPlusIndex, MythicPlusPlayerEntry, NEWER_DATA_MESSAGE } from './mythic-plus';
+import { MythicPlusPageComponent } from './mythic-plus-page.component';
+import { DataFileService } from '../../core/data-file.service';
+
+function exportOf(tables: string, players: MythicPlusPlayerEntry[]): { index: MythicPlusIndex; cos: MythicPlusDungeonFile } {
+  return {
+    index: {
+      version: 1,
+      tables,
+      season: { id: 'legion-s1', name: 'Legion Season 1', raid: 'Emerald Nightmare', startDate: '2026-09-16' },
+      dungeons: [{ id: 'cos', challengeId: 210, shortName: 'COS', name: 'Court of Stars', timerSeconds: 1800, icon: '', runCount: 1, bestScore: 196 }],
+      affixes: [],
+      specs: [{ class: 11, name: 'Restoration', role: 'healer' }],
+      players
+    } as MythicPlusIndex,
+    cos: { version: 1, dungeon: 'cos', tables, runs: [[19, 1297289, 1791293804, 196, [], [[0, 0]]]] }
+  };
+}
+
+const oct5 = exportOf('aaaaaaaaaaaa', [['Fellicia', 'Evermoon', 'Yin Yang', 9, 1, 1]]);
+const oct7 = exportOf('bbbbbbbbbbbb', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+
+class FakeDataFiles {
+  refreshes = 0;
+  constructor(private held: MythicPlusIndex, private readonly deployed: ReturnType<typeof exportOf>) {}
+
+  getJson<T>(): Observable<T> {
+    return of(this.held as T);
+  }
+
+  fetchJson<T>(): Observable<T> {
+    return of(this.deployed.cos as T);
+  }
+
+  refresh(): void {
+    this.refreshes++;
+    this.held = this.deployed.index;
+  }
+}
+
+function createPage(dataFiles: FakeDataFiles): MythicPlusPageComponent {
+  TestBed.configureTestingModule({
+    imports: [MythicPlusPageComponent],
+    providers: [provideRouter([]), { provide: DataFileService, useValue: dataFiles }]
+  });
+  const page = TestBed.createComponent(MythicPlusPageComponent).componentInstance;
+  page.ngOnInit();
+  return page;
+}
+
+describe('MythicPlusPageComponent data from two exports', () => {
+  beforeEach(() => vi.spyOn(console, 'error').mockImplementation(() => undefined));
+
+  it('loads the index again when a dungeon file belongs to a newer export', () => {
+    const dataFiles = new FakeDataFiles(oct5.index, oct7);
+    const page = createPage(dataFiles);
+
+    expect(dataFiles.refreshes).toBe(1);
+    expect(page.loadError()).toBeUndefined();
+    const healer = page.runsByDungeon().get('cos')?.[0].roster[0];
+    expect(healer).toMatchObject({ name: 'Exkeito', class: 11, spec: 'Restoration' });
+  });
+
+  it('reports a mismatch that a fresh load does not fix instead of reloading again', () => {
+    const dataFiles = new FakeDataFiles(oct5.index, oct7);
+    dataFiles.refresh = () => dataFiles.refreshes++;
+    const page = createPage(dataFiles);
+
+    expect(dataFiles.refreshes).toBe(1);
+    expect(page.loadError()).toBe(NEWER_DATA_MESSAGE);
+    expect(page.runsByDungeon().size).toBe(0);
+  });
+
+  it('reads files from the same export without reloading', () => {
+    const dataFiles = new FakeDataFiles(oct7.index, oct7);
+    const page = createPage(dataFiles);
+
+    expect(dataFiles.refreshes).toBe(0);
+    expect(page.runsByDungeon().get('cos')?.[0].roster[0].name).toBe('Exkeito');
+  });
+
+  it('maps compact scan changes to overall season player rows only', () => {
+    const movement = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0]]);
+    movement.index.previousGeneratedAt = '2026-10-07T09:30:00Z';
+    movement.index.standings = [[196, 1, 4.5, 2]];
+    const page = createPage(new FakeDataFiles(movement.index, movement));
+
+    expect(page.pagedPlayers()[0]).toMatchObject({
+      key: 'Exkeito|Evermoon',
+      change: { score: 4.5, rank: 2 },
+      newSinceLastScan: false
+    });
+
+    page.selectDungeon('cos');
+    expect(page.pagedPlayers()[0].change).toBeUndefined();
+    expect(page.pagedPlayers()[0].newSinceLastScan).toBe(false);
+  });
+});
+
+describe('MythicPlusPageComponent character and realm in the URL', () => {
+  const both = exportOf('cccccccccccc', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
+  both.cos.runs = [
+    [19, 1297289, 1791293804, 196, [], [[0, 0], [1, 0]]],
+    [15, 1297289, 1791293904, 160, [], [[1, 0]]]
+  ];
+
+  async function open(url: string): Promise<MythicPlusPageComponent> {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(both.index, both) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    return harness.navigateByUrl(url, MythicPlusPageComponent);
+  }
+
+  it('shows only the runs of the character a profile links to, matched to the export', async () => {
+    const page = await open('/mythic-plus?character=napim-tauri');
+
+    expect(page.characterFilter()).toMatchObject({ key: 'Napim|Tauri', name: 'Napim', realm: 'Tauri', color: '#ff7d0a' });
+    expect(page.characterFilter()?.profileLink).toEqual(['/mythic-plus', 'character', 'tauri', 'Napim']);
+    expect(page.filteredRows().length).toBe(2);
+  });
+
+  it('ranks the players of one realm', async () => {
+    const page = await open('/mythic-plus?view=players&realm=evermoon');
+
+    expect(page.filteredPlayers().map(entry => entry.player.member.name)).toEqual(['Exkeito']);
+    expect(page.realmOptions().map(option => option.label)).toEqual(['All realms', 'Evermoon', 'Tauri']);
+    expect(page.activeFilterLabels()).toEqual(['Evermoon']);
+  });
+
+  it('opens the players view with the class and spec selected from the popularity chart', async () => {
+    const page = await open('/mythic-plus');
+
+    page.showSpecPlayers({ classId: 11, spec: 'Restoration' });
+
+    expect(page.view()).toBe('players');
+    expect(page.classFilter()).toBe(11);
+    expect(page.specFilter()).toBe('Restoration');
+    expect(page.activeFilterLabels()).toEqual(['Druid', 'Restoration']);
+  });
+});
+
+describe('MythicPlusPageComponent roles', () => {
+  const roles = exportOf('dddddddddddd', [['Exkeito', 'Evermoon', '', 11, 4, 0], ['Napim', 'Tauri', '', 11, 4, 0]]);
+  roles.index.specs = [{ class: 11, name: 'Restoration', role: 'healer' }, { class: 11, name: 'Guardian', role: 'tank' }];
+  roles.cos.runs = [
+    [19, 1297289, 1791293804, 196, [], [[0, 0], [1, 1]]],
+    [15, 1297289, 1791293904, 160, [], [[1, 0]]]
+  ];
+
+  async function open(url: string): Promise<MythicPlusPageComponent> {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'mythic-plus', component: MythicPlusPageComponent }]),
+        { provide: DataFileService, useValue: new FakeDataFiles(roles.index, roles) }
+      ]
+    });
+    const harness = await RouterTestingHarness.create();
+    return harness.navigateByUrl(url, MythicPlusPageComponent);
+  }
+
+  const ladder = (page: MythicPlusPageComponent) =>
+    page.filteredPlayers().map(entry => [entry.player.member.name, entry.player.score]);
+
+  it('ranks each role on the runs played in it', async () => {
+    const page = await open('/mythic-plus?view=players&role=healer');
+
+    expect(page.roleFilter()).toBe('healer');
+    expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 160]]);
+
+    page.setRole('tank');
+    expect(ladder(page)).toEqual([['Napim', 196]]);
+  });
+
+  it('opens on tanks, and Players goes back to the plain ladder', async () => {
+    const page = await open('/mythic-plus');
+
+    page.showRoles();
+    expect(page.view()).toBe('players');
+    expect(page.roleFilter()).toBe('tank');
+
+    page.setView('players');
+    expect(page.roleFilter()).toBeUndefined();
+    expect(ladder(page)).toEqual([['Exkeito', 196], ['Napim', 196]]);
+  });
+});

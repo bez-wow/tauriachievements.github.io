@@ -8,13 +8,6 @@ const generatedDataDir = path.join(srcDir, "assets", "data");
 const outputPath = path.join(generatedDataDir, "data-manifest.json");
 const DATA_FILE_PATTERN = /\.(json|txt)$/i;
 
-/**
- * Maps every data file the app fetches to a short hash of its content. The app requests
- * `file?v=<hash>`, so browsers can cache each file for as long as it is unchanged and fetch
- * it again as soon as a deploy changes it - no more `?v=Date.now()` defeating the cache.
- *
- * The file list comes from angular.json, so a new data file only needs adding there.
- */
 function buildDataManifest() {
   const files = {};
 
@@ -26,9 +19,6 @@ function buildDataManifest() {
   return { files };
 }
 
-// Data files listed as assets in angular.json (served from the site root), the data files
-// directly inside asset folders such as guild-analysis/, plus everything the build generates
-// into assets/data.
 function listDataFiles() {
   const angularConfig = JSON.parse(fs.readFileSync(path.join(spaRoot, "angular.json"), "utf8"));
   const project = Object.values(angularConfig.projects)[0];

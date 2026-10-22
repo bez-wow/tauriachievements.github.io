@@ -68,7 +68,6 @@ test("a full tie falls back to player key, exactly like the achievement-point or
 });
 
 test("every ranking compares achievement points and honorable kills", () => {
-  // sortByRanking relies on this to reproduce the key tie-break without comparing keys.
   for (const fields of Object.values(RANKINGS)) {
     assert.ok(fields.includes("achievementPoints"));
     assert.ok(fields.includes("honorableKills"));

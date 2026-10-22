@@ -1,0 +1,123 @@
+@use 'sass:list';
+@use '../../shared/mythic-plus-shared' as shared;
+
+$gold: #f7b500;
+
+$scroll-range: entry 0% entry 100%;
+
+@mixin entrance($animations: ()) {
+  @if list.length($animations) > 0 {
+    animation: $animations;
+  }
+
+  $timelines: ();
+  $ranges: ();
+  @each $animation in $animations {
+    $timelines: list.append($timelines, auto, comma);
+    $ranges: list.append($ranges, normal, comma);
+  }
+
+  @supports (animation-timeline: view()) {
+    &[data-scroll-rise] {
+      animation: list.append($animations, mp-scroll-rise linear backwards, comma);
+      animation-timeline: list.append($timelines, view(), comma);
+      animation-range: list.append($ranges, $scroll-range, comma);
+    }
+  }
+}
+
+@include shared.motion-safe {
+  .support-page::before {
+    animation: mp-grid-scan 1600ms var(--ease-in-out) backwards;
+
+    @media (max-width: 960px) {
+      @supports (animation-timeline: scroll()) {
+        animation: mp-grid-scan 1600ms var(--ease-in-out) backwards, mp-grid-drift linear both;
+        animation-timeline: auto, scroll();
+        animation-range: normal, 0 640px;
+      }
+    }
+  }
+
+  .support-page::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: -48px;
+    right: 0;
+    left: 0;
+    height: 48px;
+    background:
+      linear-gradient(90deg, rgba($gold, 0), rgba($gold, .55) 50%, rgba($gold, 0)) bottom / 100% 1px no-repeat,
+      linear-gradient(rgba($gold, 0), rgba($gold, .05));
+    mask-image: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    animation: mp-scan-sweep 1600ms var(--ease-in-out) backwards;
+  }
+
+  .hero { animation: mp-materialize 700ms var(--ease-out) backwards; }
+  .perk { @include entrance((mp-materialize 700ms var(--ease-out) var(--boot-delay, 90ms) backwards,)); }
+  .perk + .perk { --boot-delay: 150ms; }
+  .words-panel { animation: mp-materialize 700ms var(--ease-out) 200ms backwards; }
+  .supporters-panel { animation: mp-materialize 700ms var(--ease-out) 260ms backwards; }
+
+  .kicker,
+  .hero h1,
+  .lead,
+  .closing,
+  .cta { animation: mp-materialize 600ms var(--ease-out) var(--boot-delay) backwards; }
+
+  .kicker { --boot-delay: 120ms; }
+  .hero h1 { --boot-delay: 170ms; }
+  .lead { --boot-delay: 220ms; }
+  .closing { --boot-delay: 270ms; }
+  .cta { --boot-delay: 320ms; }
+
+  .hero-edge { animation: mp-edge-ignite 900ms var(--ease-out) 250ms backwards; }
+  .kicker-dot { animation: mp-dot-pop 500ms var(--ease-spring) 300ms backwards, mp-ping 2s ease-out 900ms infinite; }
+
+  .panel-head h2::before { animation: mp-bar-ignite 700ms var(--ease-out) var(--bar-delay) backwards; }
+  .words-panel { --bar-delay: 450ms; }
+  .supporters-panel { --bar-delay: 520ms; }
+
+  .cta { position: relative; }
+
+  .cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(110deg, rgba(#fff, 0) 30%, rgba(#fff, .35) 50%, rgba(#fff, 0) 70%) -150% 0 / 50% 100% no-repeat;
+    pointer-events: none;
+    animation: mp-sheen 900ms var(--ease-in-out) 1100ms backwards;
+  }
+
+  .cta:hover::after {
+    animation: mp-sheen 900ms var(--ease-in-out) 1100ms backwards, mp-sheen-hover 700ms var(--ease-in-out);
+  }
+
+  .panel-head,
+  .panel-sub,
+  .supporter-slot { @include entrance; }
+
+  .supporter,
+  .quote {
+    --cascade: calc(200ms + min(var(--i, 0), 14) * 60ms);
+    @include entrance;
+  }
+
+  .supporters[data-reveal='pending'] .supporter,
+  .quotes[data-reveal='pending'] .quote { opacity: 0; }
+
+  .supporters[data-reveal='in'] .supporter {
+    @include entrance((mp-card-rise 640ms var(--ease-out) var(--cascade) backwards,));
+  }
+
+  .quotes[data-reveal='in'] .quote {
+    @include entrance(
+      (mp-card-rise 640ms var(--ease-out) var(--cascade) backwards, mp-edge-flash 700ms ease-out var(--cascade) backwards)
+    );
+  }
+}

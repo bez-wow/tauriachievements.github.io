@@ -1,0 +1,257 @@
+@if (cards()) {
+  @if (rows().length) {
+    <ol class="player-cards" aria-label="Mythic+ players ranked by score: the sum of their best run in each dungeon">
+      @for (row of rows(); track row.key) {
+        <li [class.highlighted]="row.key === highlightKey()" [class.picked]="pickedKeys().has(row.key)">
+          <div class="player-card" [class.picking]="pickMode()" (click)="openProfile(row)">
+            @if (pickMode()) {
+              <span class="pick-box" aria-hidden="true"></span>
+            }
+            <span class="card-rank" [style.color]="row.color">
+              <span class="rank-metric">
+                <span><span class="visually-hidden">Rank </span>{{ row.rank }}</span>
+                @if (row.change?.rank; as rankChange) {
+                  <span
+                    class="rank-change"
+                    [class.up]="rankChange > 0"
+                    [class.down]="rankChange < 0"
+                    [attr.title]="rankChangeLabel(rankChange)"
+                    [attr.aria-label]="rankChangeLabel(rankChange)">
+                    <span aria-hidden="true">{{ rankChange > 0 ? '▲' : '▼' }} {{ rankChange < 0 ? -rankChange : rankChange }}</span>
+                  </span>
+                }
+                @if (row.newSinceLastScan) {
+                  <span class="player-new" title="New since the last scan">new</span>
+                }
+              </span>
+            </span>
+            <span class="card-body">
+              <span class="card-line">
+                <span class="player-icons">
+                  <img class="class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
+                  @if (row.member.specIcon) {
+                    <span class="spec-icon">
+                      <img [src]="row.member.specIcon" alt="" />
+                    </span>
+                  }
+                </span>
+                <a
+                  class="card-name"
+                  [routerLink]="row.member.profileLink"
+                  [style.color]="row.member.color"
+                  (click)="onLink($event, row)">{{ row.member.name }}</a>
+                <span class="card-realm">{{ row.member.realm }}</span>
+              </span>
+              @if (ladder() === 'guild') {
+                @if (row.overall; as overall) {
+                  <span class="card-overall">#{{ overall.rank | number }} overall</span>
+                }
+              } @else {
+                @if (row.member.guild) {
+                  @if (row.member.guildLink && !pickMode()) {
+                    <a
+                      class="card-guild"
+                      [routerLink]="row.member.guildLink"
+                      [attr.aria-label]="'Open the guild ladder of ' + row.member.guild"
+                      (click)="$event.stopPropagation()">&lt;{{ row.member.guild }}&gt;</a>
+                  } @else {
+                    <span class="card-guild">&lt;{{ row.member.guild }}&gt;</span>
+                  }
+                }
+              }
+              @if (singleDungeon()) {
+                <span class="card-bests">
+                  @if (row.bests[0]; as best) {
+                    <span class="level" [class.over-time]="!best.timed">
+                      <span class="level-value">+{{ best.keyLevel }}</span>
+                      @if (best.timed) {
+                        <span class="level-star">{{ upgradeStars(best.upgrades) }}<span class="visually-hidden"> timed +{{ best.upgrades }}</span></span>
+                      }
+                    </span>
+                    <span class="card-time" [class.over-time]="!best.timed">{{ best.clearTime }}</span>
+                  }
+                </span>
+              } @else {
+                <span class="card-bests">
+                  @for (best of playedBests(row); track best) {
+                    <span
+                      class="best-chip"
+                      [class.over-time]="!best.timed">{{ best.dungeon.shortName }} <b>+{{ best.keyLevel }}</b>@if (!best.timed) {<span class="visually-hidden"> over time</span>}</span>
+                  }
+                </span>
+              }
+            </span>
+            <span
+              class="card-score"
+              [class.has-score-change]="!!row.change?.score"
+              [class.score-gained]="(row.change?.score ?? 0) > 0">
+              <span><span class="visually-hidden">Score </span>{{ row.score | number:'1.1-1' }}</span>
+              @if (row.change?.score; as scoreChange) {
+                <span class="score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
+                <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
+              }
+              @if (row.newSinceLastScan) {
+                <span class="player-new" title="New since the last scan">new</span>
+              }
+            </span>
+          </div>
+        </li>
+      }
+    </ol>
+  } @else {
+    <p class="empty-cards">{{ emptyMessage() }}</p>
+  }
+} @else {
+  <div class="table-scroll">
+    <table class="players-table">
+      <caption class="visually-hidden">Mythic+ players ranked by score: the sum of their best run in each dungeon</caption>
+      <thead>
+        <tr>
+          @if (pickMode()) {
+            <th scope="col" class="col-pick"><span class="visually-hidden">Picked</span></th>
+          }
+          <th scope="col">Rank</th>
+          <th scope="col" class="col-player">Player</th>
+          @if (ladder() === 'server') {
+            <th scope="col" class="col-guild">Guild</th>
+          }
+          @if (ladder() === 'guild') {
+            <th scope="col" class="col-overall" title="Rank on the whole leaderboard">Overall</th>
+          }
+          @if (singleDungeon()) {
+            <th scope="col">Best key</th>
+            <th scope="col">Time</th>
+          } @else {
+            @for (dungeon of dungeons(); track dungeon.id) {
+              <th scope="col" class="col-best" [title]="dungeon.name">
+                {{ dungeon.shortName }}
+              </th>
+            }
+          }
+          <th scope="col" class="col-score-heading"><span>Score</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.key; let odd = $odd) {
+          <tr
+            class="player-row"
+            [class.alt]="odd"
+            [class.highlighted]="row.key === highlightKey()"
+            [class.picked]="pickedKeys().has(row.key)"
+            (click)="openProfile(row)">
+            @if (pickMode()) {
+              <td class="col-pick"><span class="pick-box" aria-hidden="true"></span></td>
+            }
+            <td class="col-rank" [style.color]="row.color">
+              <span class="rank-metric">
+                <span class="metric-value">{{ row.rank }}</span>
+                @if (row.change?.rank; as rankChange) {
+                  <span
+                    class="rank-change"
+                    [class.up]="rankChange > 0"
+                    [class.down]="rankChange < 0"
+                    [attr.title]="rankChangeLabel(rankChange)"
+                    [attr.aria-label]="rankChangeLabel(rankChange)">
+                    <span aria-hidden="true">{{ rankChange > 0 ? '▲' : '▼' }} {{ rankChange < 0 ? -rankChange : rankChange }}</span>
+                  </span>
+                }
+                @if (row.newSinceLastScan) {
+                  <span class="player-new" title="New since the last scan">new</span>
+                }
+              </span>
+            </td>
+            <td class="col-player">
+              <span class="player-identity">
+                <span class="player-icons">
+                  <img class="class-icon" [src]="row.member.classIcon" [alt]="row.member.className" />
+                  @if (row.member.specIcon) {
+                    <span class="spec-icon">
+                      <img [src]="row.member.specIcon" alt="" />
+                    </span>
+                  }
+                </span>
+                <a
+                  class="member-link"
+                  [routerLink]="row.member.profileLink"
+                  [style.color]="row.member.color"
+                  [attr.aria-label]="'Open the profile of ' + row.member.name"
+                  (click)="onLink($event, row)">{{ row.member.name }}<span class="profile-tooltip" aria-hidden="true">
+                    {{ pickMode() ? 'Pick ' + row.member.name + ' to compare' : 'Open the profile of ' + row.member.name }}
+                  </span></a>
+                <span class="player-realm">{{ row.member.realm }}</span>
+              </span>
+            </td>
+            @if (ladder() === 'server') {
+              <td class="col-guild">
+                @if (row.member.guildLink && !pickMode()) {
+                  <a
+                    class="guild-link"
+                    [routerLink]="row.member.guildLink"
+                    [title]="'Open the guild ladder of ' + row.member.guild"
+                    (click)="$event.stopPropagation()">{{ row.member.guild }}</a>
+                } @else {{{ row.member.guild }}}
+              </td>
+            }
+            @if (ladder() === 'guild') {
+              <td class="col-overall">
+                @if (row.overall; as overall) {
+                  <a
+                    class="overall-link"
+                    routerLink="/mythic-plus"
+                    [queryParams]="overall.queryParams"
+                    [title]="'#' + overall.rank + ' on the whole leaderboard. Show it there'"
+                    (click)="$event.stopPropagation()">#{{ overall.rank | number }}</a>
+                }
+              </td>
+            }
+            @if (singleDungeon()) {
+              @if (row.bests[0]; as best) {
+                <td class="col-level" [class.over-time]="!best.timed">
+                  <span class="level">
+                    <span class="level-value">+{{ best.keyLevel }}</span>
+                    @if (best.timed) {
+                      <span class="level-star" [title]="'Timed, +' + best.upgrades">{{ upgradeStars(best.upgrades) }}<span class="visually-hidden"> timed +{{ best.upgrades }}</span></span>
+                    }
+                  </span>
+                </td>
+                <td class="col-time" [class.over-time]="!best.timed">{{ best.clearTime }}</td>
+              }
+            } @else {
+              @for (best of row.bests; track best) {
+                <td
+                  class="col-best"
+                  [class.over-time]="!best?.timed"
+                  [title]="bestTitle(best)">
+                  {{ best ? '+' + best.keyLevel : '–' }}
+                </td>
+              }
+            }
+            <td class="col-score">
+              <span
+                class="score-metric"
+                [class.has-score-change]="!!row.change?.score"
+                [class.score-gained]="(row.change?.score ?? 0) > 0"
+                [attr.tabindex]="row.change?.score ? 0 : null">
+                <span class="metric-value">{{ row.score | number:'1.1-1' }}</span>
+                @if (row.change?.score; as scoreChange) {
+                  <span class="score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
+                  <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
+                }
+                @if (row.newSinceLastScan) {
+                  <span class="player-new" title="New since the last scan">new</span>
+                }
+              </span>
+            </td>
+          </tr>
+        }
+
+        @if (rows().length === 0) {
+          <tr class="empty-row">
+            <td [attr.colspan]="(singleDungeon() ? 6 : dungeons().length + 4) + (pickMode() ? 1 : 0)">{{ emptyMessage() }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+

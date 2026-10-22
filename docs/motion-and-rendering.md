@@ -8,12 +8,14 @@ touching motion or layering.
 
 - **Tokens** in `src/scss/_motion.scss`: `--ease-out`, `--ease-in-out`, `--ease-spring`,
   `--dur-fast`, `--dur`, `--dur-slow`. `--ease-spring` must stay in step with `SPRING` in
-  `src/app/motion.ts`, which the directives use for Web Animations.
+  `src/app/shared/motion/motion.ts`, which the directives use for Web Animations.
 - **Keyframes:** every one the M+ and Support motion uses is global in `_motion.scss`, with an
   `mp-` prefix (see the first gotcha).
 - **Page changes:** `withViewTransitions()`. `_motion.scss` styles `::view-transition-old/new`
   and gives `.update-bar` its own `view-transition-name`, so the header stays put while the
-  page changes. `characterTransitionName()` (`motion.ts`) names a character's crest and name
+  page changes. The old page fades out quickly and the new one rises in, with
+  `mix-blend-mode: normal`: the browser's default `plus-lighter` brightens the moment the two
+  pages overlap. `characterTransitionName()` (`motion.ts`) names a character's crest and name
   so they glide between pages. It hashes the key, because keys can hold `#` and Cyrillic.
 - **Directives:**
 
@@ -27,8 +29,33 @@ touching motion or layering.
   | `appDecode` | scrambles text into place over an `aria-hidden` overlay; the real text stays for layout and screen readers |
   | `appScrollRise` | marks only the elements that start below the fold for a scroll-driven rise |
 
-- **Expand and collapse** use Angular's built-in `animate.leave`, on the element that carries
-  the `*ngIf`.
+- **Directive details:**
+  - `appCountUp` replaces its host's content, so leave the host empty. A first value counts up
+    from zero; a later one counts on from the number shown, so switching Season / This week
+    rolls the numbers. Text without a number is written as it is, and so is a rank (`#3`):
+    counting up from `#0` would read as passing through better ranks. It writes the DOM from
+    `requestAnimationFrame`, so counting runs no change detection.
+  - `appDecode` never touches the host's text: while it decodes the text isn't painted
+    (`-webkit-text-fill-color`, so icons and borders that use `currentColor` stay) and an overlay
+    draws the characters. Elements marked `aria-hidden` are left alone. Don't nest one decoding
+    host inside another.
+  - `appReveal` sets `data-reveal="pending"` before the first paint, `in` once the host's top is
+    on screen, and removes it when the entrance is over, so a later re-render doesn't replay it.
+    The component's stylesheet holds the animation under those two attribute values.
+  - `appFlip` takes something that changes with the content as its value, and runs after each
+    render in which it changed; the first render only records positions.
+- **Expand and collapse** use Angular's built-in `animate.leave`, on the element inside the
+  `@if`. The `details-reveal` mixin (`_mythic-plus-shared.scss`) opens and closes a panel by
+  height: the element inside the `@if` carries `animate.leave="details-leaving"` and is (or, for
+  a table row, holds) a `.details-reveal` whose one child `.details-clip` holds the content. A
+  table row can't shrink, so it fades for as long as the panel inside takes to close.
+- **Chart tooltips** grow out of what they point at: `tooltip-pop` on the tooltip,
+  `tooltip-shown` in each rule that opens it. The scan-change tooltips (rank and score arrows)
+  open at once, with no transition or delay.
+- **Chart lines** draw in by uncovering them with a clip, not with `stroke-dashoffset`: the
+  stroke doesn't scale with the chart, so a dash draw comes out uneven. The Score / Gap switch
+  morphs a line through the CSS `d` property, which can transition; browsers without it keep
+  the `d` attribute and jump.
 - **Reduced motion:** wrap animation in the `motion-safe` mixin
   (`@media (prefers-reduced-motion: no-preference)`). The directives check
   `prefersReducedMotion()` and do nothing when it's on. View transitions are switched off

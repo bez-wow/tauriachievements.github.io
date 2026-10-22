@@ -1,0 +1,224 @@
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DataFileService } from '../../core/data-file.service';
+
+interface GuildRealmFirstResult {
+  guild: string | null;
+  youtubeVideoUrl: string;
+}
+
+interface GuildRealmFirstAchievement {
+  name: string;
+  iconUrl?: string;
+  results: Record<string, GuildRealmFirstResult | undefined>;
+}
+
+interface GuildRealmFirstDataset {
+  realms: string[];
+  achievements: GuildRealmFirstAchievement[];
+}
+
+interface GuildRealmFirstCellView {
+  realm: string;
+  guild: string | null;
+  videoUrl: string;
+  hasVideo: boolean;
+  isUpcoming: boolean;
+  isUnclaimed: boolean;
+}
+
+interface GuildRealmFirstExpansionView {
+  name: string;
+  logoUrl: string;
+}
+
+interface GuildRealmFirstAchievementView {
+  name: string;
+  iconUrl: string;
+  expansion: GuildRealmFirstExpansionView | null;
+  showsExpansionLogo: boolean;
+  expansionRowSpan: number;
+  startsExpansionGroup: boolean;
+  cells: GuildRealmFirstCellView[];
+}
+
+const EXPANSION_GROUPS_BY_START_ACHIEVEMENT = new Map<string, GuildRealmFirstExpansionView>([
+  [
+    'Realm First! Helya',
+    {
+      name: 'Legion',
+      logoUrl: 'assets/expansion-logos/legion.png'
+    }
+  ],
+  [
+    'Realm First! Imperator\'s Fall',
+    {
+      name: 'Warlords of Draenor',
+      logoUrl: 'assets/expansion-logos/warlords-of-draenor.png'
+    }
+  ],
+  [
+    'Realm First! Garrosh Hellscream (25 player)',
+    {
+      name: 'Mists of Pandaria',
+      logoUrl: 'assets/expansion-logos/mists-of-pandaria.png'
+    }
+  ],
+  [
+    'Realm First! Deathwing',
+    {
+      name: 'Cataclysm',
+      logoUrl: 'assets/expansion-logos/cataclysm.png'
+    }
+  ],
+  [
+    'Realm First! Fall of the Lich King',
+    {
+      name: 'Wrath of the Lich King',
+      logoUrl: 'assets/expansion-logos/wrath-of-the-lich-king.png'
+    }
+  ]
+]);
+
+const LEGION_RELEASE_LABEL = '23. Sept';
+const POGCHAMP_EMOTE_URL = 'assets/pogchamp.png';
+
+@Component({
+  selector: 'app-guild-realm-firsts-page',
+  templateUrl: './guild-realm-firsts-page.component.html',
+  styleUrls: ['./guild-realm-firsts-page.component.scss'],
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class GuildRealmFirstsPageComponent implements OnInit {
+  private readonly dataFiles = inject(DataFileService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly dataset = signal<GuildRealmFirstDataset | null>(null);
+  readonly isLoading = signal(true);
+  readonly loadError = signal<string | undefined>(undefined);
+  readonly legionReleaseLabel = LEGION_RELEASE_LABEL;
+  readonly pogchampEmoteUrl = POGCHAMP_EMOTE_URL;
+  readonly realms = computed(() => this.dataset()?.realms ?? []);
+  readonly rows = computed<ReadonlyArray<GuildRealmFirstAchievementView>>(() => {
+    const dataset = this.dataset();
+    if (!dataset) {
+      return [];
+    }
+
+    const rows: GuildRealmFirstAchievementView[] = [];
+    let activeExpansion: GuildRealmFirstExpansionView | null = null;
+    let activeExpansionStartRow: GuildRealmFirstAchievementView | undefined;
+    let activeExpansionRowSpan = 0;
+    const updateActiveExpansionRowSpan = () => {
+      if (activeExpansionStartRow) {
+        activeExpansionStartRow.expansionRowSpan = activeExpansionRowSpan;
+      }
+    };
+
+    for (const achievement of dataset.achievements) {
+      const expansion = EXPANSION_GROUPS_BY_START_ACHIEVEMENT.get(achievement.name);
+      if (expansion) {
+        updateActiveExpansionRowSpan();
+        activeExpansion = expansion;
+        activeExpansionStartRow = undefined;
+        activeExpansionRowSpan = 0;
+      }
+
+      const cells = dataset.realms.map((realm) => {
+        const result = achievement.results?.[realm];
+        const guild = this.normalizeGuild(result?.guild);
+        const videoUrl = this.normalizeVideoUrl(result?.youtubeVideoUrl);
+        const normalizedGuildStatus = guild?.toLowerCase();
+
+        return {
+          realm,
+          guild,
+          videoUrl,
+          hasVideo: guild !== null && videoUrl.length > 0,
+          isUpcoming: normalizedGuildStatus === 'upcoming',
+          isUnclaimed: normalizedGuildStatus === 'unclaimed'
+        };
+      });
+
+      const showsExpansionLogo = expansion !== undefined;
+      const row = {
+        name: achievement.name,
+        iconUrl: this.normalizeIconUrl(achievement.iconUrl),
+        expansion: activeExpansion,
+        showsExpansionLogo,
+        expansionRowSpan: 1,
+        startsExpansionGroup: showsExpansionLogo && rows.length > 0,
+        cells
+      };
+
+      rows.push(row);
+
+      if (showsExpansionLogo) {
+        activeExpansionStartRow = row;
+      }
+
+      if (activeExpansionStartRow) {
+        activeExpansionRowSpan++;
+      }
+    }
+
+    updateActiveExpansionRowSpan();
+    return rows;
+  });
+  readonly hasRows = computed(() => this.rows().length > 0);
+
+  ngOnInit(): void {
+    this.loadGuildRealmFirsts();
+  }
+
+  retryLoad(): void {
+    this.loadGuildRealmFirsts();
+  }
+
+  getVideoTitle(row: GuildRealmFirstAchievementView, cell: GuildRealmFirstCellView): string {
+    return cell.guild
+      ? `Watch ${cell.guild} - ${row.name} on ${cell.realm}`
+      : `No ${cell.realm} winner recorded`;
+  }
+
+  private loadGuildRealmFirsts(): void {
+    this.isLoading.set(true);
+    this.loadError.set(undefined);
+
+    this.dataFiles.getJson<GuildRealmFirstDataset>('RealmFirstAchievements.json').pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (dataset) => {
+        this.dataset.set(dataset);
+        this.isLoading.set(false);
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load raid history:', error);
+        this.dataset.set(null);
+        this.loadError.set('We could not load raid history data right now. Please try again in a moment.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  private normalizeGuild(value: string | null | undefined): string | null {
+    const trimmedValue = value?.trim();
+    return trimmedValue ? trimmedValue : null;
+  }
+
+  private normalizeIconUrl(value: string | null | undefined): string {
+    return value?.trim() ?? '';
+  }
+
+  private normalizeVideoUrl(value: string | null | undefined): string {
+    const trimmedValue = value?.trim() ?? '';
+    if (!trimmedValue) {
+      return '';
+    }
+
+    return /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|twitch\.tv)\//i.test(trimmedValue)
+      ? trimmedValue
+      : '';
+  }
+}

@@ -7,13 +7,9 @@ const outputDir = path.join(srcDir, "assets", "data");
 
 const SNAPSHOT_VERSION = 1;
 
-// Battlegrounds started from this minute on belong to Legion; everything before is the WoD
-// prepatch. The app shows one era at a time, so each era is its own file and the default
-// (Legion) view never downloads or parses the much larger prepatch history.
 const LEGION_START = { date: "2026-07-15", minuteOfDay: 9 * 60 };
 const ERAS = ["legion", "wod-prepatch"];
 
-// The collector writes "YYYY.MM.DD HH.MM" start times and "HH:MM:SS" durations.
 const START_TIME_PATTERN = /^(\d{4})[.-](\d{1,2})[.-](\d{1,2})\s+(\d{1,2})[.:](\d{2})/;
 const DURATION_PATTERN = /^(\d{1,2}):(\d{2}):(\d{2})$/;
 const UNKNOWN = -1;
@@ -22,10 +18,6 @@ function snapshotFileName(era) {
   return `battlegrounds-${era}.json`;
 }
 
-/**
- * Reads one collector record into { name, date, minuteOfDay, durationSeconds }, or
- * undefined when it has no name or no readable start time.
- */
 function parseBattleground(record) {
   const name = typeof record?.name === "string" ? record.name.trim() : "";
   const start = START_TIME_PATTERN.exec(typeof record?.startTime === "string" ? record.startTime.trim() : "");
@@ -45,7 +37,6 @@ function parseBattleground(record) {
 
 function parseDurationSeconds(value) {
   if (typeof value === "number") {
-    // A bare number is milliseconds, as the app has always read it.
     return Number.isFinite(value) && value >= 0 ? Math.round(value / 1000) : UNKNOWN;
   }
 
@@ -59,15 +50,6 @@ function eraOf(battleground) {
   return isLegion ? "legion" : "wod-prepatch";
 }
 
-/**
- * Builds one snapshot per era:
- *
- *   { version, era, names: [...], days: [[date, [name, minute, seconds, name, minute, seconds, ...]], ...] }
- *
- * Days are in date order. Each day holds its battlegrounds as flat triples: an index into
- * `names`, the start minute of the day and the duration in seconds (-1 when unknown).
- * Within a day the collector's order is kept, which is the order the app has always used.
- */
 function buildBattlegroundSnapshots(records) {
   const parsed = [];
   let skipped = 0;
@@ -81,7 +63,6 @@ function buildBattlegroundSnapshots(records) {
     }
   }
 
-  // Stable sort: by date only, keeping the collector's order within a day.
   parsed.sort((left, right) => (left.date < right.date ? -1 : left.date > right.date ? 1 : 0));
 
   const snapshots = {};

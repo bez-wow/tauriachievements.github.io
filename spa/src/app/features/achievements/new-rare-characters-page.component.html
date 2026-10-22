@@ -1,0 +1,116 @@
+<div class="new-rare-container">
+  @if (!isLoading() && !loadError() && !showEmptyState()) {
+    <section class="new-rare-summary">
+      <div>
+        <h1>New Rare Characters</h1>
+        <p>{{ newRareCharacterCount() | number }} found in the latest scan</p>
+      </div>
+    </section>
+  }
+
+  @if (isLoading()) {
+    <div class="new-rare-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Loading new rare characters...</h2>
+    </div>
+  }
+
+  @if (!isLoading() && loadError()) {
+    <div class="new-rare-feedback error">
+      <h2>Could not load new rare characters</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+    </div>
+  }
+
+  @if (showEmptyState()) {
+    <div class="new-rare-feedback empty">
+      <div class="empty-state-icon" aria-hidden="true">
+        <span></span>
+      </div>
+      <div class="empty-state-status">Latest scan complete</div>
+      <h1>New Rare Characters</h1>
+      <h2>No new discoveries this time</h2>
+      <p>No newly scanned characters were found with a Keystone Master achievement, Season Gladiator title, Gladiator mount, or Realm First achievement.</p>
+    </div>
+  }
+
+  @if (newRareCharacterCount() > 0) {
+    <div class="wow-table-scroll">
+      <table class="wow-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Race / Class</th>
+            <th>Realm</th>
+            <th>Guild</th>
+            <th>Rare finds</th>
+            <th>Achievements</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (character of newRareCharacters(); track `${character.realm}::${character.name}`) {
+            <tr [class]="character.faction">
+              <td>{{ character.rank }}</td>
+              <td>
+                <div class="player-identity">
+                  <a
+                    class="player-name player-name--new-rare clickable"
+                    [href]="getArmoryUrl(character.name, character.realm)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [title]="getCharacterLinkTitle(character)">
+                    {{ character.name }}
+                  </a>
+                </div>
+              </td>
+              <td>
+                <div class="character-icons">
+                  <img
+                    [src]="character.raceIcon"
+                    [alt]="'Race ' + character.race + '-' + character.gender"
+                    class="icon race-icon"
+                    loading="lazy"
+                    (error)="onImageError($event)" />
+                  <img
+                    [src]="character.classIcon"
+                    [alt]="'Class ' + character.classId"
+                    class="icon class-icon"
+                    loading="lazy"
+                    (error)="onImageError($event)" />
+                </div>
+              </td>
+              <td>{{ character.realm }}</td>
+              <td>
+                @if (character.guild) {
+                  <a
+                    class="guild-name clickable"
+                    [href]="getGuildArmoryUrl(character.guild, character.realm)"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    {{ character.guild }}
+                  </a>
+                }
+              </td>
+              <td>
+                <div class="rare-find-list">
+                  @for (achievementName of character.rareAchievementNames; track $index) {
+                    <span
+                      class="rare-find-chip"
+                      >
+                      {{ achievementName }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span class="achievement-points">{{ character.achievementPoints | number }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

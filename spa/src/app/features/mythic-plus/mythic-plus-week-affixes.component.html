@@ -1,0 +1,17 @@
+<ul class="week-affixes" [attr.aria-label]="label()">
+  @for (affix of affixes(); track affix) {
+    <li
+      appTapTooltip
+      [attr.tabindex]="affix.description ? 0 : null"
+      [attr.aria-describedby]="affix.description ? idPrefix + affix.id : null">
+      <span class="affix-icon"><img [src]="affix.icon" alt="" loading="lazy" /></span>
+      <span class="affix-name">{{ affix.name }}</span>
+      @if (affix.description) {
+        <span
+          class="week-affix-tooltip"
+          role="tooltip"
+          [id]="idPrefix + affix.id"><b class="affix-tooltip-name">{{ affix.name }}</b>{{ affix.description }}</span>
+        }
+      </li>
+    }
+  </ul>

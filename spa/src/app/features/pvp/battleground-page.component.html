@@ -1,0 +1,256 @@
+<main class="battleground-shell">
+  @if (showLoading()) {
+    <div class="battleground-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Loading battleground data...</h2>
+    </div>
+  }
+
+  @if (showError()) {
+    <div class="battleground-feedback error">
+      <h2>Could not load battleground data</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+    </div>
+  }
+
+  @if (showContent()) {
+    <section class="analysis-grid">
+      <article class="activity-panel activity-panel--daily" aria-label="Battleground counts on selected day">
+        <div class="bg-count-groups">
+          @for (group of stats().battlegroundGroups; track group.label) {
+            <section
+              class="bg-count-group"
+              >
+              <div class="bg-count-group-heading">
+                <span>{{ group.label }}</span>
+                <small>{{ group.totalStarts | number }} {{ group.totalStarts === 1 ? 'start' : 'starts' }}</small>
+              </div>
+              <div class="bg-count-list">
+                @for (row of group.rows; track row.name) {
+                  <button
+                    type="button"
+                    class="bg-count-row"
+                    [attr.aria-label]="'View start times for ' + row.name + ' on ' + stats().selectedDayLabel"
+                    (click)="openBattlegroundStarts(row)"
+                    >
+                    <div class="bg-count-main">
+                      <span>{{ row.name }}</span>
+                      <strong>{{ row.total | number }} {{ row.total === 1 ? 'start' : 'starts' }}</strong>
+                    </div>
+                  </button>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      </article>
+
+      <aside class="analysis-side">
+        <section class="date-console date-console--inline" aria-label="Battleground filters">
+          <label class="date-field">
+            <span>Timeline</span>
+            <app-filter-dropdown
+              dropdownId="battlegroundTimeline"
+              triggerId="battlegroundTimelineTrigger"
+              ariaLabel="Battleground timeline"
+              [options]="eraOptions"
+              [selectedValue]="selectedEra()"
+              [compact]="true"
+              (selectionChange)="setSelectedEra($event)" />
+          </label>
+          <label class="date-field">
+            <span>Date</span>
+            <input
+              type="date"
+              [attr.min]="dateBounds()?.min ?? null"
+              [attr.max]="dateBounds()?.max ?? null"
+              [value]="selectedDay()"
+              (input)="setSelectedDay($any($event.target).value)" />
+          </label>
+        </section>
+
+        <article class="activity-panel activity-panel--hourly" aria-label="Hourly battleground volume">
+          <div class="panel-heading">
+            <div>
+              <span class="metric-label">Hourly volume</span>
+              <h2>Starts by hour</h2>
+            </div>
+          </div>
+
+          @if (!stats().hasSelectedDayData || stats().hourlyChart.maxCount === 0) {
+            <div class="empty-state">
+              No hourly starts to display.
+            </div>
+          }
+
+          @if (stats().hasSelectedDayData && stats().hourlyChart.maxCount > 0) {
+            <div class="hourly-stat">
+              <div class="hourly-stat-summary">
+                <div>
+                  <span>Total</span>
+                  <strong>{{ stats().selectedDayCount | number }}</strong>
+                </div>
+                @if (stats().busiestHour; as busiestHour) {
+                  <div>
+                    <span>Peak</span>
+                    <strong>{{ busiestHour.label }}</strong>
+                    <small>{{ busiestHour.count | number }} starts</small>
+                  </div>
+                }
+              </div>
+
+              <div class="hourly-chart-wrap">
+                <svg
+                  class="hourly-sparkline"
+                  [attr.viewBox]="stats().hourlyChart.viewBox"
+                  role="img"
+                  [attr.aria-label]="'Hourly starts for ' + stats().selectedDayLabel">
+                  <path class="hourly-sparkline-area" [attr.d]="stats().hourlyChart.areaPath"></path>
+                  <path class="hourly-sparkline-line" [attr.d]="stats().hourlyChart.linePath"></path>
+                </svg>
+                <div class="hourly-axis" aria-hidden="true">
+                  <span>00</span>
+                  <span>06</span>
+                  <span>12</span>
+                  <span>18</span>
+                  <span>23</span>
+                </div>
+              </div>
+            </div>
+          }
+        </article>
+
+      </aside>
+    </section>
+
+    <section class="activity-panel" aria-label="Battleground average durations">
+      <div class="panel-heading duration-heading">
+        <div>
+          @if (stats().durationRangeStartLabel && stats().durationRangeEndLabel) {
+            <span
+              class="duration-range-label"
+              >
+              Data collected from
+              <strong>
+                {{ stats().durationRangeStartLabel }}@if (selectedEra() === 'legion') { (Legion release)}
+            </strong>
+            to
+            <strong>
+              {{ stats().durationRangeEndLabel }}@if (selectedEra() === 'legion') { (Today)}
+          </strong>
+        </span>
+      } @else {
+        <span class="duration-range-label">{{ stats().durationRangeLabel }}</span>
+      }
+    </div>
+  </div>
+
+  @if (!stats().hasDurationData) {
+    <div class="empty-state">
+      No duration data to display.
+    </div>
+  }
+
+  @if (stats().hasDurationData) {
+    <div class="table-scroll">
+      <table class="duration-table">
+        <thead>
+          <tr>
+            <th scope="col">BG</th>
+            <th scope="col">Samples</th>
+            <th scope="col">Average</th>
+            <th scope="col">Shortest</th>
+            <th scope="col">Longest</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of stats().durationGroups; track group.label) {
+            <tr class="duration-group-row">
+              <th scope="rowgroup" colspan="5">
+                <span>{{ group.label }}</span>
+                <small>{{ group.totalRuns | number }} runs</small>
+              </th>
+            </tr>
+            @for (row of group.rows; track row.name) {
+              <tr>
+                <th scope="row">{{ row.name }}</th>
+                <td>{{ row.durationSampleCount | number }}</td>
+                <td>{{ row.averageDurationLabel }}</td>
+                <td>{{ row.shortestDurationLabel }}</td>
+                <td>{{ row.longestDurationLabel }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+}
+</main>
+
+@if (selectedBattlegroundDetails(); as detail) {
+  <div
+    class="bg-start-modal-backdrop"
+    (click)="closeBattlegroundStarts()">
+    <section
+      class="bg-start-modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="detail.name + ' start times on ' + detail.selectedDayLabel"
+      (click)="$event.stopPropagation()">
+      <header class="bg-start-modal-header">
+        <div>
+          <span class="metric-label">Start times</span>
+          <h2>{{ detail.name }}</h2>
+          <p>{{ detail.selectedDayLabel }} · {{ detail.total | number }} starts</p>
+        </div>
+
+        <button
+          type="button"
+          class="bg-start-modal-close"
+          aria-label="Close start times"
+          (click)="closeBattlegroundStarts()">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="bg-start-modal-body">
+        @if (detail.groups.length === 0) {
+          <div class="empty-state">
+            No starts for this battleground on the selected day.
+          </div>
+        }
+
+        @if (detail.groups.length > 0) {
+          <div class="bg-start-groups">
+            @for (group of detail.groups; track group.label) {
+              <section
+                class="bg-start-group"
+                >
+                <div class="bg-start-group-heading">
+                  <span>{{ group.label }}</span>
+                  <small>{{ group.count | number }} starts</small>
+                </div>
+
+                <div class="bg-start-list">
+                  @for (entry of group.entries; track entry.id) {
+                    <div
+                      class="bg-start-row"
+                      >
+                      <strong>{{ entry.startLabel }}</strong>
+                      <span [class.bg-start-duration--unknown]="!entry.durationKnown">{{ entry.durationLabel }}</span>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+}

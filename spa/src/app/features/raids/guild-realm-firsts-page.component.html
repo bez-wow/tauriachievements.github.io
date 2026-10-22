@@ -1,0 +1,204 @@
+<main class="realm-firsts-page">
+  @if (isLoading()) {
+    <div class="realm-firsts-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Loading raid history...</h2>
+    </div>
+  }
+
+  @if (!isLoading() && loadError()) {
+    <div class="realm-firsts-feedback error">
+      <h2>Could not load raid history</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+    </div>
+  }
+
+  @if (!isLoading() && !loadError() && !hasRows()) {
+    <div class="realm-firsts-feedback empty">
+      <h2>No raid history available</h2>
+      <p>The raid history data file is empty.</p>
+    </div>
+  }
+
+  @if (hasRows()) {
+    <section class="realm-firsts-table-panel" aria-label="Raid history table">
+      <div class="realm-firsts-table-scroll">
+        <table class="realm-firsts-table">
+          <thead>
+            <tr>
+              <th scope="col" class="expansion-column" aria-label="Expansion"></th>
+              <th scope="col" class="achievement-column">Achievement</th>
+              @for (realm of realms(); track realm) {
+                <th scope="col" class="realm-column">{{ realm }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.name; let rowIndex = $index) {
+              @if (row.startsExpansionGroup) {
+                <tr class="expansion-separator-row" aria-hidden="true">
+                  <td [attr.colspan]="realms().length + 2"></td>
+                </tr>
+              }
+
+              <tr [class.is-even-achievement-row]="rowIndex % 2 === 1">
+                @if (row.showsExpansionLogo && row.expansion) {
+                  <td
+                    class="expansion-logo-cell"
+                    [attr.rowspan]="row.expansionRowSpan">
+                    <img
+                      class="expansion-logo"
+                      [src]="row.expansion.logoUrl"
+                      [alt]="row.expansion.name"
+                      [title]="row.expansion.name"
+                      loading="lazy" />
+                  </td>
+                }
+                @if (!row.expansion) {
+                  <td
+                    class="expansion-logo-cell expansion-logo-cell--empty"
+                    aria-hidden="true"></td>
+                }
+                <th scope="row">
+                  <span class="achievement-label">
+                    @if (row.iconUrl) {
+                      <span class="achievement-icon-frame" aria-hidden="true">
+                        <img
+                          class="achievement-icon"
+                          [src]="row.iconUrl"
+                          alt=""
+                          loading="lazy" />
+                      </span>
+                    }
+                    <span class="achievement-name">{{ row.name }}</span>
+                  </span>
+                </th>
+                @for (cell of row.cells; track cell.realm) {
+                  <td
+                    class="realm-cell"
+                    [class.is-empty]="!cell.guild"
+                    [class.has-video]="cell.hasVideo"
+                    [class.is-upcoming]="cell.isUpcoming"
+                    [class.is-unclaimed]="cell.isUnclaimed">
+                    @if (cell.guild && cell.hasVideo) {
+                      <a
+                        class="guild-video-link"
+                        [href]="cell.videoUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [title]="getVideoTitle(row, cell)">
+                        <span>{{ cell.guild }}</span>
+                        @if (cell.guild === legionReleaseLabel) {
+                          <img
+                            class="guild-emote guild-emote--pogchamp"
+                            [src]="pogchampEmoteUrl"
+                            alt="PogChamp"
+                            loading="lazy" />
+                        }
+                      </a>
+                    } @else {
+                      @if (cell.guild) {
+                        <span class="guild-name">
+                          <span>{{ cell.guild }}</span>
+                          @if (cell.guild === legionReleaseLabel) {
+                            <img
+                              class="guild-emote guild-emote--pogchamp"
+                              [src]="pogchampEmoteUrl"
+                              alt="PogChamp"
+                              loading="lazy" />
+                          }
+                        </span>
+                      } @else {
+                        <span class="missing-winner">-</span>
+                      }
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="realm-firsts-mobile-list" role="list" aria-label="Raid history achievements">
+        @for (row of rows(); track row.name; let rowIndex = $index) {
+          @if (row.showsExpansionLogo && row.expansion) {
+            <div class="mobile-expansion-heading">
+              <img
+                class="mobile-expansion-logo"
+                [src]="row.expansion.logoUrl"
+                [alt]="row.expansion.name"
+                loading="lazy" />
+              <span>{{ row.expansion.name }}</span>
+            </div>
+          }
+
+          <article
+            class="mobile-achievement-card"
+            [class.is-even-achievement-card]="rowIndex % 2 === 1"
+            role="listitem">
+            <header class="mobile-achievement-header">
+              @if (row.iconUrl) {
+                <span class="mobile-achievement-icon-frame" aria-hidden="true">
+                  <img
+                    class="mobile-achievement-icon"
+                    [src]="row.iconUrl"
+                    alt=""
+                    loading="lazy" />
+                </span>
+              }
+              <h2 class="mobile-achievement-name">{{ row.name }}</h2>
+            </header>
+
+            <div class="mobile-realm-grid">
+              @for (cell of row.cells; track cell.realm) {
+                <div
+                  class="mobile-realm-result"
+                  [class.is-empty]="!cell.guild"
+                  [class.has-video]="cell.hasVideo"
+                  [class.is-upcoming]="cell.isUpcoming"
+                  [class.is-unclaimed]="cell.isUnclaimed">
+                  <span class="mobile-realm-label">{{ cell.realm }}</span>
+
+                  @if (cell.guild && cell.hasVideo) {
+                    <a
+                      class="mobile-guild-link"
+                      [href]="cell.videoUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      [title]="getVideoTitle(row, cell)">
+                      <span>{{ cell.guild }}</span>
+                      @if (cell.guild === legionReleaseLabel) {
+                        <img
+                          class="guild-emote guild-emote--pogchamp"
+                          [src]="pogchampEmoteUrl"
+                          alt="PogChamp"
+                          loading="lazy" />
+                      }
+                    </a>
+                  } @else {
+                    @if (cell.guild) {
+                      <span class="mobile-guild-name">
+                        <span>{{ cell.guild }}</span>
+                        @if (cell.guild === legionReleaseLabel) {
+                          <img
+                            class="guild-emote guild-emote--pogchamp"
+                            [src]="pogchampEmoteUrl"
+                            alt="PogChamp"
+                            loading="lazy" />
+                        }
+                      </span>
+                    } @else {
+                      <span class="mobile-missing-winner">-</span>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</main>

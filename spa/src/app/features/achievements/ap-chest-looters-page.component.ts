@@ -1,0 +1,53 @@
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { getArmoryUrl } from '../../game/armory';
+import { DataFileService } from '../../core/data-file.service';
+import { getClassColor } from '../../game/class-colors';
+
+interface ApChestLooter {
+  name: string;
+  guild: string;
+  classId: number;
+  count: number | '?';
+  realm: string;
+}
+
+@Component({
+  selector: 'app-ap-chest-looters-page',
+  imports: [],
+  templateUrl: './ap-chest-looters-page.component.html',
+  styleUrls: ['./ap-chest-looters-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ApChestLootersPageComponent {
+  private readonly dataFiles = inject(DataFileService);
+
+  readonly looters = signal<ApChestLooter[]>([]);
+  readonly isLoading = signal(true);
+  readonly loadError = signal(false);
+  readonly getArmoryUrl = getArmoryUrl;
+
+  constructor() {
+    this.dataFiles.getJson<ApChestLooter[]>('ap-chest-looters.json').subscribe({
+      next: (looters) => {
+        this.looters.set([...looters].sort((a, b) => this.sortValue(b.count) - this.sortValue(a.count)));
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.loadError.set(true);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  displayCount(count: number | '?'): string {
+    return count === '?' ? '?' : count.toLocaleString();
+  }
+
+  classColor(classId: number): string {
+    return getClassColor(classId) ?? '#ffffff';
+  }
+
+  private sortValue(count: number | '?'): number {
+    return count === '?' ? Number.NEGATIVE_INFINITY : count;
+  }
+}

@@ -1,0 +1,122 @@
+<main class="raid-page">
+  <a class="back-link" routerLink="/raid-logs/guilds" [queryParams]="{ difficulty: difficulty()?.slug }">
+    <span aria-hidden="true">‹</span> Back to Guild Progression
+  </a>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && guild(); as current) {
+    <header class="guild-header">
+      <span class="crest" [class]="'faction-' + current.faction" aria-hidden="true">{{ current.name.charAt(0) }}</span>
+      <div class="guild-heading">
+        <p class="eyebrow">Guild · {{ index()?.raid?.name }}</p>
+        <h1>{{ current.name }}</h1>
+        <p class="guild-meta">
+          <span class="faction" [class]="'faction-' + current.faction" aria-hidden="true"></span>
+          {{ current.faction === 1 ? 'Horde' : 'Alliance' }} · {{ current.realm }}
+          @if (armoryUrl(); as url) {
+            <a [href]="url" target="_blank" rel="noopener">Armory <span aria-hidden="true">↗</span></a>
+          }
+        </p>
+      </div>
+      @if (index(); as loaded) {
+        <app-raid-difficulty-switch
+          [difficulties]="loaded.difficulties"
+          [selected]="difficulty()?.slug"
+          [killCounts]="killCounts()"
+          label="Show the guild's kills on difficulty"
+          (selectedChange)="setDifficulty($event)" />
+      }
+    </header>
+
+    <dl class="summary">
+      @for (tile of summary(); track tile.label) {
+        <div>
+          <dt>{{ tile.label }}</dt>
+          <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+        </div>
+      }
+    </dl>
+
+    @if (difficulty(); as diff) {
+      <section class="section" aria-labelledby="guild-bosses-title">
+        <header class="section-header">
+          <h2 id="guild-bosses-title">Bosses <span class="difficulty-text" [class]="diff.slug">{{ diff.name }}</span></h2>
+          <p>The guild's first and fastest kill of each boss.</p>
+        </header>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Boss</th>
+                <th scope="col">First kill</th>
+                <th scope="col" class="num">Fastest</th>
+                <th scope="col" class="num">Kills</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of bossRows(); track row.boss.slug) {
+                <tr [class.alive]="!row.kills">
+                  <td>
+                    <a class="boss-cell" [routerLink]="bossLink(row.boss)" [queryParams]="{ difficulty: diff.slug }">
+                      <img [src]="row.boss.portrait" alt="" loading="lazy" />
+                      <span class="strong">{{ row.boss.shortName }}</span>
+                    </a>
+                  </td>
+                  <td>
+                    @if (row.first; as first) {
+                      <a [routerLink]="logLink(first)">{{ first.killedAt | date:'d MMM, HH:mm' }}</a>
+                    } @else {
+                      <span class="muted">Not killed yet</span>
+                    }
+                  </td>
+                  <td class="num">
+                    @if (row.fastest; as fastest) {
+                      <a class="strong" [routerLink]="logLink(fastest)">{{ formatFightTime(fastest.fightMs) }}</a>
+                    }
+                  </td>
+                  <td class="num">{{ row.kills || '' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <section class="section" aria-labelledby="guild-history-title">
+      <header class="section-header">
+        <h2 id="guild-history-title">Kill history</h2>
+        <p>Every kill on this difficulty, latest first.</p>
+      </header>
+
+      @if (history().length) {
+        <ol class="history">
+          @for (kill of history(); track logKey(kill)) {
+            <li>
+              <a [routerLink]="logLink(kill)">
+                <img [src]="kill.boss.portrait" alt="" loading="lazy" />
+                <span class="history-boss">{{ kill.boss.shortName }}</span>
+                <span class="history-time">{{ formatFightTime(kill.fightMs) }}</span>
+                <span class="history-players muted">{{ kill.memberCount }} players</span>
+                <time class="muted" [attr.datetime]="kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="kill.killedAt | date:'d MMM y, HH:mm'">{{ kill.killedAt | date:'d MMM, HH:mm' }}</time>
+              </a>
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="empty-note">No kills on this difficulty.</p>
+      }
+      @if (kills().length > historyPreview) {
+        <button
+          type="button"
+          class="more-button"
+          [attr.aria-expanded]="showAllKills()"
+          (click)="showAllKills.set(!showAllKills())">
+          {{ showAllKills() ? 'Show the latest ' + historyPreview : 'Show all ' + kills().length + ' kills' }}
+        </button>
+      }
+    </section>
+  }
+</main>

@@ -25,7 +25,6 @@ function player(overrides) {
   };
 }
 
-/** Reads a serialized snapshot back into objects, the way the app does. */
 function readRows(snapshot) {
   return snapshot.p.map((row) => {
     const value = Object.fromEntries(snapshot.c.map((column, index) => [column, row[index]]));
@@ -130,8 +129,6 @@ test("the head is the top of the full snapshot and records the full player count
   assert.equal(head.p.length, HEAD_PLAYER_COUNT);
   assert.equal(head.t, HEAD_PLAYER_COUNT + 25);
   assert.deepEqual(head.p, full.p.slice(0, HEAD_PLAYER_COUNT));
-  // Index columns must resolve identically in both files, or upgrading from the head
-  // to the full snapshot would remap every player's realm and faction.
   assert.deepEqual(head.r, full.r);
   assert.deepEqual(head.f, full.f);
 });

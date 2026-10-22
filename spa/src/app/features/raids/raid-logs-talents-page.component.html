@@ -1,0 +1,405 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Talent analytics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && index(); as loaded) {
+    <nav class="boss-picker" aria-label="Pick a boss">
+      <button
+        type="button"
+        class="boss-pick all-bosses"
+        [class.active]="!boss()"
+        [attr.aria-pressed]="!boss()"
+        (click)="setBoss(undefined)">
+        <span class="all-mark" aria-hidden="true">{{ loaded.bosses.length }}</span>
+        <span>All bosses</span>
+      </button>
+      @for (other of loaded.bosses; track other) {
+        <button
+          type="button"
+          class="boss-pick"
+          [class.active]="other === boss()"
+          [attr.aria-pressed]="other === boss()"
+          [disabled]="!killsLoading() && !bossesWithKills().has(other)"
+          [title]="other.name"
+          (click)="setBoss(other)">
+          <img [src]="other.portrait" alt="" loading="lazy" />
+          <span>{{ other.shortName }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="controls">
+      <h2 class="meta-title">
+        <span>{{ title() }}</span>
+        @for (option of titleOptions(); track option) {
+          <span class="title-sizer" aria-hidden="true">{{ option }}</span>
+        }
+      </h2>
+      <app-raid-difficulty-switch
+        [difficulties]="loaded.difficulties"
+        [selected]="difficulty()?.slug"
+        label="Raid difficulty"
+        (selectedChange)="setDifficulty($event)" />
+      <div class="role-switch" role="group" aria-label="Filter by role" appGlide>
+        @for (option of roleOptions; track option) {
+          <button
+            type="button"
+            [class.active]="selectedRole() === option.value"
+            [attr.aria-pressed]="selectedRole() === option.value"
+            [disabled]="option.value !== 'all' && !availableRoles().has(option.value)"
+            (click)="setRole(option.value)">{{ option.label }}</button>
+        }
+      </div>
+      <div class="filters">
+        <button
+          type="button"
+          class="filter-reset"
+          [disabled]="!hasFilters()"
+          aria-label="Reset boss, role, class and spec"
+          (click)="resetFilters()">
+          Reset
+        </button>
+        <div class="class-slot">
+          <app-filter-dropdown
+            dropdownId="talentClass"
+            triggerId="talentClassTrigger"
+            ariaLabel="Filter by class"
+            [options]="classOptions"
+            [selectedValue]="selectedClass()"
+            [showIcons]="true"
+            [compact]="true"
+            [highlightWhenSelected]="true"
+            (selectionChange)="setClass($event)" />
+        </div>
+      </div>
+    </div>
+
+    <app-load-state [loading]="killsLoading()" [error]="killsError()" loadingText="Reading the {{ difficulty()?.name }} raid rosters..." (retry)="retryKills()" />
+
+    @if (!killsLoading() && !killsError()) {
+      <app-icon-tips [spells]="talentTooltips()">
+        @if (!spec()) {
+          <section class="section">
+            @for (group of specGroups(); track group.key) {
+              <div class="role-group">
+                <h3 class="visually-hidden">{{ group.title }}</h3>
+                <ul class="spec-grid" [style.--spec-columns]="group.columns">
+                  @for (card of group.cards; track card.spec.id) {
+                    <li>
+                      <a
+                        class="spec-card"
+                        [class.nobody]="!card.picks.picks"
+                        [routerLink]="[]"
+                        [queryParams]="queryParams(card.spec.id)"
+                        [style.--class-color]="card.color"
+                        [attr.aria-label]="card.spec.name + ' ' + card.className + ', ' + card.picks.characters + ' characters, ' + formatShare(card.agreement) + ' agreement'">
+                        <span class="spec-card-head">
+                          @if (card.spec.icon) {
+                            <img class="spec-icon" [src]="card.spec.icon" alt="" loading="lazy" />
+                          }
+                          <span class="spec-card-name">
+                            <b [style.color]="card.color">{{ card.spec.name }}</b>
+                            <span>{{ card.className }}</span>
+                          </span>
+                          <span class="spec-card-count">{{ card.picks.characters | number }}<span> {{ card.picks.characters === 1 ? 'character' : 'characters' }}</span></span>
+                        </span>
+                        @if (card.picks.picks) {
+                          <span class="consensus">
+                            @for (pick of card.consensus; track pick) {
+                              <span class="consensus-pick" [attr.data-tip]="pick.talent?.name ?? 'Unknown talent'" [attr.data-tip-note]="'Level ' + pick.level + ' · ' + formatShare(pick.share)" [attr.data-tip-spell]="pick.talent?.id">
+                                @if (pick.talent) {
+                                  <img [src]="icon(pick.talent.icon, 'medium')" [srcset]="iconSrcset(pick.talent.icon)" sizes="28px" width="28" height="28" alt="" loading="lazy" />
+                                } @else {
+                                  <span class="icon-placeholder" aria-hidden="true"></span>
+                                }
+                                <span class="consensus-share">{{ formatShare(pick.share) }}</span>
+                              </span>
+                            }
+                          </span>
+                          <span class="agreement">
+                            <span class="agreement-text"><b>{{ formatShare(card.agreement) }}</b> agreement · {{ card.label }}</span>
+                            <span class="meter" aria-hidden="true"><span [style.width.%]="card.agreement * 100"></span></span>
+                            <span class="agreement-builds">{{ card.buildCount | number }} {{ card.buildCount === 1 ? 'build' : 'builds' }} · most played {{ formatShare(card.topBuild?.share ?? 0) }}</span>
+                          </span>
+                        } @else {
+                          <span class="nobody-note">Nobody played it here yet.</span>
+                        }
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <p class="method-note">
+              Each character counts once per boss, with the talents of their best kill there. Agreement is how often players take a tier's most picked talent, averaged over the seven tiers.@if (!classFilterName()) { Each role lists its specs by their <a routerLink="/raid-logs/stats" [queryParams]="{ difficulty: difficulty()?.slug, view: 'performance' }">{{ difficulty()?.name }} performance</a>, best first.}
+          </p>
+        </section>
+      } @else {
+        @if (spec(); as current) {
+          <a class="back-link" [routerLink]="[]" [queryParams]="queryParams(undefined)">
+            <span aria-hidden="true">‹</span> {{ backLabel() }}
+          </a>
+
+          <header class="spec-header" [style.--class-color]="specColor()">
+            @if (current.icon) {
+              <img class="spec-header-icon" [src]="current.icon" alt="" />
+            }
+            <div class="spec-heading">
+              <p class="eyebrow">{{ difficulty()?.name }} · {{ boss()?.name ?? 'All bosses' }}</p>
+              <h2><span [style.color]="specColor()">{{ current.name }}</span> {{ className() }}</h2>
+            </div>
+            <dl class="summary">
+              @for (tile of stats(); track tile.label) {
+                <div>
+                  <dt>{{ tile.label }}</dt>
+                  <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+                </div>
+              }
+            </dl>
+          </header>
+
+          @if (!picks().picks) {
+            <p class="empty-note">
+              Nobody has killed {{ boss()?.shortName ?? 'a boss' }} on {{ difficulty()?.name }} as {{ current.name }} {{ className() }} yet.
+            </p>
+          }
+          @if (picks().picks) {
+            @if (isThin()) {
+              <p class="thin-note">
+                Only {{ picks().characters }} {{ picks().characters === 1 ? 'character' : 'characters' }} to go on, so a single player moves these shares a lot.
+              </p>
+            }
+
+            <section class="section">
+              <div class="section-header">
+                <h2>Talent picks</h2>
+                <p class="legend">
+                  <span class="legend-key everyone" aria-hidden="true"></span> Everyone
+                  <span class="legend-key top" aria-hidden="true"></span> Top 10% by {{ metricLabel() }}@if (picks().topPicks < 10) { (only {{ picks().topPicks }})}
+              </p>
+            </div>
+
+            <ol class="talent-tree">
+              @for (tier of tierViews(); track tier.tier) {
+                <li class="tier">
+                  <div class="tier-label">
+                    <span class="tier-level"><span>Level</span> {{ tier.level }}</span>
+                    @if (tier.swapNote) {
+                      <span class="tier-swap">{{ tier.swapNote }}</span>
+                    }
+                  </div>
+                  <div class="tier-choices">
+                    @for (choice of tier.choices; track choice.column) {
+                      <a
+                        class="talent"
+                        [class.leader]="choice.isLeader"
+                        [class.unpicked]="!choice.count"
+                        [attr.href]="choice.talent ? spellUrl(choice.talent.id) : null"
+                        target="_blank"
+                        rel="noopener"
+                        [attr.data-tip]="choice.talent?.name"
+                        [attr.data-tip-spell]="choice.talent?.id"
+                        [attr.aria-label]="(choice.talent?.name ?? 'Unknown talent') + ': ' + formatShare(choice.share) + ' of everyone, ' + formatShare(choice.topShare) + ' of the top 10%'">
+                        <span class="talent-head">
+                          @if (choice.talent) {
+                            <img
+                              class="talent-icon"
+                              [src]="icon(choice.talent.icon, 'medium')"
+                              [srcset]="iconSrcset(choice.talent.icon)"
+                              sizes="36px"
+                              width="36"
+                              height="36"
+                              alt=""
+                              loading="lazy" />
+                          } @else {
+                            <span class="icon-placeholder" aria-hidden="true"></span>
+                          }
+                          <span class="talent-name">{{ choice.talent?.name ?? 'Unknown talent' }}</span>
+                          <span class="talent-share">{{ formatShare(choice.share) }}</span>
+                        </span>
+                        <span class="share-bars" aria-hidden="true">
+                          <span class="share-bar everyone"><span [style.width.%]="choice.share * 100"></span></span>
+                          <span class="share-bar top"><span [style.width.%]="choice.topShare * 100"></span></span>
+                        </span>
+                        <span class="talent-top">
+                          Top 10% <b>{{ formatShare(choice.topShare) }}</b>
+                          @if (choice.edge) {
+                            <span class="edge" [class]="choice.edgeTone">{{ choice.edge }}</span>
+                          }
+                        </span>
+                      </a>
+                    }
+                  </div>
+                </li>
+              }
+            </ol>
+            @if (swapExplanation()) {
+              <p class="method-note">{{ swapExplanation() }}</p>
+            }
+          </section>
+
+          @if (insights().length) {
+            <section class="section">
+              <div class="section-header">
+                <h2>What stands out</h2>
+              </div>
+              <ul class="insights">
+                @for (insight of insights(); track insight.id) {
+                  <li class="insight" [class]="insight.tone">
+                    @if (insight.talent; as talent) {
+                      <img class="insight-icon" [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="36px" width="36" height="36" alt="" loading="lazy" [attr.data-tip]="talent.name" [attr.data-tip-spell]="talent.id" />
+                    }
+                    <span class="insight-body">
+                      <span class="insight-label">{{ insight.label }}</span>
+                      <b class="insight-title">{{ insight.title }}</b>
+                      <span class="insight-text">{{ insight.text }}</span>
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+
+          <section class="section">
+            <div class="section-header">
+              <h2>Most played builds</h2>
+              <p>All seven talents. {{ buildCount() | number }} different {{ buildCount() === 1 ? 'build' : 'builds' }} seen{{ buildCount() > buildRows().length ? '; the ' + buildRows().length + ' most played' : '' }}.</p>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="rank" scope="col">#</th>
+                    <th scope="col">Build</th>
+                    <th scope="col">Played by</th>
+                    <th scope="col" class="num">Top 10%</th>
+                    <th scope="col" class="col-optional">Best showing</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (build of buildRows(); track build.talents) {
+                    <tr>
+                      <td class="rank">{{ build.rank }}</td>
+                      <td>
+                        <span class="icons">
+                          @for (talent of build.picked; track talent) {
+                            @if (talent) {
+                              <a
+                                class="icon"
+                                [href]="spellUrl(talent.id)"
+                                target="_blank"
+                                rel="noopener"
+                                [attr.aria-label]="talent.name"
+                                [attr.data-tip]="talent.name"
+                                [attr.data-tip-spell]="talent.id">
+                                <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+                              </a>
+                            } @else {
+                              <span class="icon empty" data-tip="No talent picked"></span>
+                            }
+                          }
+                        </span>
+                      </td>
+                      <td>
+                        <span class="build-share">
+                          <span class="meter" aria-hidden="true"><span [style.width.%]="build.meter * 100"></span></span>
+                          <b>{{ formatShare(build.share) }}</b>
+                          <span class="muted phone-hidden">{{ build.characters | number }} {{ build.characters === 1 ? 'character' : 'characters' }}</span>
+                        </span>
+                      </td>
+                      <td class="num">{{ formatShare(build.topShare) }}</td>
+                      <td class="col-optional">
+                        <span class="best">
+                          <a class="best-name" [style.color]="classColor(build.best.character.classId)" [routerLink]="characterLink(build.best.character)" [queryParams]="{ difficulty: difficulty()?.slug }">{{ build.best.character.name }}</a>
+                          <a class="muted" [routerLink]="logLink(build.best.kill)">{{ formatPerSecond(build.best.value) }} {{ metricLabel() }} on {{ build.best.boss.shortName }}</a>
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p class="method-note">Played by: the share of picks; the bar is measured against the most played build. Best showing: the player closest to the top of their boss's ranking with the build.</p>
+          </section>
+
+          <section class="section">
+            <div class="section-header">
+              <h2>Boss by boss</h2>
+              <p>How often each talent is picked on each boss. <span class="notable-key" aria-hidden="true">▲</span> marks a talent picked {{ notableDifference }} or more points more there than on the other bosses.</p>
+            </div>
+            <div class="table-scroll">
+              <table class="heatmap">
+                <thead>
+                  <tr>
+                    <th scope="col" colspan="2"><span class="visually-hidden">Talent</span></th>
+                    @for (entry of heatBosses(); track entry.boss.slug) {
+                      <th
+                        scope="col"
+                        class="heat-boss"
+                        [class.selected]="entry.boss === boss()"
+                        [class.thin]="entry.thin">
+                        <img [src]="entry.boss.portrait" alt="" loading="lazy" />
+                        <span>{{ entry.boss.shortName }}</span>
+                      </th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of heatRows(); track row.key) {
+                    <tr [class.tier-start]="row.first">
+                      @if (row.first) {
+                        <th scope="rowgroup" class="heat-level" [attr.rowspan]="row.tierSize">{{ row.level }}</th>
+                      }
+                      <th scope="row" class="heat-talent">
+                        <span [attr.data-tip]="row.talent?.name" [attr.data-tip-spell]="row.talent?.id">
+                          @if (row.talent) {
+                            <img [src]="icon(row.talent.icon, 'medium')" [srcset]="iconSrcset(row.talent.icon)" sizes="20px" width="20" height="20" alt="" loading="lazy" />
+                          } @else {
+                            <span class="icon-placeholder" aria-hidden="true"></span>
+                          }
+                          {{ row.talent?.name ?? 'Unknown talent' }}
+                        </span>
+                      </th>
+                      @for (cell of row.cells; track cell; let bossIndex = $index) {
+                        <td
+                          class="heat-cell"
+                          [class.selected]="heatBosses()[bossIndex].boss === boss()"
+                          [class.thin]="cell.thin"
+                          [class.high]="cell.share >= .5"
+                          [style.background-color]="heatColor(cell.share)"
+                          [attr.data-tip]="cell.tip"
+                          [attr.data-tip-note]="cell.tipNote">
+                          {{ cell.label }}@if (cell.notable) {
+                          <span class="notable-mark"><span aria-hidden="true">▲</span><span class="visually-hidden"> picked more here</span></span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th scope="row" colspan="2">Characters</th>
+                  @for (entry of heatBosses(); track entry.boss.slug) {
+                    <td [class.selected]="entry.boss === boss()">{{ entry.picks | number }}</td>
+                  }
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <p class="method-note">Faded columns have fewer than 10 characters.</p>
+        </section>
+
+        <p class="method-note">
+          Each character counts once per boss, with the talents of their best kill there by {{ metricLabel() }}, as the boss rankings have it. The top 10% are the best tenth of each boss's {{ current.name }} ranking.
+        </p>
+      }
+    }
+  }
+</app-icon-tips>
+}
+}
+
+</main>

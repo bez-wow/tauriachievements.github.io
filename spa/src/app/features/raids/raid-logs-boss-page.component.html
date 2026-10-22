@@ -1,0 +1,274 @@
+<main class="raid-page">
+  <a class="back-link" routerLink="/raid-logs" [queryParams]="{ difficulty: difficulty()?.slug }">
+    <span aria-hidden="true">‹</span> Back to Raid Logs
+  </a>
+
+  @if (index(); as loaded) {
+    <nav class="boss-picker" aria-label="Pick a boss">
+      @for (other of loaded.bosses; track other.slug) {
+        <a
+          class="boss-pick"
+          [class.active]="other === boss()"
+          [attr.aria-current]="other === boss() ? 'page' : null"
+          [routerLink]="bossLink(other)"
+          [queryParams]="bossQueryParams()"
+          [title]="other.name">
+          <img [src]="other.portrait" alt="" loading="lazy" />
+          <span>{{ other.shortName }}</span>
+        </a>
+      }
+    </nav>
+  }
+
+  @if (boss(); as current) {
+    <header class="boss-header">
+      <img class="boss-portrait" [src]="current.portrait" alt="" />
+      <div class="boss-heading">
+        <p class="eyebrow">Boss {{ current.index + 1 }} · {{ index()?.raid?.name }}</p>
+        <h1>{{ current.name }}</h1>
+      </div>
+      @if (index(); as loaded) {
+        <app-raid-difficulty-switch
+          [difficulties]="loaded.difficulties"
+          [selected]="difficulty()?.slug"
+          [killCounts]="bossKillCounts()"
+          label="Show kills on difficulty"
+          (selectedChange)="setDifficulty($event)" />
+      }
+    </header>
+  }
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && difficulty(); as current) {
+    <dl class="summary">
+      @for (tile of summary(); track tile.label) {
+        <div>
+          <dt>{{ tile.label }}</dt>
+          <dd>{{ tile.value }}<span class="summary-note">{{ tile.note }}</span></dd>
+        </div>
+      }
+    </dl>
+
+    <section class="section" aria-label="Rankings and kills">
+      <div class="toolbar">
+        <div class="view-switch" role="tablist" aria-label="What to list" appGlide>
+          @for (entry of tabs; track entry) {
+            <button
+              type="button"
+              role="tab"
+              [class.active]="tab() === entry.id"
+              [attr.aria-selected]="tab() === entry.id"
+              (click)="setTab(entry.id)">{{ entry.label }}</button>
+          }
+        </div>
+
+        <div class="filters">
+          @if (isRanking()) {
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidBossRealm"
+                triggerId="raidBossRealmTrigger"
+                ariaLabel="Filter by realm"
+                [options]="realmOptions"
+                [selectedValue]="realmFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setRealmFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidBossClass"
+                triggerId="raidBossClassTrigger"
+                ariaLabel="Filter by class"
+                [options]="classOptions"
+                [selectedValue]="classFilter()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setClassFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidBossSpec"
+                triggerId="raidBossSpecTrigger"
+                ariaLabel="Filter by spec"
+                [options]="specOptions()"
+                [selectedValue]="specFilter()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                [disabled]="classFilter() === undefined"
+                (selectionChange)="setSpecFilter($event)" />
+            </div>
+          }
+          <label class="search">
+            <span class="visually-hidden">{{ isRanking() ? 'Find a character' : 'Find a guild' }}</span>
+            <input
+              type="search"
+              [placeholder]="isRanking() ? 'Find a character' : 'Find a guild'"
+              [value]="search()"
+              (input)="setSearch($any($event.target).value)" />
+          </label>
+        </div>
+      </div>
+
+      @if (isRanking()) {
+        <p class="list-note">
+          Each character's best kill. {{ tab() === 'hps' ? 'Healing counts absorbs; only healers are ranked.' : 'Damage done over the length of the fight; healers are ranked under Healing.' }}
+          <a class="talents-link" routerLink="/raid-logs/talents" [queryParams]="talentsQueryParams()">Which talents do they pick? <span aria-hidden="true">›</span></a>
+        </p>
+      }
+
+      @if (isRanking() && rankings().length) {
+        <app-icon-tips class="table-scroll" [spells]="talentTooltips()">
+          <table>
+            <thead>
+              <tr>
+                <th class="rank" scope="col">#</th>
+                <th scope="col">Character</th>
+                <th scope="col" class="num">{{ tab() === 'hps' ? 'HPS' : 'DPS' }}</th>
+                <th scope="col" class="num col-optional narrow-hidden">Item level</th>
+                <th scope="col">Kill</th>
+                <th scope="col" class="col-optional tablet-hidden">Date</th>
+                <th scope="col">Talents</th>
+                <th scope="col">Trinkets</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of shownRankings(); track characterKey(entry.member.character)) {
+                <tr>
+                  <td class="rank">{{ entry.rank }}</td>
+                  <td>
+                    <span class="character">
+                      <img [src]="entry.member.spec?.icon || classIcon(entry.member.character.classId)" alt="" loading="lazy" />
+                      <span class="character-text">
+                        <a
+                          class="character-name"
+                          [style.color]="classColor(entry.member.character.classId)"
+                          [routerLink]="characterLink(entry.member.character)"
+                          [queryParams]="{ difficulty: current.slug }">{{ entry.member.character.name }}</a>
+                        <span class="character-sub">{{ entry.member.spec?.name }} · {{ entry.member.character.realm }}@if (entry.member.character.guild) { · {{ entry.member.character.guild }}}</span>
+                      </span>
+                    </span>
+                  </td>
+                  <td class="num strong">{{ formatPerSecond(entry.value) }}</td>
+                  <td class="num col-optional narrow-hidden">{{ entry.member.itemLevel }}</td>
+                  <td>
+                    <a class="kill-link" [routerLink]="logLink(entry.kill)">
+                      <span class="strong">{{ formatFightTime(entry.kill.fightMs) }}</span>
+                      <span class="muted">{{ entry.kill.guild?.name || 'Pickup group' }}</span>
+                    </a>
+                  </td>
+                  <td class="col-optional tablet-hidden muted">{{ entry.kill.killedAt | date:'d MMM' }}</td>
+                  <td>
+                    @if (entry.talents.length) {
+                      <span class="icons">
+                        @for (talent of entry.talents; track talent) {
+                          @if (talent) {
+                            <a
+                              class="icon"
+                              [href]="spellUrl(talent.id)"
+                              target="_blank"
+                              rel="noopener"
+                              [attr.aria-label]="talent.name"
+                              [attr.data-tip]="talent.name"
+                              [attr.data-tip-spell]="talent.id">
+                              <img [src]="icon(talent.icon, 'medium')" [srcset]="iconSrcset(talent.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+                            </a>
+                          } @else {
+                            <span class="icon empty" data-tip="No talent picked"></span>
+                          }
+                        }
+                      </span>
+                    } @else {
+                      <span class="muted">-</span>
+                    }
+                  </td>
+                  <td>
+                    @if (entry.member.trinkets.length) {
+                      <span class="icons">
+                        @for (trinket of entry.member.trinkets; track trinket) {
+                          <a
+                            class="icon"
+                            [style.border-color]="qualityColor(trinket.quality)"
+                            [href]="itemUrl(trinket.id)"
+                            target="_blank"
+                            rel="noopener"
+                            [attr.aria-label]="trinket.name + ', item level ' + trinket.itemLevel"
+                            [attr.data-tip]="trinket.name"
+                            [attr.data-tip-color]="qualityColor(trinket.quality)"
+                            [attr.data-tip-note]="'Item level ' + trinket.itemLevel">
+                            <img [src]="icon(trinket.icon, 'medium')" [srcset]="iconSrcset(trinket.icon)" sizes="22px" width="22" height="22" alt="" loading="lazy" />
+                          </a>
+                        }
+                      </span>
+                    } @else {
+                      <span class="muted">-</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </app-icon-tips>
+      }
+      @if (!isRanking() && killRows().length) {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="rank" scope="col">#</th>
+                <th scope="col">Guild</th>
+                <th scope="col" class="num">Time</th>
+                <th scope="col" class="num col-optional">Players</th>
+                <th scope="col" class="num col-optional">Deaths</th>
+                <th scope="col" class="num col-optional">Wipes</th>
+                <th scope="col">Date</th>
+                <th scope="col" class="col-optional"><span class="visually-hidden">Log</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of shownKillRows(); track logKey(row.kill)) {
+                <tr>
+                  <td class="rank">{{ row.rank }}</td>
+                  <td>
+                    <span class="guild-cell">
+                      <span class="faction" [class]="'faction-' + row.kill.faction" aria-hidden="true"></span>
+                      @if (row.kill.guild?.name) {
+                        <a class="strong" [routerLink]="guildLink(row.kill.guild!)" [queryParams]="{ difficulty: current.slug }">{{ row.kill.guild!.name }}</a>
+                      } @else {
+                        <span class="muted">Pickup group</span>
+                      }
+                      <span class="muted realm phone-hidden">{{ row.kill.guild?.realm || row.kill.realm }}</span>
+                    </span>
+                  </td>
+                  <td class="num strong"><a [routerLink]="logLink(row.kill)">{{ formatFightTime(row.kill.fightMs) }}</a></td>
+                  <td class="num col-optional">{{ row.kill.members.length }}</td>
+                  <td class="num col-optional">{{ row.kill.deaths }}</td>
+                  <td class="num col-optional">{{ row.kill.wipes }}</td>
+                  <td class="muted"><time [attr.datetime]="row.kill.killedAt | date:'yyyy-MM-ddTHH:mm:ss'" [title]="row.kill.killedAt | date:'d MMM y, HH:mm'">{{ tab() === 'latest' ? ago(row.kill) : (row.kill.killedAt | date:'d MMM') }}</time></td>
+                  <td class="col-optional"><a class="log-link" [routerLink]="logLink(row.kill)">View log <span aria-hidden="true">›</span></a></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (!total()) {
+        <p class="empty-note">
+          {{ search() ? 'Nothing matches "' + search() + '".' : 'Nothing to show for these filters.' }}
+        </p>
+      }
+
+      @if (pages() > 1) {
+        <nav class="pager" aria-label="Pages">
+          <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹ Previous</button>
+          <span>Page {{ currentPage() }} of {{ pages() }} · {{ total() | number }} {{ isRanking() ? 'characters' : 'kills' }}</span>
+          <button type="button" [disabled]="currentPage() === pages()" (click)="goToPage(currentPage() + 1)">Next ›</button>
+        </nav>
+      }
+    </section>
+  }
+</main>

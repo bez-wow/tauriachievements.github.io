@@ -113,22 +113,47 @@ git-ignored and regenerated on every build:
 
 - `players.snapshot.json`: every player, self-describing (`c` = column names, `k` = the ranking
   rules from `scripts/player-ranking.js`), in achievement-point order, with each player's rank
-  and value changes since the previous day's scan.
+  and value changes since the previous day's scan. `realm` and `faction` are indexes into the
+  file's own lists, played time is in whole minutes (the app works in seconds), and a "Level 10"
+  date is days since 1970-01-01 (0 when unknown). `readPlayerSnapshot` reads rows by column
+  name, never by position, so a column the build adds, drops or moves can't land in the wrong
+  field; a column it expects but the file lacks reads as 0 or `''` and is reported once.
 - `players.head.snapshot.json`: exactly the first 25,000 rows of the full snapshot. The ladder
-  starts on it and loads the full file only when a search or sort needs it.
+  starts on it and loads the full file only when a search or sort needs it. Both files carry
+  the same realm and faction lists, so moving from the head to the full file keeps every row's
+  realm and faction.
 - `players.history.snapshot.json`, `new-players.snapshot.json`, `stats.snapshot.json`,
   `guilds.snapshot.json`: small precomputed files for Top Gainers, New Rare Characters, Stats
   and Guild Rankings.
-- `battlegrounds-<era>.json`: battlegrounds grouped by day, so the page doesn't parse the raw
-  `battlegrounds.json`.
+- `stats.snapshot.json` carries every bucket's bounds with its label, since a label means
+  nothing apart from the bounds that produced it. Class names and colours stay in the page, so
+  restyling a chart or renaming a class needs no new data.
+- `battlegrounds-<era>.json`: one file per era, so the default Legion view never downloads the
+  much larger prepatch history. `legion` holds the battlegrounds started from 2026-07-15 09:00
+  (`LEGION_START`), `wod-prepatch` everything before. A file is `{ version, era, names, days }`:
+  days in date order, each holding its battlegrounds as flat triples (an index into `names`, the
+  start minute of the day, the duration in seconds or -1 when unknown), in the collector's
+  order. The collector writes `YYYY.MM.DD HH.MM` start times and `HH:MM:SS` durations; a bare
+  number is milliseconds.
 - `raid-genders.json`: gender corrections for raid characters (the raid API reports almost
-  everyone as male), taken from Players.csv.
+  everyone as male), taken from Players.csv: for each raid character the ladder knows, the
+  ladder's gender where the two disagree. A ladder character of another class is a different
+  character with the same name and is left alone. The file is
+  `{ v, female: { realm: [names] }, male: { realm: [names] } }`.
 - `data-manifest.json`: a content hash for every data file, generated last.
 
 **The previous scans come from git history.** Every `sync data` commit is one scan.
 `readPlayersCsvHistory()` (`scripts/player-data-utils.js`) uses `git log --follow`, so a build
 needs the full history: `static1.yml` checks out with `fetch-depth: 0`. In a shallow clone the
 deltas, Top Gainers and "new character" flags all come out empty, and nothing fails.
+
+- The earlier scans are one per calendar day, newest first, never from the current scan's day,
+  up to 21 days in all for the history timeline (`load-player-snapshots.js`).
+- The current scan's time is the later of `lastUpdated.txt` and the newest `sync data` commit.
+  The file's modification time is a last resort only: in CI it's the checkout time, which
+  would turn a guild-only deploy into zero deltas.
+- `--name-status` records the path each commit had (the file moved from `src/` to `spa/src/`).
+  A pure rename (`R100`) isn't a scan: counting it would compare the data with itself.
 
 ## Caching: the data manifest
 
@@ -140,7 +165,9 @@ needs adding to `angular.json`.
 
 GitHub Pages ignores `?v=`, so a tab left open across a deploy can mix old and new files. The
 Mythic+ files guard against this: `index.json` and every dungeon file carry a `tables`
-fingerprint. When they don't match, the page calls `DataFileService.refresh()` and loads again.
+fingerprint. When they don't match, `MythicPlusDataService` refreshes the session and loads
+again, once; a second mismatch means the deploy is still going out, and the page says so
+(`NEWER_DATA_MESSAGE`) instead of retrying in a loop.
 Any new data split across several files needs the same guard. Raid boss files carry their own
 tables, so they don't.
 

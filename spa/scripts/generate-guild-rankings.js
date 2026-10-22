@@ -5,14 +5,8 @@ const { sortByAchievementPoints, sortByRanking } = require("./player-ranking");
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "guilds.snapshot.json");
 
-// Must match GUILD_SOURCE_LIMIT_OPTIONS in src/app/guild-presence-options.ts: the Guilds page
-// offers exactly these "count guild members among the top N players" choices.
 const GUILD_SOURCE_LIMITS = [100, 500, 1000];
 
-/**
- * For each source limit N: which guilds have the most members among the top N players by
- * achievement points, and among the top N by honorable kills.
- */
 function buildGuildRankingsSnapshot(players, limits = GUILD_SOURCE_LIMITS) {
   const byAchievementPoints = sortByAchievementPoints(players);
   const byHonorableKills = sortByRanking(byAchievementPoints, "honorableKills");

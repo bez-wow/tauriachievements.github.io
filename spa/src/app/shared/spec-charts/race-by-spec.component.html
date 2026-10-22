@@ -1,0 +1,91 @@
+<section class="chart-card race-card" [attr.aria-labelledby]="'race-spec-title-' + role()">
+  <header class="chart-header">
+    <div class="chart-heading">
+      <h2 [id]="'race-spec-title-' + role()">{{ title() }}</h2>
+      @if (!loading()) {
+        <p class="chart-subtitle">{{ subtitle() }}</p>
+      }
+    </div>
+
+    <div class="segmented" role="group" aria-label="Filter by faction" appGlide>
+      @for (option of factionOptions; track option) {
+        <button
+          type="button"
+          [class.active]="faction() === option.value"
+          [attr.aria-pressed]="faction() === option.value"
+          (click)="faction.set(option.value)">
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="chart-state" role="status">
+      <span class="state-spinner" aria-hidden="true"></span>
+      <span>Reading the rosters…</span>
+    </div>
+  }
+
+  @if (!loading()) {
+    <ol class="race-rows" appReveal [style.--rows]="rowsPerColumn()">
+      @for (row of rows(); track row.key; let index = $index) {
+        <li
+          class="race-row"
+          [style.--i]="index"
+          [style.--class-color]="row.color"
+          [class.nobody]="!row.total">
+          <span class="spec-cell">
+            @if (row.icon) {
+              <img class="spec-icon" [src]="row.icon" alt="" loading="lazy" />
+            }
+            <span class="spec-text">
+              <span class="spec-name">{{ row.spec }} <span class="class-name">{{ row.className }}</span></span>
+              <span class="spec-count">{{ row.total | number }} {{ row.total === 1 ? 'character' : 'characters' }}</span>
+            </span>
+          </span>
+
+          @if (row.races[0]; as top) {
+            <span class="top-race">
+              <img [src]="top.icon" alt="" loading="lazy" />
+              <span class="race-text">
+                <b>{{ top.name }}</b>
+                @if (row.tiedWith.length) {
+                  <span class="tie" [title]="'Tied with ' + row.tiedWith.join(', ')">tied with {{ row.tiedWith.join(', ') }}</span>
+                }
+              </span>
+              <span class="top-share">{{ top.shareLabel }}</span>
+            </span>
+          } @else {
+            <span class="top-race empty">Nobody yet</span>
+          }
+          <span
+            class="track"
+            appTapTooltip
+            role="img"
+            [attr.tabindex]="row.total ? 0 : null"
+            [attr.aria-label]="row.label">
+            <span class="race-bar">
+              @for (segment of row.segments; track segment.key) {
+                <span
+                  [class]="'segment tone-' + segment.tone"
+                  [style.width.%]="segment.width"></span>
+              }
+            </span>
+            @if (row.total) {
+              <span class="tooltip" aria-hidden="true">
+                <strong>{{ row.spec }} {{ row.className }}</strong>
+                @for (race of row.races; track race.race; let raceIndex = $index) {
+                  <span class="tooltip-row">
+                    <i [class]="'swatch tone-' + (raceIndex < 3 ? raceIndex : 3)"></i>
+                    <img [src]="race.icon" alt="" />{{ race.name }}<b>{{ race.shareLabel }}</b><span class="race-count">{{ race.count | number }}</span>
+                  </span>
+                }
+              </span>
+            }
+          </span>
+        </li>
+      }
+    </ol>
+  }
+</section>

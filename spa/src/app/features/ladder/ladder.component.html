@@ -1,0 +1,78 @@
+<div class="ladder-container">
+
+  <app-filter-bar
+    [sort]="currentSort()"
+    [realm]="currentRealm()"
+    [faction]="currentFaction()"
+    [playerClass]="currentClass()"
+    [pageSize]="pageSize()"
+    [searchTerm]="searchTerm()"
+    [sortOptions]="sortOptions"
+    [realmOptions]="realmOptions"
+    [factionOptions]="factionOptions"
+    [classOptions]="classOptions"
+    [pageSizeOptions]="pageSizeOptions"
+    (sortChange)="setSort($event)"
+    (realmChange)="setRealm($event)"
+    (factionChange)="setFaction($event)"
+    (classChange)="setClass($event)"
+    (pageSizeChange)="setPageSize($event)"
+    (searchChange)="onSearchChange($event)"
+    (reset)="resetFilters()" />
+
+  @if (showRefreshingBanner()) {
+    <div class="ladder-status-banner info">
+      <span>{{ syncMessage() || 'Refreshing ladder data...' }}</span>
+    </div>
+  }
+
+  @if (showSearchingBanner()) {
+    <div class="ladder-status-banner info searching" role="status">
+      <span>{{ searchingMessage() }}</span>
+    </div>
+  }
+
+  @if (showErrorBanner()) {
+    <div class="ladder-status-banner warning">
+      <span>{{ loadError() }}</span>
+      <button type="button" class="status-action" (click)="syncData()">Try again</button>
+    </div>
+  }
+
+  @if (showLoadingState()) {
+    <div class="ladder-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>{{ loadingTitle() }}</h2>
+      @if (loadingHint()) {
+        <p>{{ loadingHint() }}</p>
+      }
+    </div>
+  }
+
+  @if (showErrorState()) {
+    <div class="ladder-feedback error">
+      <h2>Could not load ladder data</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="syncData()">Try again</button>
+    </div>
+  }
+
+  @if (showEmptyState()) {
+    <div class="ladder-feedback empty">
+      <h2>{{ emptyStateTitle() }}</h2>
+      <p>{{ emptyStateMessage() }}</p>
+      @if (emptyStateHint()) {
+        <p>{{ emptyStateHint() }}</p>
+      }
+      @if (hasNarrowingFilters()) {
+        <button type="button" class="feedback-action" (click)="resetFilters()">Reset filters</button>
+      }
+    </div>
+  }
+
+  @if (players().length > 0 && !showLoadingState()) {
+    <app-leaderboard-table
+      [players]="players()"
+      [currentSort]="currentSort()" />
+  }
+</div>

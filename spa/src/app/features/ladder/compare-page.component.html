@@ -1,0 +1,143 @@
+<div class="compare-container">
+  @if (!loadError()) {
+    <section class="compare-header">
+      <h1>Player Comparison</h1>
+      <p>Put two characters head to head</p>
+    </section>
+  }
+
+  @if (isLoading()) {
+    <div class="compare-feedback loading">
+      <div class="feedback-spinner" aria-hidden="true"></div>
+      <h2>Loading players...</h2>
+    </div>
+  }
+
+  @if (!isLoading() && loadError()) {
+    <div class="compare-feedback error">
+      <h2>Could not load players</h2>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="feedback-action" (click)="retryLoad()">Try again</button>
+    </div>
+  }
+
+  @if (!isLoading() && !loadError()) {
+    <div class="compare-slots">
+      <div class="compare-slot">
+        @if (slotA(); as a) {
+          <div class="slot-card" [class]="a.faction">
+            <div class="slot-identity">
+              <div class="slot-main">
+                <div class="slot-icons">
+                  <img [src]="getRaceIconPath(a.race, a.gender)" [alt]="'Race ' + a.race + '-' + a.gender" class="icon" loading="lazy" (error)="onImageError($event)" />
+                  <img [src]="getClassIconPath(a.class)" [alt]="'Class ' + a.class" class="icon" loading="lazy" (error)="onImageError($event)" />
+                </div>
+                <a class="slot-name clickable" [style.color]="getClassColor(a.class)" [href]="getArmoryUrl(a.name, a.realm)" target="_blank" rel="noopener noreferrer">{{ a.name }}</a>
+              </div>
+              <span class="slot-meta">{{ a.realm }}@if (a.guild) { · {{ a.guild }}}</span>
+            </div>
+            <button type="button" class="slot-clear" aria-label="Clear character A" (click)="clearSlot('a')">✕</button>
+          </div>
+        } @else {
+          <div class="slot-search">
+            <input
+              type="text"
+              class="slot-search-input"
+              placeholder="Search character A..."
+              aria-label="Search character A"
+              [value]="searchA()"
+              (input)="onSearch('a', $any($event.target).value)" />
+            @if (suggestionsA().length > 0) {
+              <ul class="suggestions">
+                @for (player of suggestionsA(); track `${player.realm}::${player.name}`) {
+                  <li (click)="selectPlayer('a', player)">
+                    <span class="suggestion-name">{{ player.name }}</span>
+                    <span class="suggestion-meta">{{ player.realm }}@if (player.guild) { · {{ player.guild }}}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="compare-vs">
+        <span class="vs-label">VS</span>
+        @if (bothSelected()) {
+          <button type="button" class="vs-swap" aria-label="Swap sides" (click)="swap()">⇄</button>
+        }
+      </div>
+
+      <div class="compare-slot">
+        @if (slotB(); as b) {
+          <div class="slot-card" [class]="b.faction">
+            <div class="slot-identity">
+              <div class="slot-main">
+                <div class="slot-icons">
+                  <img [src]="getRaceIconPath(b.race, b.gender)" [alt]="'Race ' + b.race + '-' + b.gender" class="icon" loading="lazy" (error)="onImageError($event)" />
+                  <img [src]="getClassIconPath(b.class)" [alt]="'Class ' + b.class" class="icon" loading="lazy" (error)="onImageError($event)" />
+                </div>
+                <a class="slot-name clickable" [style.color]="getClassColor(b.class)" [href]="getArmoryUrl(b.name, b.realm)" target="_blank" rel="noopener noreferrer">{{ b.name }}</a>
+              </div>
+              <span class="slot-meta">{{ b.realm }}@if (b.guild) { · {{ b.guild }}}</span>
+            </div>
+            <button type="button" class="slot-clear" aria-label="Clear character B" (click)="clearSlot('b')">✕</button>
+          </div>
+        } @else {
+          <div class="slot-search">
+            <input
+              type="text"
+              class="slot-search-input"
+              placeholder="Search character B..."
+              aria-label="Search character B"
+              [value]="searchB()"
+              (input)="onSearch('b', $any($event.target).value)" />
+            @if (suggestionsB().length > 0) {
+              <ul class="suggestions">
+                @for (player of suggestionsB(); track `${player.realm}::${player.name}`) {
+                  <li (click)="selectPlayer('b', player)">
+                    <span class="suggestion-name">{{ player.name }}</span>
+                    <span class="suggestion-meta">{{ player.realm }}@if (player.guild) { · {{ player.guild }}}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (comparison(); as result) {
+      <div class="compare-result">
+        <div class="result-rows">
+          @for (row of result.rows; track row.label) {
+            <div class="result-row" [class]="row.kind">
+              <div
+                class="result-cell result-cell--a"
+                [class.win]="isWinner(row, 'a')"
+                [style.color]="row.kind === 'info' ? row.aColor : null">
+                {{ displayValue(row, 'a') }}
+              </div>
+              <div class="result-label">
+                <span>{{ row.label }}</span>
+                @if (row.kind === 'metric') {
+                  <span class="result-difference">
+                    Difference {{ row.difference | number }}
+                  </span>
+                }
+              </div>
+              <div
+                class="result-cell result-cell--b"
+                [class.win]="isWinner(row, 'b')"
+                [style.color]="row.kind === 'info' ? row.bColor : null">
+                {{ displayValue(row, 'b') }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <p class="compare-hint">Search and pick two characters to see how they stack up.</p>
+    }
+  }
+</div>

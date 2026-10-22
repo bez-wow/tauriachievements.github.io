@@ -84,8 +84,6 @@ function toNumber(value) {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-// "2019-04-02" -> whole days since 1970-01-01 (UTC), or 0 when unknown. A day count is a
-// third of the size of the date string in the snapshot and needs no parsing in the browser.
 function toEpochDay(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return 0;
@@ -97,9 +95,6 @@ function toEpochDay(value) {
 
 const SECONDS_PER_MINUTE = 60;
 
-// Played time is shown to the minute, so the seconds are dropped as soon as the CSV is read.
-// Ranking on whole minutes here keeps the build's rank changes in step with the browser's
-// re-sort, which only ever sees minutes; players in the same minute tie in both places.
 function toWholeMinuteSeconds(value) {
   return Math.floor(toNumber(value) / SECONDS_PER_MINUTE) * SECONDS_PER_MINUTE;
 }
@@ -163,9 +158,6 @@ function readTextIfExists(filePath) {
   return fs.readFileSync(filePath, "utf8");
 }
 
-// Commits that changed Players.csv, newest first. `--follow` keeps the history reaching
-// past renames (the file moved from src/ to spa/src/), and `--name-status` records the
-// repo-root path the file had in each commit, which is what `git show sha:path` needs.
 function readPlayersCsvHistory() {
   let output;
   try {
@@ -187,8 +179,6 @@ function readPlayersCsvHistory() {
   return parseGitHistoryOutput(output);
 }
 
-// A pure rename (R100) carries byte-identical data. Counting it as a snapshot would make
-// the move commit the "latest scan" and compare the data against itself.
 function parseGitHistoryOutput(output) {
   const entries = [];
 

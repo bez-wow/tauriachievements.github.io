@@ -1,0 +1,62 @@
+.chart-header { align-items: baseline; }
+
+.chart-heading { flex: 1 1 420px; }
+
+.chart-filters { justify-content: flex-end; }
+
+.segmented {
+  flex: none;
+
+  button { min-width: 74px; }
+}
+
+.tooltip-unit { color: #8a8a8a; font-size: .69rem; font-weight: 600; }
+
+.bar-slot.short-bar .tooltip { top: auto; bottom: 0; }
+
+.chart-state {
+  display: flex;
+  min-height: 248px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #9a9a9a;
+  font-size: .85rem;
+}
+
+.state-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, .15);
+  border-top-color: #f7b500;
+  border-radius: 50%;
+  animation: raid-chart-spin .8s linear infinite;
+}
+
+.chart-error {
+  flex-direction: column;
+  color: #d6a1a1;
+  text-align: center;
+
+  button {
+    padding: 7px 13px;
+    border: 1px solid #f7b500;
+    border-radius: 5px;
+    background: #231d0a;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+  }
+}
+
+@keyframes raid-chart-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .chart-filters { width: 100%; }
+
+  .segmented {
+    width: 100%;
+
+    button { min-width: 0; }
+  }
+}

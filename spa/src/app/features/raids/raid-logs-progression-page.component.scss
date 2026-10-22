@@ -1,0 +1,47 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+@include sections;
+@include raid-table;
+@include difficulty-colors;
+@include faction-marks;
+@include filter-reset;
+
+.raid-page { @include raid-page; }
+
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.filter-group { display: inline-grid; grid-auto-columns: 1fr; grid-auto-flow: column; gap: 10px; }
+.filter-reset { justify-content: center; }
+
+.guild-name { display: inline-flex; align-items: center; gap: 8px; }
+tr.cleared .guild-name .strong { color: $gold; }
+
+.progress { display: inline-flex; align-items: center; gap: 10px; }
+.progress-count { min-width: 2.4em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pips { display: inline-flex; gap: 3px; }
+
+.pip {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 3px;
+  background: #222;
+
+  @each $slug, $color in $difficulty-colors {
+    &.down.#{$slug} { border-color: rgba($color, .6); background: rgba($color, .75); }
+  }
+}
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+  .filters { width: 100%; }
+  .filters app-raid-difficulty-switch { flex-basis: 100%; }
+  .filter-group { display: flex; width: 100%; }
+  .filter-slot { min-width: 0; flex: 1 1 0; }
+  .filter-reset:disabled { display: none; }
+  .col-optional { display: none; }
+  .pips { display: none; }
+}

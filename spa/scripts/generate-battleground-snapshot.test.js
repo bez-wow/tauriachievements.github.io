@@ -2,7 +2,6 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { buildBattlegroundSnapshots, parseBattleground } = require("./generate-battleground-snapshot");
 
-// Reads a snapshot back into [name, date, minute, seconds] rows, in snapshot order.
 function rows(snapshot) {
   return snapshot.days.flatMap(([date, values]) => {
     const result = [];

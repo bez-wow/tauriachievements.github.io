@@ -1,0 +1,217 @@
+<div class="nightmare-banner">
+  <img
+    src="assets/emerald-nightmare-the-race-to.png"
+    alt="Emerald Nightmare: The Race To"
+    fetchpriority="high" />
+</div>
+
+<main class="nightmare-page">
+  @if (isLoading()) {
+    <section class="feedback">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>The Nightmare is taking shape...</p>
+    </section>
+  }
+
+  @if (!isLoading() && loadError()) {
+    <section class="feedback error">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="retryLoad()">Try again</button>
+    </section>
+  }
+
+  @if (!isLoading() && !loadError()) {
+    <section class="progression-timeline" aria-label="Guild progression timeline">
+      <div class="race-playback" aria-label="Race playback controls">
+        <div class="playback-actions">
+          <button
+            type="button"
+            class="playback-button"
+            [class.attention]="!isPlaying()"
+            (click)="togglePlayback()">
+            <span aria-hidden="true">{{ isPlaying() ? 'Ⅱ' : '▶' }}</span>
+            {{ playbackButtonLabel() }}
+          </button>
+          <button type="button" class="playback-reset" (click)="resetPlayback()">
+            <span aria-hidden="true">↺</span>
+            Reset
+          </button>
+        </div>
+        <time class="playback-clock">{{ playbackTimeLabel() }}</time>
+        <input
+          class="playback-slider"
+          type="range"
+          min="0"
+          max="240"
+          step="1"
+          [value]="playbackMinute()"
+          (input)="seekPlayback($event)"
+          aria-label="Race time from 18:00 to 22:00" />
+        <span class="playback-range" aria-hidden="true">18:00–22:00</span>
+      </div>
+      <div class="timeline-scroll" tabindex="0" aria-label="Scrollable guild progression timeline">
+        <div class="timeline-board">
+          <div class="timeline-axis" aria-hidden="true">
+            <span class="axis-corner">Guild</span>
+            <div class="axis-scale">
+              @for (hour of timelineHours; track hour) {
+                <span
+                  class="axis-hour"
+                  [style.left.%]="hour.position">
+                  {{ hour.label }}
+                </span>
+              }
+            </div>
+          </div>
+          @for (timeline of guildTimelines(); track timeline.guild) {
+            <article
+              class="guild-lane"
+              [class.leader]="timeline.isLeader"
+              [style.--guild-color]="timeline.color">
+              <header class="guild-summary">
+                <span class="guild-summary-copy">
+                  <strong>
+                    <a
+                      class="timeline-guild-link"
+                      [href]="guildArmoryUrl(timeline.guild)"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      {{ timeline.guild }}
+                    </a>
+                  </strong>
+                  <small>
+                    {{ timeline.completed }}/{{ bosses().length }} bosses
+                    @if (timeline.totalMinutes !== undefined) {
+                      &middot; {{ formatDuration(timeline.totalMinutes) }}
+                    }
+                  </small>
+                </span>
+              </header>
+
+              <div class="lane-checkpoints">
+                @for (hour of timelineHours; track hour) {
+                  <span
+                    class="hour-gridline"
+                    aria-hidden="true"
+                    [style.left.%]="hour.position"></span>
+                }
+                <div class="lane-track" aria-hidden="true"></div>
+                <div
+                  class="lane-progress"
+                  aria-hidden="true"
+                  [style.left.%]="timeline.progressStart"
+                  [style.width.%]="timeline.progressWidth"></div>
+                @for (checkpoint of timeline.checkpoints; track checkpoint.boss.key) {
+                  <div
+                    class="checkpoint"
+                    appTapTooltip
+                    [style.left.%]="checkpoint.positionPercent"
+                    [class.killed]="checkpoint.kill && checkpoint.isVisible"
+                    [class.realm-first]="checkpoint.isFirstKill && checkpoint.isVisible"
+                    [class.pending]="!checkpoint.kill || !checkpoint.isVisible"
+                    [attr.aria-label]="checkpoint.kill
+                      ? checkpoint.boss.name + ' defeated at ' + checkpoint.kill.time
+                      : checkpoint.boss.name + ' not recorded'">
+                    <span class="checkpoint-node">
+                      @if (checkpoint.kill && checkpoint.isVisible) {
+                        <img [src]="checkpoint.boss.iconUrl" alt="" aria-hidden="true" />
+                      }
+                      @if (!checkpoint.kill || !checkpoint.isVisible) {
+                        <span aria-hidden="true">?</span>
+                      }
+                    </span>
+                    @if (checkpoint.isFirstKill && checkpoint.isVisible) {
+                      <span class="realm-first-badge" aria-label="Realm first">♛</span>
+                    }
+                    @if (checkpoint.splitMinutes !== undefined && checkpoint.isVisible) {
+                      <span class="boss-hover-tooltip">
+                        {{ formatSplitDuration(checkpoint.splitMinutes) }}
+                      </span>
+                    }
+                    @if (checkpoint.kill && checkpoint.isVisible) {
+                      <time
+                        [attr.datetime]="checkpoint.kill.date + 'T' + checkpoint.kill.time">
+                        {{ checkpoint.kill.time }}
+                      </time>
+                    }
+                    @if (!checkpoint.kill || !checkpoint.isVisible) {
+                      <span class="checkpoint-waiting">—</span>
+                    }
+                  </div>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  @if (!isLoading() && !loadError()) {
+    <section class="raid-map" aria-label="Emerald Nightmare boss rankings">
+      @for (boss of bosses(); track boss.key) {
+        <article class="boss-card">
+          <header class="boss-header">
+            <span class="boss-icon-frame">
+              <img [src]="boss.iconUrl" [alt]="boss.name + ' icon'" class="boss-icon" />
+            </span>
+            <h2>{{ boss.name }}</h2>
+          </header>
+          <ol class="guild-ranking">
+            @for (kill of boss.guilds; track rank; let rank = $index) {
+              <li [class.empty]="!kill.guild">
+                <span class="rank">{{ rank + 1 }}</span>
+                <span class="kill-details">
+                  @if (kill.guild) {
+                    <a
+                      class="guild-name guild-card-link"
+                      [href]="guildArmoryUrl(kill.guild)"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      {{ kill.guild }}
+                    </a>
+                  } @else {
+                    <span class="guild-name">Available</span>
+                  }
+                  @if (kill.realm || kill.date || kill.time || kill.youtubeUrl) {
+                    <span class="kill-meta">
+                      @if (kill.realm) {
+                        <span
+                          class="realm-badge"
+                          >
+                          {{ kill.realm }}
+                        </span>
+                      }
+                      @if (kill.date) {
+                        <time [attr.datetime]="kill.time ? kill.date + 'T' + kill.time : kill.date">
+                          {{ formatKillDate(kill.date) }}@if (kill.time) { &middot; {{ kill.time }}}
+                      </time>
+                    }
+                    @if (!kill.date && kill.time) {
+                      <time>{{ kill.time }}</time>
+                    }
+                    @if (kill.youtubeUrl) {
+                      <a
+                        class="youtube-link"
+                        [href]="kill.youtubeUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        [attr.aria-label]="'Watch ' + kill.guild + ' defeat ' + boss.name + ' on YouTube'"
+                        title="Watch the kill on YouTube">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" />
+                          <path class="youtube-play" d="m9.6 15.7 6.3-3.7-6.3-3.7v7.4Z" />
+                        </svg>
+                      </a>
+                    }
+                  </span>
+                }
+              </span>
+            </li>
+          }
+        </ol>
+      </article>
+    }
+  </section>
+}
+</main>

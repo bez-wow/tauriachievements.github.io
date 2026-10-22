@@ -1,0 +1,455 @@
+<main class="profile-page">
+  <a class="back-link" routerLink="/mythic-plus">
+    <span aria-hidden="true">‹</span> Back to the M+ Leaderboard
+  </a>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Charging the keystones..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError()) {
+    @if (player() && member(); as member) {
+      <header class="profile-header" [style.--class-color]="member.color">
+        <span class="profile-crest">
+          <img [src]="classCrest()" [alt]="member.className" width="256" height="256" [style.view-transition-name]="crestTransition()" />
+        </span>
+        <div class="profile-identity">
+          <h1 [style.color]="member.color" [style.view-transition-name]="nameTransition()">{{ member.name }}</h1>
+          <p class="profile-meta">
+            <span>{{ member.realm }}</span>
+            @if (member.guildLink) {
+              <a class="guild-link" [routerLink]="member.guildLink" title="Open the guild's Mythic+ ladder">&lt;{{ member.guild }}&gt;</a>
+            }
+          </p>
+          <ul class="profile-specs" aria-label="Specs played">
+            @if (specs().length > 1) {
+              <li [style.--i]="0">
+                <button type="button" class="spec-pill all-specs" [attr.aria-pressed]="!selectedSpec()" (click)="selectSpec(undefined)">
+                  <span>All</span>
+                  <span class="spec-runs">{{ runs().length | number }} {{ runs().length === 1 ? 'run' : 'runs' }}</span>
+                </button>
+              </li>
+            }
+            @for (spec of specs(); track spec; let index = $index) {
+              <li [style.--i]="index + 1">
+                @if (specs().length > 1) {
+                  <button
+                    type="button"
+                    class="spec-pill"
+                    [attr.aria-pressed]="spec.spec === selectedSpec()"
+                    (click)="selectSpec(spec.spec)">
+                    <ng-container *ngTemplateOutlet="specPill; context: { $implicit: spec }"></ng-container>
+                  </button>
+                } @else {
+                  <span class="spec-pill main"><ng-container *ngTemplateOutlet="specPill; context: { $implicit: spec }"></ng-container></span>
+                }
+              </li>
+            }
+          </ul>
+          <ng-template #specPill let-spec>
+            @if (spec.icon) {
+              <span class="spec-icon"><img [src]="spec.icon" alt="" /></span>
+            }
+            <span>{{ spec.spec }}</span>
+            <span class="spec-runs">{{ spec.runs | number }} {{ spec.runs === 1 ? 'run' : 'runs' }}</span>
+          </ng-template>
+        </div>
+        <div class="profile-score">
+          <span
+            class="profile-score-metric"
+            [class.has-score-change]="!!headerScanChange()?.score"
+            [attr.tabindex]="headerScanChange()?.score ? 0 : null">
+            <span
+              class="profile-score-value"
+              [style.color]="color()"
+              [class.score-gained]="(headerScanChange()?.score ?? 0) > 0"
+              [appCountUp]="(shownScore()?.score | number:'1.1-1') ?? ''"
+              [countUpDelay]="150"></span>
+            @if (headerScanChange()?.score; as scoreChange) {
+              <span class="scan-score-tooltip" aria-hidden="true">{{ scoreChangeLabel(scoreChange) }}</span>
+              <span class="visually-hidden">. {{ scoreChangeLabel(scoreChange) }}</span>
+            }
+          </span>
+          <span class="profile-score-label">
+            {{ selectedSpec() ?? 'Mythic+' }} score@if (index()?.season?.name; as season) { · {{ season }}}
+          @if (headerScanChange()?.isNew) {
+            <span class="profile-new" title="New since the last scan">new</span>
+          }
+        </span>
+      </div>
+      <div class="profile-actions">
+        <a class="action-link" routerLink="/mythic-plus" [queryParams]="showRunsParams()">Show runs on the leaderboard</a>
+        <button type="button" class="action-link" [class.active]="compareOpen()" [attr.aria-expanded]="compareOpen()"
+          (click)="compareOpen.set(!compareOpen())">Compare</button>
+        <a class="action-link" [href]="member.armoryUrl" target="_blank" rel="noopener noreferrer">
+          Armory <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      @if (compareOpen()) {
+        <div class="compare-with" animate.leave="panel-leaving">
+          <label class="character-search">
+            <span>Compare {{ member.name }} with</span>
+            <input
+              type="search"
+              placeholder="Player name…"
+              autocomplete="off"
+              spellcheck="false"
+              [value]="compareQuery()"
+              (input)="onCompareSearch($event)"
+              (keydown.escape)="compareOpen.set(false)" />
+          </label>
+          @if (compareResults().length) {
+            <ol class="character-results">
+              @for (result of compareResults(); track result.key) {
+                <li>
+                  <a routerLink="/mythic-plus/compare" [queryParams]="compareParams(result.member)">
+                    <img [src]="result.member.classIcon" [alt]="result.member.className" />
+                    <span class="result-name" [style.color]="result.member.color">{{ result.member.name }}</span>
+                    <span class="result-realm">{{ result.member.realm }}</span>
+                    <span class="result-score">{{ result.score | number:'1.1-1' }}</span>
+                  </a>
+                </li>
+              }
+            </ol>
+          }
+          @if (compareQuery().trim() && !compareResults().length) {
+            <p class="search-empty">No player by that name.</p>
+          }
+          <a class="compare-pick-link" routerLink="/mythic-plus" [queryParams]="comparePickParams()">
+            Or pick up to 3 more on the leaderboard <span aria-hidden="true">›</span>
+          </a>
+        </div>
+      }
+      <dl class="profile-summary">
+        @for (item of summary(); track item.label; let index = $index) {
+          <div>
+            <dt>{{ item.label }}</dt>
+            <dd [appCountUp]="item.value" [countUpDelay]="200 + index * 60"></dd>
+          </div>
+        }
+      </dl>
+    </header>
+
+    <nav class="ranks" aria-label="Ranks, each opening the players leaderboard where it is">
+      @for (tile of ranks(); track tile.scope; let index = $index) {
+        <a
+          class="rank-tile"
+          appSpotlight
+          [style.--i]="index"
+          [routerLink]="tile.link"
+          [queryParams]="tile.queryParams">
+          <span class="rank-scope">{{ tile.scope }}</span>
+          <span class="rank-value">
+            <span>#{{ tile.rank | number }}</span>
+            @if (tile.rankChange; as rankChange) {
+              <span
+                class="profile-rank-change"
+                [class.up]="rankChange > 0"
+                [class.down]="rankChange < 0"
+                [attr.title]="rankChangeLabel(rankChange)"
+                [attr.aria-label]="rankChangeLabel(rankChange)">
+                <span aria-hidden="true">{{ rankChange > 0 ? '▲' : '▼' }} {{ rankChange < 0 ? -rankChange : rankChange }}</span>
+              </span>
+            }
+            @if (tile.newSinceLastScan) {
+              <span class="profile-new" title="New since the last scan">new</span>
+            }
+          </span>
+          <span class="rank-label">
+            @if (tile.icon) {
+              <span class="rank-icon"><img [src]="tile.icon" alt="" /></span>
+            }
+            @if (tile.role; as role) {
+              <span class="rank-role" [class]="role" aria-hidden="true">
+                @switch (role) {
+                  @case ('tank') {
+                    <svg viewBox="0 0 24 24" focusable="false"><path d="M12 2 4 5v6.1c0 5 3.4 9.6 8 10.9 4.6-1.3 8-5.9 8-10.9V5l-8-3z" /></svg>
+                  }
+                  @case ('healer') {
+                    <svg viewBox="0 0 24 24" focusable="false"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5z" /></svg>
+                  }
+                  @case ('dps') {
+                    <svg viewBox="0 0 24 24" focusable="false"><path d="M21 3l-7.5 1.6-7.8 7.8-1.9-1.9-1.4 1.4 2.6 2.6-2.4 2.4a1.5 1.5 0 1 0 2.1 2.1l2.4-2.4 2.6 2.6 1.4-1.4-1.9-1.9 7.8-7.8z" /></svg>
+                  }
+                }
+              </span>
+            }
+            <span class="rank-label-text" [attr.title]="tile.scope === 'Guild' ? tile.label : null">{{ tile.label }}</span>
+          </span>
+          <span class="rank-total">of {{ tile.total | number }} · <b>{{ tile.top }}</b></span>
+        </a>
+      }
+    </nav>
+
+    <div class="pair">
+      <section class="card" aria-labelledby="bests-title">
+        <header class="card-header">
+          <h2 id="bests-title">Best run per dungeon</h2>
+          <p class="card-subtitle">Their score is the sum of these points</p>
+        </header>
+
+        @if (!cards()) {
+          <table class="bests">
+            <thead>
+              <tr>
+                <th scope="col">Dungeon</th>
+                <th scope="col" class="num">Key</th>
+                <th scope="col" class="num">Time</th>
+                <th scope="col" class="num">Points</th>
+                <th scope="col" class="num">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (best of dungeonBests(); track best.dungeon.id) {
+                <tr [class.not-played]="!best.run">
+                  <th scope="row">
+                    <span class="dungeon-name">
+                      <img [src]="best.dungeon.icon" alt="" loading="lazy" />{{ best.dungeon.name }}
+                    </span>
+                  </th>
+                  @if (best.run; as run) {
+                    <td class="num" [class.over-time]="run.upgrades === 0">
+                      <span class="level">
+                        <span class="level-value">+{{ run.keyLevel }}</span>
+                        @if (run.upgrades > 0) {
+                          <span class="level-star" [title]="'Timed, +' + run.upgrades">{{ upgradeStars(run.upgrades) }}<span class="visually-hidden"> timed +{{ run.upgrades }}</span></span>
+                        }
+                      </span>
+                    </td>
+                    <td class="num time" [title]="'Timer ' + run.timerClock">
+                      {{ run.clearClock }}
+                      <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
+                    </td>
+                    <td class="num points" [style.color]="run.color">{{ run.score | number:'1.1-1' }}</td>
+                    <td class="num date"><time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time></td>
+                  } @else {
+                    <td class="not-played-cell" colspan="4">{{ notPlayedLabel() }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <ol class="best-cards">
+            @for (best of dungeonBests(); track best.dungeon.id) {
+              <li [class.not-played]="!best.run">
+                <img class="best-card-icon" [src]="best.dungeon.icon" alt="" loading="lazy" />
+                <span class="best-card-body">
+                  <span class="best-card-name">{{ best.dungeon.name }}</span>
+                  @if (best.run; as run) {
+                    <span class="best-card-meta">
+                      {{ run.clearClock }}
+                      <span class="timer-delta" [class.over]="run.upgrades === 0">{{ run.timerDelta }}</span>
+                      · <time [attr.datetime]="run.completedAt">{{ run.completedAt | date:'d MMM' }}</time>
+                    </span>
+                  } @else {
+                    <span class="best-card-meta">{{ notPlayedLabel() }}</span>
+                  }
+                </span>
+                @if (best.run; as run) {
+                  <span class="level" [class.over-time]="run.upgrades === 0">
+                    <span class="level-value">+{{ run.keyLevel }}</span>
+                    <span class="level-star">{{ upgradeStars(run.upgrades) }}@if (run.upgrades > 0) {<span class="visually-hidden"> timed +{{ run.upgrades }}</span>}</span>
+                  </span>
+                  <span class="points" [style.color]="run.color"><span class="visually-hidden">Points </span>{{ run.score | number:'1.1-1' }}</span>
+                }
+              </li>
+            }
+          </ol>
+        }
+      </section>
+
+      <section class="card" aria-labelledby="teammates-title">
+        <header class="card-header">
+          <h2 id="teammates-title">Frequent teammates</h2>
+          <p class="card-subtitle">Most runs together, and their best key together</p>
+        </header>
+        @if (teammates().length) {
+          <ol class="teammates">
+            @for (mate of teammates(); track mate.key) {
+              <li class="teammate-item">
+                <a class="teammate" [routerLink]="mate.member.profileLink" [style.--class-color]="mate.member.color">
+                  <img class="teammate-icon" [src]="mate.member.classIcon" [alt]="mate.member.className" />
+                  <span class="teammate-body">
+                    <span class="teammate-name" [style.color]="mate.member.color">{{ mate.member.name }}</span>
+                    <span class="teammate-meta">{{ mate.member.realm }} · {{ mate.member.spec }}</span>
+                  </span>
+                  <span class="teammate-numbers">
+                    <span class="teammate-count"><b>{{ mate.runs | number }}</b> {{ mate.runs === 1 ? 'run' : 'runs' }}</span>
+                    <span class="teammate-best" [title]="'Best key together: ' + mate.dungeonName + ' +' + mate.keyLevel">
+                      {{ mate.dungeon }} +{{ mate.keyLevel }}@if (mate.upgrades > 0) {<span class="level-star">{{ upgradeStars(mate.upgrades) }}</span>}
+                  </span>
+                </span>
+              </a>
+              <a class="teammate-compare" routerLink="/mythic-plus/compare" [queryParams]="compareParams(mate.member)"
+                [attr.aria-label]="'Compare with ' + mate.member.name" [title]="'Compare with ' + mate.member.name">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <rect x="1.5" y="3" width="5.5" height="10" rx="1" />
+                  <rect x="9" y="3" width="5.5" height="10" rx="1" />
+                </svg>
+              </a>
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="card-empty">No runs with anyone yet.</p>
+      }
+    </section>
+  </div>
+
+  @if (chart(); as chart) {
+    <section class="card" aria-labelledby="timeline-title">
+      <header class="card-header">
+        <h2 id="timeline-title">Score over the season</h2>
+        <p class="card-subtitle">
+          At the end of each day in your local time · shaded by affix week ·
+          <span class="hint-hover">hover a day for its runs, click to list them</span><span class="hint-touch">tap a day for its runs</span>
+        </p>
+        @if (selectedDay()) {
+          <button type="button" class="more-runs clear-day" (click)="selectDay(undefined)">Clear</button>
+        }
+      </header>
+      <div class="chart-scroll" [appScrollToEnd]="chart.points.length">
+        <div class="line-chart" [style.--columns]="chart.points.length" [appReveal]="2000">
+          <div class="y-axis" aria-hidden="true">
+            @for (line of chart.gridlines; track line) {
+              <span [style.bottom.%]="line.position">{{ line.value }}</span>
+            }
+          </div>
+          <div class="plot">
+            <div class="gridlines" aria-hidden="true">
+              @for (line of chart.gridlines; track line) {
+                <span [style.bottom.%]="line.position"></span>
+              }
+            </div>
+            <div class="week-bands" aria-hidden="true">
+              @for (band of chart.bands; track band) {
+                <span
+                  [class.shade]="band.shade"
+                  [style.grid-column]="band.start + ' / span ' + band.span">
+                  <em>@for (affix of band.affixes; track affix) {
+                    <img [src]="affix.icon" alt="" loading="lazy" />
+                  }</em>
+                </span>
+              }
+            </div>
+            <svg class="line" [attr.viewBox]="chart.viewBox" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <polygon class="area" [attr.points]="chart.area" />
+              <polyline class="stroke" [attr.points]="chart.line" vector-effect="non-scaling-stroke" />
+            </svg>
+            <div class="columns">
+              @for (point of chart.points; track point; let index = $index) {
+                <div
+                  class="column"
+                  appTapTooltip
+                  [style.--i]="index"
+                  [class.flip]="point.flip"
+                  [class.middle]="point.middle"
+                  [class.played]="point.day.runs > 0"
+                  [class.selected]="point.day.day === selectedDay()"
+                  (click)="selectDay(point.day.day, point.day.runs)"
+                  (keydown.enter)="selectDay(point.day.day, point.day.runs)"
+                  role="img"
+                  tabindex="0"
+                  [attr.aria-label]="point.ariaLabel">
+                  <span class="dot" [style.bottom.%]="point.bottom"></span>
+                  <span class="tooltip" aria-hidden="true">
+                    <strong>{{ point.day.score | number:'1.1-1' }}</strong>
+                    <span>{{ point.longLabel }}</span>
+                    @if (point.day.runs) {
+                      <span class="tooltip-row">
+                        {{ point.day.runs }} {{ point.day.runs === 1 ? 'run' : 'runs' }}<b>+{{ point.day.gained | number:'1.1-1' }}</b>
+                      </span>
+                    } @else {
+                      <span class="tooltip-meta">No runs</span>
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+            <div class="x-labels" aria-hidden="true">
+              @for (point of chart.points; track point) {
+                <span>{{ point.showLabel ? point.label : '' }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
+  <section class="history" aria-labelledby="history-title">
+    <header class="history-header">
+      <h2 id="history-title">Runs</h2>
+      @if (!selectedDayLabel()) {
+        <p>{{ specRuns().length | number }}@if (selectedSpec(); as spec) { as {{ spec }}} this season, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. Rank is the run's place among every run of the season.</p>
+      }
+      @if (selectedDayLabel(); as label) {
+        <p>{{ historyRuns().length | number }}@if (selectedSpec(); as spec) { as {{ spec }}} on {{ label }}, {{ historyOrder() === 'best' ? 'best rank first' : 'newest first' }}. <button type="button" class="link-button" (click)="selectDay(undefined)">Show all</button></p>
+        }
+      </header>
+      <app-mythic-plus-runs-list
+        [caption]="historyOrder() === 'best' ? 'Mythic+ runs, best rank first' : 'Mythic+ runs, newest first'"
+        emptyMessage="No runs this season."
+        [rows]="historyRows()"
+        [expandedRunId]="expandedRunId()"
+        [cards]="cards()"
+        [completed]="true"
+        [runOrder]="historyOrder()"
+        (runOrderChange)="setHistoryOrder($event)"
+        (toggleRun)="toggleRun($event)" />
+      @if (nextRuns()) {
+        <button type="button" class="more-runs" (click)="showMoreRuns()">
+          Show {{ nextRuns() }} more {{ nextRuns() === 1 ? 'run' : 'runs' }}
+        </button>
+      }
+    </section>
+  } @else {
+    @if (ambiguous().length) {
+      <section class="not-found">
+        <h1>Which {{ urlName() }}?</h1>
+        <p>More than one character on {{ realmName() }} goes by that name. Pick one:</p>
+        <ng-container *ngTemplateOutlet="characterList; context: { $implicit: ambiguous() }"></ng-container>
+      </section>
+    } @else {
+      <section class="not-found">
+        <h1>No Mythic+ runs this season</h1>
+        <p>
+          <strong>{{ urlName() }}</strong> on {{ realmName() }} has no Mythic+ run this season. The character
+          may have been renamed or moved to another realm, or not have finished a key yet.
+        </p>
+        <label class="character-search">
+          <span>Find a character</span>
+          <input
+            type="search"
+            placeholder="Character name..."
+            autocomplete="off"
+            enterkeyhint="search"
+            [value]="searchQuery()"
+            (input)="onSearch($event)" />
+        </label>
+        @if (searchResults().length) {
+          <ng-container *ngTemplateOutlet="characterList; context: { $implicit: searchResults() }"></ng-container>
+        } @else {
+          @if (searchQuery().trim(); as query) {
+            <p class="search-empty">No character matching "{{ query }}" has a run this season.</p>
+          }
+        }
+      </section>
+    }
+  }
+}
+</main>
+
+<ng-template #characterList let-characters>
+  <ul class="character-results">
+    @for (character of characters; track character.key) {
+      <li>
+        <a [routerLink]="character.member.profileLink">
+          <img [src]="character.member.classIcon" [alt]="character.member.className" />
+          <span class="result-name" [style.color]="character.member.color">{{ character.member.name }}</span>
+          <span class="result-realm">{{ character.member.realm }}</span>
+          <span class="result-score">{{ character.score | number:'1.1-1' }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</ng-template>

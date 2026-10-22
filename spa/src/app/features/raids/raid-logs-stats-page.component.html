@@ -1,0 +1,32 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Raid statistics, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && difficulty(); as current) {
+    <app-raid-spec-popularity-chart
+      [kills]="popularityKills()"
+      [bosses]="index()!.bosses"
+      [difficulties]="index()!.difficulties"
+      [selectedDifficulty]="current.slug"
+      [raidName]="index()!.raid.name"
+      [loading]="popularityLoading()"
+      [error]="popularityError()"
+      [view]="chartView()"
+      [role]="chartRole()"
+      (difficultyChange)="setDifficulty($event)"
+      (viewChange)="setChartView($event)"
+      (roleChange)="setChartRole($event)"
+      (retry)="retryPopularity()" />
+
+    @if (!popularityError()) {
+      @for (role of raceRoles; track role) {
+        <app-race-by-spec
+          [role]="role"
+          [samples]="rosterSlots()"
+          [context]="current.name + ' raids'"
+          [loading]="popularityLoading()" />
+      }
+    }
+  }
+</main>

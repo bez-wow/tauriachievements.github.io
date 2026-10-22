@@ -1,0 +1,257 @@
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
+import { getArmoryUrl, getGuildArmoryUrl } from '../../game/armory';
+import { getClassIconPath } from '../../game/classIconHelper';
+import { getRaceIconPath } from '../../game/raceIconHelper';
+import { buildRareAchievementCharacterKey } from '../../players/rare-achievement-groups';
+import {
+  buildRareAchievementNamesById,
+  GLADIATOR_MOUNT_IDS,
+  GLADIATOR_TITLE_IDS,
+  REALM_FIRST_IDS
+} from '../../players/rare-achievement-summary';
+import { RareAchievementsService } from '../../players/rare-achievements.service';
+import {
+  RareAchievementCharacter,
+  RareAchievementSummary,
+  RareAchievementsDataset
+} from '../../players/rare-achievements.types';
+import { Player } from '../../players/character.model';
+import { DataSyncService } from '../../players/data-sync.service';
+import { LadderLastUpdatedService } from '../../players/ladder-last-updated.service';
+import { setPageHeader } from '../../core/page-header';
+
+interface NewRareCharacterView {
+  rank: number;
+  name: string;
+  realm: string;
+  guild: string;
+  race: number;
+  gender: number;
+  classId: number;
+  faction: string;
+  raceIcon: string;
+  classIcon: string;
+  achievementPoints: number;
+  rareCount: number;
+  gladiatorTitleCount: number;
+  gladiatorMountCount: number;
+  realmFirstCount: number;
+  rareAchievementNames: ReadonlyArray<string>;
+}
+
+type RareDiscoveryCategory = 'gladiatorTitle' | 'gladiatorMount' | 'realmFirst' | 'keystoneMaster';
+
+const KEYSTONE_MASTER_ACHIEVEMENT_IDS: ReadonlySet<number> = new Set([11224]);
+
+@Component({
+  selector: 'app-new-rare-characters-page',
+  templateUrl: './new-rare-characters-page.component.html',
+  styleUrls: ['./new-rare-characters-page.component.scss'],
+  imports: [DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class NewRareCharactersPageComponent implements OnInit {
+  private readonly dataSyncService = inject(DataSyncService);
+  private readonly rareAchievementsService = inject(RareAchievementsService);
+  private readonly ladderLastUpdatedService = inject(LadderLastUpdatedService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly players = signal<ReadonlyArray<Player>>([]);
+  readonly rareAchievementsDataset = signal<RareAchievementsDataset | undefined>(undefined);
+  private readonly summaries = signal<ReadonlyMap<string, RareAchievementSummary>>(new Map());
+  readonly isLoading = signal(true);
+  readonly loadError = signal<string | undefined>(undefined);
+  readonly lastEdited = signal<Date | undefined>(undefined);
+  readonly newRareCharacters = computed<ReadonlyArray<NewRareCharacterView>>(() => {
+    const dataset = this.rareAchievementsDataset();
+    if (!dataset) {
+      return [];
+    }
+
+    const achievementNamesById = buildRareAchievementNamesById(dataset.achievements ?? []);
+    const summaries = this.summaries();
+    const newPlayersByKey = new Map(
+      this.players().map((player) => [buildRareAchievementCharacterKey(player.name, player.realm), player] as const)
+    );
+
+    return (dataset.characters ?? [])
+      .map((character) => this.toNewRareCharacterView(character, newPlayersByKey, achievementNamesById, summaries))
+      .filter((character): character is NewRareCharacterView => character !== undefined)
+      .sort((left, right) => this.compareNewRareCharacters(left, right))
+      .map((character, index) => ({
+        ...character,
+        rank: index + 1
+      }));
+  });
+  readonly newRareCharacterCount = computed(() => this.newRareCharacters().length);
+  readonly showEmptyState = computed(() => !this.isLoading() && !this.loadError() && this.newRareCharacterCount() === 0);
+
+  readonly getArmoryUrl = getArmoryUrl;
+  readonly getGuildArmoryUrl = getGuildArmoryUrl;
+
+  constructor() {
+    setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+  }
+
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  retryLoad(): void {
+    this.loadData();
+  }
+
+  getCharacterLinkTitle(character: NewRareCharacterView): string {
+    return `New rare character found\n${character.rareAchievementNames.join('\n')}`;
+  }
+
+  onImageError(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+    console.error('Failed to load image:', image?.src ?? 'unknown image');
+  }
+
+  private loadData(): void {
+    this.isLoading.set(true);
+    this.loadError.set(undefined);
+
+    forkJoin({
+      newPlayers: this.dataSyncService.getNewPlayers(),
+      rareAchievementsDataset: this.rareAchievementsService.getRareAchievements(),
+      summaries: this.rareAchievementsService.getRareAchievementIndicators(),
+      lastUpdated: this.ladderLastUpdatedService.getLastUpdated()
+    }).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: ({ newPlayers, rareAchievementsDataset, summaries, lastUpdated }) => {
+        this.players.set(newPlayers);
+        this.rareAchievementsDataset.set(rareAchievementsDataset);
+        this.summaries.set(summaries);
+        this.lastEdited.set(lastUpdated?.date);
+        this.isLoading.set(false);
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load new rare characters:', error);
+        this.players.set([]);
+        this.rareAchievementsDataset.set(undefined);
+        this.loadError.set('We could not load the new rare characters right now. Please try again in a moment.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  private toNewRareCharacterView(
+    character: RareAchievementCharacter,
+    newPlayersByKey: ReadonlyMap<string, Player>,
+    achievementNamesById: ReadonlyMap<number, string>,
+    summaries: ReadonlyMap<string, RareAchievementSummary>
+  ): NewRareCharacterView | undefined {
+    const player = newPlayersByKey.get(buildRareAchievementCharacterKey(character.name, character.realm));
+    if (!player) {
+      return undefined;
+    }
+
+    const rareAchievementNames = this.collectRareDiscoveryAchievementNames(character, achievementNamesById);
+    if (rareAchievementNames.length === 0) {
+      return undefined;
+    }
+
+    const summary = summaries.get(buildRareAchievementCharacterKey(character.name, character.realm));
+
+    return {
+      rank: 0,
+      name: player.name,
+      realm: player.realm,
+      guild: player.guild,
+      race: player.race,
+      gender: player.gender,
+      classId: player.class,
+      faction: player.faction,
+      raceIcon: getRaceIconPath(player.race, player.gender),
+      classIcon: getClassIconPath(player.class),
+      achievementPoints: player.achievementPoints,
+      rareCount: rareAchievementNames.length,
+      gladiatorTitleCount: summary?.gladiatorTitleCount ?? 0,
+      gladiatorMountCount: summary?.gladiatorMountCount ?? 0,
+      realmFirstCount: summary?.realmFirstCount ?? 0,
+      rareAchievementNames
+    };
+  }
+
+  private collectRareDiscoveryAchievementNames(
+    character: RareAchievementCharacter,
+    achievementNamesById: ReadonlyMap<number, string>
+  ): string[] {
+    return character.achievements
+      .filter((achievement) => this.getRareDiscoveryCategory(achievement.id) !== undefined)
+      .sort((left, right) => this.compareRareDiscoveryAchievements(left.id, right.id))
+      .map((achievement) => achievementNamesById.get(achievement.id) ?? `Achievement #${achievement.id}`);
+  }
+
+  private compareRareDiscoveryAchievements(leftId: number, rightId: number): number {
+    const leftCategory = this.getRareDiscoveryCategory(leftId);
+    const rightCategory = this.getRareDiscoveryCategory(rightId);
+    const categoryResult = this.getRareDiscoveryCategoryRank(leftCategory)
+      - this.getRareDiscoveryCategoryRank(rightCategory);
+
+    if (categoryResult !== 0) {
+      return categoryResult;
+    }
+
+    return leftId - rightId;
+  }
+
+  private getRareDiscoveryCategory(achievementId: number): RareDiscoveryCategory | undefined {
+    if (KEYSTONE_MASTER_ACHIEVEMENT_IDS.has(achievementId)) {
+      return 'keystoneMaster';
+    }
+
+    if (GLADIATOR_TITLE_IDS.has(achievementId)) {
+      return 'gladiatorTitle';
+    }
+
+    if (GLADIATOR_MOUNT_IDS.has(achievementId)) {
+      return 'gladiatorMount';
+    }
+
+    if (REALM_FIRST_IDS.has(achievementId)) {
+      return 'realmFirst';
+    }
+
+    return undefined;
+  }
+
+  private getRareDiscoveryCategoryRank(category: RareDiscoveryCategory | undefined): number {
+    switch (category) {
+      case 'keystoneMaster':
+        return 0;
+      case 'gladiatorTitle':
+        return 1;
+      case 'gladiatorMount':
+        return 2;
+      case 'realmFirst':
+        return 3;
+      default:
+        return 4;
+    }
+  }
+
+  private compareNewRareCharacters(left: NewRareCharacterView, right: NewRareCharacterView): number {
+    if (right.rareCount !== left.rareCount) {
+      return right.rareCount - left.rareCount;
+    }
+
+    if (right.achievementPoints !== left.achievementPoints) {
+      return right.achievementPoints - left.achievementPoints;
+    }
+
+    const realmResult = left.realm.localeCompare(right.realm);
+    if (realmResult !== 0) {
+      return realmResult;
+    }
+
+    return left.name.localeCompare(right.name);
+  }
+}

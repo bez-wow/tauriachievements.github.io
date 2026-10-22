@@ -5,15 +5,6 @@ const raidLogDataDir = path.join(__dirname, "..", "src", "raid-log-data");
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "raid-genders.json");
 
-/**
- * The raid log API gets most characters' gender wrong: nearly everyone comes back male. The
- * ladder's Players.csv has it right, so for every raid character the ladder knows, this lists
- * the ladder's gender where the two disagree. A ladder character of another class is a different
- * character with the same name, and is left alone.
- *
- * `raidPlayers` are the boss files' `[name, realm, class, race, gender, guild]` rows; the result
- * is `{ v, female: { realm: [names] }, male: { realm: [names] } }`, names sorted.
- */
 function buildRaidGenders(players, raidPlayers) {
   const ladder = new Map(players.map((player) => [`${player.realm}/${player.name}`, player]));
   const corrections = { female: new Map(), male: new Map() };
@@ -47,7 +38,6 @@ function toSortedObject(byRealm) {
     .map(([realm, names]) => [realm, names.sort()]));
 }
 
-/** Every player row of every boss file; none when the raid logs aren't there. */
 function readRaidPlayers(dir = raidLogDataDir) {
   if (!fs.existsSync(dir)) {
     return [];

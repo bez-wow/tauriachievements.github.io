@@ -1,0 +1,101 @@
+<main class="raid-page">
+  <h1 class="visually-hidden">Guild progression, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
+
+  <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />
+
+  @if (!isLoading() && !loadError() && difficulty(); as current) {
+    <section class="section" aria-label="Guild progression">
+      <header class="section-header">
+        <div class="filters">
+          <app-raid-difficulty-switch
+            [difficulties]="index()!.difficulties"
+            [selected]="current.slug"
+            label="Show the progression on difficulty"
+            (selectedChange)="setDifficulty($event)" />
+          <div class="filter-group">
+            <button
+              type="button"
+              class="filter-reset"
+              [disabled]="!hasFilters()"
+              aria-label="Reset faction and realm filters"
+              (click)="resetFilters()">
+              Reset
+            </button>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidGuildsFaction"
+                triggerId="raidGuildsFactionTrigger"
+                ariaLabel="Filter by faction"
+                [options]="factionOptions"
+                [widthLabels]="factionWidthLabels"
+                [selectedValue]="factionFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setFactionFilter($event)" />
+            </div>
+            <div class="filter-slot">
+              <app-filter-dropdown
+                dropdownId="raidGuildsRealm"
+                triggerId="raidGuildsRealmTrigger"
+                ariaLabel="Filter by realm"
+                [options]="realmOptions"
+                [widthLabels]="realmWidthLabels"
+                [selectedValue]="realmFilter()"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setRealmFilter($event)" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      @if (shownProgression().length) {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="rank" scope="col">#</th>
+                <th scope="col">Guild</th>
+                <th scope="col">Progress</th>
+                <th scope="col" class="col-optional">Reached</th>
+                <th scope="col" class="num">Kills</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of shownProgression(); track guildKey(row.guild)) {
+                <tr [class.cleared]="row.killed === row.firsts.length">
+                  <td class="rank">{{ row.rank }}</td>
+                  <td>
+                    <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
+                      <span class="faction" [class]="'faction-' + row.guild.faction" aria-hidden="true"></span>
+                      <span class="strong">{{ row.guild.name }}</span>
+                      <span class="muted phone-hidden">{{ row.guild.realm }}</span>
+                    </a>
+                  </td>
+                  <td>
+                    <span class="progress">
+                      <span class="progress-count difficulty-text" [class]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
+                      <span class="pips" aria-hidden="true">
+                        @for (boss of pipBosses(); track boss) {
+                          <span
+                            class="pip"
+                            [class.down]="!!row.firsts[boss.index]"
+                            [class]="current.slug"
+                            [title]="pipTitle(boss, row.firsts[boss.index])"></span>
+                        }
+                      </span>
+                    </span>
+                  </td>
+                  <td class="col-optional muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>
+                  <td class="num">{{ row.kills | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty-note">{{ progression().length ? 'No guild with these filters has a kill on ' + current.name + ' yet.' : 'No guild has a kill on ' + current.name + ' yet.' }}</p>
+      }
+    </section>
+  }
+</main>

@@ -1,0 +1,11 @@
+@use './raid-logs-shared' as *;
+
+:host { display: block; width: 100%; }
+
+@include visually-hidden;
+
+.raid-page { @include raid-page; }
+
+@media (max-width: 640px) {
+  .raid-page { padding-top: 32px; }
+}

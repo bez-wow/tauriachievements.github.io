@@ -11,12 +11,6 @@ const SOURCE_PATH = path.join(__dirname, "..", "src", "Players.csv");
 const LAST_UPDATED_PATH = path.join(__dirname, "..", "src", "lastUpdated.txt");
 const SNAPSHOT_DAY_LIMIT = 21;
 
-/**
- * Reads the current scan and the most recent earlier scan from a different day, each parsed
- * exactly once, plus the timestamps of up to 21 daily scans for the history timeline.
- *
- * The earlier scans come from git history: every `sync data` commit is one scan.
- */
 function loadPlayerSnapshots() {
   if (!fs.existsSync(SOURCE_PATH)) {
     throw new Error(`Missing source CSV: ${SOURCE_PATH}`);
@@ -41,7 +35,6 @@ function loadPlayerSnapshots() {
   return { currentPlayers, previousPlayers, snapshotTimestamps };
 }
 
-/** Newest first, one scan per calendar day, never the current scan's day. */
 function selectEarlierDailyScans(history, currentDayKey) {
   const scans = [];
   const seenDays = new Set([currentDayKey]);
@@ -76,8 +69,6 @@ function getCurrentSnapshotTimestamp(history) {
     ];
   }
 
-  // Only use mtime as a last resort: CI checkout time is unrelated to the player scan and
-  // would otherwise turn guild-only deploys into zero deltas.
   try {
     const modifiedAt = fs.statSync(SOURCE_PATH).mtime;
     if (!Number.isNaN(modifiedAt.getTime())) {

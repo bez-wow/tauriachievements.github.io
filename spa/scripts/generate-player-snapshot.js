@@ -15,19 +15,8 @@ const newPlayersOutputPath = path.join(outputDir, "new-players.snapshot.json");
 
 const SNAPSHOT_VERSION = 4;
 
-// The ladder's default view is "top of the achievement-point ranking, unfiltered,
-// at most 1000 rows". That answer lives entirely in the highest-ranked slice, so we
-// publish it as a separate file the app can paint from while the full set streams in
-// behind it. Anything else the user asks for - a search, another sort, a realm or
-// class filter - needs every player and triggers a load of players.snapshot.json.
 const HEAD_PLAYER_COUNT = 25000;
 
-// The one definition of a serialized player row. The column names are written into the
-// snapshot (`c`), and the app reads each row by those names, so adding, removing or
-// reordering a column here can never shift values into the wrong field on the other side.
-// `realm` and `faction` hold indexes into the snapshot's `r` and `f` lists. `playedTime` and
-// `playedTimeDelta` are whole minutes (the app multiplies them back to seconds); the CSV
-// reader has already dropped the seconds, so the division is exact.
 const PLAYER_COLUMNS = [
   ["name", (row) => row.player.name],
   ["race", (row) => row.player.race],
@@ -56,12 +45,6 @@ const PLAYER_COLUMNS = [
   ["playedTimeRankDelta", (row) => row.playedTimeRankDelta],
 ];
 
-/**
- * Builds the three player files from parsed CSV rows:
- * - `full`: every player, in achievement-point rank order;
- * - `head`: the first HEAD_PLAYER_COUNT rows of `full`, with `t` holding the full count;
- * - `newPlayers`: only characters first seen in this scan, for the New Rare Characters page.
- */
 function buildPlayerSnapshots(currentPlayers, previousPlayers) {
   const rankedPlayers = sortByAchievementPoints(currentPlayers);
   const rows = buildPlayerRows(rankedPlayers, previousPlayers);
@@ -96,7 +79,6 @@ function buildPlayerRows(rankedPlayers, previousPlayers) {
     achievementsTotal: buildRankMap(rankedPlayers, "achievementsTotal"),
     playedTime: buildRankMap(rankedPlayers, "playedTime"),
   };
-  // Older scans predate some columns; players from those scans get no rank to compare against.
   const previous = {
     achievementPoints: buildRankMap(rankedPrevious, "achievementPoints"),
     honorableKills: buildRankMap(rankedPrevious, "honorableKills"),
@@ -155,8 +137,6 @@ function buildLookups(players) {
   };
 }
 
-// A character counts as new when no earlier character had the same name and class. Realm,
-// race and faction are left out on purpose: transfers and faction changes are not new.
 function getNameClassKey(player) {
   return `${String(player.name).trim().toLowerCase()}::${player.playerClass}`;
 }

@@ -1,13 +1,3 @@
-// Server-wide aggregates for the /stats page.
-//
-// These figures only change when Players.csv is rescanned, so they are computed once at
-// build time rather than by every visitor. The page fetches the result and draws it.
-//
-// The seam with the app: anything that names a threshold ships here, because a bucket
-// label is meaningless apart from the bounds that produced it. Anything that names a
-// game entity or picks a color stays in the component, so restyling the charts or
-// renaming a class never requires regenerating data.
-
 const AP_BREAKS = [0, 1000, 3000, 6000, 10000, 15000, 20000, Infinity];
 const AP_LABELS = ["<1k", "1k–3k", "3k–6k", "6k–10k", "10k–15k", "15k–20k", "20k+"];
 
@@ -104,7 +94,6 @@ function increment(counts, key) {
   counts.set(key, (counts.get(key) ?? 0) + 1);
 }
 
-/** Index of the highest break the value clears. Lower bound inclusive. */
 function bucketIndex(breaks, value) {
   for (let index = breaks.length - 2; index >= 0; index--) {
     if (value >= breaks[index]) {
@@ -119,7 +108,6 @@ function byDescendingCount(counts) {
   return [...counts.entries()].sort((left, right) => right[1] - left[1]);
 }
 
-/** The two playable factions lead, in their conventional order; anything else follows. */
 function orderedFactions(factionCounts) {
   const known = FACTION_ORDER.filter((faction) => factionCounts.has(faction));
   const rest = [...factionCounts.keys()].filter((faction) => !FACTION_ORDER.includes(faction));
