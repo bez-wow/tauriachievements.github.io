@@ -15,7 +15,7 @@ this file, so Claude Code reads it at the start of every session.
      ([docs/frontend.md](docs/frontend.md)), never a parallel mechanism;
    - keeps the browser cheap: work over the 200k-row ladder belongs in `prepare-app.js` or an
      exporter, not on page load; pages are lazy-loaded; the bundle budgets hold;
-   - works on phones, with no sideways page scroll from 320 to 412 px;
+   - works on phones: `npm run test:layout` passes at 320, 360, 390 and 412 px;
    - is the right fix, not the quick one. If the right fix is bigger, say so and let the owner
      decide.
 3. **Ask before architectural decisions.** Stop, present the options with a recommendation, and
@@ -96,6 +96,10 @@ There is no root package manager; each half has its own toolchain.
   screenshots of every page at 360 and 1280 px against a local baseline, for changes that
   should look the same ([docs/frontend.md](docs/frontend.md#visual-check)). Both run against
   the last `npm run build`. The first run needs `npx playwright install chromium`.
+- `npm run test:layout`: opens the same pages as a phone at 320, 360, 390 and 412 px and fails
+  on anything that scrolls sideways, runs past a box that clips it, or ends under a bottom bar
+  ([docs/frontend.md](docs/frontend.md#phone-layout-check)). It runs against the last
+  `npm run build` and needs no baseline.
 
 ### Backend (from `api/`)
 
@@ -166,8 +170,9 @@ There is no root package manager; each half has its own toolchain.
 
 ## Product rules (from the owner)
 
-- **Phones come first.** Many players use the site on a phone. No page scrolls sideways at
-  320–412 px. On narrow screens a table hides or moves columns; ask before adding a table that
+- **Phones come first.** Many players use the site on a phone. No page or table scrolls
+  sideways at 320–412 px: on narrow screens a table hides or moves columns
+  ([docs/frontend.md](docs/frontend.md#tables-on-phones)). Ask before adding anything else that
   scrolls sideways. A mobile fix leaves the desktop layout alone unless asked.
 - **Promo and info pages are marketing.** The Addon and Support pages use plain benefit copy:
   no commands, file paths or install steps. Link out for the how-to.

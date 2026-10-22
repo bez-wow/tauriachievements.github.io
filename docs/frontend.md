@@ -196,6 +196,7 @@ decision (ask first).
 | `spec-charts/` | `app-race-by-spec` (the most-popular-race boxes); `specPopularity`, `shareTicks`, `formatShare` and `compareSpecLists` for a spec popularity chart's numbers and order |
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
+| `appBottomBar` (`core/bottom-bar.directive.ts`) | a bar fixed to the bottom of the screen, such as the Mythic+ compare tray. It publishes its height as `--bottom-bar-height`, so on phones the page end and the back-to-top button stay above it ([below](#the-app-shell-and-the-header-height-contract)) |
 | `app-load-state` | a page's loading spinner and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `game/armory.ts` | `getArmoryUrl()` for every armory link |
@@ -204,8 +205,9 @@ decision (ask first).
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
 | Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
-| `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
+| `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
+| `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.
@@ -260,6 +262,13 @@ decision (ask first).
   background still starts at the top.
 - Sticky elements and `scroll-margin-top` use `var(--update-bar-height)`, never a hardcoded
   pixel value.
+- The bottom of the screen has a contract too. On phones an `::after` on the routed page's host
+  (`app-root > router-outlet + *::after` in `styles.scss`) ends every page with 72 px plus
+  `--bottom-bar-height`, so the last row clears the back-to-top button and any bottom bar.
+- A bar fixed to the bottom of the screen takes `appBottomBar`. It sets `--bottom-bar-height` on
+  the document to its height plus the gap below it, and removes it when the bar goes. On phones
+  the back-to-top button sits that much higher. The Mythic+ compare tray is the one bottom bar;
+  on desktop that page keeps its own 110 px padding.
 - `.update-bar` has a `view-transition-name`, which makes it a backdrop root: a
   `backdrop-filter` inside the header never blurs the page. Use opaque backgrounds there.
 - At ≤960 px the sections give way to a menu button that opens a `<dialog>` drawer. At ≤640 px
@@ -274,8 +283,9 @@ decision (ask first).
 
 Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
 
-- Breakpoints in use: 640 px (phones, `COMPACT_VIEWPORT_QUERY`), 900 px (M+ lists switch to
-  cards, `MYTHIC_PLUS_CARDS_QUERY` / `$cards-breakpoint`, which must stay in step), 960 px (the
+- Breakpoints in use: 359 px (narrow phones, `$narrow-phone-breakpoint`), 640 px (phones,
+  `COMPACT_VIEWPORT_QUERY` / `$phone-breakpoint`), 900 px (M+ lists switch to cards,
+  `MYTHIC_PLUS_CARDS_QUERY` / `$cards-breakpoint`, which must stay in step), 960 px (the
   header).
 - A global `@media (pointer: coarse)` rule makes form fields 16 px, so iOS doesn't zoom in on
   focus. Don't override it.
@@ -292,9 +302,10 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
   centred over its column, since beside it would run past the edge.
 - Long lists show fewer rows on phones, through `injectCompactViewport()`. The guild page's
   roster and the Top Gainers lists do this, and the M+ lists show 25 cards per page.
-- Checking overflow: `html, body { overflow-x: clip }` hides page overflow, so measure element
-  rects, not `document.scrollWidth`. Some overflow only reproduces with mobile emulation
-  (`isMobile`). Test at 320, 360, 390, 412 and 768 px.
+- Checking overflow: `npm run test:layout` ([below](#phone-layout-check)). By hand,
+  `html, body { overflow-x: clip }` hides page overflow, so measure element rects, not
+  `document.scrollWidth`. Some overflow only reproduces with mobile emulation (`isMobile`).
+  Look at 768 px too; the check covers 320 to 412.
 - Known traps:
   - An absolutely positioned `.visually-hidden` inside a non-positioned `overflow-x: auto`
     table escapes the clip and widens the mobile layout viewport. Give the scroller
@@ -309,6 +320,39 @@ Phones come first (see the product rules in [AGENTS.md](../AGENTS.md)).
   - A dropdown in a wrapping row of filters needs a column at least as wide as its menu
     (200 px), or an open menu reaches past its trigger and off the edge (the guild page's
     filters).
+
+
+### Tables on phones
+
+A table fits the screen at 320–412 px. It never scrolls sideways. The table rules live in
+`shared/_tables.scss`; every page reaches them through `_mythic-plus-shared.scss`. Take these
+steps in order, and stop when the table fits:
+
+1. **The name gives way.** The cell that names the row (a character, guild or boss) takes the
+   width the numbers leave and shortens with an ellipsis: `phone-fluid` on raid tables (the
+   `raid-table` mixin), or `@include fluid-cell` in a page's own table. `fluid-identity` adds the
+   icon-and-text layout those cells share. The ladder's names carry glow effects an ellipsis
+   would clip, so below 360 px the ladder and Rare Achievements shrink their headers, padding
+   and icon gaps instead.
+2. **Hide what another column already says.** Use `phone-hidden` (≤640 px) or
+   `narrow-phone-hidden` (≤359 px) on the `th` and every `td` of the column. Losses go before
+   wins and games; item level goes before DPS.
+3. **Move the rest under the name.** A `tr.phone-detail-row` after each row
+   (`phone-detail-rows` mixin, `colspan` over every column) carries the moved values on one
+   line, as the boss rankings do with talents and trinkets. Render the values from one
+   `ng-template` in both places instead of copying them. When the whole row is a button (Rated
+   Battlegrounds), put the line inside the name cell instead.
+4. **Shorten labels.** Pair `<span class="phone-hidden">Shortest</span>` with
+   `<span class="phone-only">Min</span>`, or the dungeon's `shortName` in an `<abbr>`.
+
+A few things scroll sideways by design: charts over time that open at the latest point
+(`appScrollToEnd`), a strip of cards you swipe through, and the Emerald Nightmare race
+timeline. Each one is listed, with its reason, in `SIDEWAYS_BY_DESIGN` (`e2e/visual-pages.ts`).
+Adding to that list is a product decision: ask first.
+
+Charts follow the same rule. A bar chart with more bars than fit turns into horizontal bars on
+phones: the bar's length is the `--bar` custom property, which is the height on desktop and
+the width on phones (`spec-charts/spec-chart.scss`).
 
 ## Styles
 
@@ -384,3 +428,19 @@ How it stays deterministic:
   sometimes leaves images unpainted in a very tall full-page capture.
 
 To cover a new page or a new URL state, add it to `e2e/visual-pages.ts`.
+
+## Phone layout check
+
+`npm run test:layout` (`e2e/phone.layout.ts`) opens every page in `e2e/visual-pages.ts`, except
+the desktop-only states and the loading and error states, as a phone at 320, 360, 390 and 412
+px. It fails on:
+
+- a box that scrolls sideways, unless `SIDEWAYS_BY_DESIGN` lists it;
+- an element that runs past a box that clips it (cropped icons and text ending in an ellipsis
+  pass);
+- text cut off without an ellipsis;
+- a link or button that sits under a bar fixed to the bottom of the screen at the end of the
+  page.
+
+It needs no baseline, so it gives the same answer on every machine. Run it against
+`npm run build`, like the visual check, which shares its page setup (`e2e/page-setup.ts`).
