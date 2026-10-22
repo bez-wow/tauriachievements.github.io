@@ -144,8 +144,9 @@ git-ignored and regenerated on every build:
 
 **The previous scans come from git history.** Every `sync data` commit is one scan.
 `readPlayersCsvHistory()` (`scripts/player-data-utils.js`) uses `git log --follow`, so a build
-needs the full history: `static1.yml` checks out with `fetch-depth: 0`. In a shallow clone the
-deltas, Top Gainers and "new character" flags all come out empty, and nothing fails.
+needs the full history: `static1.yml` and `test.yml` check out with `fetch-depth: 0`. In a
+shallow clone the deltas, Top Gainers and "new character" flags all come out empty, and nothing
+fails.
 
 - The earlier scans are one per calendar day, newest first, never from the current scan's day,
   up to 21 days in all for the history timeline (`load-player-snapshots.js`).

@@ -51,7 +51,8 @@ this file, so Claude Code reads it at the start of every session.
   in `api/Tauri.Core`, tests in `api/tests`.
 - `.github/workflows/`:
   - `static1.yml` deploys Pages on every push to `main` (`npm test`, then `npm run build`).
-  - `test.yml` runs the spa tests on pull requests.
+  - `test.yml` runs the same `npm test` and production build on pull requests, so a PR that
+    breaks the build or a bundle budget fails before it merges.
   - `api-ci.yml` checks CSharpier formatting, then builds and tests the solution, on every
     push and PR.
   - `discord-on-push.yml` posts to Discord after a deploy whose commit message is exactly
