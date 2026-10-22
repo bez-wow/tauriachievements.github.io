@@ -66,9 +66,9 @@ the page's store. The component keeps the URL, the filters and the event handler
   navigation into a full load of the same address, which brings in the new deploy. It reloads
   at most once in 30 seconds, so a deploy still going out can't loop it. Data-only deploys
   keep every chunk name.
-- `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'top'`, so
-  **every router navigation, even one that only changes query parameters, runs a full-page
-  view transition and scrolls to the top.**
+- `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'enabled'`,
+  so **every router navigation, even one that only changes query parameters, runs a full-page
+  view transition and scrolls to the top.** Back and Forward return to where the reader was.
 - Shared URLs never break. A renamed page keeps a `redirectTo` from its old path (as with
   `guild-realm-firsts` and `50-games-played-arenas`).
 - Unlisted routes are unlisted on purpose: the guild pages (`<key>-<8 hex>`) and the Rare Items

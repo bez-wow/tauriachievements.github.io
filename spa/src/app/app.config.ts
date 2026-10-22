@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
         onSameUrlNavigation: 'reload'
       }),
       withInMemoryScrolling({
-        scrollPositionRestoration: 'top',
+        scrollPositionRestoration: 'enabled',
         anchorScrolling: 'enabled'
       }),
       withEnabledBlockingInitialNavigation(),
