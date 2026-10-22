@@ -1,0 +1,54 @@
+$phone-breakpoint: 640px;
+$narrow-phone-breakpoint: 374px;
+
+@mixin table-scroll {
+  position: relative;
+  overflow-x: auto;
+}
+
+@mixin phone-columns {
+  .phone-only { display: none; }
+
+  @media (max-width: $phone-breakpoint) {
+    .phone-hidden { display: none; }
+    .phone-only { display: revert; }
+  }
+
+  @media (max-width: $narrow-phone-breakpoint) {
+    .narrow-phone-hidden { display: none; }
+  }
+}
+
+@mixin phone-detail-rows {
+  .phone-detail-row { display: none; }
+  tbody tr:nth-last-child(2):has(+ .phone-detail-row) > td { border-bottom: 0; }
+
+  @media (max-width: $phone-breakpoint) {
+    .phone-detail-row { display: table-row; }
+    tr:has(+ .phone-detail-row) > td { border-bottom: 0; padding-bottom: 2px; }
+    .phone-detail-row > td { padding-top: 0; }
+  }
+}
+
+@mixin fluid-cell {
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  > * { display: flex; max-width: 100%; }
+  > * > :not(img) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@mixin phone-fluid-cell {
+  @media (max-width: $phone-breakpoint) {
+    @include fluid-cell;
+  }
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
