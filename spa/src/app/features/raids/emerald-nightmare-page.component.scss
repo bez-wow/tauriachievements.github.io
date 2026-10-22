@@ -245,8 +245,14 @@
 
 @media (max-width: 640px) {
   .nightmare-banner { padding-top: 30px; }
-  .race-playback { grid-template-columns: auto 56px minmax(120px, 1fr); gap: 9px; padding-inline: 12px; }
+  .race-playback { grid-template-columns: auto minmax(0, 1fr); gap: 9px; padding-inline: 12px; }
+  .playback-clock { text-align: right; }
+  .playback-slider { grid-column: 1 / -1; }
   .playback-range { display: none; }
+  .timeline-axis, .guild-lane { grid-template-columns: 124px minmax(0, 1fr); }
+  .axis-corner { padding-left: 12px; }
+  .guild-summary { padding: 12px; }
+  .guild-summary-copy small { font-size: .74rem; }
 }
 
 @media (max-width: 520px) {
