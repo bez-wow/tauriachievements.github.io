@@ -55,6 +55,10 @@ this file, so Claude Code reads it at the start of every session.
   - `discord-on-push.yml` posts to Discord after a deploy whose commit message is exactly
     `sync data`.
 - `docs/` holds the topic docs below.
+- `.claude/skills/angular-developer/` is Angular's agent skill, copied unchanged from
+  [angular/skills](https://github.com/angular/skills). To update it, copy that folder again.
+  Where it disagrees with this file or `docs/`, these win: `npm run build`, not `ng build`;
+  `*ngIf` / `*ngFor`, not `@if` / `@for`.
 
 There is no root package manager; each half has its own toolchain.
 
