@@ -103,3 +103,7 @@ export const VISUAL_VIEWPORTS: ReadonlyArray<{ readonly name: ViewportName; read
   { name: 'phone', width: 360, height: 780 },
   { name: 'desktop', width: 1280, height: 900 }
 ];
+
+export const PHONE_WIDTHS: readonly number[] = [320, 360, 390, 412];
+
+export const SIDEWAYS_BY_DESIGN: ReadonlyArray<{ readonly selector: string; readonly reason: string }> = [];

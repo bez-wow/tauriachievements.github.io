@@ -15,8 +15,9 @@
     "test:unit": "ng test",
     "test:scripts": "node --test \"scripts/*.test.js\"",
     "guild:players": "node ./scripts/list-guild-players.js",
-    "test:visual": "playwright test",
-    "test:visual:baseline": "playwright test --update-snapshots"
+    "test:visual": "playwright test pages.visual",
+    "test:visual:baseline": "playwright test pages.visual --update-snapshots",
+    "test:layout": "playwright test phone.layout"
   },
   "private": true,
   "dependencies": {

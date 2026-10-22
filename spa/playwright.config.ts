@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: '**/*.visual.ts',
+  testMatch: ['**/*.visual.ts', '**/*.layout.ts'],
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
   outputDir: './e2e/.results',
   fullyParallel: true,
