@@ -6,6 +6,7 @@ import { getClassIconPath } from '../../game/classIconHelper';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
+import { ScrollToEndDirective } from '../../shared/motion/scroll-to-end.directive';
 import {
   RatedBattlegroundMatch,
   RatedLeaderboardMetric,
@@ -59,6 +60,7 @@ const LEADERBOARD_PAGE_SIZE = 25;
     FilterDropdownComponent,
     RatedBattlegroundPlayerHistoryComponent,
     RatedBattlegroundViewSwitcherComponent,
+    ScrollToEndDirective,
     DecimalPipe,
     PercentPipe
   ],

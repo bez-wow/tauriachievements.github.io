@@ -1,3 +1,5 @@
+@use '../../shared/tables' as *;
+
 :host {
   display: block;
 }
@@ -481,11 +483,15 @@
 }
 
 .leaderboard-table {
+  @include phone-columns;
+
   th:not(:nth-child(2)),
   td:not(:nth-child(2)) {
     text-align: center;
   }
 }
+
+.player-cell .player-stats { display: none; }
 
 .player-history-trigger {
   cursor: pointer;
@@ -880,6 +886,9 @@
 .scoreboard-table {
   min-width: 1240px;
 
+  @include phone-columns;
+  @include phone-detail-rows;
+
   th,
   td { padding: 9px 10px; }
 
@@ -999,4 +1008,39 @@
 @media (max-width: 430px) {
   .map-row { align-items: flex-start; }
   .team-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: $phone-breakpoint) {
+  .leaderboard-table {
+    th, td { padding: 10px 6px; }
+    th { white-space: normal; }
+  }
+
+  .leaderboard-table .player-td { @include fluid-cell; }
+  .player-primary { overflow: hidden; }
+  .player-primary span { min-width: 0; @include truncate; }
+  .player-cell .player-stats { display: block; color: #8f98aa; }
+
+  .scoreboard-table {
+    min-width: 0;
+
+    th, td { padding: 9px 6px; }
+    th { white-space: normal; }
+  }
+
+  .scoreboard-table .member-td { @include fluid-cell; }
+  .member-cell { min-width: 0; }
+
+  .scoreboard-table td { white-space: nowrap; }
+
+  .member-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 12px;
+    padding-left: 41px;
+    color: #7e8898;
+    font-size: 0.69rem;
+
+    strong { color: #dce1e8; }
+  }
 }

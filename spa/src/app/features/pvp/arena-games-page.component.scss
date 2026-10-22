@@ -245,6 +245,8 @@
   width: 100%;
   border-collapse: collapse;
 
+  @include phone-columns;
+
   th, td { padding: 12px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.055); text-align: left; }
   th { background: rgba(0, 0, 0, 0.22); color: #958f80; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; }
   td { color: #cbc6ba; }
@@ -321,6 +323,7 @@
 @media (max-width: 600px) {
   .arena-games-page { width: min(100% - 32px, 860px); padding-top: 46px; }
   .arena-header { padding: 18px 14px; }
+  .feedback.error { flex-direction: column; padding: 28px 18px; }
 
   .titles-table {
     th, td { padding: 6px 4px; font-size: 0.8rem; }
@@ -343,6 +346,8 @@
 
     .rank, .realm { display: none; }
     .realm-inline { display: block; margin-top: 2px; color: #8f8a7d; font-size: 0.76rem; }
+    td.character { @include fluid-cell; }
+    td.character > * { display: block; @include truncate; }
     tbody tr.title-group td { padding: 9px 10px 8px; }
     .label-short { display: inline; }
   }

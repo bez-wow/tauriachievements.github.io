@@ -119,7 +119,7 @@
           </div>
         </header>
 
-        <div class="activity-chart" [attr.aria-label]="'Rated matches by day, ' + analytics().dateRangeLabel">
+        <div class="activity-chart" [appScrollToEnd]="analytics().activity.length" [attr.aria-label]="'Rated matches by day, ' + analytics().dateRangeLabel">
           @for (day of analytics().activity; track day) {
             <div class="activity-column">
               <div class="activity-value">{{ day.matches }}</div>
@@ -166,11 +166,11 @@
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">Player</th>
-                <th scope="col">Games Played</th>
-                <th scope="col">Wins</th>
-                <th scope="col">Losses</th>
-                <th scope="col">Win rate</th>
-                <th scope="col">Avg / peak MMR</th>
+                <th scope="col" class="phone-hidden">Games Played</th>
+                <th scope="col" class="phone-hidden">Wins</th>
+                <th scope="col" class="phone-hidden">Losses</th>
+                <th scope="col" class="phone-hidden">Win rate</th>
+                <th scope="col" class="phone-hidden">Avg / peak MMR</th>
                 <th scope="col">{{ metricLabel() }}</th>
               </tr>
             </thead>
@@ -188,7 +188,7 @@
                   <td class="rank-cell">
                     <span [class.top-rank]="playerRank(index) <= 3">{{ playerRank(index) }}</span>
                   </td>
-                  <td>
+                  <td class="player-td">
                     <div class="player-cell">
                       <img [src]="getClassIconPath(player.classId)" [alt]="getClassName(player.classId)" />
                       <div>
@@ -199,14 +199,15 @@
                           <span>{{ getSpec(player.specId).name }} {{ getClassName(player.classId) }}@if (player.guild) { &lt;{{ player.guild }}&gt;}</span>
                         </div>
                         <small>{{ player.realm }} · {{ getFactionLabel(player.faction) }}</small>
+                        <small class="player-stats">{{ player.games }} games · <b class="wins">{{ player.wins }}</b>–<b class="losses">{{ player.losses }}</b> · {{ player.winRate | percent:'1.0-0' }} · MMR {{ player.averageMmr | number:'1.0-0' }} / {{ player.peakMmr | number }}</small>
                       </div>
                     </div>
                   </td>
-                  <td>{{ player.games }}</td>
-                  <td><strong class="wins">{{ player.wins }}</strong></td>
-                  <td><strong class="losses">{{ player.losses }}</strong></td>
-                  <td>{{ player.winRate | percent:'1.0-0' }}</td>
-                  <td>{{ player.averageMmr | number:'1.0-0' }} / <strong>{{ player.peakMmr | number }}</strong></td>
+                  <td class="phone-hidden">{{ player.games }}</td>
+                  <td class="phone-hidden"><strong class="wins">{{ player.wins }}</strong></td>
+                  <td class="phone-hidden"><strong class="losses">{{ player.losses }}</strong></td>
+                  <td class="phone-hidden">{{ player.winRate | percent:'1.0-0' }}</td>
+                  <td class="phone-hidden">{{ player.averageMmr | number:'1.0-0' }} / <strong>{{ player.peakMmr | number }}</strong></td>
                   <td class="metric-cell" [class.metric-cell--negative]="selectedMetric() === 'rating' && player.netRatingChange < 0">
                     {{ playerMetric(player) }}
                   </td>
@@ -323,19 +324,19 @@
                       <tr>
                         <th scope="col">Player</th>
                         <th scope="col">K / D</th>
-                        <th scope="col">Damage</th>
-                        <th scope="col">Healing</th>
-                        <th scope="col">Taken / received</th>
-                        <th scope="col">Objectives</th>
+                        <th scope="col" class="phone-hidden">Damage</th>
+                        <th scope="col" class="phone-hidden">Healing</th>
+                        <th scope="col" class="phone-hidden">Taken / received</th>
+                        <th scope="col" class="phone-hidden">Objectives</th>
                         <th scope="col">Rating</th>
-                        <th scope="col">MMR</th>
-                        <th scope="col">Honor</th>
+                        <th scope="col" class="phone-hidden">MMR</th>
+                        <th scope="col" class="phone-hidden">Honor</th>
                       </tr>
                     </thead>
                     <tbody>
                       @for (member of team.members; track `${member.realmid}:${member.guid}`) {
                         <tr>
-                          <td>
+                          <td class="member-td">
                             <div class="member-cell">
                               <img [src]="getClassIconPath(member['character-minimal-data'].class)" [alt]="getClassName(member['character-minimal-data'].class)" />
                               <div>
@@ -352,13 +353,13 @@
                           </div>
                         </td>
                         <td><strong>{{ member.killing_blows }}</strong> / {{ member.deaths }}</td>
-                        <td><strong>{{ formatCompact(member.damage_done) }}</strong></td>
-                        <td><strong>{{ formatCompact(member.healing_done) }}</strong></td>
-                        <td>
+                        <td class="phone-hidden"><strong>{{ formatCompact(member.damage_done) }}</strong></td>
+                        <td class="phone-hidden"><strong>{{ formatCompact(member.healing_done) }}</strong></td>
+                        <td class="phone-hidden">
                           <span class="stacked-value">{{ formatCompact(member.damage_taken) }} dmg</span>
                           <small>{{ formatCompact(member.healing_taken) }} healing</small>
                         </td>
-                        <td>
+                        <td class="phone-hidden">
                           <div class="objective-list">
                             @for (objective of getObjectives(match, member); track objective) {
                               <span>
@@ -373,13 +374,28 @@
                             {{ member.personal_rating_change > 0 ? '+' : '' }}{{ member.personal_rating_change }}
                           </small>
                         </td>
-                        <td>
+                        <td class="phone-hidden">
                           <span class="stacked-value">{{ member.mmr_rating | number }}</span>
                           <small [class.positive]="member.mmr_rating_change > 0" [class.negative]="member.mmr_rating_change < 0">
                             {{ member.mmr_rating_change > 0 ? '+' : '' }}{{ member.mmr_rating_change }}
                           </small>
                         </td>
-                        <td>{{ member.honor | number }}</td>
+                        <td class="phone-hidden">{{ member.honor | number }}</td>
+                      </tr>
+                      <tr class="phone-detail-row">
+                        <td colspan="9">
+                          <span class="member-stats">
+                            <span>Damage <strong>{{ formatCompact(member.damage_done) }}</strong></span>
+                            <span>Healing <strong>{{ formatCompact(member.healing_done) }}</strong></span>
+                            <span>Taken <strong>{{ formatCompact(member.damage_taken) }}</strong></span>
+                            <span>Received <strong>{{ formatCompact(member.healing_taken) }}</strong></span>
+                            @for (objective of getObjectives(match, member); track objective) {
+                              <span>{{ objective.label }} <strong>{{ objective.value | number }}</strong></span>
+                            }
+                            <span>MMR <strong>{{ member.mmr_rating | number }}</strong></span>
+                            <span>Honor <strong>{{ member.honor | number }}</strong></span>
+                          </span>
+                        </td>
                       </tr>
                     }
                   </tbody>

@@ -128,7 +128,7 @@
               <th scope="col">Character</th>
               <th scope="col" class="realm">Realm</th>
               @for (column of sortColumns; track column) {
-                <th scope="col" class="num" [attr.aria-sort]="ariaSort(column.key)">
+                <th scope="col" class="num" [class.narrow-phone-hidden]="column.key === 'losses'" [attr.aria-sort]="ariaSort(column.key)">
                   <button
                     type="button"
                     class="sort-button"
@@ -169,7 +169,7 @@
               }
               <tr>
                 <td class="rank">{{ index + 1 }}</td>
-                <td>
+                <td class="character">
                   <a
                     [href]="getArmoryUrl(player.name, player.realm)"
                     [style.color]="getPlayerClassColor(player)"
@@ -187,7 +187,7 @@
                   [attr.title]="isRewardEligible(player) ? null : (minWins - player.wins) + ' more wins for season rewards'">
                   {{ player.wins | number }}
                 </td>
-                <td class="num losses">{{ player.losses | number }}</td>
+                <td class="num losses narrow-phone-hidden">{{ player.losses | number }}</td>
                 <td class="num win-rate">{{ player.winRate | percent: '1.1-1' }}</td>
                 <td class="num rating">{{ player.rating | number }}</td>
               </tr>
