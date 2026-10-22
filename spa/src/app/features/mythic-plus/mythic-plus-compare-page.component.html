@@ -239,7 +239,7 @@
             @for (row of dungeonRows(); track row; let rowIndex = $index) {
               <tr [style.--row]="rowIndex">
                 <th scope="row" class="col-label">
-                  <span class="dungeon-name"><img [src]="row.dungeon.icon" alt="" />{{ row.dungeon.name }}</span>
+                  <span class="dungeon-name"><img [src]="row.dungeon.icon" alt="" /><span class="phone-hidden">{{ row.dungeon.name }}</span><abbr class="phone-only" [title]="row.dungeon.name">{{ row.dungeon.shortName }}</abbr></span>
                 </th>
                 @for (cell of row.cells; track cell; let i = $index) {
                   @if (i === 1 && row.lead; as lead) {

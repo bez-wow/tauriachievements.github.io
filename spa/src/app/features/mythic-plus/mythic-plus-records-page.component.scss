@@ -604,7 +604,8 @@ $depleted: #e06666;
 @media (max-width: $phone-breakpoint) {
   .records-page { padding-top: 32px; }
 
-  .page-header h1 { font-size: 1.35rem; }
+  .page-header h1 { display: block; margin: 0 0 6px; font-size: 1.35rem; }
+  .page-header p { display: block; }
 
   .section-filter { width: 100%; }
 

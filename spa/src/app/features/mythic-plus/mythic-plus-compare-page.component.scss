@@ -292,8 +292,11 @@ $plot-height: 220px;
 }
 
 .dungeons-table {
+  @include phone-columns;
+
   thead th { padding-top: 0; color: #9a9a9a; font-size: .8rem; font-weight: 700; }
   td { padding: 6px 12px; }
+  abbr { text-decoration: none; }
 }
 
 .dungeon-name {
@@ -376,23 +379,7 @@ svg.line {
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
 }
 
-.week-bands {
-  span { position: relative; border-left: 1px dashed #333; }
-  span:first-child { border-left: 0; }
-  .shade { background: rgba(255, 255, 255, .025); }
-
-  em {
-    position: absolute;
-    top: 3px;
-    right: 2px;
-    left: 4px;
-    display: flex;
-    gap: 3px;
-    overflow: hidden;
-  }
-
-  img { width: 14px; height: 14px; flex: none; border-radius: 2px; opacity: .8; }
-}
+.week-bands { @include week-bands; }
 
 svg.line {
   width: 100%;
@@ -499,8 +486,15 @@ svg.line {
   .compare-title h1 { font-size: 1.5rem; }
   .add-player { width: 100%; }
   .compare-tools { width: 100%; }
-  .compare-table .col-label { width: 110px; }
-  .compare-table td { min-width: 120px; }
+  .compare-table .col-label { width: 88px; font-size: .78rem; }
+  .compare-table td { min-width: 0; padding-right: 4px; padding-left: 4px; }
+  .score-row .stat-value { font-size: 1.15rem; }
+  .stat-delta, .score-row .stat-delta { position: static; display: block; transform: none; }
+  .remove { right: 0; }
+  .dungeons-table .col-label { width: 72px; padding-right: 4px; padding-left: 4px; }
+  .dungeons-table td { min-width: 0; padding: 6px 4px; }
+  .dungeons-table thead th { padding-right: 4px; padding-left: 4px; font-size: .72rem; @include truncate; }
+  .dungeon-name { gap: 6px; }
   .crest { width: 44px; height: 44px; }
 
   .line-chart {
@@ -548,9 +542,19 @@ svg.line {
 .dungeons-table.duel {
   .col-lead { width: 34%; padding: 6px 4px; }
   tfoot th, tfoot td { border-bottom: 0; padding-top: 12px; }
+
+  @media (max-width: $phone-breakpoint) {
+    .col-lead { width: 30%; }
+  }
 }
 
-.total-score { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.total-score {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  @media (max-width: $phone-breakpoint) { font-size: .85rem; }
+}
 
 .lead {
   position: relative;

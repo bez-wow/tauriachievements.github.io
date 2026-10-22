@@ -95,7 +95,7 @@
                     <em>
                       @for (affix of band.affixes; track affix) {
                         <span class="band-affix">
-                          <img [src]="affix.icon" alt="" loading="lazy" />{{ affix.name }}
+                          <img [src]="affix.icon" alt="" loading="lazy" /><span class="affix-name">{{ affix.name }}</span>
                         </span>
                       }
                     </em>
