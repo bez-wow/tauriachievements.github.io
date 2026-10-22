@@ -115,7 +115,7 @@ $difficulty-colors: (
   @media (max-width: $phone-breakpoint) {
     th, td { padding: 8px 6px; }
     th { font-size: .66rem; }
-    .phone-fluid { @include fluid-cell; }
+    .phone-fluid { @include fluid-identity; }
   }
 }
 

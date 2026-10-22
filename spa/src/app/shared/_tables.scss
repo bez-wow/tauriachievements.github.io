@@ -1,5 +1,5 @@
 $phone-breakpoint: 640px;
-$narrow-phone-breakpoint: 374px;
+$narrow-phone-breakpoint: 359px;
 
 @mixin table-scroll {
   position: relative;
@@ -7,11 +7,12 @@ $narrow-phone-breakpoint: 374px;
 }
 
 @mixin phone-columns {
-  .phone-only { display: none; }
+  @media (min-width: $phone-breakpoint + 1) {
+    .phone-only { display: none; }
+  }
 
   @media (max-width: $phone-breakpoint) {
     .phone-hidden { display: none; }
-    .phone-only { display: revert; }
   }
 
   @media (max-width: $narrow-phone-breakpoint) {
@@ -36,15 +37,13 @@ $narrow-phone-breakpoint: 374px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@mixin fluid-identity {
+  @include fluid-cell;
 
   > * { display: flex; max-width: 100%; }
   > * > :not(img) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-}
-
-@mixin phone-fluid-cell {
-  @media (max-width: $phone-breakpoint) {
-    @include fluid-cell;
-  }
 }
 
 @mixin truncate {
