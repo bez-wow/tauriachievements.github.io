@@ -346,9 +346,10 @@
 .site-drawer-nav {
   position: relative;
   flex: 1 1 auto;
-  padding-bottom: 8px;
+  padding-bottom: 24px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent);
 }
 
 .site-drawer-section + .site-drawer-section {
