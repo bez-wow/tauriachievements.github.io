@@ -60,6 +60,12 @@ the page's store. The component keeps the URL, the filters and the event handler
   so it ships in the initial bundle and the first visit needs no extra request. New pages are
   lazy too ([guides/howto-add-page.md](guides/howto-add-page.md)). Importing a page or its
   heavy dependency (Chart.js) from an eager file pulls it back into the initial bundle.
+- A code deploy renames the page chunks and Pages deletes the old ones, so a tab left open
+  across it can't load a page it hasn't opened yet. `reloadOnNewDeploy`
+  (`core/new-deploy-reload.ts`, the router's navigation error handler) turns that failed
+  navigation into a full load of the same address, which brings in the new deploy. It reloads
+  at most once in 30 seconds, so a deploy still going out can't loop it. Data-only deploys
+  keep every chunk name.
 - `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'top'`, so
   **every router navigation, even one that only changes query parameters, runs a full-page
   view transition and scrolls to the top.**

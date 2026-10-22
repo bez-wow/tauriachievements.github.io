@@ -3,11 +3,13 @@ import {
   provideRouter,
   withEnabledBlockingInitialNavigation,
   withInMemoryScrolling,
+  withNavigationErrorHandler,
   withRouterConfig,
   withViewTransitions
 } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
+import { reloadOnNewDeploy } from './core/new-deploy-reload';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +22,7 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled'
       }),
       withEnabledBlockingInitialNavigation(),
+      withNavigationErrorHandler(reloadOnNewDeploy),
       withViewTransitions()
     ),
     provideHttpClient()
