@@ -1,8 +1,8 @@
 {
   "seasonStart": "2026-09-16T00:00:00+02:00",
-  "lastMatchId": 159058,
-  "lastMatchStart": "2026-10-20T20:21:13+00:00",
-  "matchCount": 587,
+  "lastMatchId": 159423,
+  "lastMatchStart": "2026-10-22T19:47:56+00:00",
+  "matchCount": 598,
   "players": [
     {
       "guid": 3479670,
@@ -65,24 +65,54 @@
       "rating": 2001
     },
     {
-      "guid": 2438373,
-      "realm": "Evermoon",
-      "name": "Wuhji",
-      "class": 11,
-      "games": 94,
-      "wins": 72,
-      "losses": 22,
-      "rating": 1887
-    },
-    {
       "guid": 2309972,
       "realm": "Evermoon",
       "name": "Wxz",
       "class": 11,
-      "games": 94,
-      "wins": 74,
+      "games": 101,
+      "wins": 81,
       "losses": 20,
-      "rating": 1894
+      "rating": 1954
+    },
+    {
+      "guid": 2438373,
+      "realm": "Evermoon",
+      "name": "Wuhji",
+      "class": 11,
+      "games": 97,
+      "wins": 75,
+      "losses": 22,
+      "rating": 1919
+    },
+    {
+      "guid": 27471530,
+      "realm": "Tauri",
+      "name": "Ticho",
+      "class": 4,
+      "games": 83,
+      "wins": 73,
+      "losses": 10,
+      "rating": 2068
+    },
+    {
+      "guid": 2076134,
+      "realm": "Evermoon",
+      "name": "Giullianiel",
+      "class": 5,
+      "games": 82,
+      "wins": 22,
+      "losses": 60,
+      "rating": 1343
+    },
+    {
+      "guid": 2208773,
+      "realm": "Evermoon",
+      "name": "Warrongo",
+      "class": 1,
+      "games": 82,
+      "wins": 22,
+      "losses": 60,
+      "rating": 1343
     },
     {
       "guid": 503771,
@@ -95,36 +125,6 @@
       "rating": 1969
     },
     {
-      "guid": 27471530,
-      "realm": "Tauri",
-      "name": "Ticho",
-      "class": 4,
-      "games": 79,
-      "wins": 69,
-      "losses": 10,
-      "rating": 2048
-    },
-    {
-      "guid": 2076134,
-      "realm": "Evermoon",
-      "name": "Giullianiel",
-      "class": 5,
-      "games": 78,
-      "wins": 22,
-      "losses": 56,
-      "rating": 1359
-    },
-    {
-      "guid": 2208773,
-      "realm": "Evermoon",
-      "name": "Warrongo",
-      "class": 1,
-      "games": 78,
-      "wins": 22,
-      "losses": 56,
-      "rating": 1359
-    },
-    {
       "guid": 2103602,
       "realm": "Evermoon",
       "name": "Zbaholy",
@@ -133,6 +133,16 @@
       "wins": 68,
       "losses": 8,
       "rating": 2057
+    },
+    {
+      "guid": 2427398,
+      "realm": "Evermoon",
+      "name": "Zerololq",
+      "class": 6,
+      "games": 76,
+      "wins": 59,
+      "losses": 17,
+      "rating": 1896
     },
     {
       "guid": 2278828,
@@ -145,24 +155,14 @@
       "rating": 1816
     },
     {
-      "guid": 2427398,
-      "realm": "Evermoon",
-      "name": "Zerololq",
-      "class": 6,
-      "games": 69,
-      "wins": 52,
-      "losses": 17,
-      "rating": 1824
-    },
-    {
       "guid": 2295932,
       "realm": "Evermoon",
       "name": "Michamo",
       "class": 7,
-      "games": 66,
+      "games": 70,
       "wins": 15,
-      "losses": 51,
-      "rating": 1207
+      "losses": 55,
+      "rating": 1199
     },
     {
       "guid": 27470890,
@@ -229,10 +229,10 @@
       "realm": "Evermoon",
       "name": "Frizzleally",
       "class": 8,
-      "games": 38,
+      "games": 39,
       "wins": 31,
-      "losses": 7,
-      "rating": 1591
+      "losses": 8,
+      "rating": 1577
     },
     {
       "guid": 2276213,
@@ -315,6 +315,16 @@
       "rating": 382
     },
     {
+      "guid": 2406471,
+      "realm": "Evermoon",
+      "name": "Red\u00E7\u00F8cainx",
+      "class": 2,
+      "games": 25,
+      "wins": 10,
+      "losses": 15,
+      "rating": 925
+    },
+    {
       "guid": 2403831,
       "realm": "Evermoon",
       "name": "Diaara",
@@ -329,10 +339,10 @@
       "realm": "Evermoon",
       "name": "Mcfrizzle",
       "class": 8,
-      "games": 23,
-      "wins": 23,
+      "games": 24,
+      "wins": 24,
       "losses": 0,
-      "rating": 1949
+      "rating": 1958
     },
     {
       "guid": 2365643,
@@ -413,16 +423,6 @@
       "wins": 5,
       "losses": 14,
       "rating": 480
-    },
-    {
-      "guid": 2406471,
-      "realm": "Evermoon",
-      "name": "Red\u00E7\u00F8cainx",
-      "class": 2,
-      "games": 19,
-      "wins": 8,
-      "losses": 11,
-      "rating": 753
     },
     {
       "guid": 2115044,
@@ -565,6 +565,16 @@
       "rating": 287
     },
     {
+      "guid": 2136793,
+      "realm": "Evermoon",
+      "name": "Goldsh\u00EDp",
+      "class": 2,
+      "games": 12,
+      "wins": 3,
+      "losses": 9,
+      "rating": 288
+    },
+    {
       "guid": 2439017,
       "realm": "Evermoon",
       "name": "\u00D0eadk\u00EFng",
@@ -575,6 +585,16 @@
       "rating": 383
     },
     {
+      "guid": 2044679,
+      "realm": "Evermoon",
+      "name": "Ashenrain",
+      "class": 11,
+      "games": 11,
+      "wins": 11,
+      "losses": 0,
+      "rating": 1019
+    },
+    {
       "guid": 2324498,
       "realm": "Evermoon",
       "name": "Dogurmet",
@@ -583,6 +603,16 @@
       "wins": 2,
       "losses": 9,
       "rating": 192
+    },
+    {
+      "guid": 2223983,
+      "realm": "Evermoon",
+      "name": "Fundur",
+      "class": 7,
+      "games": 11,
+      "wins": 11,
+      "losses": 0,
+      "rating": 1019
     },
     {
       "guid": 27356641,
@@ -635,16 +665,6 @@
       "rating": 383
     },
     {
-      "guid": 2044679,
-      "realm": "Evermoon",
-      "name": "Ashenrain",
-      "class": 11,
-      "games": 10,
-      "wins": 10,
-      "losses": 0,
-      "rating": 933
-    },
-    {
       "guid": 1570800,
       "realm": "Evermoon",
       "name": "Egorr",
@@ -655,16 +675,6 @@
       "rating": 0
     },
     {
-      "guid": 2223983,
-      "realm": "Evermoon",
-      "name": "Fundur",
-      "class": 7,
-      "games": 10,
-      "wins": 10,
-      "losses": 0,
-      "rating": 933
-    },
-    {
       "guid": 2345706,
       "realm": "Evermoon",
       "name": "Sakir",
@@ -673,6 +683,16 @@
       "wins": 3,
       "losses": 7,
       "rating": 288
+    },
+    {
+      "guid": 2423664,
+      "realm": "Evermoon",
+      "name": "Amasawa",
+      "class": 4,
+      "games": 9,
+      "wins": 0,
+      "losses": 9,
+      "rating": 0
     },
     {
       "guid": 1556201,
@@ -703,16 +723,6 @@
       "wins": 6,
       "losses": 3,
       "rating": 569
-    },
-    {
-      "guid": 2136793,
-      "realm": "Evermoon",
-      "name": "Goldsh\u00EDp",
-      "class": 2,
-      "games": 9,
-      "wins": 2,
-      "losses": 7,
-      "rating": 192
     },
     {
       "guid": 2262695,
@@ -753,16 +763,6 @@
       "wins": 2,
       "losses": 7,
       "rating": 192
-    },
-    {
-      "guid": 2423664,
-      "realm": "Evermoon",
-      "name": "Amasawa",
-      "class": 4,
-      "games": 8,
-      "wins": 0,
-      "losses": 8,
-      "rating": 0
     },
     {
       "guid": 2072850,
@@ -813,6 +813,16 @@
       "wins": 3,
       "losses": 5,
       "rating": 287
+    },
+    {
+      "guid": 2404261,
+      "realm": "Evermoon",
+      "name": "Hotdotgs",
+      "class": 5,
+      "games": 8,
+      "wins": 2,
+      "losses": 6,
+      "rating": 192
     },
     {
       "guid": 797577,
@@ -975,6 +985,26 @@
       "rating": 0
     },
     {
+      "guid": 528627,
+      "realm": "Evermoon",
+      "name": "Kungpoo",
+      "class": 10,
+      "games": 6,
+      "wins": 0,
+      "losses": 6,
+      "rating": 0
+    },
+    {
+      "guid": 2139475,
+      "realm": "Evermoon",
+      "name": "Reastrow",
+      "class": 12,
+      "games": 6,
+      "wins": 3,
+      "losses": 3,
+      "rating": 288
+    },
+    {
       "guid": 2136485,
       "realm": "Evermoon",
       "name": "Reastt",
@@ -1013,6 +1043,16 @@
       "wins": 1,
       "losses": 5,
       "rating": 96
+    },
+    {
+      "guid": 2146338,
+      "realm": "Evermoon",
+      "name": "Zephmage",
+      "class": 8,
+      "games": 6,
+      "wins": 2,
+      "losses": 4,
+      "rating": 192
     },
     {
       "guid": 2118309,
@@ -1093,16 +1133,6 @@
       "wins": 3,
       "losses": 2,
       "rating": 288
-    },
-    {
-      "guid": 528627,
-      "realm": "Evermoon",
-      "name": "Kungpoo",
-      "class": 10,
-      "games": 5,
-      "wins": 0,
-      "losses": 5,
-      "rating": 0
     },
     {
       "guid": 528241,
@@ -1485,6 +1515,16 @@
       "rating": 383
     },
     {
+      "guid": 2450637,
+      "realm": "Evermoon",
+      "name": "Veera",
+      "class": 11,
+      "games": 4,
+      "wins": 1,
+      "losses": 3,
+      "rating": 96
+    },
+    {
       "guid": 2419149,
       "realm": "Evermoon",
       "name": "Zepek",
@@ -1683,16 +1723,6 @@
       "wins": 0,
       "losses": 3,
       "rating": 0
-    },
-    {
-      "guid": 2139475,
-      "realm": "Evermoon",
-      "name": "Reastrow",
-      "class": 12,
-      "games": 3,
-      "wins": 2,
-      "losses": 1,
-      "rating": 192
     },
     {
       "guid": 2332795,
@@ -1949,16 +1979,6 @@
       "realm": "Tauri",
       "name": "Hasbasz\u00FArlak",
       "class": 4,
-      "games": 2,
-      "wins": 0,
-      "losses": 2,
-      "rating": 0
-    },
-    {
-      "guid": 2404261,
-      "realm": "Evermoon",
-      "name": "Hotdotgs",
-      "class": 5,
       "games": 2,
       "wins": 0,
       "losses": 2,
@@ -2759,16 +2779,6 @@
       "realm": "WoD",
       "name": "Unnar",
       "class": 3,
-      "games": 1,
-      "wins": 0,
-      "losses": 1,
-      "rating": 0
-    },
-    {
-      "guid": 2450637,
-      "realm": "Evermoon",
-      "name": "Veera",
-      "class": 11,
       "games": 1,
       "wins": 0,
       "losses": 1,
