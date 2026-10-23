@@ -1,13 +1,13 @@
 namespace RaidLogExporter;
 
-/// <param name="Guild">The ladder's current guild for the character, else the last one a log named.</param>
 public sealed record RaidPlayer(
     string Name,
     string Realm,
     int ClassId,
     int Race,
     int Gender,
-    string Guild
+    string Guild,
+    bool Former = false
 );
 
 /// <param name="Value">Damage or healing per second, rounded.</param>
@@ -34,14 +34,19 @@ public sealed record RaidEncounter(
     RaidTopPerformer? TopHps
 );
 
-/// <param name="Encounters">Every boss on every difficulty, in catalog order, kills or not.</param>
-/// <param name="Logs">Every kill, oldest first.</param>
-/// <param name="Guilds">Every guild that has a kill, in order of its first kill.</param>
+public sealed record RaidFormerCharacters(
+    string Name,
+    string Realm,
+    int ClassId,
+    IReadOnlyList<int> FormerClassIds
+);
+
 public sealed record RaidDataset(
     IReadOnlyList<RaidEncounter> Encounters,
     IReadOnlyList<RaidLog> Logs,
     IReadOnlyList<RaidGuild> Guilds,
-    IReadOnlyList<RaidItem> Items
+    IReadOnlyList<RaidItem> Items,
+    IReadOnlyList<RaidFormerCharacters> FormerCharacters
 );
 
 public static class RaidLogDatasetBuilder
@@ -59,6 +64,7 @@ public static class RaidLogDatasetBuilder
             .ThenBy(log => log.Key.LogId)
             .ToList();
         var logsByEncounter = ordered.ToLookup(log => (log.EncounterId, log.DifficultyId));
+        var currentClasses = CurrentClasses(ordered);
 
         var encounters = (
             from boss in RaidCatalog.Bosses
@@ -67,7 +73,8 @@ public static class RaidLogDatasetBuilder
                 boss,
                 difficulty,
                 [.. logsByEncounter[(boss.EncounterId, difficulty.Id)]],
-                guildDirectory
+                guildDirectory,
+                currentClasses
             )
         ).ToList();
 
@@ -76,25 +83,59 @@ public static class RaidLogDatasetBuilder
             encounters,
             ordered,
             GuildTable(ordered),
-            [.. items.Values.Where(item => usedItems.Contains(item.Id)).OrderBy(item => item.Id)]
+            [.. items.Values.Where(item => usedItems.Contains(item.Id)).OrderBy(item => item.Id)],
+            FormerCharacters(ordered, currentClasses)
         );
     }
 
     public static double PerSecond(long amount, long fightMilliseconds) =>
         fightMilliseconds > 0 ? amount * 1000.0 / fightMilliseconds : 0;
 
+    private static Dictionary<(string Realm, string Name), int> CurrentClasses(
+        IEnumerable<RaidLog> oldestFirst
+    )
+    {
+        var classes = new Dictionary<(string Realm, string Name), int>();
+        foreach (var member in oldestFirst.SelectMany(log => log.Members))
+        {
+            classes[(member.Realm, member.Name)] = member.ClassId;
+        }
+
+        return classes;
+    }
+
+    private static List<RaidFormerCharacters> FormerCharacters(
+        IEnumerable<RaidLog> oldestFirst,
+        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses
+    ) =>
+        [
+            .. oldestFirst
+                .SelectMany(log => log.Members)
+                .Where(member => member.ClassId != currentClasses[(member.Realm, member.Name)])
+                .GroupBy(member => (member.Realm, member.Name))
+                .Select(group => new RaidFormerCharacters(
+                    group.Key.Name,
+                    group.Key.Realm,
+                    currentClasses[group.Key],
+                    [.. group.Select(member => member.ClassId).Reverse().Distinct()]
+                ))
+                .OrderBy(character => character.Realm, StringComparer.Ordinal)
+                .ThenBy(character => character.Name, StringComparer.Ordinal),
+        ];
+
     private static RaidEncounter BuildEncounter(
         RaidBoss boss,
         RaidDifficulty difficulty,
         IReadOnlyList<RaidLog> logs,
-        PlayerGuildDirectory guildDirectory
+        PlayerGuildDirectory guildDirectory,
+        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses
     ) =>
         new(
             boss,
             difficulty,
             logs,
             GuildTable(logs),
-            PlayerTable(logs, guildDirectory),
+            PlayerTable(logs, guildDirectory, currentClasses),
             TrinketTable(logs),
             TopPerformer(
                 logs,
@@ -125,20 +166,17 @@ public static class RaidLogDatasetBuilder
         return guilds;
     }
 
-    /// <summary>
-    /// Characters in order of first appearance, so a new kill appends players rather than
-    /// renumbering the table. Class, race and gender come from the latest log.
-    /// </summary>
     private static List<RaidPlayer> PlayerTable(
         IReadOnlyList<RaidLog> logs,
-        PlayerGuildDirectory guildDirectory
+        PlayerGuildDirectory guildDirectory,
+        IReadOnlyDictionary<(string Realm, string Name), int> currentClasses
     )
     {
         var players = new List<RaidPlayer>();
-        var positions = new Dictionary<(string Realm, string Name), int>();
+        var positions = new Dictionary<(string Realm, string Name, int ClassId), int>();
         foreach (var member in logs.SelectMany(log => log.Members))
         {
-            var key = (member.Realm, member.Name);
+            var key = (member.Realm, member.Name, member.ClassId);
             if (!positions.TryGetValue(key, out var position))
             {
                 positions[key] = players.Count;
@@ -158,7 +196,6 @@ public static class RaidLogDatasetBuilder
             var known = players[position];
             players[position] = known with
             {
-                ClassId = member.ClassId,
                 Race = member.Race,
                 Gender = member.Gender,
                 Guild = member.Guild.Length > 0 ? member.Guild : known.Guild,
@@ -168,12 +205,15 @@ public static class RaidLogDatasetBuilder
         return
         [
             .. players.Select(player =>
-                guildDirectory.Find(player.Realm, player.Name) is { } guild
+                currentClasses[(player.Realm, player.Name)] != player.ClassId
                     ? player with
                     {
-                        Guild = guild,
+                        Former = true,
                     }
-                    : player
+                    : player with
+                    {
+                        Guild = guildDirectory.Find(player.Realm, player.Name) ?? player.Guild,
+                    }
             ),
         ];
     }

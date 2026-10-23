@@ -86,7 +86,7 @@
                         class="character-name"
                         [style.color]="classColor(row.member.character.classId)"
                         [routerLink]="characterLink(row.member.character)"
-                        [queryParams]="{ difficulty: current.difficulty.slug }">{{ row.member.character.name }}</a>
+                        [queryParams]="{ difficulty: current.difficulty.slug, class: row.member.character.former ? row.member.character.classId : null }">{{ row.member.character.name }}</a>
                       <span class="character-sub">{{ row.member.spec?.name || 'Unknown spec' }} · {{ row.member.character.realm }}</span>
                     </span>
                   </span>

@@ -3,6 +3,23 @@
     <span aria-hidden="true">‹</span> Back to Raid Logs
   </a>
 
+  <ng-template #classSwitch>
+    @if (classOptions().length) {
+      <div class="view-switch class-switch" role="group" aria-label="Characters with this name" appGlide>
+        @for (option of classOptions(); track option.classId) {
+          <button
+            type="button"
+            [class.active]="option.active"
+            [attr.aria-pressed]="option.active"
+            [title]="option.formerClassId === undefined ? 'The character with this name now' : 'An earlier character with this name'"
+            (click)="setFormerClass(option.formerClassId)">
+            <img [src]="classIcon(option.classId)" alt="" /> {{ className(option.classId) }}@if (option.formerClassId !== undefined) {<span class="earlier"> · earlier</span>}
+          </button>
+        }
+      </div>
+    }
+  </ng-template>
+
   <app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Looking through the logs..." (retry)="loadData()">
     @if (index(); as loadedIndex) {
       <app-raid-difficulty-switch
@@ -10,6 +27,9 @@
         [selected]="loaded()?.difficulty?.slug"
         label="Look on another difficulty"
         (selectedChange)="setDifficulty($event)" />
+    }
+    @if (loadError()) {
+      <ng-container [ngTemplateOutlet]="classSwitch" />
     }
   </app-load-state>
 
@@ -27,6 +47,7 @@
             <a [href]="url" target="_blank" rel="noopener">Armory <span aria-hidden="true">↗</span></a>
           }
         </p>
+        <ng-container [ngTemplateOutlet]="classSwitch" />
       </div>
       @if (index(); as loadedIndex) {
         <app-raid-difficulty-switch

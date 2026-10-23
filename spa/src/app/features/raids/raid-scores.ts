@@ -38,7 +38,7 @@ export function rankCharacters(
 
   for (const kill of kills) {
     for (const member of kill.members) {
-      if (!countsFor(metric, member.spec) || !matchesFilter(member, filter)) {
+      if (member.character.former || !countsFor(metric, member.spec) || !matchesFilter(member, filter)) {
         continue;
       }
 
@@ -76,8 +76,20 @@ export function bossStanding(
 ): BossStanding {
   const ranking = rankCharacters(kills, metric, filter);
   const own = ranking.find(entry => characterKey(entry.member.character) === key);
-  const top = ranking[0]?.value ?? 0;
+  const top = bossBest(kills, metric, filter);
   return { rank: own?.rank, ranked: ranking.length, relative: own && top > 0 ? own.value / top : 0 };
+}
+
+export function bossBest(kills: readonly RaidKillDetails[], metric: RaidMetric, filter: RankingFilter = {}): number {
+  let best = 0;
+  for (const kill of kills) {
+    for (const member of kill.members) {
+      if (countsFor(metric, member.spec) && matchesFilter(member, filter)) {
+        best = Math.max(best, member[metric]);
+      }
+    }
+  }
+  return best;
 }
 
 export const MAX_SCORE = 6969;
@@ -144,7 +156,7 @@ export function scoreCharacters(
 
         const value = member[metric];
         tops[bossIndex] = Math.max(tops[bossIndex], value);
-        if (specId !== undefined && member.spec.id !== specId) {
+        if (member.character.former || (specId !== undefined && member.spec.id !== specId)) {
           continue;
         }
 
@@ -231,6 +243,9 @@ export function scoresBySpec(
         const metric = specMetric(member.spec);
         const value = member[metric];
         tops[metric][bossIndex] = Math.max(tops[metric][bossIndex], value);
+        if (member.character.former) {
+          continue;
+        }
 
         let characters = bests.get(member.spec);
         if (!characters) {

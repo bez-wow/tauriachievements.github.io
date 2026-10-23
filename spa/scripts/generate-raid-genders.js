@@ -12,10 +12,11 @@ function buildRaidGenders(players, raidPlayers) {
 
   for (const [name, realm, classId, , gender] of raidPlayers) {
     const key = `${realm}/${name}`;
-    if (seen.has(key)) {
+    const classKey = `${key}/${classId}`;
+    if (seen.has(classKey)) {
       continue;
     }
-    seen.add(key);
+    seen.add(classKey);
 
     const player = ladder.get(key);
     if (!player || player.playerClass !== classId || (player.gender !== 0 && player.gender !== 1) || player.gender === gender) {

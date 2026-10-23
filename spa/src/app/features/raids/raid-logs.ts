@@ -20,6 +20,7 @@ import {
   RaidTalentTooltips,
   RaidKill,
   RaidCharacter,
+  RaidCharacterClasses,
   RaidMember,
   RaidKillDetails,
   RaidLogsIndex
@@ -119,8 +120,21 @@ export function decodeIndex(file: RaidLogsIndexFile): RaidLogsIndex {
     specs,
     kills,
     items: new Map(file.items.map(([id, name, quality, icon]) => [id, { id, name, quality, icon }])),
-    top
+    top,
+    formerCharacters: new Map((file.formerCharacters ?? []).map(([name, realm, classId, formerClassIds]) =>
+      [characterKey({ name, realm }), { classId, formerClassIds }]))
   };
+}
+
+export function formerCharactersOf(
+  index: Pick<RaidLogsIndex, 'formerCharacters'>,
+  realm: string,
+  name: string
+): RaidCharacterClasses | undefined {
+  const exact = `${realmSlug(realm)}/${name}`;
+  const folded = exact.toLocaleLowerCase();
+  return index.formerCharacters.get(exact)
+    ?? [...index.formerCharacters].find(([key]) => key.toLocaleLowerCase() === folded)?.[1];
 }
 
 export function decodeBossFile(
@@ -130,8 +144,8 @@ export function decodeBossFile(
   specs: ReadonlyMap<number, RaidSpec>
 ): RaidKillDetails[] {
   const guilds = file.guilds.map(decodeGuild);
-  const characters = file.players.map(([name, realm, classId, race, gender, guild]): RaidCharacter =>
-    ({ name, realm, classId, race, gender, guild }));
+  const characters = file.players.map(([name, realm, classId, race, gender, guild, former]): RaidCharacter =>
+    ({ name, realm, classId, race, gender, guild, former: former === 1 }));
   const trinkets = (file.trinkets ?? []).map(([id, itemLevel, name, quality, icon]): RaidTrinket =>
     ({ id, itemLevel, name, quality, icon }));
 

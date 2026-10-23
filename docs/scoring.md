@@ -175,6 +175,13 @@ explains it together.
   screenshot rank for rank. Don't "fix" the formula.
 - Metric: healers are ranked on HPS, every other spec on DPS (`specMetric`), tanks included.
   HPS is healing plus absorbs.
+- A character is its realm and name (`characterKey`), and the name belongs to the class of its
+  latest kill on any boss and difficulty. Kills logged on another class belong to a former
+  character with that name ([data-pipeline.md](data-pipeline.md#raid-log-files)): they're left
+  out of the scores, boss rankings, spec performance and Talent Analytics, but each still sets
+  the boss's best that every score is measured against, and still counts on the spec popularity
+  and race charts. A former character's own view on the character page shows each boss's share
+  of that best, but no score or rank.
 - A spec filter scores characters only on the kills they played as that spec. The best on each
   boss is still the best anyone did there.
 - Filters (class, faction, realm) only hide rows and re-rank the rest. Each score is still

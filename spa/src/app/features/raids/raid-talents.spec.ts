@@ -101,6 +101,12 @@ describe('talentSamples', () => {
     expect(samples).toEqual([]);
   });
 
+  it('leaves out a former character with the name', () => {
+    const former = { ...member('Alpha', fire, '0000000', 900), character: { ...character('Alpha'), former: true } };
+    const samples = talentSamples([kill(nythendra, 1, [former, member('Beta', fire, '1111111', 300)])]);
+    expect(samples.map(sample => [sample.character.name, sample.rank, sample.relative])).toEqual([['Beta', 1, 1]]);
+  });
+
   it('counts a tenth of a ranking, rounded up, as its top players', () => {
     expect([0, 1, 9, 10, 11, 25].map(topPlayerCount)).toEqual([0, 1, 1, 1, 2, 3]);
   });

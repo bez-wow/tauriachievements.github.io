@@ -117,7 +117,7 @@ The query parameters each page reads:
 | `/mythic-plus/compare` | `players`: `Name-Realm,…`, at most four |
 | `/mythic-plus/character/:realm/:name` | `spec` |
 | `/mythic-plus/guild/:realm/:guild` | `period`, `dungeon`, `class`, `spec`, `role`, `character` |
-| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab`, `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class` |
+| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab`, `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't

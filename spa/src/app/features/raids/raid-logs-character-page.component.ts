@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -20,6 +20,7 @@ import {
   MAX_SCORE,
   RaidMetric,
   RankedScore,
+  bossBest,
   bossStanding,
   countsFor,
   performanceQuality,
@@ -28,13 +29,14 @@ import {
 } from './raid-scores';
 import {
   RaidBoss,
+  RaidCharacter,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
   RaidMember,
   RaidSpec
 } from './raid-logs.types';
-import { characterKey, logKey } from './raid-logs';
+import { characterKey, formerCharactersOf, logKey } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_NAMES, realmSlug } from '../../game/wow';
 import { injectReplaceUrl } from '../../core/url-state';
@@ -70,11 +72,18 @@ interface SummaryTile {
   note: string;
 }
 
+interface ClassOption {
+  classId: number;
+  formerClassId?: number;
+  active: boolean;
+}
+
 const RECENT_KILLS = 20;
+const NOT_RANKED = 'Earlier character, not ranked';
 
 @Component({
   selector: 'app-raid-logs-character-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [RouterLink, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent, NgTemplateOutlet],
   templateUrl: './raid-logs-character-page.component.html',
   styleUrl: './raid-logs-character-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -98,6 +107,30 @@ export class RaidLogsCharacterPageComponent {
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
   private readonly pickedMetric = signal<RaidMetric | undefined>(parseMetric(this.route.snapshot.queryParamMap.get('metric')));
   readonly comparison = signal<RaidComparison>(parseComparison(this.route.snapshot.queryParamMap.get('compare')));
+  private readonly requestedClass = signal(parseClass(this.route.snapshot.queryParamMap.get('class')));
+
+  private readonly classes = computed(() => {
+    const index = this.index();
+    const params = this.params();
+    return index && formerCharactersOf(index, params.get('realm') ?? '', params.get('name') ?? '');
+  });
+
+  readonly formerClass = computed(() => {
+    const requested = this.requestedClass();
+    return requested !== undefined && this.classes()?.formerClassIds.includes(requested) ? requested : undefined;
+  });
+
+  readonly classOptions = computed<ClassOption[]>(() => {
+    const classes = this.classes();
+    const viewed = this.formerClass();
+    return classes
+      ? [undefined, ...classes.formerClassIds].map(formerClassId => ({
+        classId: formerClassId ?? classes.classId,
+        formerClassId,
+        active: formerClassId === viewed
+      }))
+      : [];
+  });
 
   readonly appearances = computed<Appearance[]>(() => {
     const loaded = this.loaded();
@@ -106,7 +139,8 @@ export class RaidLogsCharacterPageComponent {
     }
 
     return loaded.bossKills.flatMap(kills => kills.flatMap(kill =>
-      kill.members.filter(member => characterKey(member.character) === loaded.key).map(member => ({ kill, member }))));
+      kill.members.filter(member => this.isViewed(member.character) && characterKey(member.character) === loaded.key)
+        .map(member => ({ kill, member }))));
   });
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
@@ -149,7 +183,7 @@ export class RaidLogsCharacterPageComponent {
 
   readonly score = computed(() => {
     const key = this.loaded()?.key;
-    return this.scores().find(entry => characterKey(entry.character) === key);
+    return this.formerClass() === undefined ? this.scores().find(entry => characterKey(entry.character) === key) : undefined;
   });
 
   readonly bossRows = computed<BossRow[]>(() => {
@@ -161,21 +195,22 @@ export class RaidLogsCharacterPageComponent {
 
     const metric = this.metric();
     const byClass = this.comparison() === 'class';
+    const earlier = this.formerClass() !== undefined;
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
       const best = own
         .filter(appearance => countsFor(metric, appearance.member.spec))
         .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
-      const standing = best
-        ? bossStanding(kills, metric, loaded.key, byClass ? { classId: best.member.character.classId } : {})
-        : undefined;
+      const filter = best && byClass ? { classId: best.member.character.classId } : {};
+      const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
+      const top = best && earlier ? bossBest(kills, metric, filter) : 0;
       return {
         boss,
         kills: own.length,
         best,
         value: best?.member[metric] ?? 0,
-        relative: standing?.relative ?? 0,
+        relative: standing?.relative ?? (best && top > 0 ? best.member[metric] / top : 0),
         rank: standing?.rank,
         ranked: standing?.ranked ?? 0
       };
@@ -192,6 +227,7 @@ export class RaidLogsCharacterPageComponent {
     const spec = this.mainSpec();
     const score = this.score();
     const byClass = this.comparison() === 'class';
+    const unranked = this.formerClass() === undefined ? 'No ranked kill' : NOT_RANKED;
     return [
       { label: 'Bosses killed', value: `${killed.length}/${rows.length}`, note: `${this.appearances().length} kills` },
       {
@@ -199,14 +235,14 @@ export class RaidLogsCharacterPageComponent {
         value: score ? String(score.score) : '-',
         note: score
           ? `#${score.rank} of ${this.scores().length.toLocaleString('en-US')} ${byClass ? 'among all players' : 'on the leaderboard'}`
-          : 'No ranked kill'
+          : unranked
       },
       {
         label: `Best ${this.metric() === 'hps' ? 'healing' : 'damage'} rank`,
         value: bestRank ? `#${bestRank.rank}` : '-',
         note: bestRank
           ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}${byClass ? ` ${this.classPlural()}` : ''}`
-          : 'No ranked kill'
+          : unranked
       },
       { label: 'Main spec', value: spec?.name ?? '-', note: spec ? CLASS_NAMES[spec.classId] ?? '' : '' },
       { label: 'Item level', value: latest ? String(latest.member.itemLevel) : '-', note: 'At the latest kill' }
@@ -215,7 +251,7 @@ export class RaidLogsCharacterPageComponent {
 
   readonly armoryUrl = computed(() => {
     const character = this.character();
-    return character && getArmoryUrl(character.name, character.realm);
+    return character && !character.former ? getArmoryUrl(character.name, character.realm) : undefined;
   });
 
   readonly maxScore = MAX_SCORE;
@@ -238,7 +274,7 @@ export class RaidLogsCharacterPageComponent {
     });
   }
 
-  loadData(): void {
+  loadData(keepLooking = false): void {
     this.subscription?.unsubscribe();
     this.isLoading.set(true);
     this.loadError.set(undefined);
@@ -247,8 +283,11 @@ export class RaidLogsCharacterPageComponent {
       .subscribe({
         next: index => {
           this.index.set(index);
-          const requested = index.difficulties.find(difficulty => difficulty.slug === this.requestedDifficulty() && difficulty.kills > 0);
-          const order = requested ? [requested] : [...index.difficulties].reverse().filter(difficulty => difficulty.kills > 0);
+          const withKills = [...index.difficulties].reverse().filter(difficulty => difficulty.kills > 0);
+          const requested = withKills.find(difficulty => difficulty.slug === this.requestedDifficulty());
+          const order = !requested ? withKills
+            : keepLooking ? [requested, ...withKills.filter(difficulty => difficulty !== requested)]
+              : [requested];
           this.loadDifficulty(index, order);
         },
         error: error => this.fail(error)
@@ -259,6 +298,16 @@ export class RaidLogsCharacterPageComponent {
     this.requestedDifficulty.set(slug);
     this.writeUrl();
     this.loadData();
+  }
+
+  setFormerClass(classId: number | undefined): void {
+    if (classId === this.formerClass()) {
+      return;
+    }
+
+    this.requestedClass.set(classId);
+    this.writeUrl();
+    this.loadData(true);
   }
 
   setMetric(metric: RaidMetric): void {
@@ -310,6 +359,10 @@ export class RaidLogsCharacterPageComponent {
             return;
           }
 
+          if (this.requestedDifficulty() !== undefined && this.requestedDifficulty() !== difficulty.slug) {
+            this.requestedDifficulty.set(difficulty.slug);
+            this.writeUrl();
+          }
           this.loaded.set({ difficulty, bossKills, key });
           this.isLoading.set(false);
         },
@@ -327,6 +380,9 @@ export class RaidLogsCharacterPageComponent {
     for (const kills of bossKills) {
       for (const kill of kills) {
         for (const member of kill.members) {
+          if (!this.isViewed(member.character)) {
+            continue;
+          }
           const key = characterKey(member.character);
           if (key === exact) {
             return key;
@@ -341,6 +397,11 @@ export class RaidLogsCharacterPageComponent {
     return caseless;
   }
 
+  private isViewed(character: RaidCharacter): boolean {
+    const formerClass = this.formerClass();
+    return formerClass === undefined ? !character.former : !!character.former && character.classId === formerClass;
+  }
+
   private fail(error: unknown): void {
     console.error('Failed to load the character:', error);
     this.loadError.set('The raid logs could not be loaded.');
@@ -351,7 +412,8 @@ export class RaidLogsCharacterPageComponent {
     this.replaceUrl({
       difficulty: this.requestedDifficulty() ?? null,
       metric: this.pickedMetric() ?? null,
-      compare: this.comparison() === 'class' ? 'class' : null
+      compare: this.comparison() === 'class' ? 'class' : null,
+      class: this.formerClass() ?? null
     });
   }
 }
@@ -366,4 +428,9 @@ function parseMetric(value: string | null): RaidMetric | undefined {
 
 function parseComparison(value: string | null): RaidComparison {
   return value === 'class' ? 'class' : 'all';
+}
+
+function parseClass(value: string | null): number | undefined {
+  const classId = Number(value);
+  return value && Number.isInteger(classId) ? classId : undefined;
 }

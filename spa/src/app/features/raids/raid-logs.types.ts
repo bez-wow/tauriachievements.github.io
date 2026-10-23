@@ -65,13 +65,16 @@ export interface RaidLogsIndexFile {
   bosses: RaidBossEntry[];
   specs: RaidSpecEntry[];
   guilds: RaidGuildEntry[];
+  formerCharacters?: RaidFormerCharactersEntry[];
   logs: RaidIndexLogEntry[];
   newLogs?: Array<[realm: string, logId: number]>;
   top: RaidTopEntry[];
   items: RaidItemEntry[];
 }
 
-export type RaidPlayerEntry = [name: string, realm: string, classId: number, race: number, gender: number, guild: string];
+export type RaidFormerCharactersEntry = [name: string, realm: string, classId: number, formerClassIds: number[]];
+
+export type RaidPlayerEntry = [name: string, realm: string, classId: number, race: number, gender: number, guild: string, former?: 1];
 
 export type RaidMemberEntry = [
   player: number,
@@ -217,6 +220,7 @@ export interface RaidCharacter {
   race: number;
   gender: number;
   guild: string;
+  former?: boolean;
 }
 
 export interface RaidMember {
@@ -253,4 +257,10 @@ export interface RaidLogsIndex {
   kills: RaidKill[];
   items: ReadonlyMap<number, RaidItem>;
   top: ReadonlyMap<string, { dps?: RaidPerformer; hps?: RaidPerformer }>;
+  formerCharacters: ReadonlyMap<string, RaidCharacterClasses>;
+}
+
+export interface RaidCharacterClasses {
+  classId: number;
+  formerClassIds: readonly number[];
 }

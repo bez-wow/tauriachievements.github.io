@@ -147,6 +147,17 @@ describe('scoreCharacters', () => {
     expect(fireOnly[1].spec?.name).toBe('Fire');
   });
 
+  it("leaves out a former character with the name, whose kill still sets the boss's best", () => {
+    const former: RaidCharacter = { ...character('Example', 10, 2), former: true };
+    const withFormer = bossKills.map((kills, boss) => boss === 0 ? [...kills, kill(0, 5, [[former, protection, 400]])] : kills);
+
+    expect(scoreCharacters(bosses, withFormer, 'dps').map(entry => [entry.character.name, entry.character.classId, entry.score]))
+      .toEqual([['Best', 8, 5662], ['Example', 8, 1960], ['Tank', 2, 871]]);
+    expect(rankCharacters(withFormer[0], 'dps').map(entry => entry.member.character.name)).toEqual(['Best', 'Example']);
+    expect(bossStanding(withFormer[0], 'dps', characterKey(former))).toEqual({ rank: 2, ranked: 2, relative: 10 / 400 });
+    expect(scoresBySpec(bosses, withFormer).get(protection)?.map(entry => entry.character.name)).toEqual(['Tank']);
+  });
+
   describe('by spec', () => {
     it('gives each character the score the leaderboard shows with their spec picked', () => {
       const bySpec = scoresBySpec(bosses, bossKills);
