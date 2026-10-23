@@ -1,7 +1,7 @@
 import { getClassColor } from '../../game/class-colors';
 import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
 import { CLASS_NAMES, raceFaction, realmSlug, Role } from '../../game/wow';
-import { LEGION_SPECS, SpecDefinition } from '../../game/wow-specs';
+import { LEGION_SPECS, LegionSpec } from '../../game/wow-specs';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
 
@@ -284,6 +284,13 @@ export function scoresBySpec(
   return scores;
 }
 
+export function scoresBySpecForKills(
+  bosses: readonly RaidBoss[],
+  kills: readonly RaidKillDetails[]
+): Map<RaidSpec, SpecCharacterScore[]> {
+  return scoresBySpec(bosses, bosses.map(boss => kills.filter(kill => kill.boss.slug === boss.slug)));
+}
+
 export const SPEC_TOP_SCORES = 10;
 
 export function topAverage(scores: readonly number[], count: number = SPEC_TOP_SCORES): number {
@@ -291,7 +298,7 @@ export function topAverage(scores: readonly number[], count: number = SPEC_TOP_S
   return top.length ? Math.round(top.reduce((sum, score) => sum + score, 0) / top.length) : 0;
 }
 
-export interface SpecPerformance extends SpecDefinition {
+export interface SpecPerformance extends LegionSpec {
   count: number;
   score: number;
   best?: SpecCharacterScore;

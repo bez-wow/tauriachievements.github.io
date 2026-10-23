@@ -74,6 +74,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         includes: ['/raid-logs/guild']
       },
       { label: 'Raid Statistics', tab: 'Statistics', icon: '🧮', path: '/raid-logs/stats' },
+      { label: 'Tier List', icon: '🏅', path: '/raid-logs/tier-list' },
       { label: 'Talent Analytics', tab: 'Talents', icon: '🌳', path: '/raid-logs/talents' },
       {
         label: 'Character Rankings',

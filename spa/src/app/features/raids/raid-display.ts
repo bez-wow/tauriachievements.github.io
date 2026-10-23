@@ -13,6 +13,13 @@ export const ITEM_QUALITY_COLORS: ReadonlyArray<string> = [
   '#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000', '#e6cc80', '#00ccff'
 ];
 
+export const DIFFICULTY_COLORS: Readonly<Record<string, string>> = {
+  lfr: ITEM_QUALITY_COLORS[0],
+  normal: ITEM_QUALITY_COLORS[2],
+  heroic: ITEM_QUALITY_COLORS[4],
+  mythic: ITEM_QUALITY_COLORS[5]
+};
+
 const ICON_BASE = 'https://legion-static.tauri.hu/images/icons/';
 
 export function itemIconUrl(icon: string, size: 'medium' | 'large' = 'large'): string {

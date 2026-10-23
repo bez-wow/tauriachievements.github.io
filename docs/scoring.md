@@ -220,8 +220,8 @@ explains it together.
 
 ## Raid spec performance
 
-- **Code:** `scoresBySpec`, `topAverage` and `specPerformance` in
-  `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
+- **Code:** `scoresBySpec` (`scoresBySpecForKills` takes one difficulty's kills), `topAverage`
+  and `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
   `spa/src/app/features/raids/raid-talents.ts`.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
   were picked on the leaderboard. A spec's performance is the average of its best
@@ -230,10 +230,27 @@ explains it together.
 - Each difficulty is scored on its own, over every boss of the raid.
 - Where it shows:
   - Raid Stats → Performance draws it as bars.
+  - The Tier List page sorts it into tiers ([below](#raid-spec-tier-list)).
   - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
     the order is the same whichever boss is picked, and a picked class shows its specs in the
     game's order instead.
 - **Tests:** `raid-scores.spec.ts`, `raid-talents.spec.ts`.
+
+## Raid spec tier list
+
+- **Code:** `roleTierList`, `percentOfBest` and `tierFor` in
+  `spa/src/app/features/raids/raid-tier-list.ts`; the page is `/raid-logs/tier-list`.
+- Three lists, DPS, Heal and Tank, each from the spec performance above on the picked
+  difficulty: HPS for healers, DPS for tanks and damage dealers.
+- A spec's share is its performance against the best spec in its role, as a whole percent
+  rounded down, so 94.8% shows and counts as 94%. The tier is the highest it reaches
+  (`SPEC_TIERS`): S from 95%, A from 85%, B from 75%, C from 60%, F below. Every tier is
+  listed, even an empty one.
+- Inside a tier, the higher share comes first; a tie keeps the game's order.
+- A spec fewer than `FEW_PLAYERS` (10, the same as `SPEC_TOP_SCORES`) characters played keeps
+  its tier, with its character count on the icon. A spec nobody played gets no tier and is
+  listed by name under the role's list.
+- **Tests:** `raid-tier-list.spec.ts`.
 
 ## Talent Analytics
 

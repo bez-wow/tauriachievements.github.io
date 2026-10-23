@@ -17,6 +17,11 @@ export const RAIDS_ROUTES: Routes = [
       .then(module => module.RaidLogsStatsPageComponent)
   },
   {
+    path: 'raid-logs/tier-list',
+    loadComponent: () => import('./raid-logs-tier-list-page.component')
+      .then(module => module.RaidLogsTierListPageComponent)
+  },
+  {
     path: 'raid-logs/talents',
     loadComponent: () => import('./raid-logs-talents-page.component')
       .then(module => module.RaidLogsTalentsPageComponent)

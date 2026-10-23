@@ -11,6 +11,7 @@ import {
   scoreCharacters,
   scoreTicks,
   scoresBySpec,
+  scoresBySpecForKills,
   specMetric,
   specPerformance,
   topAverage
@@ -173,6 +174,10 @@ describe('scoreCharacters', () => {
         expect(new Map(scores.map(entry => [entry.character.name, entry.score])))
           .toEqual(new Map(leaderboard.map(entry => [entry.character.name, entry.score])));
       }
+    });
+
+    it("sorts one difficulty's kills by boss before scoring them", () => {
+      expect(scoresBySpecForKills(bosses, bossKills.flat().reverse())).toEqual(scoresBySpec(bosses, bossKills));
     });
 
     it("averages each spec's best scores and orders classes by their best spec", () => {

@@ -11,7 +11,7 @@ import {
   SpecCharacterScore,
   formatScoreTick,
   scoreTicks,
-  scoresBySpec,
+  scoresBySpecForKills,
   specPerformance
 } from './raid-scores';
 import { RevealDirective } from '../../shared/motion/reveal.directive';
@@ -91,11 +91,7 @@ export class RaidSpecPopularityChartComponent {
     })), { role: role === 'all' ? undefined : role });
   });
 
-  private readonly specScores = computed(() => {
-    const kills = this.kills();
-    const bosses = this.bosses();
-    return scoresBySpec(bosses, bosses.map(boss => kills.filter(kill => kill.boss.slug === boss.slug)));
-  });
+  private readonly specScores = computed(() => scoresBySpecForKills(this.bosses(), this.kills()));
 
   readonly performance = computed(() => {
     const role = this.role();

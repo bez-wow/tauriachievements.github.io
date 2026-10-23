@@ -27,6 +27,8 @@ export const VISUAL_PAGES: readonly VisualPage[] = [
   { name: 'raid-logs-heroic', path: '/raid-logs?difficulty=heroic' },
   { name: 'raid-logs-guilds', path: '/raid-logs/guilds' },
   { name: 'raid-logs-stats', path: '/raid-logs/stats' },
+  { name: 'raid-logs-tier-list', path: '/raid-logs/tier-list' },
+  { name: 'raid-logs-tier-list-normal', path: '/raid-logs/tier-list?difficulty=normal' },
   { name: 'raid-logs-talents', path: '/raid-logs/talents' },
   { name: 'raid-logs-talents-spec', path: '/raid-logs/talents?difficulty=mythic&spec=71' },
   { name: 'raid-logs-leaderboard', path: '/raid-logs/leaderboard' },

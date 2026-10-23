@@ -15,7 +15,7 @@ folders:
 | `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
 | `shared/spec-charts/` | the spec and race popularity charts the Mythic+ and Raids statistics share: `spec-popularity.ts`, `race-popularity.ts`, `app-race-by-spec`, and `spec-chart.scss`, the chart look every spec chart lists first in its `styleUrls` |
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
-| `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers |
+| `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
 | `players/` | the ladder's data, `Players.csv` and `RareAchievements.json`: the `Character` model, `DataSyncService`, `LadderLastUpdatedService`, the rare-achievement service, groups and summaries, the realm, faction and class filter options, and the player test fixture. The Ladder, Achievements and Realm Stats pages read it |
 | `features/<area>/` | one folder per menu section (`ladder`, `achievements`, `pvp`, `raids`, `mythic-plus`, `realm-stats`), plus `guild-analysis` (the unlisted guild pages) and `support`. A feature holds its pages, their pure logic and specs, its child components, its data service and its SCSS partial |
 
@@ -44,7 +44,29 @@ A file's name says what it is:
 | `_<area>-shared.scss` | SCSS mixins shared by an area's pages |
 | `<page>.motion.scss` | a page's motion, as a second `styleUrls` entry |
 
-Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`).
+Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`) and `src/assets/`. In the assets,
+`spec-art/<class>-<spec>.webp` (`hunter-beast-mastery.webp`, `death-knight-blood.webp`: the names
+in lower case, spaces as hyphens, built by `getSpecArtPath`) is the art the Tier List page shows,
+one per Legion spec: the images of
+TierMaker's [All Class Specs](https://tiermaker.com/create/all-class-specs---world-of-warcraft-17396518-2)
+template, resized to 160 px (sharp on high-density screens at the 60 px they show at) and
+saved as WebP. `rogue-outlaw` is
+the exception, at the owner's request: it's Legion's own Outlaw icon, `inv_sword_30` (the one
+`wow-specs.ts` lists), from Blizzard's 56 px copy
+(`https://render.worldofwarcraft.com/us/icons/56/inv_sword_30.jpg`). To match the others'
+style it was upscaled 4× with [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)'s
+`realesrgan-x4plus-anime` model, given 10% more contrast and 25% more colour, then resized like
+the rest.
+
+"Download Tier List Image", at the end of the Tier List page's difficulty row, saves the three
+lists as one PNG, laid out like the page: DPS across the top, Heal and Tank side by side below.
+The PNG is drawn on a `<canvas>` from the lists' data (`raid-tier-list-image.ts`: `imageLayout`
+places the tables, `renderTierListImage` draws them), at twice its layout size. It's not a
+picture of the page, so what is only on the page (the button, the character count in each list's
+corner) never shows in it, and the image has its own header (raid, difficulty, date, the site's
+address), a heading and character count over each list, and a footer. Every image it draws must
+be served from the site itself: a picture from another origin (the `legion-static` icons) taints
+the canvas, and the export then fails.
 
 Keep components thin. A ranking, filter, count or empty-state message goes into the pure
 `<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more
@@ -203,7 +225,7 @@ decision (ask first).
 | `mythicPlusProfileLink()` (`core/page-links.ts`) | the router link to a character's Mythic+ profile, from any page |
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
-| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
+| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
 | `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
