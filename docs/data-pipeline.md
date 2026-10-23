@@ -220,7 +220,8 @@ fingerprint. When they don't match, `MythicPlusDataService` refreshes the sessio
 again, once; a second mismatch means the deploy is still going out, and the page says so
 (`NEWER_DATA_MESSAGE`) instead of retrying in a loop.
 Any new data split across several files needs the same guard. Raid boss files carry their own
-tables, so they don't.
+tables, so they don't. The page code has its own guard for a code deploy
+([frontend.md](frontend.md#routing)).
 
 ## Rules
 

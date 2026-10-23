@@ -187,7 +187,10 @@ There is no root package manager; each half has its own toolchain.
   built `dist/`. See [docs/data-pipeline.md](docs/data-pipeline.md).
 - `404.html` doesn't redirect paths that contain a dot, so route parameters can't hold dots.
 - Every `router.navigate`, even a query-parameter-only one, runs a full view transition and
-  scrolls to the top ([docs/frontend.md](docs/frontend.md)).
+  scrolls to the top. Back and Forward restore the scroll position instead
+  ([docs/frontend.md](docs/frontend.md)).
+- A tab left open across a code deploy asks for page chunks Pages no longer has. The router
+  reloads the page once instead of ignoring the tap ([docs/frontend.md](docs/frontend.md)).
 - A component `@keyframes` referenced inside `@media` silently doesn't run. Keyframes live in
   `_motion.scss` ([docs/motion-and-rendering.md](docs/motion-and-rendering.md)).
 - The app is zoneless: right after a click the DOM still shows the old state, so browser checks
