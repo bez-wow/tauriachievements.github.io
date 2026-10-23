@@ -37,7 +37,7 @@ import {
   RaidTalentTable,
   RaidTalentTooltips
 } from './raid-logs.types';
-import { RaidMetric, RankedPerformance, rankCharacters } from './raid-scores';
+import { RaidMetric, RankedPerformance, rankCharacters, rankedSpecs } from './raid-scores';
 import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
@@ -199,10 +199,8 @@ export class RaidLogsBossPageComponent {
   readonly classOptions = CLASS_FILTER_OPTIONS;
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const classId = this.classFilter();
-    const metric = this.metric();
-    const specs = [...(this.index()?.specs.values() ?? [])]
-      .filter(spec => spec.classId === classId && (metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer'));
+    const index = this.index();
+    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric()) : [];
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 

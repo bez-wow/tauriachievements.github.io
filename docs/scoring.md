@@ -196,7 +196,14 @@ explains it together.
   on the share of the best in view: artifact for the best, legendary from 95%, epic from 75%,
   rare from 50%, uncommon from 25%.
 - The search hides rows without renumbering them, as on every leaderboard.
-- **Tests:** `raid-scores.spec.ts`.
+- **Character page, per boss** (`bossStanding`): "Of best" and Rank put the character's best
+  kill of the boss among every character's best, and the "Compare with" dropdown narrows that
+  to the character's class (All Death Knights) or one of its specs (Blood). With a spec, only
+  kills played as that spec count, the character's own included, so a boss they never killed
+  as that spec has no rank. The dropdown lists the specs the metric ranks, and a picked spec
+  the other metric doesn't rank is dropped on switching. The score tile always compares with
+  all players.
+- **Tests:** `raid-scores.spec.ts`, `raid-logs-character-page.component.spec.ts`.
 
 ## Raid guild progression and kill speed
 

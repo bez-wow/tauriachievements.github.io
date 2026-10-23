@@ -93,7 +93,8 @@
 }
 
 .section-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.comparison-switch img, .class-switch img { width: 16px; height: 16px; border-radius: 3px; }
+.comparison-select { flex: none; }
+.class-switch img { width: 16px; height: 16px; border-radius: 3px; }
 .class-switch { flex-wrap: wrap; margin-top: 10px; }
 .class-switch .earlier { color: $raid-muted; font-weight: 500; }
 .class-name { font-weight: 600; }

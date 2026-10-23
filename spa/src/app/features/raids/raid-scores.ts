@@ -29,6 +29,10 @@ export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boole
   return metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer';
 }
 
+export function rankedSpecs(specs: ReadonlyMap<number, RaidSpec>, classId: number | undefined, metric: RaidMetric): RaidSpec[] {
+  return [...specs.values()].filter(spec => spec.classId === classId && countsFor(metric, spec));
+}
+
 export function rankCharacters(
   kills: readonly RaidKillDetails[],
   metric: RaidMetric,

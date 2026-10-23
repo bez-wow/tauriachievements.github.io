@@ -27,6 +27,7 @@ import {
   countsFor,
   killsBefore,
   rankScores,
+  rankedSpecs,
   scoreChanges,
   scoreCharacters
 } from './raid-scores';
@@ -185,10 +186,8 @@ export class RaidLogsLeaderboardPageComponent {
   });
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const classId = this.classFilter();
-    const metric = this.metric();
-    const specs = [...(this.index()?.specs.values() ?? [])]
-      .filter(spec => spec.classId === classId && countsFor(metric, spec));
+    const index = this.index();
+    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric()) : [];
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 

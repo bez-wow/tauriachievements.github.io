@@ -6,6 +6,9 @@ import { Subscription, forkJoin, of } from 'rxjs';
 import { getArmoryUrl } from '../../game/armory';
 import { getClassCrestPath, getClassIconPath } from '../../game/classIconHelper';
 import { getClassColor } from '../../game/class-colors';
+import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
+import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
@@ -25,6 +28,7 @@ import {
   countsFor,
   performanceQuality,
   rankScores,
+  rankedSpecs,
   scoreCharacters
 } from './raid-scores';
 import {
@@ -39,7 +43,7 @@ import {
 import { characterKey, formerCharactersOf, logKey } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_NAMES, realmSlug } from '../../game/wow';
-import { injectReplaceUrl } from '../../core/url-state';
+import { injectReplaceUrl, parseInteger } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
 
@@ -83,9 +87,19 @@ const NOT_RANKED = 'Earlier character, not ranked';
 
 @Component({
   selector: 'app-raid-logs-character-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent, NgTemplateOutlet],
+  imports: [
+    RouterLink,
+    FilterDropdownComponent,
+    RaidDifficultySwitchComponent,
+    GlideDirective,
+    DatePipe,
+    DecimalPipe,
+    LoadStateComponent,
+    NgTemplateOutlet
+  ],
   templateUrl: './raid-logs-character-page.component.html',
   styleUrl: './raid-logs-character-page.component.scss',
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsCharacterPageComponent {
@@ -107,6 +121,7 @@ export class RaidLogsCharacterPageComponent {
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
   private readonly pickedMetric = signal<RaidMetric | undefined>(parseMetric(this.route.snapshot.queryParamMap.get('metric')));
   readonly comparison = signal<RaidComparison>(parseComparison(this.route.snapshot.queryParamMap.get('compare')));
+  private readonly pickedSpec = signal(parseInteger(this.route.snapshot.queryParamMap.get('spec')));
   private readonly requestedClass = signal(parseClass(this.route.snapshot.queryParamMap.get('class')));
 
   private readonly classes = computed(() => {
@@ -153,14 +168,42 @@ export class RaidLogsCharacterPageComponent {
   });
   readonly classPlural = computed(() => `${this.ownClass()}s`);
 
+  private readonly comparableSpecs = computed(() => {
+    const index = this.index();
+    return index ? rankedSpecs(index.specs, this.character()?.classId, this.metric()) : [];
+  });
+
+  readonly comparedSpec = computed<RaidSpec | undefined>(() => {
+    const specId = this.pickedSpec();
+    return this.comparison() === 'class' ? this.comparableSpecs().find(spec => spec.id === specId) : undefined;
+  });
+
+  readonly comparedMember = computed(() => [this.comparedSpec()?.name, this.ownClass()].filter(Boolean).join(' '));
+  readonly comparedPlural = computed(() => `${this.comparedMember()}s`);
+
+  readonly comparisonOptions = computed<FilterDropdownOption[]>(() => {
+    const classId = this.character()?.classId;
+    return classId === undefined ? [] : [
+      { value: undefined, label: 'All players' },
+      { value: 'class', label: `All ${this.classPlural()}`, icon: getClassIconPath(classId), color: getClassColor(classId) },
+      ...this.comparableSpecs().map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))
+    ];
+  });
+
+  readonly comparisonValue = computed<FilterDropdownValue>(() =>
+    this.comparison() === 'class' ? this.comparedSpec()?.id ?? 'class' : undefined);
+
+  readonly comparisonWidthLabels = computed(() => this.comparisonOptions().map(option => option.label));
+
   readonly columnTitles = computed(() => this.comparison() === 'class'
-    ? { relative: `The best kill against the best any ${this.ownClass()} did on the boss`, rank: `Among every ${this.ownClass()}'s best kill of the boss` }
+    ? { relative: `The best kill against the best any ${this.comparedMember()} did on the boss`, rank: `Among every ${this.comparedMember()}'s best kill of the boss` }
     : { relative: 'The best kill against the best anyone did on the boss', rank: "Among every character's best kill of the boss" });
 
   readonly bossQueryParams = computed(() => ({
     difficulty: this.loaded()?.difficulty.slug,
     tab: this.metric(),
-    class: this.comparedClass() ?? null
+    class: this.comparedClass() ?? null,
+    spec: this.comparedSpec()?.id ?? null
   }));
 
   readonly mainSpec = computed<RaidSpec | undefined>(() => {
@@ -195,14 +238,15 @@ export class RaidLogsCharacterPageComponent {
 
     const metric = this.metric();
     const byClass = this.comparison() === 'class';
+    const spec = this.comparedSpec();
     const earlier = this.formerClass() !== undefined;
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
       const best = own
-        .filter(appearance => countsFor(metric, appearance.member.spec))
+        .filter(appearance => countsFor(metric, appearance.member.spec) && (!spec || appearance.member.spec?.id === spec.id))
         .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
-      const filter = best && byClass ? { classId: best.member.character.classId } : {};
+      const filter = best && byClass ? { classId: best.member.character.classId, specId: spec?.id } : {};
       const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
       const top = best && earlier ? bossBest(kills, metric, filter) : 0;
       return {
@@ -241,7 +285,7 @@ export class RaidLogsCharacterPageComponent {
         label: `Best ${this.metric() === 'hps' ? 'healing' : 'damage'} rank`,
         value: bestRank ? `#${bestRank.rank}` : '-',
         note: bestRank
-          ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}${byClass ? ` ${this.classPlural()}` : ''}`
+          ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}${byClass ? ` ${this.comparedPlural()}` : ''}`
           : unranked
       },
       { label: 'Main spec', value: spec?.name ?? '-', note: spec ? CLASS_NAMES[spec.classId] ?? '' : '' },
@@ -306,17 +350,20 @@ export class RaidLogsCharacterPageComponent {
     }
 
     this.requestedClass.set(classId);
+    this.pickedSpec.set(undefined);
     this.writeUrl();
     this.loadData(true);
   }
 
   setMetric(metric: RaidMetric): void {
     this.pickedMetric.set(metric);
+    this.pickedSpec.set(this.comparedSpec()?.id);
     this.writeUrl();
   }
 
-  setComparison(comparison: RaidComparison): void {
-    this.comparison.set(comparison);
+  setComparison(value: FilterDropdownValue): void {
+    this.comparison.set(value === undefined ? 'all' : 'class');
+    this.pickedSpec.set(typeof value === 'number' ? value : undefined);
     this.writeUrl();
   }
 
@@ -413,6 +460,7 @@ export class RaidLogsCharacterPageComponent {
       difficulty: this.requestedDifficulty() ?? null,
       metric: this.pickedMetric() ?? null,
       compare: this.comparison() === 'class' ? 'class' : null,
+      spec: this.comparedSpec()?.id ?? null,
       class: this.formerClass() ?? null
     });
   }

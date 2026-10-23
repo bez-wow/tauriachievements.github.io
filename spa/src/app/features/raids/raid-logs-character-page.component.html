@@ -76,11 +76,18 @@
               <button type="button" role="tab" [class.active]="metric() === 'dps'" [attr.aria-selected]="metric() === 'dps'" (click)="setMetric('dps')">Damage</button>
               <button type="button" role="tab" [class.active]="metric() === 'hps'" [attr.aria-selected]="metric() === 'hps'" (click)="setMetric('hps')">Healing</button>
             </div>
-            <div class="view-switch comparison-switch" role="group" aria-label="Compare with" appGlide>
-              <button type="button" [class.active]="comparison() === 'all'" [attr.aria-pressed]="comparison() === 'all'" (click)="setComparison('all')">All players</button>
-              <button type="button" [class.active]="comparison() === 'class'" [attr.aria-pressed]="comparison() === 'class'" [title]="'Compare with ' + classPlural() + ' only'" (click)="setComparison('class')">
-                <img [src]="classIcon(current.classId)" alt="" /> Same class
-              </button>
+            <div class="comparison-select">
+              <app-filter-dropdown
+                dropdownId="raidCharacterCompare"
+                triggerId="raidCharacterCompareTrigger"
+                ariaLabel="Compare with"
+                [options]="comparisonOptions()"
+                [selectedValue]="comparisonValue()"
+                [widthLabels]="comparisonWidthLabels()"
+                [showIcons]="true"
+                [compact]="true"
+                [highlightWhenSelected]="true"
+                (selectionChange)="setComparison($event)" />
             </div>
           </div>
         </header>
@@ -133,6 +140,9 @@
                       @if (!row.kills) {
                         <span class="muted">Not killed</span>
                       }
+                      @if (row.kills && !row.best && comparedSpec(); as spec) {
+                        <span class="muted phone-hidden">Not as {{ spec.name }}</span>
+                      }
                     </td>
                   </tr>
                 }
@@ -141,7 +151,7 @@
           </div>
           <p class="list-note">
             @if (comparison() === 'class') {
-              "Of best" and Rank compare with <span class="class-name" [style.color]="classColor(current.classId)">{{ classPlural() }}</span> only: every {{ ownClass() }}'s best kill of the boss on this difficulty.
+              "Of best" and Rank compare with <span class="class-name" [style.color]="classColor(current.classId)">{{ comparedPlural() }}</span> only: every {{ ownClass() }}'s best kill of the boss@if (comparedSpec(); as spec) { as {{ spec.name }}} on this difficulty@if (comparedSpec()) {, this character's too}.
             } @else {Rank among every character's best kill of the boss on this difficulty.}
             {{ metric() === 'hps' ? 'Only healing specs are ranked by healing.' : 'Healing specs are ranked under Healing.' }}
             @if (comparison() === 'class') {

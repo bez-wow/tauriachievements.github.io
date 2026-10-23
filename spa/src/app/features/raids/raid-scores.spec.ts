@@ -7,6 +7,7 @@ import {
   performanceQuality,
   rankCharacters,
   rankScores,
+  rankedSpecs,
   scoreChanges,
   scoreCharacters,
   scoreTicks,
@@ -39,6 +40,16 @@ describe('rankCharacters', () => {
   it('filters by realm and class', () => {
     expect(rankCharacters(kills, 'dps', { realm: 'tauri' }).map(entry => entry.member.character.name)).toEqual(['Kael']);
     expect(rankCharacters(kills, 'dps', { classId: 2 }).map(entry => entry.member.character.name)).toEqual(['Light']);
+  });
+});
+
+describe('rankedSpecs', () => {
+  it("lists a class's specs the metric ranks, in the index's order", () => {
+    expect(rankedSpecs(index.specs, 8, 'dps').map(spec => spec.name)).toEqual(['Fire', 'Frost']);
+    expect(rankedSpecs(index.specs, 2, 'dps').map(spec => spec.name)).toEqual(['Protection']);
+    expect(rankedSpecs(index.specs, 2, 'hps').map(spec => spec.name)).toEqual(['Holy']);
+    expect(rankedSpecs(index.specs, 8, 'hps')).toEqual([]);
+    expect(rankedSpecs(index.specs, undefined, 'dps')).toEqual([]);
   });
 });
 
