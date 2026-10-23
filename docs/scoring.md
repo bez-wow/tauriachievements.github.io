@@ -193,14 +193,20 @@ explains it together.
 
 ## Raid guild progression and kill speed
 
-- **Code:** `guildProgression`, `filterProgression`, `fastestKills` and `speedRank` in
-  `spa/src/app/features/raids/raid-progression.ts`.
+- **Code:** `guildProgression`, `filterProgression`, `progressionChanges`, `fastestKills` and
+  `speedRank` in `spa/src/app/features/raids/raid-progression.ts`.
 - Guilds rank by most bosses down on the difficulty, then by who got there first (their latest
   first kill). Pickup groups and guilds the API couldn't name don't take part. A guild is its
   name on its realm, so one recreated under the same name keeps its row. A faction or realm
   filter ranks the remaining guilds among themselves.
 - The progress squares show the bosses in the order raiders kill them, not the Dungeon
   Journal's order the files use.
+- **Changes since the last scan:** the difficulty's progression worked out again without the
+  kills that scan didn't have (`newLogs`), compared with today's. A guild that wasn't on the list
+  then is tagged "new"; one that was gets "+N" for the bosses it has down now and didn't then.
+  Either way, the squares of those bosses are outlined. Another kill of a boss the guild already
+  had changes nothing, and filters don't change what counts. Both sides use today's guild names,
+  so a guild the exporter has only just named isn't new because of that.
 - Fastest kills: the shortest fight first; the earlier kill wins a tie. A log's speed rank is
   its place among the boss's kills on that difficulty.
 - **Tests:** `raid-progression.spec.ts`.

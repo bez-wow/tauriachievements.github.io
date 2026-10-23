@@ -63,12 +63,16 @@
             </thead>
             <tbody>
               @for (row of shownProgression(); track guildKey(row.guild)) {
+                @let moved = change(row);
                 <tr [class.cleared]="row.killed === row.firsts.length">
                   <td class="rank">{{ row.rank }}</td>
                   <td>
                     <a class="guild-name" [routerLink]="guildLink(row.guild)" [queryParams]="{ difficulty: current.slug }">
                       <span class="faction" [class]="'faction-' + row.guild.faction" aria-hidden="true"></span>
                       <span class="strong">{{ row.guild.name }}</span>
+                      @if (moved?.isNew) {
+                        <span class="guild-new" [title]="newLabel(current.name)">new</span>
+                      }
                       <span class="muted phone-hidden">{{ row.guild.realm }}</span>
                     </a>
                   </td>
@@ -77,13 +81,18 @@
                       <span class="progress-count difficulty-text" [class]="current.slug">{{ row.killed }}/{{ row.firsts.length }}</span>
                       <span class="pips" aria-hidden="true">
                         @for (boss of pipBosses(); track boss) {
+                          @let fresh = !!moved && moved.bosses.has(boss.index);
                           <span
                             class="pip"
                             [class.down]="!!row.firsts[boss.index]"
+                            [class.fresh]="fresh"
                             [class]="current.slug"
-                            [title]="pipTitle(boss, row.firsts[boss.index])"></span>
+                            [title]="pipTitle(boss, row.firsts[boss.index], fresh)"></span>
                         }
                       </span>
+                      @if (moved && !moved.isNew) {
+                        <span class="progress-gain positive" [title]="gainLabel(moved)"><span aria-hidden="true">+{{ moved.bosses.size }}</span><span class="visually-hidden">{{ gainLabel(moved) }}</span></span>
+                      }
                     </span>
                   </td>
                   <td class="col-optional muted">{{ row.progressedAt | date:'d MMM, HH:mm' }}</td>

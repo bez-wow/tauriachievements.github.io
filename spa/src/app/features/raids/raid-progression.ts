@@ -69,6 +69,30 @@ export function filterProgression(rows: readonly GuildProgress[], filter: Progre
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
+export interface ProgressChange {
+  isNew: boolean;
+  bosses: ReadonlySet<number>;
+}
+
+export function progressionChanges(
+  current: readonly GuildProgress[],
+  previous: readonly GuildProgress[]
+): Map<string, ProgressChange> {
+  const before = new Map(previous.map(row => [guildKey(row.guild), row]));
+  const changes = new Map<string, ProgressChange>();
+
+  for (const row of current) {
+    const key = guildKey(row.guild);
+    const earlier = before.get(key);
+    const bosses = new Set(row.firsts.flatMap((kill, boss) => kill && !earlier?.firsts[boss] ? [boss] : []));
+    if (bosses.size) {
+      changes.set(key, { isNew: !earlier, bosses });
+    }
+  }
+
+  return changes;
+}
+
 export function speedRank(kill: Pick<RaidKill, 'realm' | 'logId'>, kills: readonly RaidKill[]): number {
   const fastest = fastestKills(kills);
   return fastest.findIndex(other => other.realm === kill.realm && other.logId === kill.logId) + 1;

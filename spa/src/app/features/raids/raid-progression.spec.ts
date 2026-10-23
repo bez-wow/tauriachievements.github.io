@@ -5,8 +5,10 @@ import {
   fastestKills,
   filterProgression,
   guildProgression,
+  progressionChanges,
   speedRank
 } from './raid-progression';
+import { RaidGuild, RaidKill } from './raid-logs.types';
 import { index, nythendra } from './raid-logs.fixture';
 
 describe('guildProgression', () => {
@@ -43,6 +45,30 @@ describe('filterProgression', () => {
     expect(shown({ faction: 1, realm: 'wod' })).toEqual(['1 D']);
     expect(shown({ faction: 0, realm: 'wod' })).toEqual([]);
     expect(rows.map(row => row.rank)).toEqual([1, 2, 3, 4]);
+  });
+});
+
+describe('progressionChanges', () => {
+  it('marks a guild new to the difficulty, and the bosses another guild killed since the last scan', () => {
+    const guild = (name: string, id: number): RaidGuild => ({ name, realm: 'Evermoon', faction: 1, id });
+    const [miracle, outlaws, newcomers] = [guild('Miracle', 1), guild('Outlaws', 2), guild('Newcomers', 3)];
+    const kill = (logId: number, boss: number, by: RaidGuild): RaidKill =>
+      ({ ...index.kills[0], logId, boss: index.bosses[boss], guild: by, killedAt: logId * 1_000 });
+    const before = [kill(1, 0, miracle), kill(2, 0, outlaws)];
+    const latest = [kill(3, 1, miracle), kill(4, 0, outlaws), kill(5, 0, newcomers)];
+    const progression = (kills: RaidKill[]) => guildProgression(kills, 16, index.bosses.length);
+
+    const changes = progressionChanges(progression([...before, ...latest]), progression(before));
+
+    expect([...changes].map(([key, change]) => [key, change.isNew, [...change.bosses]])).toEqual([
+      ['evermoon/Miracle', false, [1]],
+      ['evermoon/Newcomers', true, [0]]
+    ]);
+  });
+
+  it('finds nothing when the scan added no kill', () => {
+    const rows = guildProgression(index.kills, 16, index.bosses.length);
+    expect(progressionChanges(rows, rows).size).toBe(0);
   });
 });
 

@@ -18,6 +18,7 @@
 
 .guild-name { display: inline-flex; align-items: center; gap: 8px; }
 tr.cleared .guild-name .strong { color: $gold; }
+.guild-new { @include new-tag; }
 
 .progress { display: inline-flex; align-items: center; gap: 10px; }
 .progress-count { min-width: 2.4em; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -32,8 +33,11 @@ tr.cleared .guild-name .strong { color: $gold; }
 
   @each $slug, $color in $difficulty-colors {
     &.down.#{$slug} { border-color: rgba($color, .6); background: rgba($color, .75); }
+    &.fresh.#{$slug} { border-color: #fff; box-shadow: 0 0 6px rgba($color, .9); }
   }
 }
+
+.progress-gain { @include change-pill; }
 
 @media (max-width: 640px) {
   .raid-page { padding-top: 32px; }
@@ -44,4 +48,6 @@ tr.cleared .guild-name .strong { color: $gold; }
   .filter-reset:disabled { display: none; }
   .col-optional { display: none; }
   .pips { display: none; }
+  .progress { flex-wrap: wrap; gap: 3px 6px; }
+  .progress-gain { min-width: 0; padding: 1px 6px; }
 }

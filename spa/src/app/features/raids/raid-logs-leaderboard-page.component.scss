@@ -144,23 +144,7 @@ td.score { font-size: .95rem; }
 .score-side-start { justify-content: flex-end; }
 .score-side-end { justify-content: flex-start; }
 
-.rank-change {
-  display: inline-flex;
-  min-width: 34px;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  border: 1px solid rgba(212, 216, 226, .2);
-  border-radius: 999px;
-  background: rgba(212, 216, 226, .08);
-  color: #d4d8e2;
-  font-size: .72rem;
-  font-weight: 800;
-  line-height: 1.2;
-
-  &.positive { border-color: rgba(140, 232, 155, .34); background: rgba(140, 232, 155, .12); color: #8ce89b; }
-  &.negative { border-color: rgba(255, 154, 154, .34); background: rgba(255, 154, 154, .12); color: #ff9a9a; }
-}
+.rank-change { @include change-pill; }
 
 .score-change {
   font-size: .76rem;
@@ -170,7 +154,7 @@ td.score { font-size: .95rem; }
   &.negative { color: #ff9a9a; }
 }
 
-.score-new { color: $gold; font-size: .66rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.score-new { @include new-tag; }
 
 td.guild { font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }

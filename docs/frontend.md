@@ -205,7 +205,7 @@ decision (ask first).
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
 | Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, and `segmented-switch` (the difficulty switch's pill look, for any other switch beside it) |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.

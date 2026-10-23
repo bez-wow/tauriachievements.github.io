@@ -1,14 +1,14 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe, DecimalPipe, formatDate } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, LOCALE_ID, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
-import { GuildProgress, filterProgression, guildProgression } from './raid-progression';
+import { GuildProgress, ProgressChange, filterProgression, guildProgression, progressionChanges } from './raid-progression';
 import { RaidBoss, RaidKill, RaidLogsIndex } from './raid-logs.types';
-import { bossesInKillOrder, defaultDifficulty, guildKey } from './raid-logs';
+import { bossesInKillOrder, defaultDifficulty, guildKey, logKey } from './raid-logs';
 import { raidGuildLink } from './raid-display';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { REALMS, realmSlug } from '../../game/wow';
@@ -34,6 +34,7 @@ export class RaidLogsProgressionPageComponent implements OnInit {
 
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly locale = inject(LOCALE_ID);
   private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
 
@@ -67,10 +68,27 @@ export class RaidLogsProgressionPageComponent implements OnInit {
       ?? defaultDifficulty(difficulties);
   });
 
-  readonly progression = computed<GuildProgress[]>(() => {
+  private readonly difficultyKills = computed(() => {
     const difficulty = this.difficulty();
-    const kills = (this.index()?.kills ?? []).filter(kill => kill.difficulty === difficulty);
-    return guildProgression(kills, difficulty?.id ?? 0, this.index()?.bosses.length ?? 0);
+    return (this.index()?.kills ?? []).filter(kill => kill.difficulty === difficulty);
+  });
+
+  readonly progression = computed<GuildProgress[]>(() =>
+    guildProgression(this.difficultyKills(), this.difficulty()?.id ?? 0, this.index()?.bosses.length ?? 0));
+
+  private readonly changes = computed(() => {
+    const newLogs = this.index()?.newLogs;
+    if (!newLogs?.size) {
+      return new Map<string, ProgressChange>();
+    }
+    const previousKills = this.difficultyKills().filter(kill => !newLogs.has(logKey(kill)));
+    const previous = guildProgression(previousKills, this.difficulty()?.id ?? 0, this.index()?.bosses.length ?? 0);
+    return progressionChanges(this.progression(), previous);
+  });
+
+  private readonly since = computed(() => {
+    const previousGeneratedAt = this.index()?.previousGeneratedAt;
+    return previousGeneratedAt ? `since the scan of ${formatDate(previousGeneratedAt, 'd MMM, HH:mm', this.locale)}` : 'since the last scan';
   });
 
   readonly shownProgression = computed(() => filterProgression(this.progression(), {
@@ -133,8 +151,25 @@ export class RaidLogsProgressionPageComponent implements OnInit {
     this.writeUrl();
   }
 
-  pipTitle(boss: RaidBoss, kill: RaidKill | undefined): string {
-    return kill ? `${boss.shortName}: first kill ${new Date(kill.killedAt).toLocaleDateString('en-GB')}` : `${boss.shortName}: not killed yet`;
+  change(row: GuildProgress): ProgressChange | undefined {
+    return this.changes().get(guildKey(row.guild));
+  }
+
+  newLabel(difficulty: string): string {
+    return `New on ${difficulty} ${this.since()}`;
+  }
+
+  gainLabel(change: ProgressChange): string {
+    const bosses = this.pipBosses().filter(boss => change.bosses.has(boss.index)).map(boss => boss.shortName);
+    return `Killed ${new Intl.ListFormat('en-GB').format(bosses)} ${this.since()}`;
+  }
+
+  pipTitle(boss: RaidBoss, kill: RaidKill | undefined, fresh: boolean): string {
+    if (!kill) {
+      return `${boss.shortName}: not killed yet`;
+    }
+    const title = `${boss.shortName}: first kill ${new Date(kill.killedAt).toLocaleDateString('en-GB')}`;
+    return fresh ? `${title}, new ${this.since()}` : title;
   }
 
   private writeUrl(): void {
