@@ -1,14 +1,12 @@
-import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   OnInit,
   computed,
   inject,
   linkedSignal,
-  signal,
-  viewChild
+  signal
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { injectCompactViewport } from '../../shared/compact-viewport';
@@ -20,7 +18,6 @@ import {
   exportedAt,
   hasScanChanges,
   memberNameMatches,
-  pageCount,
   PlayerScore,
   playerRanks,
   rankPlayers,
@@ -70,6 +67,8 @@ import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, parseRole, Role } from
 import { LEGION_SPECS, parseSpecName } from '../../game/wow-specs';
 import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
+import { PagerComponent } from '../../shared/pager.component';
+import { pageCount, pageSlice } from '../../shared/pager';
 import { setPageHeader } from '../../core/page-header';
 import { formatClock } from '../../shared/time-format';
 import { mythicPlusProfileLink } from '../../core/page-links';
@@ -99,8 +98,8 @@ interface CharacterFilter {
     MobileFilterToggleComponent,
     GlideDirective,
     DecimalPipe,
-    NgTemplateOutlet,
-    LoadStateComponent
+    LoadStateComponent,
+    PagerComponent
   ],
   templateUrl: './mythic-plus-page.component.html',
   styleUrls: ['./mythic-plus-page.component.scss'],
@@ -111,8 +110,6 @@ export class MythicPlusPageComponent implements OnInit {
   private readonly store = inject(MythicPlusPageStore);
   private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
-
-  private readonly leaderboardRef = viewChild<ElementRef<HTMLElement>>('leaderboard');
 
   readonly cards = injectCompactViewport(MYTHIC_PLUS_CARDS_QUERY);
   private readonly pageSize = computed(() => this.cards() ? MYTHIC_PLUS_CARDS_PAGE_SIZE : MYTHIC_PLUS_PAGE_SIZE);
@@ -296,13 +293,11 @@ export class MythicPlusPageComponent implements OnInit {
   });
 
   readonly pagedRows = computed<RunRow[]>(() => {
-    const size = this.pageSize();
-    const start = (this.currentPage() - 1) * size;
     const dungeons = this.dungeonsById();
     const affixes = this.affixesById();
     const colors = this.scoreColors();
 
-    return this.filteredRows().slice(start, start + size).flatMap(({ run, rank }) => {
+    return pageSlice(this.filteredRows(), this.currentPage(), this.pageSize()).flatMap(({ run, rank }) => {
       const dungeon = dungeons.get(run.dungeon);
       return dungeon ? [{ ...toRunView(run, dungeon, affixes, colors), rank }] : [];
     });
@@ -314,14 +309,12 @@ export class MythicPlusPageComponent implements OnInit {
   });
 
   readonly pagedPlayers = computed<PlayerRow[]>(() => {
-    const size = this.pageSize();
-    const start = (this.currentPage() - 1) * size;
     const dungeons = this.playerDungeons();
     const showChanges = this.showStandingChanges();
     const changes = this.standingChanges();
 
     const playerColor = this.playerColor();
-    return this.filteredPlayers().slice(start, start + size).map(({ player, rank }) => {
+    return pageSlice(this.filteredPlayers(), this.currentPage(), this.pageSize()).map(({ player, rank }) => {
       const change = showChanges ? changes.get(player.key) : undefined;
       return {
         key: player.key,
@@ -535,19 +528,10 @@ export class MythicPlusPageComponent implements OnInit {
     this.store.loadScopeRuns();
   }
 
-  goToPage(page: number, scrollToLeaderboard = false): void {
-    const nextPage = Math.min(Math.max(1, page), this.totalPages());
-    if (nextPage === this.currentPage()) {
-      return;
-    }
-
-    this.page.set(nextPage);
+  goToPage(page: number): void {
+    this.page.set(page);
     this.expandedRunId.set(undefined);
     this.syncQueryParams();
-
-    if (scrollToLeaderboard) {
-      this.leaderboardRef()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   }
 
   clearCharacterFilter(): void {

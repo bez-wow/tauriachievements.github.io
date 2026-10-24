@@ -12,7 +12,7 @@ folders:
 | Folder | Holds |
 |---|---|
 | `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `page-links.ts` (links into one feature's pages from another's), `DataFileService`, `ObservableCache`, `time-zone-label.ts` |
-| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
+| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
 | `shared/spec-charts/` | the spec and race popularity charts the Mythic+ and Raids statistics share: `spec-popularity.ts`, `race-popularity.ts`, `app-race-by-spec`, and `spec-chart.scss`, the chart look every spec chart lists first in its `styleUrls` |
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
 | `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
@@ -138,7 +138,7 @@ The query parameters each page reads:
 | `/compare` | `a`, `b`: `Realm:Name` |
 | `/rare-achievements` | `achievement`, `realm`, `class`, `search` |
 | `/arena` | `bracket`: `2v2` (default) or `3v3` |
-| `/rated-battleground` | `view`: `players` (default) or `matches` |
+| `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
 | `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role`, `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row), `compare` (`Name-Realm,…`: opens compare mode with those picks) |
 | `/mythic-plus/stats` | `period` |
 | `/mythic-plus/records` | `dungeon` (the server firsts' filter) |
@@ -224,6 +224,7 @@ decision (ask first).
 | `spec-charts/` | `app-race-by-spec` (the most-popular-race boxes); `specPopularity`, `shareTicks`, `formatShare` and `compareSpecLists` for a spec popularity chart's numbers and order |
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
+| `app-pager` (`pager.component`) | every list split into pages: « First, ‹ Prev, Next ›, Last ». `<app-pager [page]="currentPage()" [pages]="pages()" [count]="(total() \| number) + ' characters'" [scrollTarget]="listSection" (pageChange)="goToPage($event)" />`. With `count`, it shows "Page 3 of 41 · 2,034 characters" after the buttons, and anything inside it (the M+ dungeon timer) sits there too. It emits only a page in range that differs from the current one, and the page writes it to `?page=`. Given a `scrollTarget`, the pager under a list scrolls back to the list's top after a change; give that element a `scroll-margin-top` that clears the header. `pageCount` and `pageSlice` (`pager.ts`) do the page maths. The Mythic+ leaderboard, the Raids Rankings and boss pages, and Rated Battlegrounds use it. A list that grows in place ("Show 50 more") isn't a pager |
 | `app-load-state` | a page's loading spinner and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
 | `game/armory.ts` | `getArmoryUrl()` for every armory link |
@@ -233,7 +234,7 @@ decision (ask first).
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
 | Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden`, `motion-safe`, `glide-pill`, `table-scroll`, `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table`, `ranking-toolbar`, `filter-reset`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.

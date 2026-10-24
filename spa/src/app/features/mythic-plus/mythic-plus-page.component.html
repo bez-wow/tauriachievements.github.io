@@ -73,7 +73,7 @@
       <div class="toolbar" #leaderboard>
         <div class="toolbar-title">
           <h2>{{ selectedDungeon()?.name ?? 'All dungeons' }}</h2>
-          <ng-container *ngTemplateOutlet="pagerStatus"></ng-container>
+          <span>Page {{ currentPage() }} of {{ totalPages() }} · {{ resultCount() | number }} {{ resultUnit() }}</span>
         </div>
         <div class="toolbar-actions">
           @if (view() === 'runs') {
@@ -130,7 +130,11 @@
       }
 
       <div class="pager-row">
-        <ng-container *ngTemplateOutlet="pager; context: { $implicit: false }"></ng-container>
+        <app-pager [page]="currentPage()" [pages]="totalPages()" label="Leaderboard pages" (pageChange)="goToPage($event)">
+          @if (selectedDungeonTimer(); as timer) {
+            <span class="pager-timer">Timer {{ timer }}</span>
+          }
+        </app-pager>
         <div id="mythic-plus-filters" class="leaderboard-filters" [class.filters-collapsed]="!filtersOpen()">
           @if (view() === 'players') {
             <app-mobile-filter-toggle
@@ -266,7 +270,14 @@
           (pick)="togglePick($event)" />
       }
 
-      <ng-container *ngTemplateOutlet="pager; context: { $implicit: true }"></ng-container>
+      <app-pager
+        class="bottom-pager"
+        [page]="currentPage()"
+        [pages]="totalPages()"
+        [count]="(resultCount() | number) + ' ' + resultUnit()"
+        label="Leaderboard pages, bottom"
+        [scrollTarget]="leaderboard"
+        (pageChange)="goToPage($event)" />
     }
   }
   @if (compareMode()) {
@@ -297,34 +308,3 @@
     </aside>
   }
 </main>
-
-<ng-template #pager let-atBottom>
-  <nav class="pager" [class.pager-bottom]="atBottom" [attr.aria-label]="atBottom ? 'Leaderboard pages, bottom' : 'Leaderboard pages'">
-    <div class="pager-buttons">
-      <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(1, atBottom)">
-        <span aria-hidden="true">«</span> First
-      </button>
-      <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1, atBottom)">
-        <span aria-hidden="true">‹</span> Prev
-      </button>
-      <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1, atBottom)">
-        Next <span aria-hidden="true">›</span>
-      </button>
-      <button type="button" [disabled]="currentPage() === totalPages()" (click)="goToPage(totalPages(), atBottom)">
-        Last <span aria-hidden="true">»</span>
-      </button>
-    </div>
-    @if (!atBottom && selectedDungeonTimer(); as timer) {
-      <span class="pager-timer">Timer {{ timer }}</span>
-    }
-    @if (atBottom) {
-      <ng-container *ngTemplateOutlet="pagerStatus"></ng-container>
-    }
-  </nav>
-</ng-template>
-
-<ng-template #pagerStatus>
-  <span class="pager-status">
-    Page {{ currentPage() }} of {{ totalPages() }} · {{ resultCount() | number }} {{ resultUnit() }}
-  </span>
-</ng-template>

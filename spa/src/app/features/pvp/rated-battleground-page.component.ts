@@ -1,11 +1,13 @@
 import { DecimalPipe, PercentPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { getClassIconPath } from '../../game/classIconHelper';
 import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
 import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
 import { FilterDropdownValue } from '../../shared/filter-dropdown.types';
+import { PagerComponent } from '../../shared/pager.component';
+import { pageCount, pageSlice } from '../../shared/pager';
 import {
   RatedBattlegroundMatch,
   RatedLeaderboardMetric,
@@ -31,7 +33,7 @@ import {
   RatedBattlegroundContentView,
   RatedBattlegroundViewSwitcherComponent
 } from './rated-battleground-view-switcher.component';
-import { injectReplaceUrl } from '../../core/url-state';
+import { injectReplaceUrl, parsePage } from '../../core/url-state';
 import { setPageHeader } from '../../core/page-header';
 
 const METRIC_OPTIONS: ReadonlyArray<{ value: RatedLeaderboardMetric; label: string }> = [
@@ -59,6 +61,7 @@ const LEADERBOARD_PAGE_SIZE = 25;
     FilterDropdownComponent,
     RatedBattlegroundPlayerHistoryComponent,
     RatedBattlegroundViewSwitcherComponent,
+    PagerComponent,
     DecimalPipe,
     PercentPipe
   ],
@@ -66,8 +69,6 @@ const LEADERBOARD_PAGE_SIZE = 25;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RatedBattlegroundPageComponent implements OnInit {
-  private readonly leaderboardPanel = viewChild<ElementRef<HTMLElement>>('leaderboardPanel');
-
   private readonly service = inject(RatedBattlegroundsService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -101,19 +102,10 @@ export class RatedBattlegroundPageComponent implements OnInit {
         || right.wins - left.wins
         || left.name.localeCompare(right.name));
   });
-  readonly leaderboardTotalPages = computed(() => Math.max(1, Math.ceil(this.rankedPlayers().length / LEADERBOARD_PAGE_SIZE)));
-  readonly paginatedPlayers = computed(() => {
-    const page = Math.min(this.leaderboardPage(), this.leaderboardTotalPages());
-    const start = (page - 1) * LEADERBOARD_PAGE_SIZE;
-    return this.rankedPlayers().slice(start, start + LEADERBOARD_PAGE_SIZE);
-  });
-  readonly leaderboardRangeStart = computed(() => this.rankedPlayers().length
-    ? (this.leaderboardPage() - 1) * LEADERBOARD_PAGE_SIZE + 1
-    : 0);
-  readonly leaderboardRangeEnd = computed(() => Math.min(
-    this.leaderboardPage() * LEADERBOARD_PAGE_SIZE,
-    this.rankedPlayers().length
-  ));
+  readonly leaderboardTotalPages = computed(() => pageCount(this.rankedPlayers().length, LEADERBOARD_PAGE_SIZE));
+  readonly currentLeaderboardPage = computed(() => Math.min(this.leaderboardPage(), this.leaderboardTotalPages()));
+  readonly paginatedPlayers = computed(() =>
+    pageSlice(this.rankedPlayers(), this.currentLeaderboardPage(), LEADERBOARD_PAGE_SIZE));
   readonly matchArchive = computed(() => [...this.filteredMatches()].sort((left, right) => right.starttime - left.starttime));
   readonly selectedMatch = computed(() => {
     const archive = this.matchArchive();
@@ -168,6 +160,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.selectedView.set(params.get('view') === 'matches' ? 'matches' : 'players');
+        this.leaderboardPage.set(parsePage(params.get('page')));
       });
     this.loadMatches();
   }
@@ -183,6 +176,7 @@ export class RatedBattlegroundPageComponent implements OnInit {
     this.selectedMap.set(value);
     this.selectedMatchId.set(undefined);
     this.leaderboardPage.set(1);
+    this.writeUrl();
   }
 
   setMetric(value: FilterDropdownValue): void {
@@ -191,24 +185,21 @@ export class RatedBattlegroundPageComponent implements OnInit {
     }
     this.selectedMetric.set(value as RatedLeaderboardMetric);
     this.leaderboardPage.set(1);
+    this.writeUrl();
   }
 
   setView(view: RatedBattlegroundContentView): void {
     this.selectedView.set(view);
-    this.replaceUrl({ view: view === 'matches' ? 'matches' : null }, { merge: true });
+    this.writeUrl();
   }
 
   setLeaderboardPage(page: number): void {
-    const targetPage = Math.min(Math.max(1, page), this.leaderboardTotalPages());
-    if (targetPage === this.leaderboardPage()) {
-      return;
-    }
-    this.leaderboardPage.set(targetPage);
-    requestAnimationFrame(() => this.leaderboardPanel()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    this.leaderboardPage.set(page);
+    this.writeUrl();
   }
 
   playerRank(index: number): number {
-    return (this.leaderboardPage() - 1) * LEADERBOARD_PAGE_SIZE + index + 1;
+    return (this.currentLeaderboardPage() - 1) * LEADERBOARD_PAGE_SIZE + index + 1;
   }
 
   selectMatch(matchId: number): void {
@@ -259,5 +250,14 @@ export class RatedBattlegroundPageComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  private writeUrl(): void {
+    const players = this.selectedView() === 'players';
+    const page = this.leaderboardPage();
+    this.replaceUrl({
+      view: players ? null : 'matches',
+      page: players && page > 1 ? page : null
+    }, { merge: true });
   }
 }

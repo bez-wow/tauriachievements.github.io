@@ -1,7 +1,7 @@
 <main class="raid-page">
   <h1 class="visually-hidden">Character leaderboard, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
-  <section class="section" aria-label="Character leaderboard">
+  <section class="section" aria-label="Character leaderboard" #rankingsSection>
     @if (index(); as loadedIndex) {
       <div class="toolbar">
         <div class="toolbar-switches">
@@ -253,11 +253,12 @@
       }
 
       @if (pages() > 1) {
-        <nav class="pager" aria-label="Pages">
-          <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹ Previous</button>
-          <span>Page {{ currentPage() }} of {{ pages() }} · {{ total() | number }} characters</span>
-          <button type="button" [disabled]="currentPage() === pages()" (click)="goToPage(currentPage() + 1)">Next ›</button>
-        </nav>
+        <app-pager
+          [page]="currentPage()"
+          [pages]="pages()"
+          [count]="(total() | number) + ' characters'"
+          [scrollTarget]="rankingsSection"
+          (pageChange)="goToPage($event)" />
       }
     }
   </section>

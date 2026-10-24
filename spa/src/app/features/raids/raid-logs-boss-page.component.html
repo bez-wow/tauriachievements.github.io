@@ -50,7 +50,7 @@
       }
     </dl>
 
-    <section class="section" aria-label="Rankings and kills">
+    <section class="section" aria-label="Rankings and kills" #listSection>
       <div class="toolbar">
         <div class="view-switch" role="tablist" aria-label="What to list" appGlide>
           @for (entry of tabs; track entry) {
@@ -263,11 +263,12 @@
       }
 
       @if (pages() > 1) {
-        <nav class="pager" aria-label="Pages">
-          <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹ Previous</button>
-          <span>Page {{ currentPage() }} of {{ pages() }} · {{ total() | number }} {{ isRanking() ? 'characters' : 'kills' }}</span>
-          <button type="button" [disabled]="currentPage() === pages()" (click)="goToPage(currentPage() + 1)">Next ›</button>
-        </nav>
+        <app-pager
+          [page]="currentPage()"
+          [pages]="pages()"
+          [count]="(total() | number) + (isRanking() ? ' characters' : ' kills')"
+          [scrollTarget]="listSection"
+          (pageChange)="goToPage($event)" />
       }
     </section>
   }

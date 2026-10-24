@@ -114,7 +114,3 @@ function foldText(value: string): string {
 }
 
 export const RAID_PAGE_SIZE = 50;
-
-export function pageCount(total: number, pageSize: number = RAID_PAGE_SIZE): number {
-  return Math.max(1, Math.ceil(total / pageSize));
-}

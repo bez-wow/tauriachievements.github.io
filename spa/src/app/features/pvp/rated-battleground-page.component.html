@@ -217,23 +217,14 @@
         </div>
 
         @if (rankedPlayers().length) {
-          <footer class="leaderboard-pagination">
-            <span>
-              Showing {{ leaderboardRangeStart() | number }}–{{ leaderboardRangeEnd() | number }}
-              of {{ rankedPlayers().length | number }} players
-            </span>
-            <div class="pagination-controls" aria-label="Leaderboard pagination">
-              <button
-                type="button"
-                [disabled]="leaderboardPage() === 1"
-                (click)="setLeaderboardPage(leaderboardPage() - 1)">Previous</button>
-              <strong>Page {{ leaderboardPage() }} of {{ leaderboardTotalPages() }}</strong>
-              <button
-                type="button"
-                [disabled]="leaderboardPage() === leaderboardTotalPages()"
-                (click)="setLeaderboardPage(leaderboardPage() + 1)">Next</button>
-            </div>
-          </footer>
+          <app-pager
+            class="leaderboard-pager"
+            [page]="currentLeaderboardPage()"
+            [pages]="leaderboardTotalPages()"
+            [count]="(rankedPlayers().length | number) + (rankedPlayers().length === 1 ? ' player' : ' players')"
+            label="Leaderboard pages"
+            [scrollTarget]="leaderboardPanel"
+            (pageChange)="setLeaderboardPage($event)" />
         }
       </section>
     }

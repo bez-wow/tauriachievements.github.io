@@ -58,7 +58,7 @@ $difficulty-colors: (
 }
 
 @mixin sections {
-  .section { display: flex; min-width: 0; flex-direction: column; gap: 12px; margin-top: 8px; }
+  .section { display: flex; min-width: 0; flex-direction: column; gap: 12px; margin-top: 8px; scroll-margin-top: calc(var(--update-bar-height) + 16px); }
 
   .section-header {
     display: flex;
@@ -292,23 +292,5 @@ $difficulty-colors: (
     &:hover:not(:disabled) { border-color: $gold; color: #fff; }
     &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
     &:disabled { opacity: .45; cursor: default; }
-  }
-}
-
-@mixin pager {
-  .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; color: $raid-muted; font-size: .85rem; }
-
-  .pager button {
-    padding: 6px 12px;
-    border: 1px solid #333;
-    border-radius: 5px;
-    background: #111;
-    color: #e0e0e0;
-    font: inherit;
-    cursor: pointer;
-
-    &:hover:not(:disabled) { border-color: rgba(247, 181, 0, .45); color: #fff; }
-    &:disabled { opacity: .4; cursor: not-allowed; }
-    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
   }
 }

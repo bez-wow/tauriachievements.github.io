@@ -9,7 +9,6 @@
 @include raid-table;
 @include character-cell;
 @include faction-marks;
-@include pager;
 @include ranking-toolbar;
 
 .raid-page { @include raid-page; }
