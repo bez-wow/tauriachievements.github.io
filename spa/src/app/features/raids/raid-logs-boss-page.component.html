@@ -148,7 +148,8 @@
                           [style.color]="classColor(entry.member.character.classId)"
                           [routerLink]="characterLink(entry.member.character)"
                           [queryParams]="{ difficulty: current.slug }">{{ entry.member.character.name }}</a>
-                        <span class="character-sub">{{ entry.member.spec?.name }} · {{ entry.member.character.realm }}@if (entry.member.character.guild) { · {{ entry.member.character.guild }}}</span>
+                        <span class="character-sub phone-hidden">{{ entry.member.spec?.name }} · {{ entry.member.character.realm }}@if (entry.member.character.guild) { · {{ entry.member.character.guild }}}</span>
+                        <span class="character-guild phone-only">@if (entry.member.character.guild; as guild) {&lt;{{ guild }}&gt;} @else {{{ entry.member.character.realm }}}</span>
                       </span>
                     </span>
                   </td>
@@ -165,7 +166,8 @@
                   <td class="phone-hidden"><ng-container *ngTemplateOutlet="trinketIcons; context: { $implicit: entry }" /></td>
                 </tr>
                 <tr class="phone-detail-row">
-                  <td colspan="8">
+                  <td class="rank"></td>
+                  <td colspan="7">
                     <span class="loadout">
                       <ng-container *ngTemplateOutlet="talentIcons; context: { $implicit: entry }" />
                       <ng-container *ngTemplateOutlet="trinketIcons; context: { $implicit: entry }" />

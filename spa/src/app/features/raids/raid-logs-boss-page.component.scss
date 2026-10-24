@@ -88,5 +88,12 @@ td a.log-link { color: $gold; font-size: .8rem; font-weight: 600; }
   .boss-header app-raid-difficulty-switch { margin-left: 0; }
   .boss-portrait { width: 52px; height: 52px; }
   .boss-heading h1 { font-size: 1.25rem; }
-  .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+  .character-guild { @include truncate; color: #fff; font-size: .74rem; font-weight: 700; }
+  .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-left: 28px; }
+  .loadout > :last-child { margin-left: auto; }
+}
+
+@media (max-width: $narrow-phone-breakpoint) {
+  .loadout { column-gap: 8px; }
+  .loadout .icon { width: 20px; height: 20px; }
 }
