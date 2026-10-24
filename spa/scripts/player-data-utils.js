@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
+const { getPlayerKey } = require("./player-ranking");
 
 const SPA_ROOT = path.join(__dirname, "..");
 const PLAYERS_CSV_PATHSPEC = "src/Players.csv";
@@ -93,6 +94,41 @@ function toEpochDay(value) {
   return Number.isNaN(time) ? 0 : Math.round(time / MS_PER_DAY);
 }
 
+function toTimestampDay(timestamp) {
+  const time = timestamp ? Date.parse(timestamp) : NaN;
+  return Number.isNaN(time) ? undefined : Math.floor(time / MS_PER_DAY);
+}
+
+const SCAN_DAYS_BEFORE_COMMIT = 1;
+
+function buildPreviousCharacterLookup(previousPlayers, previousScanTimestamp) {
+  const previousByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
+  const previousScanDay = toTimestampDay(previousScanTimestamp);
+
+  return (player) => {
+    const previousPlayer = previousByKey.get(getPlayerKey(player));
+    return previousPlayer && isSameCharacter(previousPlayer, player, previousScanDay) ? previousPlayer : undefined;
+  };
+}
+
+function isSameCharacter(previousPlayer, player, previousScanDay) {
+  if (previousPlayer.playerClass !== player.playerClass) {
+    return false;
+  }
+
+  if (!previousPlayer.hasLevel10Date) {
+    return true;
+  }
+
+  if (previousPlayer.level10Day) {
+    return player.level10Day === previousPlayer.level10Day;
+  }
+
+  return !player.level10Day
+    || previousScanDay === undefined
+    || player.level10Day >= previousScanDay - SCAN_DAYS_BEFORE_COMMIT;
+}
+
 const SECONDS_PER_MINUTE = 60;
 
 function toWholeMinuteSeconds(value) {
@@ -110,6 +146,7 @@ function parsePlayersCsv(csvText) {
   const hasAppearanceCount = index.AppearanceCount !== undefined;
   const hasAchievementsTotal = index.AchievementsTotal !== undefined;
   const hasPlayedTime = index.PlayedTime !== undefined;
+  const hasLevel10Date = index.Level10Date !== undefined;
   const players = [];
 
   for (let i = 1; i < rows.length; i++) {
@@ -143,6 +180,7 @@ function parsePlayersCsv(csvText) {
       hasPlayedTime,
       ilvl: toNumber(getField(row, index, "ilvl")),
       level10Day: toEpochDay(getField(row, index, "Level10Date")),
+      hasLevel10Date,
       faction: getField(row, index, "Faction") || "Neutral",
     });
   }
@@ -223,6 +261,7 @@ function readGitFile(sha, repoFilePath) {
 
 module.exports = {
   SECONDS_PER_MINUTE,
+  buildPreviousCharacterLookup,
   toEpochDay,
   parseGitHistoryOutput,
   parsePlayersCsv,

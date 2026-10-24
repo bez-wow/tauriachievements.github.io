@@ -26,9 +26,18 @@ explains it together.
 
 ## Ladder changes and new characters
 
-- **Code:** `spa/scripts/generate-player-snapshot.js`, `spa/scripts/generate-player-history.js`.
+- **Code:** `spa/scripts/generate-player-snapshot.js`, `spa/scripts/generate-player-history.js`,
+  and `buildPreviousCharacterLookup` in `spa/scripts/player-data-utils.js`.
 - Changes compare with the most recent earlier scan from another day
   ([data-pipeline.md](data-pipeline.md#what-prepare-appjs-builds)).
+- **A row compares only with the same character.** The earlier row with the same realm and
+  name counts only when the class is the same and the Level 10 dates agree: the same date, or
+  no date earlier and now none or one no older than the day before that scan's commit. The
+  ladder scan starts the evening before its commit, so a character can reach level 10 on that
+  day after being read. Otherwise the name has changed hands (a rename onto a freed name, or a
+  deleted and recreated character), and the row gets no value or rank change and no place on
+  Top Gainers. Race, gender and faction can be bought, so they don't count. An earlier scan
+  without the Level10Date column compares the class only.
 - Played time ranks on whole minutes, in the build and in the browser, so players in the same
   minute tie in both places and the rank changes agree with the ladder.
 - An earlier scan that lacks a column (appearances, account-wide achievements, played time)
@@ -37,7 +46,8 @@ explains it together.
   been missing in that scan, so the first positive count is a baseline, not a one-day gain.
 - **A new character** is one whose name and class no earlier scan had (the name ignoring case).
   Realm, race and faction are left out on purpose: transfers and faction changes aren't new.
-- **Tests:** `scripts/generate-player-snapshot.test.js`, `scripts/generate-player-history.test.js`.
+- **Tests:** `scripts/generate-player-snapshot.test.js`, `scripts/generate-player-history.test.js`,
+  `scripts/player-data-utils.test.js`.
 
 ## Realm Stats
 

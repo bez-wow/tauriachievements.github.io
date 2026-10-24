@@ -61,6 +61,33 @@ test("played time movers track and order time gained between scans", () => {
   assert.equal(movers[0][19], 4600);
 });
 
+test("a name taken over by another character is not a gainer", () => {
+  const previous = [{
+    ...player("Heaven", 0),
+    playerClass: 5,
+    achievementPoints: -1,
+    honorableKills: 0,
+    playedTime: 0,
+    hasPlayedTime: true,
+    level10Day: 0,
+    hasLevel10Date: true,
+  }];
+  const current = [{
+    ...player("Heaven", 2366),
+    playerClass: 11,
+    achievementPoints: 8520,
+    honorableKills: 22312,
+    playedTime: 8643180,
+    hasPlayedTime: true,
+    level10Day: 16205,
+    hasLevel10Date: true,
+  }];
+
+  for (const metric of ["achievementPoints", "honorableKills", "playedTime", "appearanceCount"]) {
+    assert.deepEqual(computeTopMoversForSnapshots(current, previous, metric, "2026-10-23T00:25:39Z"), [], metric);
+  }
+});
+
 test("a legacy scan without PlayedTime is used as a baseline, not a gain", () => {
   const previous = [{ ...player("Baseline", 100), playedTime: 0, hasPlayedTime: false }];
   const current = [{ ...player("Baseline", 100), playedTime: 5000, hasPlayedTime: true }];

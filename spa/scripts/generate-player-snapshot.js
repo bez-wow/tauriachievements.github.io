@@ -6,7 +6,7 @@ const {
   getPlayerKey,
   sortByAchievementPoints,
 } = require("./player-ranking");
-const { SECONDS_PER_MINUTE } = require("./player-data-utils");
+const { SECONDS_PER_MINUTE, buildPreviousCharacterLookup } = require("./player-data-utils");
 
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
 const outputPath = path.join(outputDir, "players.snapshot.json");
@@ -45,9 +45,9 @@ const PLAYER_COLUMNS = [
   ["playedTimeRankDelta", (row) => row.playedTimeRankDelta],
 ];
 
-function buildPlayerSnapshots(currentPlayers, previousPlayers) {
+function buildPlayerSnapshots(currentPlayers, previousPlayers, previousScanTimestamp) {
   const rankedPlayers = sortByAchievementPoints(currentPlayers);
-  const rows = buildPlayerRows(rankedPlayers, previousPlayers);
+  const rows = buildPlayerRows(rankedPlayers, previousPlayers, previousScanTimestamp);
   const lookups = buildLookups(rankedPlayers);
   const toSnapshot = (selectedRows, totalPlayers) => ({
     v: SNAPSHOT_VERSION,
@@ -68,9 +68,9 @@ function buildPlayerSnapshots(currentPlayers, previousPlayers) {
   };
 }
 
-function buildPlayerRows(rankedPlayers, previousPlayers) {
+function buildPlayerRows(rankedPlayers, previousPlayers, previousScanTimestamp) {
   const rankedPrevious = sortByAchievementPoints(previousPlayers);
-  const previousByKey = new Map(rankedPrevious.map((player) => [getPlayerKey(player), player]));
+  const findPreviousPlayer = buildPreviousCharacterLookup(rankedPrevious, previousScanTimestamp);
   const previousNameClassKeys = new Set(rankedPrevious.map(getNameClassKey));
   const current = {
     achievementPoints: buildRankMap(rankedPlayers, "achievementPoints"),
@@ -94,7 +94,8 @@ function buildPlayerRows(rankedPlayers, previousPlayers) {
 
   return rankedPlayers.map((player) => {
     const key = getPlayerKey(player);
-    const previousPlayer = previousByKey.get(key);
+    const previousPlayer = findPreviousPlayer(player);
+    const canCompare = previousPlayer !== undefined;
     const canCompareAppearances = previousPlayer?.hasAppearanceCount === true;
     const canCompareAchievementsTotal = previousPlayer?.hasAchievementsTotal === true
       && previousPlayer.achievementsTotal >= 0
@@ -104,10 +105,10 @@ function buildPlayerRows(rankedPlayers, previousPlayers) {
     return {
       player,
       isNewCharacter: rankedPrevious.length > 0 && !previousNameClassKeys.has(getNameClassKey(player)),
-      achievementPointsDelta: previousPlayer ? player.achievementPoints - previousPlayer.achievementPoints : 0,
-      achievementRankDelta: rankDelta("achievementPoints", key),
-      honorableKillsDelta: previousPlayer ? player.honorableKills - previousPlayer.honorableKills : 0,
-      honorableKillsRankDelta: rankDelta("honorableKills", key),
+      achievementPointsDelta: canCompare ? player.achievementPoints - previousPlayer.achievementPoints : 0,
+      achievementRankDelta: canCompare ? rankDelta("achievementPoints", key) : 0,
+      honorableKillsDelta: canCompare ? player.honorableKills - previousPlayer.honorableKills : 0,
+      honorableKillsRankDelta: canCompare ? rankDelta("honorableKills", key) : 0,
       appearanceCountDelta: canCompareAppearances ? player.appearanceCount - previousPlayer.appearanceCount : 0,
       appearanceRankDelta: canCompareAppearances ? rankDelta("appearanceCount", key) : 0,
       achievementsTotalDelta: canCompareAchievementsTotal
@@ -141,8 +142,8 @@ function getNameClassKey(player) {
   return `${String(player.name).trim().toLowerCase()}::${player.playerClass}`;
 }
 
-function generatePlayerSnapshot({ currentPlayers, previousPlayers }) {
-  const { full, head, newPlayers } = buildPlayerSnapshots(currentPlayers, previousPlayers);
+function generatePlayerSnapshot({ currentPlayers, previousPlayers, previousScanTimestamp }) {
+  const { full, head, newPlayers } = buildPlayerSnapshots(currentPlayers, previousPlayers, previousScanTimestamp);
 
   fs.mkdirSync(outputDir, { recursive: true });
   writeJson(outputPath, full);

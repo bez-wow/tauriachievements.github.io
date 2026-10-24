@@ -89,6 +89,35 @@ test("deltas and rank deltas compare against the previous scan", () => {
   assert.equal(leader.achievementRankDelta, -1);
 });
 
+test("a name taken over by another character gets no value or rank change", () => {
+  const previous = [
+    player({ name: "Heaven", playerClass: 5, achievementPoints: -1, honorableKills: 0, playedTime: 0, hasLevel10Date: true }),
+    player({ name: "Leader", achievementPoints: 5000, hasLevel10Date: true }),
+  ];
+  const current = [
+    player({
+      name: "Heaven",
+      playerClass: 11,
+      achievementPoints: 8520,
+      honorableKills: 22312,
+      playedTime: 8643180,
+      level10Day: 16205,
+      hasLevel10Date: true,
+    }),
+    player({ name: "Leader", achievementPoints: 5000, hasLevel10Date: true }),
+  ];
+
+  const [heaven] = readRows(buildPlayerSnapshots(current, previous, "2026-10-23T00:25:39Z").full);
+
+  assert.equal(heaven.name, "Heaven");
+  assert.equal(heaven.achievementPointsDelta, 0);
+  assert.equal(heaven.achievementRankDelta, 0);
+  assert.equal(heaven.honorableKillsDelta, 0);
+  assert.equal(heaven.honorableKillsRankDelta, 0);
+  assert.equal(heaven.playedTimeDelta, 0);
+  assert.equal(heaven.playedTimeRankDelta, 0);
+});
+
 test("played time and its delta are written in whole minutes", () => {
   const previous = [player({ playedTime: 90 * 60 })];
   const current = [player({ playedTime: 2 * 86400 + 3 * 3600 + 4 * 60 })];
