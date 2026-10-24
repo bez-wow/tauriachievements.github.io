@@ -2,23 +2,34 @@ import { Component } from '@angular/core';
 import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { provideLocationMocks } from '@angular/common/testing';
-import { provideRouter } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { describe, expect, it } from 'vitest';
-import { ReplaceUrl, injectReplaceUrl, parseInteger, parsePage } from './url-state';
+import { ReplaceUrl, injectQueryParamMap, injectReplaceUrl, parseInteger, parsePage } from './url-state';
 
 @Component({ template: '' })
 class PageStub {
   readonly replaceUrl: ReplaceUrl = injectReplaceUrl();
+  readonly difficulties: (string | null)[] = [];
+
+  constructor() {
+    injectQueryParamMap()
+      .pipe(takeUntilDestroyed())
+      .subscribe(params => this.difficulties.push(params.get('difficulty')));
+  }
 }
 
 async function openStub(url: string) {
   TestBed.configureTestingModule({
-    providers: [provideRouter([{ path: 'pages/:id', component: PageStub }]), provideLocationMocks()]
+    providers: [
+      provideRouter([{ path: 'pages/:id', component: PageStub }], withRouterConfig({ onSameUrlNavigation: 'reload' })),
+      provideLocationMocks()
+    ]
   });
   const harness = await RouterTestingHarness.create();
   const page = await harness.navigateByUrl(url, PageStub);
-  return { page, location: TestBed.inject(Location) };
+  return { harness, page, location: TestBed.inject(Location) };
 }
 
 describe('injectReplaceUrl', () => {
@@ -38,6 +49,23 @@ describe('injectReplaceUrl', () => {
 
     page.replaceUrl({ tab: 'b' }, { merge: true });
     expect(location.path()).toBe('/pages/1?view=a&tab=b');
+  });
+});
+
+describe('injectQueryParamMap', () => {
+  it('hands the page its parameters on every navigation, even to the address the router last opened', async () => {
+    const { harness, page, location } = await openStub('/pages/1?difficulty=mythic');
+
+    page.replaceUrl({ difficulty: 'heroic' });
+    let seen = page.difficulties.length;
+    await harness.navigateByUrl('/pages/1?difficulty=mythic');
+
+    expect(location.path()).toBe('/pages/1?difficulty=mythic');
+    expect(page.difficulties.slice(seen)).toEqual(['mythic']);
+
+    seen = page.difficulties.length;
+    await harness.navigateByUrl('/pages/1?difficulty=normal');
+    expect(page.difficulties.slice(seen)).toEqual(['normal']);
   });
 });
 

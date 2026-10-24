@@ -5,6 +5,7 @@ import {
   decodeIndex,
   decodeTalentTooltips,
   decodeTalents,
+  formerCharactersOf,
   memberTalents,
   bossShortName,
   bossesInKillOrder,
@@ -46,6 +47,14 @@ describe('decodeIndex', () => {
   it('gives specs the Legion spec icons', () => {
     expect(index.specs.get(64)?.icon).toContain('legion-static.tauri.hu');
   });
+
+  it('finds the earlier classes of a name, by realm slug and name in any case', () => {
+    const withFormer = decodeIndex({ ...indexFile, formerCharacters: [['Chalz', 'Evermoon', 5, [8, 9]]] });
+    expect(formerCharactersOf(withFormer, 'evermoon', 'Chalz')).toEqual({ classId: 5, formerClassIds: [8, 9] });
+    expect(formerCharactersOf(withFormer, 'evermoon', 'chalz')?.classId).toBe(5);
+    expect(formerCharactersOf(withFormer, 'tauri', 'Chalz')).toBeUndefined();
+    expect(index.formerCharacters.size).toBe(0);
+  });
 });
 
 describe('decodeBossFile', () => {
@@ -60,6 +69,14 @@ describe('decodeBossFile', () => {
 
   it('shares one character object between the kills', () => {
     expect(kills[0].members[0].character).toBe(kills[1].members[0].character);
+  });
+
+  it('marks the row of a former character with the name', () => {
+    const [kill] = decodeBossFile({
+      ...bossFile,
+      players: [...bossFile.players.slice(0, 2), ['Light', 'Evermoon', 2, 10, 1, 'Miracle', 1]]
+    }, nythendra, mythic, index.specs);
+    expect(kill.members.map(member => member.character.former)).toEqual([false, false, true]);
   });
 
   it('reads no talents or trinkets from a version 1 file', () => {

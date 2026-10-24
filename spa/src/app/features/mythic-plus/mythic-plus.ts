@@ -404,10 +404,6 @@ export function sortRoster<T extends Pick<MythicPlusMember, 'role'>>(roster: rea
   return [...roster].sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role]);
 }
 
-export function pageCount(totalItems: number, pageSize: number): number {
-  return Math.max(1, Math.ceil(totalItems / pageSize));
-}
-
 const foldedNames = new WeakMap<object, string>();
 
 function foldedMemberName(member: Pick<MythicPlusMember, 'name'>): string {

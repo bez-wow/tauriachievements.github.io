@@ -12,10 +12,10 @@ folders:
 | Folder | Holds |
 |---|---|
 | `core/` | what the whole app runs on: the header (`update-bar`, `nav-sections.ts`, `page-header.ts`), the back-to-top button, `url-state.ts`, `page-links.ts` (links into one feature's pages from another's), `DataFileService`, `ObservableCache`, `time-zone-label.ts` |
-| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
+| `shared/` | building blocks any page may use: the filter dropdown, the mobile filter toggle, `app-load-state`, `app-pager` and `pager.ts`, `app-icon-tips`, `appTapTooltip`, `compact-viewport.ts`, `time-format.ts`, `score-quality.ts`, `_mythic-plus-shared.scss` |
 | `shared/spec-charts/` | the spec and race popularity charts the Mythic+ and Raids statistics share: `spec-popularity.ts`, `race-popularity.ts`, `app-race-by-spec`, and `spec-chart.scss`, the chart look every spec chart lists first in its `styleUrls` |
 | `shared/motion/` | the motion directives and their helpers (`motion.ts`, `count-up.ts`, `decode-text.ts`) |
-| `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers |
+| `game/` | the game's own tables and links: `wow.ts`, `wow-specs.ts`, `class-colors.ts`, `armory.ts`, the class and race icon helpers, and the asset paths in `classIconHelper.ts` (class icons, class crests, spec art) |
 | `players/` | the ladder's data, `Players.csv` and `RareAchievements.json`: the `Character` model, `DataSyncService`, `LadderLastUpdatedService`, the rare-achievement service, groups and summaries, the realm, faction and class filter options, and the player test fixture. The Ladder, Achievements and Realm Stats pages read it |
 | `features/<area>/` | one folder per menu section (`ladder`, `achievements`, `pvp`, `raids`, `mythic-plus`, `realm-stats`), plus `guild-analysis` (the unlisted guild pages) and `support`. A feature holds its pages, their pure logic and specs, its child components, its data service and its SCSS partial |
 
@@ -44,7 +44,29 @@ A file's name says what it is:
 | `_<area>-shared.scss` | SCSS mixins shared by an area's pages |
 | `<page>.motion.scss` | a page's motion, as a second `styleUrls` entry |
 
-Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`).
+Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`) and `src/assets/`. In the assets,
+`spec-art/<class>-<spec>.webp` (`hunter-beast-mastery.webp`, `death-knight-blood.webp`: the names
+in lower case, spaces as hyphens, built by `getSpecArtPath`) is the art the Tier List page shows,
+one per Legion spec: the images of
+TierMaker's [All Class Specs](https://tiermaker.com/create/all-class-specs---world-of-warcraft-17396518-2)
+template, resized to 160 px (sharp on high-density screens at the 60 px they show at) and
+saved as WebP. `rogue-outlaw` is
+the exception, at the owner's request: it's Legion's own Outlaw icon, `inv_sword_30` (the one
+`wow-specs.ts` lists), from Blizzard's 56 px copy
+(`https://render.worldofwarcraft.com/us/icons/56/inv_sword_30.jpg`). To match the others'
+style it was upscaled 4× with [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)'s
+`realesrgan-x4plus-anime` model, given 10% more contrast and 25% more colour, then resized like
+the rest.
+
+"Download Tier List Image", at the end of the Tier List page's difficulty row, saves the three
+lists as one PNG, laid out like the page: DPS across the top, Heal and Tank side by side below.
+The PNG is drawn on a `<canvas>` from the lists' data (`raid-tier-list-image.ts`: `imageLayout`
+places the tables, `renderTierListImage` draws them), at twice its layout size. It's not a
+picture of the page, so what is only on the page (the button, the character count in each list's
+corner) never shows in it, and the image has its own header (raid, difficulty, date, the site's
+address), a heading and character count over each list, and a footer. Every image it draws must
+be served from the site itself: a picture from another origin (the `legion-static` icons) taints
+the canvas, and the export then fails.
 
 Keep components thin. A ranking, filter, count or empty-state message goes into the pure
 `<feature>.ts`, where a spec can pin it down without a TestBed. When a page's loading has more
@@ -60,9 +82,15 @@ the page's store. The component keeps the URL, the filters and the event handler
   so it ships in the initial bundle and the first visit needs no extra request. New pages are
   lazy too ([guides/howto-add-page.md](guides/howto-add-page.md)). Importing a page or its
   heavy dependency (Chart.js) from an eager file pulls it back into the initial bundle.
-- `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'top'`, so
-  **every router navigation, even one that only changes query parameters, runs a full-page
-  view transition and scrolls to the top.**
+- A code deploy renames the page chunks and Pages deletes the old ones, so a tab left open
+  across it can't load a page it hasn't opened yet. `reloadOnNewDeploy`
+  (`core/new-deploy-reload.ts`, the router's navigation error handler) turns that failed
+  navigation into a full load of the same address, which brings in the new deploy. It reloads
+  at most once in 30 seconds, so a deploy still going out can't loop it. Data-only deploys
+  keep every chunk name.
+- `app.config.ts` turns on `withViewTransitions()` and `scrollPositionRestoration: 'enabled'`,
+  so **every router navigation, even one that only changes query parameters, runs a full-page
+  view transition and scrolls to the top.** Back and Forward return to where the reader was.
 - Shared URLs never break. A renamed page keeps a `redirectTo` from its old path (as with
   `guild-realm-firsts` and `50-games-played-arenas`).
 - Unlisted routes are unlisted on purpose: the guild pages (`<key>-<8 hex>`) and the Rare Items
@@ -101,6 +129,11 @@ difficulty, the page number. Defaults are left out of it.
   back to the overview.
 - The router never sees parameters written with `replaceState`. When you build a link or
   navigation from the current state, spell out every parameter you want kept.
+- For the same reason `route.queryParamMap` stays silent when the reader opens the address the
+  router last opened, such as the page's own header link after a switch changed the URL. A page
+  that its own link should reset reads its parameters through `injectQueryParamMap()`
+  (`url-state.ts`), which hands over the route's parameters after every navigation. Raid
+  Statistics, Tier List and Talent Analytics do this.
 
 The query parameters each page reads:
 
@@ -110,14 +143,14 @@ The query parameters each page reads:
 | `/compare` | `a`, `b`: `Realm:Name` |
 | `/rare-achievements` | `achievement`, `realm`, `class`, `search` |
 | `/arena` | `bracket`: `2v2` (default) or `3v3` |
-| `/rated-battleground` | `view`: `players` (default) or `matches` |
+| `/rated-battleground` | `view`: `players` (default) or `matches`; `page` (the players view) |
 | `/mythic-plus` | `view` (`runs`, `players`), `sort` (`best`, `latest`), `period` (`season`, `week`), `dungeon`, `realm`, `class`, `spec`, `role`, `page`, `character` (`Name-Realm`: the runs view shows only theirs, the players view picks out their row), `compare` (`Name-Realm,…`: opens compare mode with those picks) |
 | `/mythic-plus/stats` | `period` |
 | `/mythic-plus/records` | `dungeon` (the server firsts' filter) |
 | `/mythic-plus/compare` | `players`: `Name-Realm,…`, at most four |
 | `/mythic-plus/character/:realm/:name` | `spec` |
 | `/mythic-plus/guild/:realm/:guild` | `period`, `dungeon`, `class`, `spec`, `role`, `character` |
-| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab`, `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class` |
+| every `/raid-logs` page | `difficulty`, plus: Guilds `faction`, `realm`; Statistics `view`, `role`; Talents `boss`, `role`, `class`, `spec`; Rankings `metric`, `class`, `spec`, `realm`, `q`, `page`; a boss `tab`, `class`, `spec`, `realm`, `q`, `page`; a character `metric`, `compare=class`, `spec` (with `compare=class`: a spec of the character's class the metric ranks), `class` (an earlier character with the name, by class id; [data-pipeline.md](data-pipeline.md#raid-log-files)) |
 
 On the Mythic+ leaderboard and guild ladder, a `spec` counts only when it belongs to the
 `class` in the same URL. A `Name-Realm` value splits on its last hyphen: character names can't
@@ -146,7 +179,9 @@ finds Sósa), while a picked character matches name and realm exactly.
   pages need.
 - `RaidLogsDataService` loads the raid files and keeps `lastDifficulty`, so the Raids tabs
   remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
-  else on `defaultDifficulty`, the hardest one with a kill.
+  else on `defaultDifficulty`, the hardest one with a kill. The header's Raid Statistics, Tier
+  List and Talent Analytics links carry `?difficulty=mythic`, so those three always open on
+  Mythic, unless Mythic has no kill yet.
 - Files only some icons or names depend on (raid genders, talent tables and tooltips) fail
   soft: a file that won't load is an empty table, not an error. A kill the raid index doesn't
   list may be newer than the index this tab loaded, so it's loaded fresh once before the page
@@ -183,7 +218,7 @@ decision (ask first).
 | Building block | Use it for |
 |---|---|
 | `app-update-bar` (`update-bar.component`) | the site header, rendered once by the shell ([below](#the-app-shell-and-the-header-height-contract)). A page sets the timestamp on the right with `setPageHeader()` |
-| `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
+| `nav-sections.ts` | the header's sections and pages, a page's fixed link parameters (`queryParams`), and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201. Pass `widthLabels` (every label it can ever show) to keep the trigger as wide as the longest one, so picking never cuts a name short or moves the toolbar; its container must then size to its content |
 | `wow.ts` | the game's tables: `CLASS_NAMES`, `CLASSES_BY_NAME` (A–Z), `RACE_NAMES` (the three Pandaren ids all read "Pandaren"), `raceFaction` (0 Alliance, 1 Horde, none for the neutral Pandaren), `REALMS`, `realmSlug` (a realm as it appears in URLs) and the `Realm` and `Role` types. Never copy one of them into a page |
 | `CLASS_FILTER_OPTIONS` (`wow.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
@@ -196,6 +231,7 @@ decision (ask first).
 | `spec-charts/` | `app-race-by-spec` (the most-popular-race boxes); `specPopularity`, `shareTicks`, `formatShare` and `compareSpecLists` for a spec popularity chart's numbers and order |
 | `app-mythic-plus-week-affixes` | this week's affixes with their descriptions (leaderboard and stats page). On phones it shows icons only and its tooltips position against the row around it, which needs `position: relative` |
 | `app-back-to-top-button` | the floating back-to-top button |
+| `app-pager` (`pager.component`) | every list split into pages: « First, ‹ Prev, Next ›, Last ». `<app-pager [page]="currentPage()" [pages]="pages()" [count]="(total() \| number) + ' characters'" [scrollTarget]="listSection" (pageChange)="goToPage($event)" />`. With `count`, it shows "Page 3 of 41 · 2,034 characters" after the buttons, and anything inside it (the M+ dungeon timer) sits there too. It emits only a page in range that differs from the current one, and the page writes it to `?page=`. Given a `scrollTarget`, the pager under a list scrolls back to the list's top after a change; give that element a `scroll-margin-top` that clears the header. `pageCount` and `pageSlice` (`pager.ts`) do the page maths. The Mythic+ leaderboard, the Raids Rankings and boss pages, and Rated Battlegrounds use it. A list that grows in place ("Show 50 more") isn't a pager |
 | `appBottomBar` (`core/bottom-bar.directive.ts`) | a bar fixed to the bottom of the screen, such as the Mythic+ compare tray. It publishes its height as `--bottom-bar-height`, so on phones the page end and the back-to-top button stay above it ([below](#the-app-shell-and-the-header-height-contract)) |
 | `app-load-state` | a page's loading spinner and its error box with "Try again": `<app-load-state [loading]="isLoading()" [error]="loadError()" loadingText="Reading the logs..." (retry)="loadData()" />`. It renders nothing once loaded; content inside it shows in the error box (the character page's difficulty switch). The Mythic+ and Raids pages use it; the older pages and the themed Arena, Emerald Nightmare and Rare Items pages keep their own |
 | `class-colors.ts` | the one class-colour table: `getClassColor()` in code, `var(--class-<id>)` in SCSS |
@@ -204,10 +240,10 @@ decision (ask first).
 | `mythicPlusProfileLink()` (`core/page-links.ts`) | the router link to a character's Mythic+ profile, from any page |
 | `formatClock()`, `formatDuration()` (`shared/time-format.ts`) | seconds as `29:07` / `1:02:05`, or the fixed-width `00:29:07` |
 | `scoreQuality()` (`shared/score-quality.ts`) | a score's item-quality tier against the best score (`artifact` down to `uncommon`), for the `quality-colors` mixin |
-| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats; in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
+| Raids helpers | in `raid-display.ts`: `nameMatches` for name search, `parseRoleFilter` for `?role=` (`tank`, `healer`, `dps`), the links, icon URLs and number formats, and `DIFFICULTY_COLORS` for code that draws (the same colours as `$difficulty-colors` in `_raid-logs-shared.scss`, so change both); in `raid-logs.ts`: `bossShortName` (a boss's `shortName`) for tiles, table cells and other tight spots: the name up to its first comma, or a shorter name from `BOSS_SHORT_NAMES` ("Elerethe", "Dragons"). A long boss name in a new raid gets an entry there |
 | `_tables.scss` (forwarded by `_mythic-plus-shared.scss`) | the phone rules every table shares: `table-scroll`, `phone-columns` (`phone-hidden`, `narrow-phone-hidden`, `phone-only`), `phone-detail-rows`, `fluid-cell`, `fluid-identity`, `truncate`, and `$phone-breakpoint` / `$narrow-phone-breakpoint` ([Tables on phones](#tables-on-phones)) |
 | `_mythic-plus-shared.scss` | mixins such as `tooltip-box`, `quality-colors`, `visually-hidden` (and `hidden-visually`, its declarations alone), `motion-safe`, `glide-pill`, `week-bands` (a chart's affix-week bands), `details-reveal` ([motion](motion-and-rendering.md)). `crest-glow` needs `isolation: isolate` on the crest's parent, so the glow sits under the crest and above the parent's background. `spotlight-card` takes the card's `::before` and `::after` |
-| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `filter-reset`, `pager`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
+| `_raid-logs-shared.scss` | forwards the M+ mixins, and adds `raid-table` (with the phone column rules and `phone-fluid` cells), `boss-picker($count)`, `ranking-toolbar`, `filter-reset`, `difficulty-switch`, `segmented-switch` (the difficulty switch's pill look, for any other switch beside it), and the since-the-last-scan marks: `change-pill` (a rank or count change, with `.positive` / `.negative`) and `new-tag` (the gold "new") |
 | `.tap-area` (global) | an empty span inside a small link that grows its tap target |
 
 `app-filter-bar` and `app-leaderboard-table` belong to the ladder page.

@@ -84,7 +84,7 @@ describe('UpdateBarComponent drawer', () => {
 
     expect(drawer.open).toBe(true);
     expect(query(fixture, '.site-menu-toggle').getAttribute('aria-expanded')).toBe('true');
-    expect(drawer.querySelectorAll('.site-drawer-page')).toHaveLength(22);
+    expect(drawer.querySelectorAll('.site-drawer-page')).toHaveLength(23);
     expect(current).toHaveLength(1);
     expect(current[0].textContent).toContain('Statistics');
   });
@@ -96,6 +96,20 @@ describe('UpdateBarComponent drawer', () => {
       .find((link) => link.textContent?.includes('Hall of Fame'));
 
     expect(hallOfFame?.querySelector('.site-drawer-tag')?.textContent).toBe('Archive');
+  });
+
+  it('opens Raid Statistics, Tier List and Talent Analytics on Mythic from both menus', async () => {
+    const fixture = await render('/');
+    const hrefs = (selector: string) => Array.from(fixture.nativeElement.querySelectorAll(selector) as NodeListOf<HTMLAnchorElement>)
+      .map((link) => link.getAttribute('href'))
+      .filter((href) => href?.startsWith('/raid-logs/'));
+
+    for (const selector of ['.site-nav-page', '.site-drawer-page']) {
+      expect(hrefs(selector)).toContain('/raid-logs/stats?difficulty=mythic');
+      expect(hrefs(selector)).toContain('/raid-logs/talents?difficulty=mythic');
+      expect(hrefs(selector)).toContain('/raid-logs/tier-list?difficulty=mythic');
+      expect(hrefs(selector)).toContain('/raid-logs/guilds');
+    }
   });
 
   it('closes when a page is picked', async () => {

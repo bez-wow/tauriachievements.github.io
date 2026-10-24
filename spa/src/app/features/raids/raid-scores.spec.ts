@@ -7,10 +7,12 @@ import {
   performanceQuality,
   rankCharacters,
   rankScores,
+  rankedSpecs,
   scoreChanges,
   scoreCharacters,
   scoreTicks,
   scoresBySpec,
+  scoresBySpecForKills,
   specMetric,
   specPerformance,
   topAverage
@@ -38,6 +40,16 @@ describe('rankCharacters', () => {
   it('filters by realm and class', () => {
     expect(rankCharacters(kills, 'dps', { realm: 'tauri' }).map(entry => entry.member.character.name)).toEqual(['Kael']);
     expect(rankCharacters(kills, 'dps', { classId: 2 }).map(entry => entry.member.character.name)).toEqual(['Light']);
+  });
+});
+
+describe('rankedSpecs', () => {
+  it("lists a class's specs the metric ranks, in the index's order", () => {
+    expect(rankedSpecs(index.specs, 8, 'dps').map(spec => spec.name)).toEqual(['Fire', 'Frost']);
+    expect(rankedSpecs(index.specs, 2, 'dps').map(spec => spec.name)).toEqual(['Protection']);
+    expect(rankedSpecs(index.specs, 2, 'hps').map(spec => spec.name)).toEqual(['Holy']);
+    expect(rankedSpecs(index.specs, 8, 'hps')).toEqual([]);
+    expect(rankedSpecs(index.specs, undefined, 'dps')).toEqual([]);
   });
 });
 
@@ -147,6 +159,17 @@ describe('scoreCharacters', () => {
     expect(fireOnly[1].spec?.name).toBe('Fire');
   });
 
+  it("leaves out a former character with the name, whose kill still sets the boss's best", () => {
+    const former: RaidCharacter = { ...character('Example', 10, 2), former: true };
+    const withFormer = bossKills.map((kills, boss) => boss === 0 ? [...kills, kill(0, 5, [[former, protection, 400]])] : kills);
+
+    expect(scoreCharacters(bosses, withFormer, 'dps').map(entry => [entry.character.name, entry.character.classId, entry.score]))
+      .toEqual([['Best', 8, 5662], ['Example', 8, 1960], ['Tank', 2, 871]]);
+    expect(rankCharacters(withFormer[0], 'dps').map(entry => entry.member.character.name)).toEqual(['Best', 'Example']);
+    expect(bossStanding(withFormer[0], 'dps', characterKey(former))).toEqual({ rank: 2, ranked: 2, relative: 10 / 400 });
+    expect(scoresBySpec(bosses, withFormer).get(protection)?.map(entry => entry.character.name)).toEqual(['Tank']);
+  });
+
   describe('by spec', () => {
     it('gives each character the score the leaderboard shows with their spec picked', () => {
       const bySpec = scoresBySpec(bosses, bossKills);
@@ -162,6 +185,10 @@ describe('scoreCharacters', () => {
         expect(new Map(scores.map(entry => [entry.character.name, entry.score])))
           .toEqual(new Map(leaderboard.map(entry => [entry.character.name, entry.score])));
       }
+    });
+
+    it("sorts one difficulty's kills by boss before scoring them", () => {
+      expect(scoresBySpecForKills(bosses, bossKills.flat().reverse())).toEqual(scoresBySpec(bosses, bossKills));
     });
 
     it("averages each spec's best scores and orders classes by their best spec", () => {

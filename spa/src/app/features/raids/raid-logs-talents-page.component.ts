@@ -30,7 +30,7 @@ import {
   spellUrl
 } from './raid-display';
 import { defaultDifficulty } from './raid-logs';
-import { scoresBySpec, specMetric } from './raid-scores';
+import { scoresBySpecForKills, specMetric } from './raid-scores';
 import {
   NOTABLE_DIFFERENCE,
   NOTABLE_MIN_PICKS,
@@ -61,7 +61,7 @@ import {
 } from './raid-talents-views';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, parseClassId, Role } from '../../game/wow';
-import { injectReplaceUrl, parseInteger } from '../../core/url-state';
+import { injectQueryParamMap, injectReplaceUrl, parseInteger } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
 
@@ -104,6 +104,7 @@ export class RaidLogsTalentsPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly replaceUrl = injectReplaceUrl();
+  private readonly queryParamMap = injectQueryParamMap();
 
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly isLoading = signal(true);
@@ -158,11 +159,7 @@ export class RaidLogsTalentsPageComponent {
 
   private readonly samples = computed(() => talentSamples(this.kills()));
   readonly bossesWithKills = computed(() => new Set(this.kills().map(kill => kill.boss)));
-  private readonly specScores = computed(() => {
-    const kills = this.kills();
-    const bosses = this.index()?.bosses ?? [];
-    return scoresBySpec(bosses, bosses.map(boss => kills.filter(kill => kill.boss.slug === boss.slug)));
-  });
+  private readonly specScores = computed(() => scoresBySpecForKills(this.index()?.bosses ?? [], this.kills()));
 
   readonly specGroups = computed(() => {
     const boss = this.boss();
@@ -263,7 +260,7 @@ export class RaidLogsTalentsPageComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(table => this.talentTable.set(table));
 
-    this.route.queryParamMap
+    this.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.specId.set(parseInteger(params.get('spec')));

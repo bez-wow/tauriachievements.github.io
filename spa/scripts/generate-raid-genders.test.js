@@ -38,3 +38,10 @@ test("leaves alone a name the ladder has on another realm or class, or not at al
 
   assert.deepEqual(buildRaidGenders(players, raidPlayers), { v: 1, female: {}, male: {} });
 });
+
+test("corrects the ladder's class of a name the raid logs also have on another class", () => {
+  const players = [player("Deadsolf", "Evermoon", 9, 1)];
+  const raidPlayers = [raider("Deadsolf", "Evermoon", 10, 0), raider("Deadsolf", "Evermoon", 9, 0)];
+
+  assert.deepEqual(buildRaidGenders(players, raidPlayers), { v: 1, female: { Evermoon: ["Deadsolf"] }, male: {} });
+});

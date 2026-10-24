@@ -16,7 +16,6 @@ import {
   RAID_PAGE_SIZE,
   formatPerSecond,
   nameMatches,
-  pageCount,
   raidCharacterLink
 } from './raid-display';
 import {
@@ -27,6 +26,7 @@ import {
   countsFor,
   killsBefore,
   rankScores,
+  rankedSpecs,
   scoreChanges,
   scoreCharacters
 } from './raid-scores';
@@ -36,6 +36,8 @@ import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_FILTER_OPTIONS, CLASS_NAMES, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
+import { PagerComponent } from '../../shared/pager.component';
+import { pageCount, pageSlice } from '../../shared/pager';
 import { setPageHeader } from '../../core/page-header';
 import { RunQuality, scoreQuality } from '../../shared/score-quality';
 
@@ -63,7 +65,8 @@ const METRICS: ReadonlyArray<{ id: RaidMetric; label: string }> = [
     GlideDirective,
     DatePipe,
     DecimalPipe,
-    LoadStateComponent
+    LoadStateComponent,
+    PagerComponent
   ],
   templateUrl: './raid-logs-leaderboard-page.component.html',
   styleUrl: './raid-logs-leaderboard-page.component.scss',
@@ -148,6 +151,7 @@ export class RaidLogsLeaderboardPageComponent {
   });
 
   readonly changesSince = computed(() => this.previousBossKills() ? this.index()?.previousGeneratedAt : undefined);
+  readonly hasChanges = computed(() => this.changes().size > 0);
 
   readonly rankings = computed<RankedScore[]>(() => {
     const query = this.search();
@@ -171,10 +175,9 @@ export class RaidLogsLeaderboardPageComponent {
   });
 
   readonly total = computed(() => this.rankings().length);
-  readonly pages = computed(() => pageCount(this.total()));
+  readonly pages = computed(() => pageCount(this.total(), RAID_PAGE_SIZE));
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
-  readonly shownRankings = computed(() =>
-    this.rankings().slice((this.currentPage() - 1) * RAID_PAGE_SIZE, this.currentPage() * RAID_PAGE_SIZE));
+  readonly shownRankings = computed(() => pageSlice(this.rankings(), this.currentPage(), RAID_PAGE_SIZE));
 
   readonly classOptions = computed<FilterDropdownOption[]>(() => {
     const metric = this.metric();
@@ -185,10 +188,8 @@ export class RaidLogsLeaderboardPageComponent {
   });
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const classId = this.classFilter();
-    const metric = this.metric();
-    const specs = [...(this.index()?.specs.values() ?? [])]
-      .filter(spec => spec.classId === classId && countsFor(metric, spec));
+    const index = this.index();
+    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric()) : [];
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
@@ -302,7 +303,7 @@ export class RaidLogsLeaderboardPageComponent {
   }
 
   goToPage(page: number): void {
-    this.page.set(Math.min(Math.max(1, page), this.pages()));
+    this.page.set(page);
     this.writeUrl();
   }
 

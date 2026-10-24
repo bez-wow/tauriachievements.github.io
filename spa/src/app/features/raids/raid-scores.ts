@@ -1,7 +1,7 @@
 import { getClassColor } from '../../game/class-colors';
 import { compareSpecLists } from '../../shared/spec-charts/spec-popularity';
 import { CLASS_NAMES, raceFaction, realmSlug, Role } from '../../game/wow';
-import { LEGION_SPECS, SpecDefinition } from '../../game/wow-specs';
+import { LEGION_SPECS, LegionSpec } from '../../game/wow-specs';
 import { RaidBoss, RaidSpec, RaidCharacter, RaidMember, RaidKillDetails } from './raid-logs.types';
 import { characterKey, logKey } from './raid-logs';
 
@@ -29,6 +29,10 @@ export function countsFor(metric: RaidMetric, spec: RaidSpec | undefined): boole
   return metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer';
 }
 
+export function rankedSpecs(specs: ReadonlyMap<number, RaidSpec>, classId: number | undefined, metric: RaidMetric): RaidSpec[] {
+  return [...specs.values()].filter(spec => spec.classId === classId && countsFor(metric, spec));
+}
+
 export function rankCharacters(
   kills: readonly RaidKillDetails[],
   metric: RaidMetric,
@@ -38,7 +42,7 @@ export function rankCharacters(
 
   for (const kill of kills) {
     for (const member of kill.members) {
-      if (!countsFor(metric, member.spec) || !matchesFilter(member, filter)) {
+      if (member.character.former || !countsFor(metric, member.spec) || !matchesFilter(member, filter)) {
         continue;
       }
 
@@ -76,8 +80,20 @@ export function bossStanding(
 ): BossStanding {
   const ranking = rankCharacters(kills, metric, filter);
   const own = ranking.find(entry => characterKey(entry.member.character) === key);
-  const top = ranking[0]?.value ?? 0;
+  const top = bossBest(kills, metric, filter);
   return { rank: own?.rank, ranked: ranking.length, relative: own && top > 0 ? own.value / top : 0 };
+}
+
+export function bossBest(kills: readonly RaidKillDetails[], metric: RaidMetric, filter: RankingFilter = {}): number {
+  let best = 0;
+  for (const kill of kills) {
+    for (const member of kill.members) {
+      if (countsFor(metric, member.spec) && matchesFilter(member, filter)) {
+        best = Math.max(best, member[metric]);
+      }
+    }
+  }
+  return best;
 }
 
 export const MAX_SCORE = 6969;
@@ -144,7 +160,7 @@ export function scoreCharacters(
 
         const value = member[metric];
         tops[bossIndex] = Math.max(tops[bossIndex], value);
-        if (specId !== undefined && member.spec.id !== specId) {
+        if (member.character.former || (specId !== undefined && member.spec.id !== specId)) {
           continue;
         }
 
@@ -231,6 +247,9 @@ export function scoresBySpec(
         const metric = specMetric(member.spec);
         const value = member[metric];
         tops[metric][bossIndex] = Math.max(tops[metric][bossIndex], value);
+        if (member.character.former) {
+          continue;
+        }
 
         let characters = bests.get(member.spec);
         if (!characters) {
@@ -269,6 +288,13 @@ export function scoresBySpec(
   return scores;
 }
 
+export function scoresBySpecForKills(
+  bosses: readonly RaidBoss[],
+  kills: readonly RaidKillDetails[]
+): Map<RaidSpec, SpecCharacterScore[]> {
+  return scoresBySpec(bosses, bosses.map(boss => kills.filter(kill => kill.boss.slug === boss.slug)));
+}
+
 export const SPEC_TOP_SCORES = 10;
 
 export function topAverage(scores: readonly number[], count: number = SPEC_TOP_SCORES): number {
@@ -276,7 +302,7 @@ export function topAverage(scores: readonly number[], count: number = SPEC_TOP_S
   return top.length ? Math.round(top.reduce((sum, score) => sum + score, 0) / top.length) : 0;
 }
 
-export interface SpecPerformance extends SpecDefinition {
+export interface SpecPerformance extends LegionSpec {
   count: number;
   score: number;
   best?: SpecCharacterScore;

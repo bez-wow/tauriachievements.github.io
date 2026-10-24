@@ -1,7 +1,7 @@
 <main class="raid-page">
   <h1 class="visually-hidden">Character leaderboard, {{ index()?.raid?.name ?? 'The Emerald Nightmare' }}</h1>
 
-  <section class="section" aria-label="Character leaderboard">
+  <section class="section" aria-label="Character leaderboard" #rankingsSection>
     @if (index(); as loadedIndex) {
       <div class="toolbar">
         <div class="toolbar-switches">
@@ -118,11 +118,12 @@
               matter. Other raids have the same problem, to a lesser degree.
             </p>
             @if (changesSince(); as since) {
-              <h3>What are the numbers beside a score?</h3>
+              <h3>What are the small numbers beside a rank and a score?</h3>
               <p>
-                On the left, the ranks the character climbed or fell since the scan of {{ since | date:'MMM d, HH:mm' }};
-                on the right, the score they gained or lost. A score can drop without a new kill: when someone beats
-                the best on a boss, everyone else's share of that boss shrinks.
+                Beside the rank, the ranks the character climbed (▲) or fell (▼) since the scan of
+                {{ since | date:'MMM d, HH:mm' }}; beside the score, the score they gained or lost. Gains are green and
+                drops are grey: a score can drop without a new kill, because when someone beats the best on a boss,
+                everyone else's share of that boss shrinks.
               </p>
             }
           </div>
@@ -162,7 +163,7 @@
     @if (!isLoading() && !loadError() && difficulty(); as current) {
       @if (rankings().length) {
         <div class="table-scroll">
-          <table>
+          <table [class.with-changes]="hasChanges()">
             <thead>
               <tr>
                 <th class="rank" scope="col">#</th>
@@ -195,7 +196,21 @@
             <tbody>
               @for (entry of shownRankings(); track characterKey(entry.character)) {
                 <tr>
-                  <td class="rank" [class]="'q-' + scoreTier(entry)">{{ entry.rank }}</td>
+                  <td class="rank" [class]="'q-' + scoreTier(entry)">
+                    <span class="rank-cell">
+                      <span>{{ entry.rank }}</span>
+                      @if (change(entry); as moved) {
+                        @if (moved.rank) {
+                          <span
+                            class="rank-move"
+                            [class.up]="moved.rank > 0"
+                            [title]="rankChangeLabel(moved.rank)"><span aria-hidden="true"><span class="move-arrow">{{ moved.rank > 0 ? '▲' : '▼' }}</span>{{ moved.rank > 0 ? moved.rank : -moved.rank }}</span><span class="visually-hidden">, {{ rankChangeLabel(moved.rank) }}</span></span>
+                        } @else if (moved.isNew) {
+                          <span class="rank-new" title="New since the last scan">new</span>
+                        }
+                      }
+                    </span>
+                  </td>
                   <td class="phone-fluid">
                     <span class="character">
                       <img [src]="entry.spec?.icon || classIcon(entry.character.classId)" [title]="entry.spec?.name ?? ''" alt="" loading="lazy" />
@@ -212,55 +227,39 @@
                   <td class="center phone-hidden guild" [class]="'faction-text-' + entry.faction" [title]="entry.character.guild ? entry.character.guild + ' · ' + factionName(entry.faction) : ''">{{ entry.character.guild }}</td>
                   <td class="center phone-hidden muted col-realm">{{ entry.character.realm }}</td>
                   <td class="num center strong score" [class]="'q-' + scoreTier(entry)">
-                    @if (change(entry); as moved) {
-                      <span class="score-cell">
-                        <span class="score-side score-side-start">
-                          @if (moved.rank) {
-                            <span
-                              class="rank-change"
-                              [class.positive]="moved.rank > 0"
-                              [class.negative]="moved.rank < 0"
-                              [title]="rankChangeLabel(moved.rank)"><span aria-hidden="true">{{ signed(moved.rank) }}</span><span class="visually-hidden">{{ rankChangeLabel(moved.rank) }}: </span></span>
-                            }
-                            @if (moved.isNew) {
-                              <span class="score-new" title="New since the last scan">new</span>
-                            }
-                          </span>
-                          <span class="score-value">{{ entry.score }}</span>
-                          <span class="score-side score-side-end">
-                            @if (moved.score) {
-                              <span
-                                class="score-change"
-                                [class.positive]="moved.score > 0"
-                                [class.negative]="moved.score < 0"
-                                [title]="scoreChangeLabel(moved.score)"><span aria-hidden="true">{{ signed(moved.score) }}</span><span class="visually-hidden">, {{ scoreChangeLabel(moved.score) }}</span></span>
-                              }
-                            </span>
-                          </span>
-                        } @else {{{ entry.score }}}
-                      </td>
-                      <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
-                      <td class="num center phone-hidden col-ilvl">{{ entry.itemLevel }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
+                    <span class="score-cell">
+                      <span class="score-value">{{ entry.score }}</span>
+                      @if (change(entry)?.score; as scoreChange) {
+                        <span
+                          class="score-change"
+                          [class.up]="scoreChange > 0"
+                          [title]="scoreChangeLabel(scoreChange)"><span aria-hidden="true">{{ signed(scoreChange) }}</span><span class="visually-hidden">, {{ scoreChangeLabel(scoreChange) }}</span></span>
+                      }
+                    </span>
+                  </td>
+                  <td class="num center">{{ entry.killed }}/{{ entry.bosses.length }}</td>
+                  <td class="num center phone-hidden col-ilvl">{{ entry.itemLevel }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
 
-          @if (!total()) {
-            <p class="empty-note">
-              {{ search() ? 'Nothing matches "' + search() + '".' : 'Nobody matches these filters on ' + current.name + '.' }}
-            </p>
-          }
+      @if (!total()) {
+        <p class="empty-note">
+          {{ search() ? 'Nothing matches "' + search() + '".' : 'Nobody matches these filters on ' + current.name + '.' }}
+        </p>
+      }
 
-          @if (pages() > 1) {
-            <nav class="pager" aria-label="Pages">
-              <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">‹ Previous</button>
-              <span>Page {{ currentPage() }} of {{ pages() }} · {{ total() | number }} characters</span>
-              <button type="button" [disabled]="currentPage() === pages()" (click)="goToPage(currentPage() + 1)">Next ›</button>
-            </nav>
-          }
-        }
-      </section>
-    </main>
+      @if (pages() > 1) {
+        <app-pager
+          [page]="currentPage()"
+          [pages]="pages()"
+          [count]="(total() | number) + ' characters'"
+          [scrollTarget]="rankingsSection"
+          (pageChange)="goToPage($event)" />
+      }
+    }
+  </section>
+</main>

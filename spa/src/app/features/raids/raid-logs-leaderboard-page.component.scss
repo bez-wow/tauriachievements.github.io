@@ -8,7 +8,6 @@
 @include character-cell;
 @include difficulty-colors;
 @include ranking-toolbar;
-@include pager;
 @include quality-colors;
 
 .raid-page { @include raid-page; }
@@ -120,8 +119,9 @@
 table { table-layout: fixed; }
 td { overflow: hidden; text-overflow: ellipsis; }
 th.rank { width: 56px; }
+.with-changes th.rank { width: 94px; padding-right: 52px; }
 th.col-character { width: 240px; }
-th.col-score { width: 180px; }
+th.col-score { width: 160px; }
 th.col-bosses { width: 110px; }
 th.col-ilvl { width: 120px; }
 
@@ -133,28 +133,35 @@ td.rank { font-weight: 700; }
 th.center, td.center { text-align: center; }
 td.score { font-size: .95rem; }
 
-.score-cell {
+.with-changes .rank-cell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  column-gap: 6px;
+}
+
+.rank-move,
+.score-change {
+  color: $raid-muted;
+  font-variant-numeric: tabular-nums;
+
+  &.up { color: #8ce89b; }
+}
+
+.rank-move { font-size: .72rem; font-weight: 800; text-align: left; }
+.move-arrow { display: inline-block; margin-right: 2px; font-size: .78em; transform: translateY(-1px); }
+.rank-new { @include new-tag; text-align: left; }
+
+.with-changes .score-cell {
+  display: inline-grid;
+  grid-template-columns: 4ch 36px;
   align-items: center;
   column-gap: 8px;
 }
 
-.score-side { display: flex; min-width: 0; align-items: center; }
-.score-side-start { justify-content: flex-end; }
-.score-side-end { justify-content: flex-start; }
-
-.rank-change { @include change-pill; }
-
-.score-change {
-  font-size: .76rem;
-  font-weight: 800;
-
-  &.positive { color: #8ce89b; }
-  &.negative { color: #ff9a9a; }
-}
-
-.score-new { @include new-tag; }
+.score-value { justify-self: end; }
+.score-change { justify-self: start; font-size: .76rem; font-weight: 800; }
+.score-change:not(.up) { opacity: .5; }
 
 td.guild { font-weight: 600; }
 .faction-text-0 { color: #6fa2f0; }
@@ -175,10 +182,8 @@ td.guild { font-weight: 600; }
   th.col-score { width: 100px; }
   th.col-bosses { width: 80px; }
   .col-realm { display: none; }
-  .score-cell { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px 5px; }
-  .score-value { flex-basis: 100%; order: -1; }
-  .score-side:empty { display: none; }
-  .rank-change { min-width: 28px; padding: 1px 6px; }
+  .with-changes .score-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .score-change { line-height: 1; }
 }
 
 @media (max-width: 900px) {
@@ -192,10 +197,13 @@ td.guild { font-weight: 600; }
   .race-icon { display: none; }
   .character-line { max-width: 150px; }
   .character-line .character-name { max-width: 100%; }
-  th.rank { width: 40px; }
+  th.rank, .with-changes th.rank { width: 40px; padding-right: 6px; }
   th.col-character { width: auto; }
   th.col-score { width: 84px; }
   th.col-bosses { width: 64px; }
+  .with-changes .rank-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .rank-move { font-size: .72rem; line-height: 1; }
+  .rank-new { font-size: .6rem; line-height: 1; }
   .score-change { font-size: .69rem; }
   .filter-slot { flex: 1 1 28%; }
   .search { order: 1; width: auto; flex: 1 1 60%; }

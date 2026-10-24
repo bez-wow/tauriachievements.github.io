@@ -75,7 +75,7 @@ Never put a dot in a path or parameter: `404.html` won't redirect it.
 
 Add the page to its section in `core/nav-sections.ts` (`label`, optional short `tab`, `icon`,
 `path`; `includes` lists the deep routes that should highlight it). Then raise the page count
-in both specs that pin it (22 today):
+in both specs that pin it (23 today):
 
 - `nav-sections.spec.ts`: `expect(paths).toHaveLength(…)`
 - `update-bar.component.spec.ts`: `.site-drawer-page` count

@@ -32,7 +32,7 @@ function loadPlayerSnapshots() {
   const snapshotTimestamps = [currentTimestamp, ...earlierScans.map((scan) => scan.timestamp)]
     .sort((left, right) => new Date(left).getTime() - new Date(right).getTime());
 
-  return { currentPlayers, previousPlayers, snapshotTimestamps };
+  return { currentPlayers, previousPlayers, previousScanTimestamp: previousScan?.timestamp, snapshotTimestamps };
 }
 
 function selectEarlierDailyScans(history, currentDayKey) {

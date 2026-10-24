@@ -21,7 +21,6 @@ import {
   itemIconUrl,
   itemUrl,
   nameMatches,
-  pageCount,
   raidBossLink,
   raidCharacterLink,
   raidGuildLink,
@@ -37,13 +36,15 @@ import {
   RaidTalentTable,
   RaidTalentTooltips
 } from './raid-logs.types';
-import { RaidMetric, RankedPerformance, rankCharacters } from './raid-scores';
+import { RaidMetric, RankedPerformance, rankCharacters, rankedSpecs } from './raid-scores';
 import { characterKey, defaultDifficulty, logKey, memberTalents } from './raid-logs';
 import { fastestKills, latestKills } from './raid-progression';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_FILTER_OPTIONS, REALMS, realmSlug } from '../../game/wow';
 import { injectReplaceUrl, parseInteger, parsePage } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
+import { PagerComponent } from '../../shared/pager.component';
+import { pageCount, pageSlice } from '../../shared/pager';
 import { setPageHeader } from '../../core/page-header';
 
 type BossTab = 'dps' | 'hps' | 'fastest' | 'latest';
@@ -81,7 +82,8 @@ interface SummaryTile {
     NgTemplateOutlet,
     DatePipe,
     DecimalPipe,
-    LoadStateComponent
+    LoadStateComponent,
+    PagerComponent
   ],
   templateUrl: './raid-logs-boss-page.component.html',
   styleUrl: './raid-logs-boss-page.component.scss',
@@ -169,14 +171,14 @@ export class RaidLogsBossPageComponent {
   });
 
   readonly total = computed(() => this.isRanking() ? this.rankings().length : this.killRows().length);
-  readonly pages = computed(() => pageCount(this.total()));
+  readonly pages = computed(() => pageCount(this.total(), RAID_PAGE_SIZE));
   readonly currentPage = computed(() => Math.min(this.page(), this.pages()));
   readonly shownRankings = computed<RankingRow[]>(() => {
     const talents = this.talentTable();
-    return pageSlice(this.rankings(), this.currentPage())
+    return pageSlice(this.rankings(), this.currentPage(), RAID_PAGE_SIZE)
       .map(entry => ({ ...entry, talents: memberTalents(entry.member, talents) }));
   });
-  readonly shownKillRows = computed(() => pageSlice(this.killRows(), this.currentPage()));
+  readonly shownKillRows = computed(() => pageSlice(this.killRows(), this.currentPage(), RAID_PAGE_SIZE));
 
   readonly summary = computed<SummaryTile[]>(() => {
     const kills = this.kills();
@@ -200,10 +202,8 @@ export class RaidLogsBossPageComponent {
   readonly classOptions = CLASS_FILTER_OPTIONS;
 
   readonly specOptions = computed<FilterDropdownOption[]>(() => {
-    const classId = this.classFilter();
-    const metric = this.metric();
-    const specs = [...(this.index()?.specs.values() ?? [])]
-      .filter(spec => spec.classId === classId && (metric === 'hps' ? spec.role === 'healer' : spec.role !== 'healer'));
+    const index = this.index();
+    const specs = index ? rankedSpecs(index.specs, this.classFilter(), this.metric()) : [];
     return [{ value: undefined, label: 'All specs' }, ...specs.map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))];
   });
 
@@ -330,7 +330,7 @@ export class RaidLogsBossPageComponent {
   }
 
   goToPage(page: number): void {
-    this.page.set(Math.min(Math.max(1, page), this.pages()));
+    this.page.set(page);
     this.writeUrl();
   }
 
@@ -384,8 +384,4 @@ export class RaidLogsBossPageComponent {
 
 function parseTab(value: string | null): BossTab {
   return TABS.some(tab => tab.id === value) ? value as BossTab : 'dps';
-}
-
-function pageSlice<T>(items: readonly T[], page: number): T[] {
-  return items.slice((page - 1) * RAID_PAGE_SIZE, page * RAID_PAGE_SIZE);
 }

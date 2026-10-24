@@ -48,7 +48,7 @@ export function talentSamples(kills: readonly RaidKillDetails[]): TalentSample[]
   for (const kill of kills) {
     for (const member of kill.members) {
       const spec = member.spec;
-      if (!spec || !member.talents) {
+      if (!spec || !member.talents || member.character.former) {
         continue;
       }
 

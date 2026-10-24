@@ -31,6 +31,7 @@ const indexFile: RaidLogsIndexFile = {
     { id: 70, class: 2, name: 'Retribution', role: 'dps' }
   ],
   guilds: [['Miracle', 'Evermoon', 1, 3676]],
+  formerCharacters: [['Moved', 'Tauri', 2, [8]], ['Shifty', 'Tauri', 2, [8]]],
   logs: [
     ['Tauri', 10, 0, 16, 1_000, 100_000, 0, 1, 0, 0, 20],
     ['Tauri', 11, 0, 16, 2_000, 100_000, 0, 1, 0, 0, 20],
@@ -42,7 +43,7 @@ const indexFile: RaidLogsIndexFile = {
   items: []
 };
 
-const [FROSTY, KAEL, RET, LIGHT, TANK] = [0, 1, 2, 3, 4];
+const [FROSTY, KAEL, RET, LIGHT, TANK, FORMER_SHIFTY, SHIFTY, FORMER_MOVED, MOVED] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 const member = (player: number, spec: number, dps: number, hps = 0): RaidMemberEntry =>
   [player, spec, 870, dps * 100, hps * 100, 0, 0, 0, 0, 0];
@@ -60,7 +61,11 @@ const bossFile = (boss: string, difficulty: string, logs: RaidBossLogEntry[]): R
     ['Kael', 'Tauri', 8, 1, 0, ''],
     ['Ret', 'Tauri', 2, 1, 0, ''],
     ['Light', 'Evermoon', 2, 10, 1, 'Miracle'],
-    ['Tank', 'Tauri', 2, 1, 0, '']
+    ['Tank', 'Tauri', 2, 1, 0, ''],
+    ['Shifty', 'Tauri', 8, 1, 0, '', 1],
+    ['Shifty', 'Tauri', 2, 1, 0, ''],
+    ['Moved', 'Tauri', 8, 1, 0, '', 1],
+    ['Moved', 'Tauri', 2, 1, 0, '']
   ],
   logs
 });
@@ -68,11 +73,13 @@ const bossFile = (boss: string, difficulty: string, logs: RaidBossLogEntry[]): R
 const bossFiles: Record<string, RaidBossFile> = Object.fromEntries([
   bossFile('nythendra', 'mythic', [
     log(10, 1_000, [member(RET, 70, 1_000), member(FROSTY, 64, 800), member(KAEL, 63, 600), member(LIGHT, 65, 0, 500)]),
-    log(11, 2_000, [member(KAEL, 63, 700), member(FROSTY, 64, 750), member(TANK, 66, 300)])
+    log(11, 2_000, [member(KAEL, 63, 700), member(FROSTY, 63, 650), member(TANK, 66, 300)])
   ]),
-  bossFile('ilgynoth', 'mythic', [log(12, 3_000, [member(KAEL, 63, 900), member(RET, 70, 1_200), member(FROSTY, 64, 450)])]),
-  bossFile('elerethe-renferal', 'mythic', [log(13, 4_000, [member(KAEL, 63, 500)])]),
-  bossFile('nythendra', 'heroic', [log(20, 500, [member(FROSTY, 64, 400), member(KAEL, 63, 500), member(RET, 70, 300)])])
+  bossFile('ilgynoth', 'mythic', [log(12, 3_000, [
+    member(KAEL, 63, 900), member(RET, 70, 1_200), member(FROSTY, 64, 450), member(SHIFTY, 65, 0, 100)
+  ])]),
+  bossFile('elerethe-renferal', 'mythic', [log(13, 4_000, [member(KAEL, 63, 500), member(FORMER_SHIFTY, 63, 100), member(FORMER_MOVED, 63, 100)])]),
+  bossFile('nythendra', 'heroic', [log(20, 500, [member(FROSTY, 64, 400), member(KAEL, 63, 500), member(RET, 70, 300), member(MOVED, 70, 100)])])
 ].map(file => [`raid-log-data/${file.boss}-${file.difficulty}.json`, file]));
 
 class FakeDataFiles {
@@ -117,8 +124,37 @@ function cells(element: HTMLElement) {
     .map(([boss, , relative, rank]) => [boss, relative, rank]);
 }
 
-function comparisonButtons(element: HTMLElement) {
-  return [...element.querySelectorAll<HTMLButtonElement>('.comparison-switch button')];
+function comparisonOptions(element: HTMLElement) {
+  return [...element.querySelectorAll<HTMLButtonElement>('#raidCharacterCompareMenu .dropdown-option')];
+}
+
+function comparison(element: HTMLElement) {
+  return {
+    selected: element.querySelector('#raidCharacterCompareTrigger .trigger-current')?.textContent?.trim(),
+    options: comparisonOptions(element).map(option => option.textContent?.trim())
+  };
+}
+
+function compareWith(harness: RouterTestingHarness, element: HTMLElement, label: string) {
+  comparisonOptions(element).find(option => option.textContent?.trim() === label)?.click();
+  harness.detectChanges();
+}
+
+function logCell(element: HTMLElement, boss: number) {
+  return element.querySelectorAll('section[aria-labelledby="character-bosses-title"] tbody tr')[boss]
+    ?.querySelector('td:last-child')?.textContent?.trim();
+}
+
+function bossHref(element: HTMLElement) {
+  return element.querySelector('a.boss-cell')?.getAttribute('href');
+}
+
+function classButtons(element: HTMLElement) {
+  return [...element.querySelectorAll<HTMLButtonElement>('.class-switch button')];
+}
+
+function kills(page: RaidLogsCharacterPageComponent) {
+  return page.appearances().map(({ kill, member }) => [kill.logId, member.spec?.name]);
 }
 
 function summaryTile(element: HTMLElement, label: string) {
@@ -129,25 +165,92 @@ function summaryTile(element: HTMLElement, label: string) {
   };
 }
 
-describe('RaidLogsCharacterPageComponent comparison', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    vi.stubGlobal('matchMedia', (media: string) => ({
-      media,
-      matches: media.includes('prefers-reduced-motion: reduce'),
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined
-    }));
+beforeEach(() => {
+  vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  vi.stubGlobal('matchMedia', (media: string) => ({
+    media,
+    matches: media.includes('prefers-reduced-motion: reduce'),
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined
+  }));
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('RaidLogsCharacterPageComponent with a former character of the name', () => {
+  it('shows only the kills of the class the name has now', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Shifty');
+
+    expect(page.character()?.classId).toBe(2);
+    expect(kills(page)).toEqual([[12, 'Holy']]);
+    expect(page.bossRows().map(row => [row.boss.shortName, row.kills])).toEqual([['Nythendra', 0], ["Il'gynoth", 1], ['Elerethe', 0]]);
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  it('moves on to a difficulty where the name has kills as its current class', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Moved');
 
+    expect(page.loaded()?.difficulty.slug).toBe('heroic');
+    expect(kills(page)).toEqual([[20, 'Retribution']]);
+  });
+
+  it('switches to the earlier character and back, keeping it in the URL', async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/tauri/Shifty');
+    expect(classButtons(element).map(button => [button.textContent?.replace(/\s+/g, ' ').trim(), button.getAttribute('aria-pressed')]))
+      .toEqual([['Paladin', 'true'], ['Mage · earlier', 'false']]);
+    expect(element.querySelector('.character-meta a')?.textContent).toContain('Armory');
+
+    classButtons(element)[1].click();
+    harness.detectChanges();
+
+    expect(location.path()).toBe('/raid-logs/character/tauri/Shifty?class=8');
+    expect(page.character()?.classId).toBe(8);
+    expect(kills(page)).toEqual([[13, 'Fire']]);
+    expect(rows(page)[2]).toEqual(['Elerethe', 100 / 500, undefined, 0]);
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '-', note: 'Earlier character, not ranked' });
+    expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '-', note: 'Earlier character, not ranked' });
+    expect(element.querySelector('.character-meta a')).toBeNull();
+    expect(classButtons(element).map(button => button.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+
+    classButtons(element)[0].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Shifty');
+    expect(kills(page)).toEqual([[12, 'Holy']]);
+  });
+
+  it('opens the earlier character on the first difficulty it has kills on', async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/tauri/Moved?difficulty=heroic');
+
+    classButtons(element)[1].click();
+    harness.detectChanges();
+
+    expect(page.loaded()?.difficulty.slug).toBe('mythic');
+    expect(location.path()).toBe('/raid-logs/character/tauri/Moved?difficulty=mythic&class=8');
+    expect(kills(page)).toEqual([[13, 'Fire']]);
+  });
+
+  it('opens on ?class=', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Moved?class=8');
+    expect(kills(page)).toEqual([[13, 'Fire']]);
+  });
+
+  it('shows the current character for a ?class= the name never had', async () => {
+    const { page } = await open('/raid-logs/character/tauri/Moved?class=5');
+    expect(page.formerClass()).toBeUndefined();
+    expect(kills(page)).toEqual([[20, 'Retribution']]);
+  });
+
+  it('has no class switch for a name with one character', async () => {
+    const { element } = await open('/raid-logs/character/evermoon/Frosty');
+    expect(classButtons(element)).toEqual([]);
+  });
+});
+
+describe('RaidLogsCharacterPageComponent comparison', () => {
   it('compares with all players by default, as the score does', async () => {
     const { page, element } = await open('/raid-logs/character/evermoon/Frosty');
 
     expect(page.comparison()).toBe('all');
-    expect(comparisonButtons(element).map(button => [button.textContent?.trim(), button.getAttribute('aria-pressed')]))
-      .toEqual([['All players', 'true'], ['Same class', 'false']]);
+    expect(comparison(element)).toEqual({ selected: 'All players', options: ['All players', 'All Mages', 'Fire', 'Frost'] });
     expect(rows(page)).toEqual([
       ['Nythendra', .8, 2, 4],
       ["Il'gynoth", .375, 3, 3],
@@ -165,12 +268,11 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
   it('compares with the same class when picked, keeping the all-player score', async () => {
     const { page, harness, element, location } = await open('/raid-logs/character/evermoon/Frosty');
 
-    comparisonButtons(element)[1].click();
-    harness.detectChanges();
+    compareWith(harness, element, 'All Mages');
 
     expect(page.comparison()).toBe('class');
     expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?compare=class');
-    expect(comparisonButtons(element).map(button => button.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+    expect(comparison(element).selected).toBe('All Mages');
     expect(rows(page)).toEqual([
       ['Nythendra', 1, 1, 2],
       ["Il'gynoth", .5, 2, 2],
@@ -187,10 +289,9 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
     const note = element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ');
     expect(note).toContain('"Of best" and Rank compare with Mages only');
     expect(note).toContain('The DPS score above still compares each boss with the best of all players');
-    expect(element.querySelector('a.boss-cell')?.getAttribute('href')).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8');
+    expect(bossHref(element)).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8');
 
-    comparisonButtons(element)[0].click();
-    harness.detectChanges();
+    compareWith(harness, element, 'All players');
     expect(page.comparison()).toBe('all');
     expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty');
     expect(rows(page)[0]).toEqual(['Nythendra', .8, 2, 4]);
@@ -216,8 +317,7 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
 
   it('comes back to the same class from another page', async () => {
     const { harness, element, location } = await open('/raid-logs/character/evermoon/Frosty');
-    comparisonButtons(element)[1].click();
-    harness.detectChanges();
+    compareWith(harness, element, 'All Mages');
 
     await harness.navigateByUrl('/raid-logs/leaderboard', ElsewhereComponent);
     const router = TestBed.inject(Router);
@@ -239,5 +339,89 @@ describe('RaidLogsCharacterPageComponent comparison', () => {
 
     expect(page.comparison()).toBe('all');
     expect(rows(page)[1]).toEqual(["Il'gynoth", .375, 3, 3]);
+  });
+});
+
+describe('RaidLogsCharacterPageComponent spec comparison', () => {
+  it("compares with one spec of the class, on the character's kills as that spec", async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/evermoon/Frosty');
+
+    compareWith(harness, element, 'Fire');
+
+    expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?compare=class&spec=63');
+    expect(comparison(element).selected).toBe('Fire');
+    expect(rows(page)).toEqual([
+      ['Nythendra', 650 / 700, 2, 2],
+      ["Il'gynoth", 0, undefined, 0],
+      ['Elerethe', 0, undefined, 0]
+    ]);
+    expect(page.bossRows()[0].best?.kill.logId).toBe(11);
+    expect(cells(element)).toEqual([['Nythendra', '92%', '#2 / 2'], ["Il'gynoth", '', ''], ['Elerethe', '', '']]);
+    expect([logCell(element, 1), logCell(element, 2)]).toEqual(['Not as Fire', 'Not killed']);
+
+    expect(summaryTile(element, 'DPS score')).toEqual({ value: '2729', note: '#3 of 4 among all players' });
+    expect(summaryTile(element, 'Best damage rank')).toEqual({ value: '#2', note: 'Nythendra, of 2 Fire Mages' });
+    expect([...element.querySelectorAll('th[title]')].map(th => th.getAttribute('title'))).toEqual([
+      'The best kill against the best any Fire Mage did on the boss',
+      "Among every Fire Mage's best kill of the boss"
+    ]);
+    expect(element.querySelector('.list-note')?.textContent?.replace(/\s+/g, ' ')).toContain(
+      '"Of best" and Rank compare with Fire Mages only: every Mage\'s best kill of the boss as Fire on this difficulty, this character\'s too.');
+    expect(bossHref(element)).toBe('/raid-logs/boss/nythendra?difficulty=mythic&tab=dps&class=8&spec=63');
+
+    compareWith(harness, element, 'Frost');
+    expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?compare=class&spec=64');
+    expect(rows(page)).toEqual([['Nythendra', 1, 1, 1], ["Il'gynoth", 1, 1, 1], ['Elerethe', 0, undefined, 0]]);
+    expect(page.bossRows()[0].best?.kill.logId).toBe(10);
+
+    compareWith(harness, element, 'All Mages');
+    expect(location.path()).toBe('/raid-logs/character/evermoon/Frosty?compare=class');
+    expect(rows(page)[0]).toEqual(['Nythendra', 1, 1, 2]);
+  });
+
+  it('lists the specs the metric ranks, and drops a picked spec the other metric does not rank', async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/tauri/Ret?compare=class&spec=70');
+
+    expect(page.comparedSpec()?.name).toBe('Retribution');
+    expect(comparison(element)).toEqual({ selected: 'Retribution', options: ['All players', 'All Paladins', 'Protection', 'Retribution'] });
+    expect(rows(page)[0]).toEqual(['Nythendra', 1, 1, 1]);
+
+    [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')][1].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Ret?metric=hps&compare=class');
+    expect(comparison(element)).toEqual({ selected: 'All Paladins', options: ['All players', 'All Paladins', 'Holy'] });
+
+    [...element.querySelectorAll<HTMLButtonElement>('[role="tab"]')][0].click();
+    harness.detectChanges();
+    expect(location.path()).toBe('/raid-logs/character/tauri/Ret?metric=dps&compare=class');
+    expect(page.comparedSpec()).toBeUndefined();
+  });
+
+  it('compares with the whole class for a ?spec= of another class', async () => {
+    const { page, element } = await open('/raid-logs/character/evermoon/Frosty?compare=class&spec=65');
+
+    expect(page.comparedSpec()).toBeUndefined();
+    expect(comparison(element).selected).toBe('All Mages');
+    expect(rows(page)[0]).toEqual(['Nythendra', 1, 1, 2]);
+  });
+
+  it('compares with all players for a ?spec= without ?compare=class', async () => {
+    const { page, element } = await open('/raid-logs/character/evermoon/Frosty?spec=64');
+
+    expect(page.comparedSpec()).toBeUndefined();
+    expect(comparison(element).selected).toBe('All players');
+    expect(rows(page)[0]).toEqual(['Nythendra', .8, 2, 4]);
+  });
+
+  it('forgets the spec when switching to an earlier character with the name', async () => {
+    const { page, harness, element, location } = await open('/raid-logs/character/tauri/Shifty?compare=class&spec=65');
+    expect(page.comparedSpec()?.name).toBe('Holy');
+
+    classButtons(element)[1].click();
+    harness.detectChanges();
+
+    expect(location.path()).toBe('/raid-logs/character/tauri/Shifty?compare=class&class=8');
+    expect(page.comparedSpec()).toBeUndefined();
+    expect(comparison(element).selected).toBe('All Mages');
   });
 });

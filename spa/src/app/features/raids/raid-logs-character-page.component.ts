@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -6,6 +6,9 @@ import { Subscription, forkJoin, of } from 'rxjs';
 import { getArmoryUrl } from '../../game/armory';
 import { getClassCrestPath, getClassIconPath } from '../../game/classIconHelper';
 import { getClassColor } from '../../game/class-colors';
+import { FilterDropdownComponent } from '../../shared/filter-dropdown.component';
+import { FilterDropdownCoordinatorService } from '../../shared/filter-dropdown-coordinator.service';
+import { FilterDropdownOption, FilterDropdownValue } from '../../shared/filter-dropdown.types';
 import { GlideDirective } from '../../shared/motion/glide.directive';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import {
@@ -20,24 +23,27 @@ import {
   MAX_SCORE,
   RaidMetric,
   RankedScore,
+  bossBest,
   bossStanding,
   countsFor,
   performanceQuality,
   rankScores,
+  rankedSpecs,
   scoreCharacters
 } from './raid-scores';
 import {
   RaidBoss,
+  RaidCharacter,
   RaidDifficulty,
   RaidKillDetails,
   RaidLogsIndex,
   RaidMember,
   RaidSpec
 } from './raid-logs.types';
-import { characterKey, logKey } from './raid-logs';
+import { characterKey, formerCharactersOf, logKey } from './raid-logs';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { CLASS_NAMES, realmSlug } from '../../game/wow';
-import { injectReplaceUrl } from '../../core/url-state';
+import { injectReplaceUrl, parseInteger } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
 
@@ -70,13 +76,30 @@ interface SummaryTile {
   note: string;
 }
 
+interface ClassOption {
+  classId: number;
+  formerClassId?: number;
+  active: boolean;
+}
+
 const RECENT_KILLS = 20;
+const NOT_RANKED = 'Earlier character, not ranked';
 
 @Component({
   selector: 'app-raid-logs-character-page',
-  imports: [RouterLink, RaidDifficultySwitchComponent, GlideDirective, DatePipe, DecimalPipe, LoadStateComponent],
+  imports: [
+    RouterLink,
+    FilterDropdownComponent,
+    RaidDifficultySwitchComponent,
+    GlideDirective,
+    DatePipe,
+    DecimalPipe,
+    LoadStateComponent,
+    NgTemplateOutlet
+  ],
   templateUrl: './raid-logs-character-page.component.html',
   styleUrl: './raid-logs-character-page.component.scss',
+  providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RaidLogsCharacterPageComponent {
@@ -98,6 +121,31 @@ export class RaidLogsCharacterPageComponent {
   private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? undefined);
   private readonly pickedMetric = signal<RaidMetric | undefined>(parseMetric(this.route.snapshot.queryParamMap.get('metric')));
   readonly comparison = signal<RaidComparison>(parseComparison(this.route.snapshot.queryParamMap.get('compare')));
+  private readonly pickedSpec = signal(parseInteger(this.route.snapshot.queryParamMap.get('spec')));
+  private readonly requestedClass = signal(parseClass(this.route.snapshot.queryParamMap.get('class')));
+
+  private readonly classes = computed(() => {
+    const index = this.index();
+    const params = this.params();
+    return index && formerCharactersOf(index, params.get('realm') ?? '', params.get('name') ?? '');
+  });
+
+  readonly formerClass = computed(() => {
+    const requested = this.requestedClass();
+    return requested !== undefined && this.classes()?.formerClassIds.includes(requested) ? requested : undefined;
+  });
+
+  readonly classOptions = computed<ClassOption[]>(() => {
+    const classes = this.classes();
+    const viewed = this.formerClass();
+    return classes
+      ? [undefined, ...classes.formerClassIds].map(formerClassId => ({
+        classId: formerClassId ?? classes.classId,
+        formerClassId,
+        active: formerClassId === viewed
+      }))
+      : [];
+  });
 
   readonly appearances = computed<Appearance[]>(() => {
     const loaded = this.loaded();
@@ -106,7 +154,8 @@ export class RaidLogsCharacterPageComponent {
     }
 
     return loaded.bossKills.flatMap(kills => kills.flatMap(kill =>
-      kill.members.filter(member => characterKey(member.character) === loaded.key).map(member => ({ kill, member }))));
+      kill.members.filter(member => this.isViewed(member.character) && characterKey(member.character) === loaded.key)
+        .map(member => ({ kill, member }))));
   });
 
   readonly character = computed(() => latestFirst(this.appearances())[0]?.member.character);
@@ -119,14 +168,42 @@ export class RaidLogsCharacterPageComponent {
   });
   readonly classPlural = computed(() => `${this.ownClass()}s`);
 
+  private readonly comparableSpecs = computed(() => {
+    const index = this.index();
+    return index ? rankedSpecs(index.specs, this.character()?.classId, this.metric()) : [];
+  });
+
+  readonly comparedSpec = computed<RaidSpec | undefined>(() => {
+    const specId = this.pickedSpec();
+    return this.comparison() === 'class' ? this.comparableSpecs().find(spec => spec.id === specId) : undefined;
+  });
+
+  readonly comparedMember = computed(() => [this.comparedSpec()?.name, this.ownClass()].filter(Boolean).join(' '));
+  readonly comparedPlural = computed(() => `${this.comparedMember()}s`);
+
+  readonly comparisonOptions = computed<FilterDropdownOption[]>(() => {
+    const classId = this.character()?.classId;
+    return classId === undefined ? [] : [
+      { value: undefined, label: 'All players' },
+      { value: 'class', label: `All ${this.classPlural()}`, icon: getClassIconPath(classId), color: getClassColor(classId) },
+      ...this.comparableSpecs().map(spec => ({ value: spec.id, label: spec.name, icon: spec.icon }))
+    ];
+  });
+
+  readonly comparisonValue = computed<FilterDropdownValue>(() =>
+    this.comparison() === 'class' ? this.comparedSpec()?.id ?? 'class' : undefined);
+
+  readonly comparisonWidthLabels = computed(() => this.comparisonOptions().map(option => option.label));
+
   readonly columnTitles = computed(() => this.comparison() === 'class'
-    ? { relative: `The best kill against the best any ${this.ownClass()} did on the boss`, rank: `Among every ${this.ownClass()}'s best kill of the boss` }
+    ? { relative: `The best kill against the best any ${this.comparedMember()} did on the boss`, rank: `Among every ${this.comparedMember()}'s best kill of the boss` }
     : { relative: 'The best kill against the best anyone did on the boss', rank: "Among every character's best kill of the boss" });
 
   readonly bossQueryParams = computed(() => ({
     difficulty: this.loaded()?.difficulty.slug,
     tab: this.metric(),
-    class: this.comparedClass() ?? null
+    class: this.comparedClass() ?? null,
+    spec: this.comparedSpec()?.id ?? null
   }));
 
   readonly mainSpec = computed<RaidSpec | undefined>(() => {
@@ -149,7 +226,7 @@ export class RaidLogsCharacterPageComponent {
 
   readonly score = computed(() => {
     const key = this.loaded()?.key;
-    return this.scores().find(entry => characterKey(entry.character) === key);
+    return this.formerClass() === undefined ? this.scores().find(entry => characterKey(entry.character) === key) : undefined;
   });
 
   readonly bossRows = computed<BossRow[]>(() => {
@@ -161,21 +238,23 @@ export class RaidLogsCharacterPageComponent {
 
     const metric = this.metric();
     const byClass = this.comparison() === 'class';
+    const spec = this.comparedSpec();
+    const earlier = this.formerClass() !== undefined;
     return index.bosses.map(boss => {
       const kills = loaded.bossKills[boss.index] ?? [];
       const own = this.appearances().filter(appearance => appearance.kill.boss === boss);
       const best = own
-        .filter(appearance => countsFor(metric, appearance.member.spec))
+        .filter(appearance => countsFor(metric, appearance.member.spec) && (!spec || appearance.member.spec?.id === spec.id))
         .sort((a, b) => b.member[metric] - a.member[metric] || a.kill.killedAt - b.kill.killedAt)[0];
-      const standing = best
-        ? bossStanding(kills, metric, loaded.key, byClass ? { classId: best.member.character.classId } : {})
-        : undefined;
+      const filter = best && byClass ? { classId: best.member.character.classId, specId: spec?.id } : {};
+      const standing = best && !earlier ? bossStanding(kills, metric, loaded.key, filter) : undefined;
+      const top = best && earlier ? bossBest(kills, metric, filter) : 0;
       return {
         boss,
         kills: own.length,
         best,
         value: best?.member[metric] ?? 0,
-        relative: standing?.relative ?? 0,
+        relative: standing?.relative ?? (best && top > 0 ? best.member[metric] / top : 0),
         rank: standing?.rank,
         ranked: standing?.ranked ?? 0
       };
@@ -192,6 +271,7 @@ export class RaidLogsCharacterPageComponent {
     const spec = this.mainSpec();
     const score = this.score();
     const byClass = this.comparison() === 'class';
+    const unranked = this.formerClass() === undefined ? 'No ranked kill' : NOT_RANKED;
     return [
       { label: 'Bosses killed', value: `${killed.length}/${rows.length}`, note: `${this.appearances().length} kills` },
       {
@@ -199,14 +279,14 @@ export class RaidLogsCharacterPageComponent {
         value: score ? String(score.score) : '-',
         note: score
           ? `#${score.rank} of ${this.scores().length.toLocaleString('en-US')} ${byClass ? 'among all players' : 'on the leaderboard'}`
-          : 'No ranked kill'
+          : unranked
       },
       {
         label: `Best ${this.metric() === 'hps' ? 'healing' : 'damage'} rank`,
         value: bestRank ? `#${bestRank.rank}` : '-',
         note: bestRank
-          ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}${byClass ? ` ${this.classPlural()}` : ''}`
-          : 'No ranked kill'
+          ? `${bestRank.boss.shortName}, of ${bestRank.ranked.toLocaleString('en-US')}${byClass ? ` ${this.comparedPlural()}` : ''}`
+          : unranked
       },
       { label: 'Main spec', value: spec?.name ?? '-', note: spec ? CLASS_NAMES[spec.classId] ?? '' : '' },
       { label: 'Item level', value: latest ? String(latest.member.itemLevel) : '-', note: 'At the latest kill' }
@@ -215,7 +295,7 @@ export class RaidLogsCharacterPageComponent {
 
   readonly armoryUrl = computed(() => {
     const character = this.character();
-    return character && getArmoryUrl(character.name, character.realm);
+    return character && !character.former ? getArmoryUrl(character.name, character.realm) : undefined;
   });
 
   readonly maxScore = MAX_SCORE;
@@ -238,7 +318,7 @@ export class RaidLogsCharacterPageComponent {
     });
   }
 
-  loadData(): void {
+  loadData(keepLooking = false): void {
     this.subscription?.unsubscribe();
     this.isLoading.set(true);
     this.loadError.set(undefined);
@@ -247,8 +327,11 @@ export class RaidLogsCharacterPageComponent {
       .subscribe({
         next: index => {
           this.index.set(index);
-          const requested = index.difficulties.find(difficulty => difficulty.slug === this.requestedDifficulty() && difficulty.kills > 0);
-          const order = requested ? [requested] : [...index.difficulties].reverse().filter(difficulty => difficulty.kills > 0);
+          const withKills = [...index.difficulties].reverse().filter(difficulty => difficulty.kills > 0);
+          const requested = withKills.find(difficulty => difficulty.slug === this.requestedDifficulty());
+          const order = !requested ? withKills
+            : keepLooking ? [requested, ...withKills.filter(difficulty => difficulty !== requested)]
+              : [requested];
           this.loadDifficulty(index, order);
         },
         error: error => this.fail(error)
@@ -261,13 +344,26 @@ export class RaidLogsCharacterPageComponent {
     this.loadData();
   }
 
+  setFormerClass(classId: number | undefined): void {
+    if (classId === this.formerClass()) {
+      return;
+    }
+
+    this.requestedClass.set(classId);
+    this.pickedSpec.set(undefined);
+    this.writeUrl();
+    this.loadData(true);
+  }
+
   setMetric(metric: RaidMetric): void {
     this.pickedMetric.set(metric);
+    this.pickedSpec.set(this.comparedSpec()?.id);
     this.writeUrl();
   }
 
-  setComparison(comparison: RaidComparison): void {
-    this.comparison.set(comparison);
+  setComparison(value: FilterDropdownValue): void {
+    this.comparison.set(value === undefined ? 'all' : 'class');
+    this.pickedSpec.set(typeof value === 'number' ? value : undefined);
     this.writeUrl();
   }
 
@@ -310,6 +406,10 @@ export class RaidLogsCharacterPageComponent {
             return;
           }
 
+          if (this.requestedDifficulty() !== undefined && this.requestedDifficulty() !== difficulty.slug) {
+            this.requestedDifficulty.set(difficulty.slug);
+            this.writeUrl();
+          }
           this.loaded.set({ difficulty, bossKills, key });
           this.isLoading.set(false);
         },
@@ -327,6 +427,9 @@ export class RaidLogsCharacterPageComponent {
     for (const kills of bossKills) {
       for (const kill of kills) {
         for (const member of kill.members) {
+          if (!this.isViewed(member.character)) {
+            continue;
+          }
           const key = characterKey(member.character);
           if (key === exact) {
             return key;
@@ -341,6 +444,11 @@ export class RaidLogsCharacterPageComponent {
     return caseless;
   }
 
+  private isViewed(character: RaidCharacter): boolean {
+    const formerClass = this.formerClass();
+    return formerClass === undefined ? !character.former : !!character.former && character.classId === formerClass;
+  }
+
   private fail(error: unknown): void {
     console.error('Failed to load the character:', error);
     this.loadError.set('The raid logs could not be loaded.');
@@ -351,7 +459,9 @@ export class RaidLogsCharacterPageComponent {
     this.replaceUrl({
       difficulty: this.requestedDifficulty() ?? null,
       metric: this.pickedMetric() ?? null,
-      compare: this.comparison() === 'class' ? 'class' : null
+      compare: this.comparison() === 'class' ? 'class' : null,
+      spec: this.comparedSpec()?.id ?? null,
+      class: this.formerClass() ?? null
     });
   }
 }
@@ -366,4 +476,9 @@ function parseMetric(value: string | null): RaidMetric | undefined {
 
 function parseComparison(value: string | null): RaidComparison {
   return value === 'class' ? 'class' : 'all';
+}
+
+function parseClass(value: string | null): number | undefined {
+  const classId = Number(value);
+  return value && Number.isInteger(classId) ? classId : undefined;
 }

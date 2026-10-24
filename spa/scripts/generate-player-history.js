@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { buildPreviousCharacterLookup } = require("./player-data-utils");
 const { buildRankMap, getPlayerKey, sortByAchievementPoints } = require("./player-ranking");
 
 const outputDir = path.join(__dirname, "..", "src", "assets", "data");
@@ -7,9 +8,9 @@ const outputPath = path.join(outputDir, "players.history.snapshot.json");
 
 const MOVER_METRICS = ["achievementPoints", "honorableKills", "playedTime", "appearanceCount"];
 
-function buildHistorySnapshot({ currentPlayers, previousPlayers, snapshotTimestamps }) {
+function buildHistorySnapshot({ currentPlayers, previousPlayers, previousScanTimestamp, snapshotTimestamps }) {
   const [achievementPoints, honorableKills, playedTime, appearanceCount] = MOVER_METRICS.map((metric) =>
-    computeTopMoversForSnapshots(currentPlayers, previousPlayers, metric)
+    computeTopMoversForSnapshots(currentPlayers, previousPlayers, metric, previousScanTimestamp)
   );
 
   return {
@@ -32,19 +33,19 @@ function generatePlayerHistorySnapshot(snapshots) {
   );
 }
 
-function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetric) {
+function computeTopMoversForSnapshots(currentPlayers, previousPlayers, sortMetric, previousScanTimestamp) {
   if (currentPlayers.length === 0 || previousPlayers.length === 0) {
     return [];
   }
 
   const currentRanks = buildRankMap(sortByAchievementPoints(currentPlayers), sortMetric);
   const previousRanks = buildRankMap(sortByAchievementPoints(previousPlayers), sortMetric);
-  const previousPlayersByKey = new Map(previousPlayers.map((player) => [getPlayerKey(player), player]));
+  const findPreviousPlayer = buildPreviousCharacterLookup(previousPlayers, previousScanTimestamp);
   const movers = [];
 
   for (const player of currentPlayers) {
     const playerKey = getPlayerKey(player);
-    const previousPlayer = previousPlayersByKey.get(playerKey);
+    const previousPlayer = findPreviousPlayer(player);
     if (!previousPlayer) {
       continue;
     }

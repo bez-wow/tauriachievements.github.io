@@ -12,7 +12,6 @@ import {
   MythicPlusIndex,
   keystoneUpgrades,
   memberNameMatches,
-  pageCount,
   sharesTables,
   rankPlayers,
   rankRuns,
@@ -327,14 +326,6 @@ describe('memberNameMatches', () => {
     expect(memberNameMatches({ name: 'Björñ' }, 'bjorn')).toBe(true);
     expect(memberNameMatches({ name: 'Björñ' }, '')).toBe(true);
     expect(memberNameMatches({ name: 'Björñ' }, 'pretz')).toBe(false);
-  });
-});
-
-describe('pageCount', () => {
-  it('always has at least one page', () => {
-    expect(pageCount(0, 20)).toBe(1);
-    expect(pageCount(40, 20)).toBe(2);
-    expect(pageCount(41, 20)).toBe(3);
   });
 });
 

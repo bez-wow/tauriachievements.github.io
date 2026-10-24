@@ -26,9 +26,18 @@ explains it together.
 
 ## Ladder changes and new characters
 
-- **Code:** `spa/scripts/generate-player-snapshot.js`, `spa/scripts/generate-player-history.js`.
+- **Code:** `spa/scripts/generate-player-snapshot.js`, `spa/scripts/generate-player-history.js`,
+  and `buildPreviousCharacterLookup` in `spa/scripts/player-data-utils.js`.
 - Changes compare with the most recent earlier scan from another day
   ([data-pipeline.md](data-pipeline.md#what-prepare-appjs-builds)).
+- **A row compares only with the same character.** The earlier row with the same realm and
+  name counts only when the class is the same and the Level 10 dates agree: the same date, or
+  no date earlier and now none or one no older than the day before that scan's commit. The
+  ladder scan starts the evening before its commit, so a character can reach level 10 on that
+  day after being read. Otherwise the name has changed hands (a rename onto a freed name, or a
+  deleted and recreated character), and the row gets no value or rank change and no place on
+  Top Gainers. Race, gender and faction can be bought, so they don't count. An earlier scan
+  without the Level10Date column compares the class only.
 - Played time ranks on whole minutes, in the build and in the browser, so players in the same
   minute tie in both places and the rank changes agree with the ladder.
 - An earlier scan that lacks a column (appearances, account-wide achievements, played time)
@@ -37,7 +46,8 @@ explains it together.
   been missing in that scan, so the first positive count is a baseline, not a one-day gain.
 - **A new character** is one whose name and class no earlier scan had (the name ignoring case).
   Realm, race and faction are left out on purpose: transfers and faction changes aren't new.
-- **Tests:** `scripts/generate-player-snapshot.test.js`, `scripts/generate-player-history.test.js`.
+- **Tests:** `scripts/generate-player-snapshot.test.js`, `scripts/generate-player-history.test.js`,
+  `scripts/player-data-utils.test.js`.
 
 ## Realm Stats
 
@@ -175,6 +185,13 @@ explains it together.
   screenshot rank for rank. Don't "fix" the formula.
 - Metric: healers are ranked on HPS, every other spec on DPS (`specMetric`), tanks included.
   HPS is healing plus absorbs.
+- A character is its realm and name (`characterKey`), and the name belongs to the class of its
+  latest kill on any boss and difficulty. Kills logged on another class belong to a former
+  character with that name ([data-pipeline.md](data-pipeline.md#raid-log-files)): they're left
+  out of the scores, boss rankings, spec performance and Talent Analytics, but each still sets
+  the boss's best that every score is measured against, and still counts on the spec popularity
+  and race charts. A former character's own view on the character page shows each boss's share
+  of that best, but no score or rank.
 - A spec filter scores characters only on the kills they played as that spec. The best on each
   boss is still the best anyone did there.
 - Filters (class, faction, realm) only hide rows and re-rank the rest. Each score is still
@@ -184,12 +201,21 @@ explains it together.
   healing class but the Priest. No class has a single DPS spec.
 - **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
   again without the kills that scan didn't have (`newLogs`), compared with today's. A new best
-  on a boss lowers everyone else's share of it, so a score can drop.
+  on a boss lowers everyone else's share of it, so a score can drop. That's why the table
+  shows gains in green and drops in grey, as small text: the rank change beside the rank, the
+  score change beside the score.
 - **Colours** (`performanceQuality` in `raid-scores.ts`) follow Warcraft Logs' parse colours,
   on the share of the best in view: artifact for the best, legendary from 95%, epic from 75%,
   rare from 50%, uncommon from 25%.
 - The search hides rows without renumbering them, as on every leaderboard.
-- **Tests:** `raid-scores.spec.ts`.
+- **Character page, per boss** (`bossStanding`): "Of best" and Rank put the character's best
+  kill of the boss among every character's best, and the "Compare with" dropdown narrows that
+  to the character's class (All Death Knights) or one of its specs (Blood). With a spec, only
+  kills played as that spec count, the character's own included, so a boss they never killed
+  as that spec has no rank. The dropdown lists the specs the metric ranks, and a picked spec
+  the other metric doesn't rank is dropped on switching. The score tile always compares with
+  all players.
+- **Tests:** `raid-scores.spec.ts`, `raid-logs-character-page.component.spec.ts`.
 
 ## Raid guild progression and kill speed
 
@@ -213,8 +239,8 @@ explains it together.
 
 ## Raid spec performance
 
-- **Code:** `scoresBySpec`, `topAverage` and `specPerformance` in
-  `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
+- **Code:** `scoresBySpec` (`scoresBySpecForKills` takes one difficulty's kills), `topAverage`
+  and `specPerformance` in `spa/src/app/features/raids/raid-scores.ts`; `sortByPerformance` in
   `spa/src/app/features/raids/raid-talents.ts`.
 - Every character gets the raid leaderboard score for each spec they played, as if that spec
   were picked on the leaderboard. A spec's performance is the average of its best
@@ -223,10 +249,27 @@ explains it together.
 - Each difficulty is scored on its own, over every boss of the raid.
 - Where it shows:
   - Raid Stats → Performance draws it as bars.
+  - The Tier List page sorts it into tiers ([below](#raid-spec-tier-list)).
   - Talent Analytics lists each role's specs by it, best first. A tie keeps the game's order,
     the order is the same whichever boss is picked, and a picked class shows its specs in the
     game's order instead.
 - **Tests:** `raid-scores.spec.ts`, `raid-talents.spec.ts`.
+
+## Raid spec tier list
+
+- **Code:** `roleTierList`, `percentOfBest` and `tierFor` in
+  `spa/src/app/features/raids/raid-tier-list.ts`; the page is `/raid-logs/tier-list`.
+- Three lists, DPS, Heal and Tank, each from the spec performance above on the picked
+  difficulty: HPS for healers, DPS for tanks and damage dealers.
+- A spec's share is its performance against the best spec in its role, as a whole percent
+  rounded down, so 94.8% shows and counts as 94%. The tier is the highest it reaches
+  (`SPEC_TIERS`): S from 95%, A from 85%, B from 75%, C from 60%, F below. Every tier is
+  listed, even an empty one.
+- Inside a tier, the higher share comes first; a tie keeps the game's order.
+- A spec fewer than `FEW_PLAYERS` (10, the same as `SPEC_TOP_SCORES`) characters played keeps
+  its tier, with its character count on the icon. A spec nobody played gets no tier and is
+  listed by name under the role's list.
+- **Tests:** `raid-tier-list.spec.ts`.
 
 ## Talent Analytics
 

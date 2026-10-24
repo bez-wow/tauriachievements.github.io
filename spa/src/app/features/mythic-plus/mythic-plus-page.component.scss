@@ -205,8 +205,6 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
-
-  .pager { margin-bottom: 0; }
 }
 
 .character-summary {
@@ -315,37 +313,8 @@
   &:focus { border-color: $gold; outline: none; }
 }
 
-.pager {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin-bottom: 12px;
+.bottom-pager { margin-top: 12px; }
 
-  &.pager-bottom { margin: 12px 0 0; }
-
-  button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid #5a5a5a;
-    border-radius: 4px;
-    background: #1a1a1a;
-    color: #fff;
-    font: inherit;
-    font-size: .85rem;
-    cursor: pointer;
-
-    &:hover:not(:disabled) { border-color: $gold; }
-    &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
-    &:disabled { border-color: #333; background: #2a2a2a; color: #777; cursor: default; }
-  }
-}
-
-.pager-buttons { display: flex; gap: 8px; }
-.pager-status,
 .pager-timer {
   color: #9a9a9a;
   font-size: .8rem;
@@ -355,7 +324,6 @@
 @media (pointer: coarse) {
   .view-switch button { min-height: 40px; }
   .scoring-link { min-height: 40px; }
-  .pager button { min-height: 40px; }
 }
 
 @media (max-width: $phone-breakpoint) {
@@ -388,9 +356,7 @@
   .pager-row { flex-direction: column; align-items: stretch; }
   .pager-row .leaderboard-filters { order: -1; }
 
-  .pager { flex-direction: column; align-items: stretch; gap: 6px; }
-  .pager-buttons button { flex: 1 1 0; padding: 6px 4px; }
-  .pager-status, .pager-timer { text-align: center; }
+  .pager-timer { text-align: center; }
 
   .leaderboard-filters { flex-wrap: wrap; }
   .player-search { flex: 1 1 50%; min-width: 140px; order: -1; }

@@ -74,6 +74,7 @@
                         [class.is-current]="location()?.page === page"
                         [attr.aria-current]="location()?.page === page ? 'page' : null"
                         [routerLink]="page.path"
+                        [queryParams]="page.queryParams"
                         (click)="closeMenu()">
                         <span class="site-nav-page-icon" aria-hidden="true">{{ page.icon }}</span>
                         <span class="site-nav-page-label">{{ page.label }}</span>
@@ -86,6 +87,7 @@
               <a
                 class="site-nav-trigger"
                 [routerLink]="section.pages[0].path"
+                [queryParams]="section.pages[0].queryParams"
                 [attr.aria-current]="location()?.section === section ? 'page' : null"
                 (click)="closeMenu()">
                 <span class="site-nav-icon" aria-hidden="true">{{ section.icon }}</span>
@@ -158,6 +160,7 @@
                   [class.is-current]="location()?.page === page"
                   [attr.aria-current]="location()?.page === page ? 'page' : null"
                   [routerLink]="page.path"
+                  [queryParams]="page.queryParams"
                   (click)="closeDrawer()">
                   <span class="site-nav-page-icon" aria-hidden="true">{{ page.icon }}</span>
                   <span class="site-drawer-page-label">

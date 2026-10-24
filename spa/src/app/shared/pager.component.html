@@ -1,0 +1,20 @@
+<nav class="pager" [attr.aria-label]="label()">
+  <div class="pager-buttons">
+    <button type="button" [disabled]="page() <= 1" (click)="goTo(1)">
+      <span aria-hidden="true">«</span> First
+    </button>
+    <button type="button" [disabled]="page() <= 1" (click)="goTo(page() - 1)">
+      <span aria-hidden="true">‹</span> Prev
+    </button>
+    <button type="button" [disabled]="page() >= pages()" (click)="goTo(page() + 1)">
+      Next <span aria-hidden="true">›</span>
+    </button>
+    <button type="button" [disabled]="page() >= pages()" (click)="goTo(pages())">
+      Last <span aria-hidden="true">»</span>
+    </button>
+  </div>
+  <ng-content />
+  @if (count(); as count) {
+    <span class="pager-status">Page {{ page() }} of {{ pages() }} · {{ count }}</span>
+  }
+</nav>
