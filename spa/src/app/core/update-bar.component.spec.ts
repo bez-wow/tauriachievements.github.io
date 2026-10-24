@@ -98,6 +98,20 @@ describe('UpdateBarComponent drawer', () => {
     expect(hallOfFame?.querySelector('.site-drawer-tag')?.textContent).toBe('Archive');
   });
 
+  it('opens Raid Statistics, Tier List and Talent Analytics on Mythic from both menus', async () => {
+    const fixture = await render('/');
+    const hrefs = (selector: string) => Array.from(fixture.nativeElement.querySelectorAll(selector) as NodeListOf<HTMLAnchorElement>)
+      .map((link) => link.getAttribute('href'))
+      .filter((href) => href?.startsWith('/raid-logs/'));
+
+    for (const selector of ['.site-nav-page', '.site-drawer-page']) {
+      expect(hrefs(selector)).toContain('/raid-logs/stats?difficulty=mythic');
+      expect(hrefs(selector)).toContain('/raid-logs/talents?difficulty=mythic');
+      expect(hrefs(selector)).toContain('/raid-logs/tier-list?difficulty=mythic');
+      expect(hrefs(selector)).toContain('/raid-logs/guilds');
+    }
+  });
+
   it('closes when a page is picked', async () => {
     const fixture = await render('/');
     const drawer = openDrawer(fixture);

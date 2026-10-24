@@ -1,8 +1,11 @@
+import { Params } from '@angular/router';
+
 export interface NavPage {
   readonly label: string;
   readonly tab?: string;
   readonly icon: string;
   readonly path: string;
+  readonly queryParams?: Params;
   readonly includes?: readonly string[];
   readonly tag?: string;
 }
@@ -73,9 +76,21 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         path: '/raid-logs/guilds',
         includes: ['/raid-logs/guild']
       },
-      { label: 'Raid Statistics', tab: 'Statistics', icon: '🧮', path: '/raid-logs/stats' },
-      { label: 'Tier List', icon: '🏅', path: '/raid-logs/tier-list' },
-      { label: 'Talent Analytics', tab: 'Talents', icon: '🌳', path: '/raid-logs/talents' },
+      {
+        label: 'Raid Statistics',
+        tab: 'Statistics',
+        icon: '🧮',
+        path: '/raid-logs/stats',
+        queryParams: { difficulty: 'mythic' }
+      },
+      { label: 'Tier List', icon: '🏅', path: '/raid-logs/tier-list', queryParams: { difficulty: 'mythic' } },
+      {
+        label: 'Talent Analytics',
+        tab: 'Talents',
+        icon: '🌳',
+        path: '/raid-logs/talents',
+        queryParams: { difficulty: 'mythic' }
+      },
       {
         label: 'Character Rankings',
         tab: 'Rankings',

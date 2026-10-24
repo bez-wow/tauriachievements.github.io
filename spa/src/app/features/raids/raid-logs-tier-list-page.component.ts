@@ -1,7 +1,7 @@
 import { DOCUMENT, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ParamMap, RouterLink } from '@angular/router';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
 import { defaultDifficulty } from './raid-logs';
 import { SPEC_TOP_SCORES, scoresBySpecForKills } from './raid-scores';
@@ -11,7 +11,7 @@ import { RaidLogsDataService } from './raid-logs-data.service';
 import { RaidDifficultySwitchComponent } from './raid-difficulty-switch.component';
 import { IconTipsComponent } from '../../shared/icon-tips.component';
 import { LoadStateComponent } from '../../shared/load-state.component';
-import { injectReplaceUrl } from '../../core/url-state';
+import { injectQueryParamMap, injectReplaceUrl } from '../../core/url-state';
 import { setPageHeader } from '../../core/page-header';
 
 @Component({
@@ -25,8 +25,8 @@ export class RaidLogsTierListPageComponent implements OnInit {
   private readonly data = inject(RaidLogsDataService);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
+  private readonly queryParamMap = injectQueryParamMap();
 
   readonly topScores = SPEC_TOP_SCORES;
   readonly fewPlayers = FEW_PLAYERS;
@@ -41,7 +41,7 @@ export class RaidLogsTierListPageComponent implements OnInit {
   readonly saveFailed = signal(false);
   readonly lastEdited = computed(() => this.index()?.generatedAt);
 
-  private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
+  private readonly requestedDifficulty = signal(this.data.lastDifficulty());
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -61,10 +61,12 @@ export class RaidLogsTierListPageComponent implements OnInit {
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+    this.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => this.applyUrl(params));
   }
 
   ngOnInit(): void {
-    this.data.lastDifficulty.set(this.requestedDifficulty());
     this.loadData();
   }
 
@@ -129,6 +131,20 @@ export class RaidLogsTierListPageComponent implements OnInit {
     const difficulty = this.difficulty();
     if (index && difficulty) {
       this.loadKills(index, difficulty);
+    }
+  }
+
+  private applyUrl(params: ParamMap): void {
+    const requested = params.get('difficulty');
+    if (!requested) {
+      return;
+    }
+
+    const shown = this.difficulty();
+    this.requestedDifficulty.set(requested);
+    this.data.lastDifficulty.set(requested);
+    if (this.difficulty() !== shown) {
+      this.retryKills();
     }
   }
 

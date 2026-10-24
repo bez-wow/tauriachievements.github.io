@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ParamMap } from '@angular/router';
 import { RaceBySpecComponent } from '../../shared/spec-charts/race-by-spec.component';
 import { RaceSample } from '../../shared/spec-charts/race-popularity';
 import { RaidDifficulty, RaidKillDetails, RaidLogsIndex } from './raid-logs.types';
@@ -9,7 +9,7 @@ import { defaultDifficulty } from './raid-logs';
 import { ChartView, RaidSpecPopularityChartComponent, parseChartView } from './raid-spec-popularity-chart.component';
 import { RaidLogsDataService } from './raid-logs-data.service';
 import { Role } from '../../game/wow';
-import { injectReplaceUrl } from '../../core/url-state';
+import { injectQueryParamMap, injectReplaceUrl } from '../../core/url-state';
 import { LoadStateComponent } from '../../shared/load-state.component';
 import { setPageHeader } from '../../core/page-header';
 
@@ -23,8 +23,8 @@ import { setPageHeader } from '../../core/page-header';
 export class RaidLogsStatsPageComponent implements OnInit {
   private readonly data = inject(RaidLogsDataService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly route = inject(ActivatedRoute);
   private readonly replaceUrl = injectReplaceUrl();
+  private readonly queryParamMap = injectQueryParamMap();
 
   readonly index = signal<RaidLogsIndex | undefined>(undefined);
   readonly isLoading = signal(true);
@@ -44,9 +44,9 @@ export class RaidLogsStatsPageComponent implements OnInit {
     }] : [])));
   readonly lastEdited = computed(() => this.index()?.generatedAt);
 
-  private readonly requestedDifficulty = signal(this.route.snapshot.queryParamMap.get('difficulty') ?? this.data.lastDifficulty());
-  readonly chartView = signal<ChartView>(parseChartView(this.route.snapshot.queryParamMap.get('view')));
-  readonly chartRole = signal<RoleFilter>(parseRoleFilter(this.route.snapshot.queryParamMap.get('role')));
+  private readonly requestedDifficulty = signal(this.data.lastDifficulty());
+  readonly chartView = signal<ChartView>('popularity');
+  readonly chartRole = signal<RoleFilter>('all');
 
   readonly difficulty = computed(() => {
     const difficulties = this.index()?.difficulties ?? [];
@@ -58,10 +58,12 @@ export class RaidLogsStatsPageComponent implements OnInit {
 
   constructor() {
     setPageHeader(() => ({ lastEdited: this.lastEdited() }));
+    this.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => this.applyUrl(params));
   }
 
   ngOnInit(): void {
-    this.data.lastDifficulty.set(this.requestedDifficulty());
     this.loadData();
   }
 
@@ -114,6 +116,22 @@ export class RaidLogsStatsPageComponent implements OnInit {
   retryPopularity(): void {
     const difficulty = this.difficulty();
     if (difficulty) {
+      this.loadPopularity(difficulty);
+    }
+  }
+
+  private applyUrl(params: ParamMap): void {
+    const shown = this.difficulty();
+    this.chartView.set(parseChartView(params.get('view')));
+    this.chartRole.set(parseRoleFilter(params.get('role')));
+    const requested = params.get('difficulty');
+    if (requested) {
+      this.requestedDifficulty.set(requested);
+      this.data.lastDifficulty.set(requested);
+    }
+
+    const difficulty = this.difficulty();
+    if (difficulty && difficulty !== shown) {
       this.loadPopularity(difficulty);
     }
   }

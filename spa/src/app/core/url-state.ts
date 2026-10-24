@@ -1,6 +1,7 @@
 import { Location } from '@angular/common';
 import { inject } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, ParamMap, Params, Router } from '@angular/router';
+import { Observable, filter, map, startWith } from 'rxjs';
 
 export interface ReplaceUrlOptions {
   readonly path?: readonly unknown[];
@@ -22,6 +23,17 @@ export function injectReplaceUrl(): ReplaceUrl {
     });
     location.replaceState(router.serializeUrl(url));
   };
+}
+
+export function injectQueryParamMap(): Observable<ParamMap> {
+  const router = inject(Router);
+  const route = inject(ActivatedRoute);
+
+  return router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    startWith(undefined),
+    map(() => route.snapshot.queryParamMap)
+  );
 }
 
 export function parseInteger(value: string | null): number | undefined {

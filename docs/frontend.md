@@ -129,6 +129,11 @@ difficulty, the page number. Defaults are left out of it.
   back to the overview.
 - The router never sees parameters written with `replaceState`. When you build a link or
   navigation from the current state, spell out every parameter you want kept.
+- For the same reason `route.queryParamMap` stays silent when the reader opens the address the
+  router last opened, such as the page's own header link after a switch changed the URL. A page
+  that its own link should reset reads its parameters through `injectQueryParamMap()`
+  (`url-state.ts`), which hands over the route's parameters after every navigation. Raid
+  Statistics, Tier List and Talent Analytics do this.
 
 The query parameters each page reads:
 
@@ -174,7 +179,9 @@ finds Sósa), while a picked character matches name and realm exactly.
   pages need.
 - `RaidLogsDataService` loads the raid files and keeps `lastDifficulty`, so the Raids tabs
   remember the difficulty within a session. A tab opened without `?difficulty=` starts on it,
-  else on `defaultDifficulty`, the hardest one with a kill.
+  else on `defaultDifficulty`, the hardest one with a kill. The header's Raid Statistics, Tier
+  List and Talent Analytics links carry `?difficulty=mythic`, so those three always open on
+  Mythic, unless Mythic has no kill yet.
 - Files only some icons or names depend on (raid genders, talent tables and tooltips) fail
   soft: a file that won't load is an empty table, not an error. A kill the raid index doesn't
   list may be newer than the index this tab loaded, so it's loaded fresh once before the page
@@ -211,7 +218,7 @@ decision (ask first).
 | Building block | Use it for |
 |---|---|
 | `app-update-bar` (`update-bar.component`) | the site header, rendered once by the shell ([below](#the-app-shell-and-the-header-height-contract)). A page sets the timestamp on the right with `setPageHeader()` |
-| `nav-sections.ts` | the header's sections and pages, and route matching for deep routes (`includes`) |
+| `nav-sections.ts` | the header's sections and pages, a page's fixed link parameters (`queryParams`), and route matching for deep routes (`includes`) |
 | `app-filter-dropdown` + `filter-dropdown.types.ts` | every dropdown filter. The page must list `FilterDropdownCoordinatorService` in its own `providers`, or it fails with NG0201. Pass `widthLabels` (every label it can ever show) to keep the trigger as wide as the longest one, so picking never cuts a name short or moves the toolbar; its container must then size to its content |
 | `wow.ts` | the game's tables: `CLASS_NAMES`, `CLASSES_BY_NAME` (A–Z), `RACE_NAMES` (the three Pandaren ids all read "Pandaren"), `raceFaction` (0 Alliance, 1 Horde, none for the neutral Pandaren), `REALMS`, `realmSlug` (a realm as it appears in URLs) and the `Realm` and `Role` types. Never copy one of them into a page |
 | `CLASS_FILTER_OPTIONS` (`wow.ts`) | a class dropdown's options: "All classes", then every class A–Z with its icon and colour. Filter it when a page offers fewer classes (the raid leaderboard on HPS) |
