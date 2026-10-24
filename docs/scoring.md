@@ -191,7 +191,9 @@ explains it together.
   healing class but the Priest. No class has a single DPS spec.
 - **Changes since the last scan:** the same ranking (metric, spec, class, realm) worked out
   again without the kills that scan didn't have (`newLogs`), compared with today's. A new best
-  on a boss lowers everyone else's share of it, so a score can drop.
+  on a boss lowers everyone else's share of it, so a score can drop. That's why the table
+  shows gains in green and drops in grey, as small text: the rank change beside the rank, the
+  score change beside the score.
 - **Colours** (`performanceQuality` in `raid-scores.ts`) follow Warcraft Logs' parse colours,
   on the share of the best in view: artifact for the best, legendary from 95%, epic from 75%,
   rare from 50%, uncommon from 25%.

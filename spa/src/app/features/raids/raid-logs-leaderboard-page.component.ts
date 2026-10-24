@@ -149,6 +149,7 @@ export class RaidLogsLeaderboardPageComponent {
   });
 
   readonly changesSince = computed(() => this.previousBossKills() ? this.index()?.previousGeneratedAt : undefined);
+  readonly hasChanges = computed(() => this.changes().size > 0);
 
   readonly rankings = computed<RankedScore[]>(() => {
     const query = this.search();
