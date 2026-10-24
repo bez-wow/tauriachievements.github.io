@@ -201,7 +201,8 @@ There is no root package manager; each half has its own toolchain.
 - The app is zoneless: right after a click the DOM still shows the old state, so browser checks
   wait a tick.
 - Several page stylesheets sit at the 16 kB `anyComponentStyle` warning budget. Put a page's
-  motion in `<page>.motion.scss` as a second `styleUrls` entry.
+  motion in `<page>.motion.scss` and its phone rules in `<component>.phone.scss`, as further
+  `styleUrls` entries.
 - A cold full `ng test` run can time out a few DOM specs at 5 s. Rerun them before treating it
   as a regression.
 - Windows: `core.autocrlf=true`, and working files mix CRLF and LF, so exact-string

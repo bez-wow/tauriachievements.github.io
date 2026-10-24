@@ -1,0 +1,114 @@
+@use '../../shared/mythic-plus-shared' as *;
+
+@media (max-width: $phone-breakpoint) {
+  .profile-page { padding-top: 32px; }
+
+  .profile-header {
+    grid-template-areas:
+      'icon identity'
+      'score score'
+      'actions actions'
+      'summary summary';
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 10px 12px;
+    padding: 14px;
+  }
+
+  .profile-crest { width: 60px; height: 60px; padding: 1px; border-radius: 8px; }
+  .profile-identity h1 { font-size: 1.5rem; }
+
+  .profile-score {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .profile-score-value { font-size: 2rem; }
+
+  .scan-score-tooltip {
+    top: calc(100% + 8px);
+    right: auto;
+    left: 0;
+    transform: none;
+  }
+
+  .profile-actions { justify-content: stretch; }
+  .action-link { flex: 1 1 0; text-align: center; }
+
+  .profile-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .rank-tile { padding: 10px 12px; }
+  .rank-value { font-size: 1.35rem; }
+
+  .card { padding: 12px 12px 14px; }
+
+  .line-chart {
+    min-width: max(100%, calc(var(--columns) * 8px));
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding-right: 14px;
+  }
+
+  .column.middle .tooltip { right: auto; left: 50%; transform: translateX(-50%); }
+
+  .tooltip { display: none; }
+  .column:focus-visible .tooltip, .column.tooltip-open .tooltip { display: flex; }
+
+  @media (hover: hover) {
+    .column:hover .tooltip { display: flex; }
+  }
+
+  .not-found { margin-top: 8px; padding: 16px; }
+}
+
+button.action-link { font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
+.action-link.active { border-color: $gold; color: #fff; }
+
+.compare-with {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #141414;
+  grid-column: 1 / -1;
+}
+
+.compare-pick-link {
+  align-self: flex-start;
+  color: $gold;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.teammate-item { display: flex; align-items: center; gap: 2px; }
+.teammate-item .teammate { min-width: 0; flex: 1 1 auto; }
+
+.teammate-compare {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  border-radius: 4px;
+  opacity: .35;
+  transition: opacity .12s ease;
+
+  svg { width: 13px; height: 13px; fill: $gold; }
+
+  &:hover { background: #2a2a2a; opacity: 1; }
+  &:focus-visible { opacity: 1; outline: 2px solid $gold; }
+}
+
+.teammate-item:hover .teammate-compare { opacity: .8; }
+
+@media (hover: none) {
+  .teammate-compare { width: 40px; height: 40px; opacity: .8; }
+}

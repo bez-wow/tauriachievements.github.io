@@ -15,6 +15,8 @@
 
 @include boss-picker(7);
 
+.table-scroll { @include phone-detail-rows; }
+
 .boss-header {
   display: flex;
   flex-wrap: wrap;

@@ -43,6 +43,7 @@ A file's name says what it is:
 | `<page>.store.ts` | one page's loading and data state: an `@Injectable()` in the page's own `providers` (`LadderPageStore`, `MythicPlusPageStore`). The component re-exposes the signals its template reads (`readonly index = this.store.index;`) |
 | `_<area>-shared.scss` | SCSS mixins shared by an area's pages |
 | `<page>.motion.scss` | a page's motion, as a second `styleUrls` entry |
+| `<component>.phone.scss` | a component's phone and touch rules, moved whole from the end of its stylesheet into the next `styleUrls` entry (before any `.motion.scss`), so the cascade order stays the same |
 
 Outside `app/`: `src/scss/` (`styles.scss`, `_motion.scss`) and `src/assets/`. In the assets,
 `spec-art/<class>-<spec>.webp` (`hunter-beast-mastery.webp`, `death-knight-blood.webp`: the names
@@ -405,8 +406,9 @@ the width on phones (`spec-charts/spec-chart.scss`).
 - Budgets (`angular.json`, production): the initial bundle warns at 700 kB and errors at 1 MB;
   a component stylesheet warns at 16 kB and errors at 24 kB. Several page stylesheets are
   close to theirs (`npm run build` lists any over it). Don't add to either. Move a page's
-  motion into `<page>.motion.scss`, shared rules into a mixin, and anything a first visit
-  doesn't need into a lazy route.
+  motion into `<page>.motion.scss`, its phone rules into `<component>.phone.scss` (the ladder
+  table, Talent Analytics and the Mythic+ profile do), shared rules into a mixin, and anything
+  a first visit doesn't need into a lazy route.
 
 ## Template and test gotchas
 

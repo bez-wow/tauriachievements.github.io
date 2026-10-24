@@ -17,7 +17,7 @@ export interface PlayerDetailMetric {
 @Component({
   selector: 'app-leaderboard-table',
   templateUrl: './leaderboard-table.component.html',
-  styleUrls: ['./leaderboard-table.component.scss'],
+  styleUrls: ['./leaderboard-table.component.scss', './leaderboard-table.component.phone.scss'],
   imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

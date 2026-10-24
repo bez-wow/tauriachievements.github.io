@@ -130,7 +130,7 @@ interface CharacterLink {
     LoadStateComponent
   ],
   templateUrl: './mythic-plus-profile-page.component.html',
-  styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.motion.scss'],
+  styleUrls: ['./mythic-plus-profile-page.component.scss', './mythic-plus-profile-page.component.phone.scss', './mythic-plus-profile-page.motion.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MythicPlusProfilePageComponent implements OnInit {

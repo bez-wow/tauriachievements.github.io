@@ -94,7 +94,7 @@ interface SpecCard extends SpecTalentSummary {
     LoadStateComponent
   ],
   templateUrl: './raid-logs-talents-page.component.html',
-  styleUrls: ['./raid-logs-talents-page.component.scss', './raid-logs-talents-page.motion.scss'],
+  styleUrls: ['./raid-logs-talents-page.component.scss', './raid-logs-talents-page.component.phone.scss', './raid-logs-talents-page.motion.scss'],
   providers: [FilterDropdownCoordinatorService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

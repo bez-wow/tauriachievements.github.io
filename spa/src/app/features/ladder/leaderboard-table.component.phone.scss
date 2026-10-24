@@ -1,0 +1,132 @@
+@use '../../shared/tables' as *;
+
+@media (max-width: 640px) {
+  .wow-table {
+    min-width: 100%;
+  }
+
+  .wow-table tbody tr:not(.player-details-row) {
+    cursor: pointer;
+  }
+
+  .wow-table tr.is-expanded > td {
+    padding-bottom: 6px;
+  }
+
+  .rank-text {
+    display: none;
+  }
+
+  .row-toggle {
+    display: inline-flex;
+  }
+
+  .player-details-row {
+    display: table-row;
+  }
+
+  .wow-table :is(th, td) {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
+
+  .wow-table :is(th, td):nth-child(1) {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  .wow-table :is(th, td):nth-child(2) {
+    padding-left: 6px;
+  }
+
+  .wow-table :is(th, td):nth-child(n + 4) {
+    display: none;
+  }
+
+  .wow-table:not(.sort-achievements-total, .sort-honorable-kills, .sort-played-time, .sort-item-level, .sort-appearances) :is(th, td):nth-child(6),
+  .wow-table.sort-achievements-total :is(th, td):nth-child(7),
+  .wow-table.sort-honorable-kills :is(th, td):nth-child(8),
+  .wow-table.sort-played-time :is(th, td):nth-child(9),
+  .wow-table.sort-item-level :is(th, td):nth-child(10),
+  .wow-table.sort-appearances :is(th, td):nth-child(11) {
+    display: table-cell;
+  }
+
+  .wow-table td:nth-child(2) {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .wow-table th {
+    font-size: 0.69rem;
+    letter-spacing: 0.3px;
+  }
+
+  .wow-table :is(th, td):nth-child(3) {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .wow-table :is(th, td):nth-child(n + 6) {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .metric-inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2px 4px;
+  }
+
+  .metric-value {
+    order: -1;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .metric-side-start,
+  .metric-side-end {
+    padding: 0;
+  }
+
+  .metric-side:empty {
+    display: none;
+  }
+
+  .metric-delta {
+    font-size: 0.69rem;
+  }
+
+  .metric-rank-pill {
+    min-width: 28px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .player-identity {
+    min-height: 22px;
+  }
+
+  .player-name {
+    padding-bottom: 0;
+  }
+
+  .player-name-rbg-sigil {
+    left: calc(100% + 3px);
+    font-size: max(0.72em, 11px);
+  }
+}
+
+@media (max-width: $narrow-phone-breakpoint) {
+  .wow-table :is(th, td) { padding: 10px 6px; }
+  .wow-table th { font-size: .6rem; letter-spacing: 0; white-space: normal; }
+  .wow-table :is(th, td):nth-child(1) { width: 32px; min-width: 32px; }
+  .wow-table .icon { margin-right: 3px; }
+  .wow-table .icon:last-child { margin-right: 0; }
+}

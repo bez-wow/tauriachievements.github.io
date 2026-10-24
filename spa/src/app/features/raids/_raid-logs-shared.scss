@@ -110,7 +110,6 @@ $difficulty-colors: (
   td a:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
 
   @include phone-columns;
-  @include phone-detail-rows;
 
   @media (max-width: $phone-breakpoint) {
     th, td { padding: 8px 6px; }
